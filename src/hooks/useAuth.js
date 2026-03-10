@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { loginUsuario, cadastrarUsuario } from "../services/backendApi";
+import {
+  loginUsuario,
+  cadastrarUsuario,
+  atualizarUsuario,
+} from "../services/backendApi";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
 
 export function useAuth() {
@@ -15,6 +19,14 @@ export function useAuth() {
     nome: "",
     email: "",
     senha: "",
+  });
+
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({
+    nome: "",
+    telefone: "",
+    nickMTGO: "",
+    nickArena: "",
   });
 
   // Restaurar sessão ao montar
@@ -93,6 +105,53 @@ export function useAuth() {
     }
   };
 
+  const openEditProfileModal = () => {
+    if (usuario) {
+      setEditProfileForm({
+        nome: usuario.nome || "",
+        telefone: usuario.telefone || "",
+        nickMTGO: usuario.nickMTGO || "",
+        nickArena: usuario.nickArena || "",
+      });
+    }
+    setAuthMessage("");
+    setShowEditProfileModal(true);
+  };
+
+  const closeEditProfileModal = () => {
+    setShowEditProfileModal(false);
+    setEditProfileForm({
+      nome: "",
+      telefone: "",
+      nickMTGO: "",
+      nickArena: "",
+    });
+  };
+
+  const handleUpdateProfile = async (event) => {
+    event.preventDefault();
+    setAuthLoading(true);
+    setAuthMessage("");
+
+    try {
+      const payload = {};
+      if (editProfileForm.nome) payload.nome = editProfileForm.nome;
+      if (editProfileForm.telefone) payload.telefone = editProfileForm.telefone;
+      if (editProfileForm.nickMTGO) payload.nickMTGO = editProfileForm.nickMTGO;
+      if (editProfileForm.nickArena)
+        payload.nickArena = editProfileForm.nickArena;
+
+      const updatedUsuario = await atualizarUsuario(payload, token);
+      saveAuth({ token, usuario: updatedUsuario });
+      setAuthMessage("Perfil atualizado com sucesso.");
+      setShowEditProfileModal(false);
+    } catch (error) {
+      setAuthMessage(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const isAuthenticated = Boolean(token && usuario);
 
   return {
@@ -106,9 +165,12 @@ export function useAuth() {
     loginForm,
     registerForm,
     isAuthenticated,
+    showEditProfileModal,
+    editProfileForm,
     // Setters
     setLoginForm,
     setRegisterForm,
+    setEditProfileForm,
     // Handlers
     openAuth,
     closeAuth,
@@ -116,5 +178,8 @@ export function useAuth() {
     handleRegister,
     setAuthTab,
     clearAuth,
+    openEditProfileModal,
+    closeEditProfileModal,
+    handleUpdateProfile,
   };
 }

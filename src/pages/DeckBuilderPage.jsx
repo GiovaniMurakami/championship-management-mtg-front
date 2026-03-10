@@ -1,8 +1,14 @@
-import { DeckBuilder } from "../components";
+import { useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import { DeckBuilder, HandSimulator, DeckStats } from "../components";
+import { buscarCartaPorNome } from "../services/scryfallApi";
 
 export function DeckBuilderPage({
+  isEditMode = false,
   deckForm,
   onDeckFormChange,
+  onSetMainDeck,
+  onSetSideboard,
   mainSearch,
   onMainSearchChange,
   sideSearch,
@@ -27,6 +33,96 @@ export function DeckBuilderPage({
   onImportDeck,
   onSubmit,
 }) {
+  const { id } = useParams();
+  const location = useLocation();
+  const deck = location.state?.deck;
+
+  // Carregar dados e cartas do deck para editar, ou limpar se em modo criação
+  useEffect(() => {
+    if (!isEditMode && !deck) {
+      // Modo criação - garantir que está limpo
+      onDeckFormChange({ nome: "", formato: "" });
+      if (onSetMainDeck && onSetSideboard) {
+        onSetMainDeck([]);
+        onSetSideboard([]);
+      }
+    } else if (isEditMode && deck) {
+      onDeckFormChange({
+        nome: deck.nome,
+        formato: deck.formato,
+      });
+      
+      // Carregar cartas do deck existente
+      if (onSetMainDeck && onSetSideboard) {
+        const loadDeckCards = async () => {
+          try {
+            const maindeckCards = [];
+            const sideboardCards = [];
+
+            // Processar maindeck
+            if (Array.isArray(deck.maindeck)) {
+              for (const cartaBackend of deck.maindeck) {
+                const cartaScryfall = await buscarCartaPorNome(cartaBackend.nome);
+                if (cartaScryfall) {
+                  maindeckCards.push({
+                    nome: cartaScryfall.nome,
+                    quantidade: cartaBackend.quantidade || 1,
+                    imagem: cartaScryfall.imagem || "",
+                    isBasicLand: cartaScryfall.isBasicLand,
+                    legalities: cartaScryfall.legalities || {},
+                    colors: cartaScryfall.colors || [],
+                    cmc: cartaScryfall.cmc || 0,
+                    manaCost: cartaScryfall.manaCost || "",
+                    typeLine: cartaScryfall.typeLine || "",
+                  });
+                }
+              }
+            }
+
+            // Processar sideboard
+            if (Array.isArray(deck.sideboard)) {
+              for (const cartaBackend of deck.sideboard) {
+                const cartaScryfall = await buscarCartaPorNome(cartaBackend.nome);
+                if (cartaScryfall) {
+                  sideboardCards.push({
+                    nome: cartaScryfall.nome,
+                    quantidade: cartaBackend.quantidade || 1,
+                    imagem: cartaScryfall.imagem || "",
+                    isBasicLand: cartaScryfall.isBasicLand,
+                    legalities: cartaScryfall.legalities || {},
+                    colors: cartaScryfall.colors || [],
+                    cmc: cartaScryfall.cmc || 0,
+                    manaCost: cartaScryfall.manaCost || "",
+                    typeLine: cartaScryfall.typeLine || "",
+                  });
+                }
+              }
+            }
+
+            onSetMainDeck(maindeckCards);
+            onSetSideboard(sideboardCards);
+          } catch (error) {
+            console.error("Erro ao carregar cartas do deck:", error);
+          }
+        };
+
+        loadDeckCards();
+      }
+    }
+  }, [isEditMode, deck, onDeckFormChange, onSetMainDeck, onSetSideboard]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (isEditMode && id) {
+      // Passar deckId e deck original como parâmetro ao atualizar
+      onSubmit(event, undefined, id, deck);
+    } else {
+      // Modo criação normal
+      onSubmit(event);
+    }
+  };
+
   return (
     <main>
       <DeckBuilder
@@ -54,8 +150,23 @@ export function DeckBuilderPage({
         importLoading={importLoading}
         importMessage={importMessage}
         onImportDeck={onImportDeck}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
+        isEditMode={isEditMode}
       />
+
+      {/* Seção de Análise de Deck */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.2rem",
+          marginTop: "1.5rem",
+          width: "100%",
+        }}
+      >
+        <HandSimulator mainDeck={mainDeck} />
+        <DeckStats mainDeck={mainDeck} />
+      </div>
     </main>
   );
 }
