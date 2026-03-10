@@ -4,7 +4,7 @@ export function Navbar({ usuario, onOpenAuth, onLogout, isAuthenticated }) {
   return (
     <header className="floating-navbar">
       <div className="brand">
-        <span className="brand-highlight">MTG</span> Championship
+        <span className="brand-highlight">TIAGO</span> FUGUETE
       </div>
 
       <nav>
