@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export function Navbar({
@@ -7,58 +8,93 @@ export function Navbar({
   isAuthenticated,
   onOpenEditProfile,
 }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const closeMenuOnDesktop = () => {
+      if (window.innerWidth > 950) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", closeMenuOnDesktop);
+    return () => window.removeEventListener("resize", closeMenuOnDesktop);
+  }, []);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  const handleOpenAuth = (tab) => {
+    closeMobileMenu();
+    onOpenAuth(tab);
+  };
+
+  const handleLogout = () => {
+    closeMobileMenu();
+    onLogout();
+  };
+
+  const handleOpenEditProfile = () => {
+    closeMobileMenu();
+    onOpenEditProfile();
+  };
+
   return (
-    <header className="floating-navbar">
+    <header className={`floating-navbar ${isMobileMenuOpen ? "menu-open" : ""}`}>
       <div className="brand">
         <span className="brand-highlight">TIAGO</span> FUGUETE
       </div>
 
-      <nav>
-        <Link to="/">Home</Link>
-        <a href="#torneios">Torneios</a>
+      <button
+        className={`hamburger-btn ${isMobileMenuOpen ? "is-open" : ""}`}
+        type="button"
+        aria-expanded={isMobileMenuOpen}
+        aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+        onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+
+      <nav className={`navbar-links ${isMobileMenuOpen ? "open" : ""}`}>
+        <Link to="/" onClick={closeMobileMenu}>
+          Home
+        </Link>
+        <a href="#torneios" onClick={closeMobileMenu}>
+          Torneios
+        </a>
         {isAuthenticated ? (
-          <Link to="/meus-decks">Meus Decks</Link>
+          <Link to="/meus-decks" onClick={closeMobileMenu}>
+            Meus Decks
+          </Link>
         ) : (
-          <button className="btn ghost" type="button" onClick={() => onOpenAuth("login")}>
+          <button className="btn ghost" type="button" onClick={() => handleOpenAuth("login")}>
             Decks (login)
           </button>
         )}
       </nav>
 
-      <div className="auth-actions">
+      <div className={`auth-actions ${isMobileMenuOpen ? "open" : ""}`}>
         {usuario ? (
           <>
             <button
               className="user-chip"
               type="button"
-              onClick={onOpenEditProfile}
+              onClick={handleOpenEditProfile}
               title="Editar perfil"
-              style={{ 
-                background: "none", 
-                border: "none", 
-                cursor: "pointer",
-                padding: "0.5rem 1rem",
-                borderRadius: "4px",
-                transition: "background-color 0.2s",
-                color: "var(--text-color)",
-                fontSize: "1rem",
-                fontWeight: "500"
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)"}
-              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
             >
               {usuario.nome}
             </button>
-            <button className="btn secondary" type="button" onClick={onLogout}>
+            <button className="btn secondary logout-btn" type="button" onClick={handleLogout}>
               Sair
             </button>
           </>
         ) : (
           <>
-            <button className="btn ghost" type="button" onClick={() => onOpenAuth("register")}>
+            <button className="btn ghost" type="button" onClick={() => handleOpenAuth("register")}>
               Cadastro
             </button>
-            <button className="btn primary" type="button" onClick={() => onOpenAuth("login")}>
+            <button className="btn primary" type="button" onClick={() => handleOpenAuth("login")}>
               Login
             </button>
           </>
