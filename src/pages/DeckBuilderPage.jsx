@@ -1,0 +1,61 @@
+import { DeckBuilder } from "../components";
+
+export function DeckBuilderPage({
+  deckForm,
+  onDeckFormChange,
+  mainSearch,
+  onMainSearchChange,
+  sideSearch,
+  onSideSearchChange,
+  mainSuggestions,
+  sideSuggestions,
+  mainDeck,
+  sideboard,
+  totalMain,
+  totalSide,
+  onAddCard,
+  onRemoveCard,
+  onUpdateCardQuantity,
+  onCardMouseEnter,
+  onCardMouseLeave,
+  deckLoading,
+  deckMessage,
+  cardLimitMessage,
+  illegalCardMessage,
+  importLoading,
+  importMessage,
+  onImportDeck,
+  onSubmit,
+}) {
+  return (
+    <main>
+      <DeckBuilder
+        deckForm={deckForm}
+        onDeckFormChange={onDeckFormChange}
+        mainSearch={mainSearch}
+        onMainSearchChange={onMainSearchChange}
+        sideSearch={sideSearch}
+        onSideSearchChange={onSideSearchChange}
+        mainSuggestions={mainSuggestions}
+        sideSuggestions={sideSuggestions}
+        mainDeck={mainDeck}
+        sideboard={sideboard}
+        totalMain={totalMain}
+        totalSide={totalSide}
+        onAddCard={onAddCard}
+        onRemoveCard={onRemoveCard}
+        onUpdateCardQuantity={onUpdateCardQuantity}
+        onCardMouseEnter={onCardMouseEnter}
+        onCardMouseLeave={onCardMouseLeave}
+        deckLoading={deckLoading}
+        deckMessage={deckMessage}
+        cardLimitMessage={cardLimitMessage}
+        illegalCardMessage={illegalCardMessage}
+        importLoading={importLoading}
+        importMessage={importMessage}
+        onImportDeck={onImportDeck}
+        onSubmit={onSubmit}
+      />
+    </main>
+  );
+}
