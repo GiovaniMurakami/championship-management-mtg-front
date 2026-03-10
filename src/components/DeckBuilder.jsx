@@ -37,6 +37,7 @@ export function DeckBuilder({
   importMessage,
   onImportDeck,
   onSubmit,
+  isEditMode = false,
 }) {
   const [invalidFields, setInvalidFields] = useState({ nome: false, formato: false });
   const [shakeFields, setShakeFields] = useState({ nome: false, formato: false });
@@ -72,7 +73,7 @@ export function DeckBuilder({
   return (
     <section className="deck-builder" id="decks">
       <div className="section-title">
-        <h2>Cadastrar deck</h2>
+        <h2>{isEditMode ? "Editar deck" : "Cadastrar deck"}</h2>
         <span>integrado ao backend</span>
       </div>
 
@@ -180,7 +181,7 @@ export function DeckBuilder({
           />
 
           <button className="btn primary" type="submit" disabled={deckLoading || importLoading}>
-            {deckLoading ? "Cadastrando..." : "Cadastrar deck"}
+            {deckLoading ? (isEditMode ? "Atualizando..." : "Cadastrando...") : isEditMode ? "Atualizar deck" : "Cadastrar deck"}
           </button>
         </div>
 

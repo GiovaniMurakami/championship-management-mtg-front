@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { cadastrarDeck } from "../services/backendApi";
+import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
 import { parseDeckTxt } from "../utils/parseDeckTxt";
@@ -66,6 +66,10 @@ export function useDeckBuilder() {
           imagem: card.imagem || "",
           isBasicLand,
           legalities: card.legalities || {},
+          colors: card.colors || [],
+          cmc: card.cmc || 0,
+          manaCost: card.manaCost || "",
+          typeLine: card.typeLine || "",
         },
       ];
     });
@@ -97,7 +101,31 @@ export function useDeckBuilder() {
     setter((current) => current.filter((card) => card.nome !== nome));
   };
 
-  const handleCreateDeck = async (event, token) => {
+  // Função auxiliar para comparar duas listas de cartas
+  const compareDeckCards = (currentCards, originalCards) => {
+    if (currentCards.length !== originalCards.length) {
+      return false;
+    }
+
+    // Normalizar e ordenar
+    const currentNorm = currentCards
+      .map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    const originalNorm = originalCards
+      .map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    // Comparar JSON serializado
+    return JSON.stringify(currentNorm) === JSON.stringify(originalNorm);
+  };
+
+  const handleCreateDeck = async (
+    event,
+    token,
+    deckIdParam = null,
+    originalDeck = null,
+  ) => {
     event.preventDefault();
     setDeckMessage("");
     setIllegalCardMessage("");
@@ -105,6 +133,30 @@ export function useDeckBuilder() {
     if (!token) {
       setDeckMessage("Faça login para cadastrar um deck.");
       return;
+    }
+
+    // Se estiver editando, verificar se houve mudanças
+    if (deckIdParam && originalDeck) {
+      const nomeIgual = deckForm.nome === originalDeck.nome;
+      const formatoIgual = deckForm.formato === originalDeck.formato;
+
+      // Comparar cartas do maindeck
+      const maindeckIgual = compareDeckCards(
+        mainDeck,
+        originalDeck.maindeck || [],
+      );
+
+      // Comparar cartas do sideboard
+      const sideboardIgual = compareDeckCards(
+        sideboard,
+        originalDeck.sideboard || [],
+      );
+
+      if (nomeIgual && formatoIgual && maindeckIgual && sideboardIgual) {
+        setDeckMessage("Nenhuma alteração foi feita.");
+        setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
+        return;
+      }
     }
 
     if (totalMain < MAX_DECK_SIZE) {
@@ -142,21 +194,27 @@ export function useDeckBuilder() {
     setDeckLoading(true);
 
     try {
-      await cadastrarDeck(
-        {
-          nome: deckForm.nome,
-          formato: deckForm.formato,
-          maindeck: toDeckPayload(mainDeck),
-          sideboard: toDeckPayload(sideboard),
-        },
-        token,
-      );
+      const payload = {
+        nome: deckForm.nome,
+        formato: deckForm.formato,
+        maindeck: toDeckPayload(mainDeck),
+        sideboard: toDeckPayload(sideboard),
+      };
 
-      setDeckMessage("Deck cadastrado com sucesso.");
+      if (deckIdParam) {
+        // Modo edição - usar o deckId passado como parâmetro
+        await atualizarDeck(deckIdParam, payload, token);
+        setDeckMessage("Deck atualizado com sucesso.");
+      } else {
+        // Modo criação
+        await cadastrarDeck(payload, token);
+        setDeckMessage("Deck cadastrado com sucesso.");
+        setDeckForm({ nome: "", formato: "" });
+        setMainDeck([]);
+        setSideboard([]);
+      }
+
       setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
-      setDeckForm({ nome: "", formato: "" });
-      setMainDeck([]);
-      setSideboard([]);
     } catch (error) {
       setDeckMessage(error.message);
     } finally {
@@ -179,6 +237,10 @@ export function useDeckBuilder() {
           imagem: card.imagem || "",
           isBasicLand: card.isBasicLand,
           legalities: card.legalities || {},
+          colors: card.colors || [],
+          cmc: card.cmc || 0,
+          manaCost: card.manaCost || "",
+          typeLine: card.typeLine || "",
         };
       }),
     );
@@ -246,6 +308,8 @@ export function useDeckBuilder() {
     totalSide,
     // Setters
     setDeckForm,
+    setMainDeck,
+    setSideboard,
     // Handlers
     addCardToDeck,
     updateCardQuantity,
