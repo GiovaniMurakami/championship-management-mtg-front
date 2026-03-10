@@ -30,19 +30,25 @@ export function DeckStats({ mainDeck }) {
         colorDistribution.C += quantity; // Incolor
       }
 
-      // Tipos de carta
+      // Tipos de carta (uma carta pode contar para varios tipos)
       const typeLine = card.typeLine || "";
-      let mainType = "Outro";
+      const matchedTypes = [];
 
-      if (typeLine.includes("Creature")) mainType = "Criatura";
-      else if (typeLine.includes("Instant")) mainType = "Instant";
-      else if (typeLine.includes("Sorcery")) mainType = "Sorcery";
-      else if (typeLine.includes("Enchantment")) mainType = "Encantamento";
-      else if (typeLine.includes("Artifact")) mainType = "Artefato";
-      else if (typeLine.includes("Planeswalker")) mainType = "Planeswalker";
-      else if (typeLine.includes("Land")) mainType = "Terreno";
+      if (typeLine.includes("Creature")) matchedTypes.push("Criatura");
+      if (typeLine.includes("Instant")) matchedTypes.push("Instant");
+      if (typeLine.includes("Sorcery")) matchedTypes.push("Sorcery");
+      if (typeLine.includes("Enchantment")) matchedTypes.push("Encantamento");
+      if (typeLine.includes("Artifact")) matchedTypes.push("Artefato");
+      if (typeLine.includes("Planeswalker")) matchedTypes.push("Planeswalker");
+      if (typeLine.includes("Land")) matchedTypes.push("Terreno");
 
-      typeDistribution[mainType] = (typeDistribution[mainType] || 0) + quantity;
+      if (matchedTypes.length === 0) {
+        matchedTypes.push("Outro");
+      }
+
+      matchedTypes.forEach((type) => {
+        typeDistribution[type] = (typeDistribution[type] || 0) + quantity;
+      });
     });
 
     return {

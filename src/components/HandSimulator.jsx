@@ -105,64 +105,73 @@ export function HandSimulator({ mainDeck }) {
             style={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "flex-end",
-              gap: "0",
+              alignItems: "center",
               marginBottom: "1rem",
               minHeight: "210px",
-              padding: "1rem 0.5rem 0.5rem",
+              padding: "1rem 0.25rem 0.5rem",
               overflowX: "auto",
               overflowY: "hidden",
             }}
           >
-            {hand.map((card, index) => (
-              <div
-                key={`${card.nome}-${index}`}
-                style={{
-                  position: "relative",
-                  width: "96px",
-                  height: "134px",
-                  borderRadius: "0.4rem",
-                  overflow: "hidden",
-                  border: "1px solid var(--line)",
-                  background: "rgba(0, 0, 0, 0.3)",
-                  marginLeft: index === 0 ? "0" : "-16px",
-                  transform: `translateY(${Math.abs(3 - index) * 9}px) rotate(${(index - 3) * 3}deg)`,
-                  transformOrigin: "bottom center",
-                  boxShadow: "0 6px 16px rgba(0, 0, 0, 0.35)",
-                  zIndex: index + 1,
-                  transition: "transform 180ms ease",
-                  flexShrink: 0,
-                }}
-                title={card.nome}
-              >
-                {card.imagem ? (
-                  <img
-                    src={card.imagem}
-                    alt={card.nome}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: "100%",
-                      padding: "0.25rem",
-                      fontSize: "0.7rem",
-                      textAlign: "center",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {card.nome}
-                  </div>
-                )}
-              </div>
-            ))}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "flex-end",
+                width: "fit-content",
+                margin: "0 auto",
+              }}
+            >
+              {hand.map((card, index) => (
+                <div
+                  key={`${card.nome}-${index}`}
+                  style={{
+                    position: "relative",
+                    width: "96px",
+                    height: "134px",
+                    borderRadius: "0.4rem",
+                    overflow: "hidden",
+                    border: "1px solid var(--line)",
+                    background: "rgba(0, 0, 0, 0.3)",
+                    marginLeft: index === 0 ? "0" : "-16px",
+                    transform: `translateY(${Math.abs(3 - index) * 9}px) rotate(${(index - 3) * 3}deg)`,
+                    transformOrigin: "bottom center",
+                    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.35)",
+                    zIndex: index + 1,
+                    transition: "transform 180ms ease",
+                    flexShrink: 0,
+                  }}
+                  title={card.nome}
+                >
+                  {card.imagem ? (
+                    <img
+                      src={card.imagem}
+                      alt={card.nome}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        padding: "0.25rem",
+                        fontSize: "0.7rem",
+                        textAlign: "center",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {card.nome}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem" }}>
