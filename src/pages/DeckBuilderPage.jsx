@@ -1,7 +1,6 @@
 import { useEffect } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder } from "../components";
-import { atualizarDeck } from "../services/backendApi";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 
 export function DeckBuilderPage({
@@ -36,12 +35,18 @@ export function DeckBuilderPage({
 }) {
   const { id } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const deck = location.state?.deck;
 
-  // Carregar dados e cartas do deck para editar
+  // Carregar dados e cartas do deck para editar, ou limpar se em modo criação
   useEffect(() => {
-    if (isEditMode && deck) {
+    if (!isEditMode && !deck) {
+      // Modo criação - garantir que está limpo
+      onDeckFormChange({ nome: "", formato: "" });
+      if (onSetMainDeck && onSetSideboard) {
+        onSetMainDeck([]);
+        onSetSideboard([]);
+      }
+    } else if (isEditMode && deck) {
       onDeckFormChange({
         nome: deck.nome,
         formato: deck.formato,
@@ -102,8 +107,8 @@ export function DeckBuilderPage({
     event.preventDefault();
 
     if (isEditMode && id) {
-      // Passar deckId como parâmetro ao atualizar
-      onSubmit(event, undefined, id);
+      // Passar deckId e deck original como parâmetro ao atualizar
+      onSubmit(event, undefined, id, deck);
     } else {
       // Modo criação normal
       onSubmit(event);

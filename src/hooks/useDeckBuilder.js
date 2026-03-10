@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
@@ -98,7 +97,31 @@ export function useDeckBuilder() {
     setter((current) => current.filter((card) => card.nome !== nome));
   };
 
-  const handleCreateDeck = async (event, token, deckIdParam = null) => {
+  // Função auxiliar para comparar duas listas de cartas
+  const compareDeckCards = (currentCards, originalCards) => {
+    if (currentCards.length !== originalCards.length) {
+      return false;
+    }
+
+    // Normalizar e ordenar
+    const currentNorm = currentCards
+      .map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    const originalNorm = originalCards
+      .map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    // Comparar JSON serializado
+    return JSON.stringify(currentNorm) === JSON.stringify(originalNorm);
+  };
+
+  const handleCreateDeck = async (
+    event,
+    token,
+    deckIdParam = null,
+    originalDeck = null,
+  ) => {
     event.preventDefault();
     setDeckMessage("");
     setIllegalCardMessage("");
@@ -106,6 +129,30 @@ export function useDeckBuilder() {
     if (!token) {
       setDeckMessage("Faça login para cadastrar um deck.");
       return;
+    }
+
+    // Se estiver editando, verificar se houve mudanças
+    if (deckIdParam && originalDeck) {
+      const nomeIgual = deckForm.nome === originalDeck.nome;
+      const formatoIgual = deckForm.formato === originalDeck.formato;
+
+      // Comparar cartas do maindeck
+      const maindeckIgual = compareDeckCards(
+        mainDeck,
+        originalDeck.maindeck || [],
+      );
+
+      // Comparar cartas do sideboard
+      const sideboardIgual = compareDeckCards(
+        sideboard,
+        originalDeck.sideboard || [],
+      );
+
+      if (nomeIgual && formatoIgual && maindeckIgual && sideboardIgual) {
+        setDeckMessage("Nenhuma alteração foi feita.");
+        setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
+        return;
+      }
     }
 
     if (totalMain < MAX_DECK_SIZE) {

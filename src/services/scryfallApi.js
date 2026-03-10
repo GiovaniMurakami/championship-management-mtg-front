@@ -40,7 +40,7 @@ export async function buscarCartasMTG(termo) {
       nome: card.name,
       set: card.set_name,
       imagem:
-        card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || "",
+        card.image_uris?.large || card.card_faces?.[0]?.image_uris?.large || "",
       isBasicLand,
       legalities,
     };
@@ -81,7 +81,7 @@ export async function buscarCartaPorNome(nome) {
     nome: card.name,
     set: card.set_name,
     imagem:
-      card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || "",
+      card.image_uris?.large || card.card_faces?.[0]?.image_uris?.large || "",
     isBasicLand,
     legalities,
   };

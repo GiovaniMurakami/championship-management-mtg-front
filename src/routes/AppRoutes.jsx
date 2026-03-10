@@ -11,6 +11,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         element={
           <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
             <DeckBuilderPage
+              isEditMode={false}
               deckForm={deckBuilder.deckForm}
               onDeckFormChange={deckBuilder.setDeckForm}
               onSetMainDeck={deckBuilder.setMainDeck}
@@ -82,7 +83,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
               importLoading={deckBuilder.importLoading}
               importMessage={deckBuilder.importMessage}
               onImportDeck={deckBuilder.importDeckFromTxt}
-              onSubmit={(event, token, deckId) => deckBuilder.handleCreateDeck(event, auth.token, deckId)}
+              onSubmit={(event, token, deckId, originalDeck) => deckBuilder.handleCreateDeck(event, auth.token, deckId, originalDeck)}
             />
           </ProtectedRoute>
         }
