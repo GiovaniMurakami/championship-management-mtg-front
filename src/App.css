@@ -717,6 +717,26 @@ select:hover {
   transform: translateY(-1px);
 }
 
+/* Botão de exclusão: Estilo vermelho elegante */
+.btn.secondary[style*="rgba(252, 88, 119"] {
+  box-shadow: 0 2px 8px rgba(252, 88, 119, 0.15);
+}
+
+.btn.secondary[style*="rgba(252, 88, 119"]:hover {
+  background: rgba(252, 88, 119, 0.28) !important;
+  border-color: rgba(252, 88, 119, 0.7) !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 18px rgba(252, 88, 119, 0.35),
+    0 0 12px rgba(252, 88, 119, 0.25);
+}
+
+.btn.secondary[style*="rgba(252, 88, 119"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(252, 88, 119, 0.2);
+}
+
 /* Cards: Hover effects elegantes */
 .banner-card {
   transition:

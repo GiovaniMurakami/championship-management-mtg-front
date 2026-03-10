@@ -29,3 +29,9 @@ export const atualizarDeck = (deckId, payload, token) =>
   httpClient.put(`/deck/${deckId}`, payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+// Deletar Deck
+export const deletarDeck = (deckId, token) =>
+  httpClient.delete(`/deck/${deckId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
