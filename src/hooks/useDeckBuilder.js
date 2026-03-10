@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { cadastrarDeck } from "../services/backendApi";
+import { useParams, useNavigate } from "react-router-dom";
+import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
 import { parseDeckTxt } from "../utils/parseDeckTxt";
@@ -97,7 +98,7 @@ export function useDeckBuilder() {
     setter((current) => current.filter((card) => card.nome !== nome));
   };
 
-  const handleCreateDeck = async (event, token) => {
+  const handleCreateDeck = async (event, token, deckIdParam = null) => {
     event.preventDefault();
     setDeckMessage("");
     setIllegalCardMessage("");
@@ -142,21 +143,27 @@ export function useDeckBuilder() {
     setDeckLoading(true);
 
     try {
-      await cadastrarDeck(
-        {
-          nome: deckForm.nome,
-          formato: deckForm.formato,
-          maindeck: toDeckPayload(mainDeck),
-          sideboard: toDeckPayload(sideboard),
-        },
-        token,
-      );
+      const payload = {
+        nome: deckForm.nome,
+        formato: deckForm.formato,
+        maindeck: toDeckPayload(mainDeck),
+        sideboard: toDeckPayload(sideboard),
+      };
 
-      setDeckMessage("Deck cadastrado com sucesso.");
+      if (deckIdParam) {
+        // Modo edição - usar o deckId passado como parâmetro
+        await atualizarDeck(deckIdParam, payload, token);
+        setDeckMessage("Deck atualizado com sucesso.");
+      } else {
+        // Modo criação
+        await cadastrarDeck(payload, token);
+        setDeckMessage("Deck cadastrado com sucesso.");
+        setDeckForm({ nome: "", formato: "" });
+        setMainDeck([]);
+        setSideboard([]);
+      }
+
       setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
-      setDeckForm({ nome: "", formato: "" });
-      setMainDeck([]);
-      setSideboard([]);
     } catch (error) {
       setDeckMessage(error.message);
     } finally {
@@ -246,6 +253,8 @@ export function useDeckBuilder() {
     totalSide,
     // Setters
     setDeckForm,
+    setMainDeck,
+    setSideboard,
     // Handlers
     addCardToDeck,
     updateCardQuantity,

@@ -1,5 +1,6 @@
 export { Navbar } from "./Navbar";
 export { AuthModal } from "./AuthModal";
+export { EditProfileModal } from "./EditProfileModal";
 export { Hero } from "./Hero";
 export { TournamentSection } from "./TournamentSection";
 export { CardPreviewModal } from "./CardPreviewModal";

@@ -1,6 +1,6 @@
 import { BrowserRouter } from "react-router-dom";
 import "./App.css";
-import { Navbar, AuthModal, CardPreviewModal } from "./components";
+import { Navbar, AuthModal, CardPreviewModal, EditProfileModal } from "./components";
 import { useAuth, useCardPreview, useCardSearch, useDeckBuilder } from "./hooks";
 import { AppRoutes } from "./routes";
 
@@ -18,6 +18,7 @@ function App() {
           onOpenAuth={auth.openAuth}
           onLogout={auth.clearAuth}
           isAuthenticated={auth.isAuthenticated}
+          onOpenEditProfile={auth.openEditProfileModal}
         />
 
         <AppRoutes
@@ -42,6 +43,16 @@ function App() {
           onRegisterFormChange={auth.setRegisterForm}
           onLoginSubmit={auth.handleLogin}
           onRegisterSubmit={auth.handleRegister}
+        />
+
+        <EditProfileModal
+          isOpen={auth.showEditProfileModal}
+          onClose={auth.closeEditProfileModal}
+          isLoading={auth.authLoading}
+          message={auth.authMessage}
+          form={auth.editProfileForm}
+          onFormChange={auth.setEditProfileForm}
+          onSubmit={auth.handleUpdateProfile}
         />
       </div>
     </BrowserRouter>
