@@ -344,29 +344,51 @@ select {
 .card-pickers {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.8rem;
+  align-items: stretch;
 }
 
 .picker-column {
   border: 1px solid var(--line);
   border-radius: 0.8rem;
-  padding: 0.8rem;
+  padding: 0.7rem;
   background: rgba(255, 255, 255, 0.01);
+  min-height: clamp(520px, calc(100vh - 240px), 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .picker-column h3 {
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+}
+
+.card-search {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.card-search h4 {
+  display: none;
 }
 
 .suggestions,
 .deck-list {
-  margin: 0.7rem 0 0;
+  margin: 0.55rem 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 0.55rem;
-  max-height: 220px;
-  overflow: auto;
+  gap: 0.4rem;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.picker-column .deck-list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
 }
 
 .suggestions button {
@@ -378,9 +400,11 @@ select {
   border-radius: 0.65rem;
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-main);
-  padding: 0.35rem;
+  padding: 0.3rem;
   text-align: left;
   cursor: pointer;
+  font-size: 0.88rem;
+  min-width: 0;
 }
 
 .suggestions img {
@@ -392,17 +416,27 @@ select {
 
 .suggestions small {
   color: var(--text-soft);
+  font-size: 0.75rem;
 }
 
 .deck-list li {
   display: grid;
-  grid-template-columns: 1fr 82px auto;
+  grid-template-columns: minmax(0, 1fr) 68px auto;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   border: 1px solid var(--line);
   border-radius: 0.65rem;
   background: rgba(255, 255, 255, 0.02);
-  padding: 0.45rem;
+  padding: 0.35rem;
+  min-width: 0;
+}
+
+.deck-list li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.88rem;
 }
 
 .deck-list li button {
@@ -410,8 +444,16 @@ select {
   border-radius: 0.5rem;
   background: rgba(252, 88, 119, 0.19);
   color: #ffd9e1;
-  padding: 0.45rem 0.55rem;
+  padding: 0.34rem 0.45rem;
   cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.deck-list li input {
+  min-width: 0;
+  width: 100%;
+  padding: 0.35rem 0.25rem;
+  font-size: 0.84rem;
 }
 
 .btn {

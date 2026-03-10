@@ -8,3 +8,5 @@ export { CardSearch } from "./CardSearch";
 export { DeckList } from "./DeckList";
 export { DeckBuilder } from "./DeckBuilder";
 export { ProtectedRoute } from "./ProtectedRoute";
+export { HandSimulator } from "./HandSimulator";
+export { DeckStats } from "./DeckStats";

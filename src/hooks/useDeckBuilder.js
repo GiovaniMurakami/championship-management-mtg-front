@@ -66,6 +66,10 @@ export function useDeckBuilder() {
           imagem: card.imagem || "",
           isBasicLand,
           legalities: card.legalities || {},
+          colors: card.colors || [],
+          cmc: card.cmc || 0,
+          manaCost: card.manaCost || "",
+          typeLine: card.typeLine || "",
         },
       ];
     });
@@ -233,6 +237,10 @@ export function useDeckBuilder() {
           imagem: card.imagem || "",
           isBasicLand: card.isBasicLand,
           legalities: card.legalities || {},
+          colors: card.colors || [],
+          cmc: card.cmc || 0,
+          manaCost: card.manaCost || "",
+          typeLine: card.typeLine || "",
         };
       }),
     );

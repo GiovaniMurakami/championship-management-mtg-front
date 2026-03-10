@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { DeckBuilder } from "../components";
+import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 
 export function DeckBuilderPage({
@@ -70,6 +70,10 @@ export function DeckBuilderPage({
                     imagem: cartaScryfall.imagem || "",
                     isBasicLand: cartaScryfall.isBasicLand,
                     legalities: cartaScryfall.legalities || {},
+                    colors: cartaScryfall.colors || [],
+                    cmc: cartaScryfall.cmc || 0,
+                    manaCost: cartaScryfall.manaCost || "",
+                    typeLine: cartaScryfall.typeLine || "",
                   });
                 }
               }
@@ -86,6 +90,10 @@ export function DeckBuilderPage({
                     imagem: cartaScryfall.imagem || "",
                     isBasicLand: cartaScryfall.isBasicLand,
                     legalities: cartaScryfall.legalities || {},
+                    colors: cartaScryfall.colors || [],
+                    cmc: cartaScryfall.cmc || 0,
+                    manaCost: cartaScryfall.manaCost || "",
+                    typeLine: cartaScryfall.typeLine || "",
                   });
                 }
               }
@@ -145,6 +153,20 @@ export function DeckBuilderPage({
         onSubmit={handleSubmit}
         isEditMode={isEditMode}
       />
+
+      {/* Seção de Análise de Deck */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.2rem",
+          marginTop: "1.5rem",
+          width: "100%",
+        }}
+      >
+        <HandSimulator mainDeck={mainDeck} />
+        <DeckStats mainDeck={mainDeck} />
+      </div>
     </main>
   );
 }

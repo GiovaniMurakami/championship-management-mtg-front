@@ -43,6 +43,10 @@ export async function buscarCartasMTG(termo) {
         card.image_uris?.large || card.card_faces?.[0]?.image_uris?.large || "",
       isBasicLand,
       legalities,
+      colors: card.colors || [],
+      cmc: card.cmc || 0,
+      manaCost: card.mana_cost || "",
+      typeLine: card.type_line || "",
     };
   });
 }
@@ -84,5 +88,9 @@ export async function buscarCartaPorNome(nome) {
       card.image_uris?.large || card.card_faces?.[0]?.image_uris?.large || "",
     isBasicLand,
     legalities,
+    colors: card.colors || [],
+    cmc: card.cmc || 0,
+    manaCost: card.mana_cost || "",
+    typeLine: card.type_line || "",
   };
 }
