@@ -603,6 +603,13 @@ select {
   text-align: center;
 }
 
+/* Mobile optimized card preview */
+@media (max-width: 640px) {
+  .card-preview-modal {
+    display: none;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -731,6 +738,121 @@ select {
 
   .deck-list li button {
     grid-column: span 2;
+  }
+
+  /* Mobile improvements for deck builder */
+  .deck-form {
+    gap: 1.2rem;
+  }
+
+  .form-row {
+    gap: 1rem;
+  }
+
+  label {
+    font-size: 1rem;
+  }
+
+  input,
+  select {
+    padding: 0.85rem 0.85rem;
+    font-size: 1rem;
+  }
+
+  .format-select {
+    padding-right: 2.5rem;
+    min-height: 44px;
+  }
+
+  .card-pickers {
+    gap: 1rem;
+  }
+
+  .picker-column {
+    padding: 1rem;
+    min-height: clamp(400px, calc(100vh - 280px), 600px);
+  }
+
+  .picker-column h3 {
+    font-size: 1.05rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .card-search {
+    gap: 0.5rem;
+  }
+
+  .suggestions,
+  .deck-list {
+    gap: 0.55rem;
+    max-height: 300px;
+  }
+
+  .suggestions button {
+    padding: 0.5rem;
+    gap: 0.8rem;
+    font-size: 0.95rem;
+    min-height: 52px;
+  }
+
+  .suggestions img {
+    width: 42px;
+    height: 57px;
+  }
+
+  .suggestions small {
+    font-size: 0.8rem;
+  }
+
+  .deck-list li {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    min-height: 48px;
+  }
+
+  .deck-list li span {
+    font-size: 0.95rem;
+  }
+
+  .deck-list li input {
+    padding: 0.6rem 0.4rem;
+    font-size: 1.1rem;
+    min-height: 48px;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .deck-list li button {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+
+  .deck-actions {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .deck-actions .btn,
+  .deck-actions label {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .import-btn {
+    width: 100%;
+  }
+
+  .feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    font-size: 0.95rem;
   }
 }
 
