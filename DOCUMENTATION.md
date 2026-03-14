@@ -23,8 +23,10 @@ src/
 │   ├── CardSearch.jsx   # Busca com autocomplete
 │   ├── DeckList.jsx     # Lista de cartas no deck
 │   ├── DeckBuilder.jsx  # Formulário principal de deck
-│   ├── DeckStats.jsx    # Estatísticas do deck
-│   ├── HandSimulator.jsx # Simulador de mão inicial
+│   ├── DeckStats.jsx    # Estatísticas do deck (curva de mana, cores, tipos)
+│   ├── HandSimulator.jsx # Simulador de mão inicial (7 cartas)
+│   ├── Spinner.jsx      # Componente de loading spinner reutilizável
+│   ├── Skeleton.jsx     # Componentes de skeleton loading (SkeletonCard, SkeletonTorneioCard, SkeletonTournamentDetail)
 │   ├── ProtectedRoute.jsx # Guard de rotas autenticadas
 │   ├── tournament/      # Componentes específicos de torneio
 │   │   ├── MatchPanel.jsx       # Painel de partida atual
@@ -247,6 +249,7 @@ Busca debounced (300ms) via Scryfall com limite de 8 sugestões.
 
 - `mainSearch`, `sideSearch`: Texto de busca
 - `mainSuggestions`, `sideSuggestions`: Array de cartas encontradas
+- `searchError`: Mensagem de erro caso a busca falhe
 
 ### useCardPreview Hook
 
@@ -475,21 +478,44 @@ Body: `{ "resultado": "..." }`
 - `.btn.primary`: Gradient roxo
 - `.btn.secondary`: Transparente com borda
 - `.btn.ghost`: Sem fundo
+- `.btn.danger`: Fundo vermelho translúcido (para ações destrutivas)
+- `.btn.danger-solid`: Gradient vermelho sólido (confirmação de exclusão)
 - `.feedback`: Box de mensagem (sucesso/aviso)
 - `.feedback.limit-warning`: Laranja/vermelho claro
 - `.feedback.illegal-warning`: Vermelho intenso com borda
+
+### Loading Components
+
+- `<Spinner size={36} text="Mensagem">`: Spinner animado reutilizável com texto opcional
+- `<Skeleton width height radius>`: Bloco base com shimmer animation
+- `<SkeletonCard>`: Placeholder para cards de deck (MyDecksPage)
+- `<SkeletonTorneioCard>`: Placeholder para cards de torneio (TournamentPage)
+- `<SkeletonTournamentDetail>`: Placeholder para layout de detalhe de torneio
+
+Todos os skeletons usam `@keyframes skeleton-shimmer` com gradiente translúcido.
 
 ---
 
 ## 📱 Responsividade
 
-### Breakpoint Principal
+### Breakpoints
 
-`@media (max-width: 950px)`:
+| Breakpoint | Escopo |
+|------------|--------|
+| `950px` | Navbar (hamburger menu), Deck Builder (single column), card pickers, form layout |
+| `900px` | Tournament detail (single column grid), skeleton layout |
+| `768px` | Tournament list (single column cards), tournament create form |
+| `640px` | Card preview modal (hidden on mobile) |
+| `600px` | My Decks (single column), Hero, Banner grid, TD page refinements, DeckStats, HandSimulator |
+| `480px` | Tournament list (compact), TD table, Deck builder (compact), Auth modal, general `main` padding |
 
-- Navbar: esconde nav, botões em dropdown
-- Grid: `1fr` em vez de `2 colunas`
-- Deck list: ajusta tamanho de input de quantidade
+### Estratégia
+
+- Todas as páginas usam `padding-top: 7.5rem` (ou equivalente em mobile) para respeitar a navbar fixa
+- Grids convertem para `1fr` em telas pequenas
+- Botões ficam full-width em mobile
+- Cards e modais ajustam padding
+- Skeleton components adaptam layout no breakpoint `900px`
 
 ---
 
@@ -556,9 +582,11 @@ npm run preview  # Preview local do build
 
 ### Estilizar Novo Componente
 
-- Adicionar classes em `src/App.css`
-- Respeitar variáveis de cor (`var(--brand-2)`)
-- Testar responsividade em `@media (max-width: 950px)`
+- Adicionar classes em `src/App.css` (não usar inline styles)
+- Respeitar variáveis de cor (`var(--brand-2)`, `var(--line)`, `var(--text-soft)`, etc.)
+- Adicionar breakpoints mobile em `@media (max-width: 600px)` e `@media (max-width: 480px)`
+- Para loading states, usar `<Spinner>` ou `<Skeleton*>` components
+- Prefixar classes por contexto: `ds-` (DeckStats), `hs-` (HandSimulator), `td-` (Tournament Detail), `my-deck-` (My Decks)
 
 ---
 
@@ -574,7 +602,7 @@ npm run preview  # Preview local do build
 - [x] Importação de decks via arquivo .txt
 - [x] Preview flutuante de cartas ao hover
 - [x] Simulador de mão inicial
-- [x] Estatísticas do deck
+- [x] Estatísticas do deck (curva de mana, cores, tipos)
 - [x] Proteção de rotas (deck builder e torneios privados)
 - [x] Design dark/roxo responsivo
 - [x] Modais flutuantes de auth e preview
@@ -587,7 +615,12 @@ npm run preview  # Preview local do build
 - [x] Registro de resultado de partida
 - [x] Tabela de standings em tempo real
 - [x] Drop de jogador
-- [x] Realtime via Ably WebSocket (6 eventos de torneio)
+- [x] Realtime via Ably WebSocket (7 eventos de torneio)
+- [x] Skeleton loading screens (MyDecksPage, TournamentPage, TournamentDetailPage)
+- [x] Spinner reutilizável
+- [x] Responsividade mobile completa (6 breakpoints)
+- [x] CSS sem inline styles (classes CSS dedicadas)
+- [x] Error handling em busca de cartas
 
 ---
 

@@ -11,12 +11,20 @@ export function PlayerProfile({
     const isCheckedIn =
         currentPlayer?.checkIn || currentPlayer?.checkin || currentPlayer?.checkedIn || currentPlayer?.presenca || false;
 
+    const isDeckConfirmed =
+        currentPlayer?.deckConfirmado || currentPlayer?.deckNome || currentPlayer?.deck?.nome || false;
+
     const getDeckName = (player) => {
         if (!player) return "—";
         if (player.deckNome) return player.deckNome;
         if (player.deck?.nome) return player.deck.nome;
-        return "Nenhum";
+        return null;
     };
+
+    const calcTotal = (deck) =>
+        deck.maindeck?.reduce((sum, c) => sum + (c.quantidade || 1), 0) || 0;
+
+    const selectedDeck = decks.find((d) => d.id === selectedDeckId);
 
     // Not registered yet
     if (!currentPlayer) {
@@ -42,33 +50,46 @@ export function PlayerProfile({
             <div className="td-profile-grid">
                 {/* Deck selection */}
                 <div className="td-profile-field">
-                    <label className="td-label" htmlFor="deck-select">Deck</label>
-                    <div className="td-inline-row">
-                        <select
-                            id="deck-select"
-                            className="td-select"
-                            value={selectedDeckId}
-                            onChange={(e) => onDeckChange(e.target.value)}
-                        >
-                            <option value="">Selecionar deck...</option>
-                            {decks.map((deck) => (
-                                <option key={deck.id} value={deck.id}>
-                                    {deck.nome}
-                                </option>
-                            ))}
-                        </select>
-                        <button
-                            className="td-btn td-btn-secondary"
-                            disabled={!selectedDeckId || actionLoading}
-                            onClick={onChooseDeck}
-                        >
-                            {actionLoading ? "Salvando..." : "Salvar"}
-                        </button>
-                    </div>
-                    {currentPlayer && (
-                        <span className="td-hint">
-                            Deck atual: <strong>{getDeckName(currentPlayer)}</strong>
-                        </span>
+                    <label className="td-label">Deck</label>
+
+                    {isDeckConfirmed && (
+                        <p className="td-hint td-hint-success">
+                            ✓ Deck confirmado: <strong>{getDeckName(currentPlayer) || "—"}</strong>
+                        </p>
+                    )}
+
+                    {decks.length === 0 ? (
+                        <p className="td-hint">Você não tem decks cadastrados. <a href="/decks" className="td-link">Criar deck</a></p>
+                    ) : (
+                        <>
+                            <div className="td-deck-list">
+                                {decks.map((deck) => (
+                                    <button
+                                        key={deck.id}
+                                        type="button"
+                                        className={`td-deck-option ${selectedDeckId === deck.id ? "td-deck-option--selected" : ""}`}
+                                        onClick={() => onDeckChange(deck.id)}
+                                    >
+                                        <span className="td-deck-option-name">{deck.nome}</span>
+                                        <span className="td-deck-option-meta">
+                                            <span className="td-format-badge">{deck.formato}</span>
+                                            <span className="td-deck-option-count">{calcTotal(deck)} cartas</span>
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                className="td-btn td-btn-secondary td-deck-confirm-btn"
+                                disabled={!selectedDeckId || actionLoading}
+                                onClick={onChooseDeck}
+                            >
+                                {actionLoading
+                                    ? "Salvando..."
+                                    : selectedDeck
+                                        ? `Confirmar "${selectedDeck.nome}"`
+                                        : "Selecione um deck"}
+                            </button>
+                        </>
                     )}
                 </div>
 

@@ -28,7 +28,7 @@ export function useTournamentDetail() {
     const [error, setError] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
-    const { decks } = useMyDecks(token);
+    const { decks } = useMyDecks(token, usuario?.id);
 
     const loadTournament = useCallback(async () => {
         if (!torneioId || !token) return;
@@ -83,8 +83,37 @@ export function useTournamentDetail() {
                 loadTournament();
                 loadStandings();
             },
-            onParticipanteInscrito: () => loadTournament(),
-            onCheckinRealizado: () => loadTournament(),
+            onParticipanteInscrito: (msg) => {
+                const { usuarioId, inscricaoId, usuarioNome } = msg.data;
+                setStandings((prev) => {
+                    const jaExiste = prev.some((p) => p.usuarioId === usuarioId || p.id === usuarioId);
+                    if (jaExiste) return prev;
+                    return [...prev, { id: usuarioId, usuarioId, inscricaoId, nome: usuarioNome, pontos: 0 }];
+                });
+                setTorneio((prev) =>
+                    prev ? { ...prev, totalInscritos: (prev.totalInscritos || 0) + 1 } : prev
+                );
+            },
+            onCheckinRealizado: (msg) => {
+                const { usuarioId } = msg.data;
+                setStandings((prev) =>
+                    prev.map((p) =>
+                        p.usuarioId === usuarioId || p.id === usuarioId
+                            ? { ...p, checkin: true }
+                            : p
+                    )
+                );
+            },
+            onDeckInserido: (msg) => {
+                const { usuarioId, deckConfirmado } = msg.data;
+                setStandings((prev) =>
+                    prev.map((p) =>
+                        p.usuarioId === usuarioId || p.id === usuarioId
+                            ? { ...p, deckConfirmado }
+                            : p
+                    )
+                );
+            },
         });
         return () => {
             if (channel) unsubscribeFromTournament(channel);

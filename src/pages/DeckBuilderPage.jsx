@@ -158,15 +158,7 @@ export function DeckBuilderPage({
 
       {/* Seção de Análise de Deck - só mostrar se não for readOnly */}
       {!readOnly && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.2rem",
-            marginTop: "1.5rem",
-            width: "100%",
-          }}
-        >
+        <div className="deck-analysis-section">
           <HandSimulator mainDeck={mainDeck} />
           <DeckStats mainDeck={mainDeck} />
         </div>

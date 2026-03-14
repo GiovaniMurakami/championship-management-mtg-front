@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { listarDecks } from "../services/backendApi";
 
-export function useMyDecks(token) {
+export function useMyDecks(token, usuarioId) {
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -13,7 +13,7 @@ export function useMyDecks(token) {
     setMessage("");
 
     try {
-      const data = await listarDecks(token);
+      const data = await listarDecks(token, usuarioId);
       setDecks(Array.isArray(data) ? data : []);
     } catch (error) {
       setMessage(error.message);
@@ -21,7 +21,7 @@ export function useMyDecks(token) {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, usuarioId]);
 
   useEffect(() => {
     fetchDecks();

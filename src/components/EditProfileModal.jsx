@@ -19,7 +19,7 @@ export function EditProfileModal({
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 style={{ marginBottom: "1.5rem", textAlign: "center" }}>Editar Perfil</h2>
+        <h2 className="auth-modal-title">Editar Perfil</h2>
 
         <form className="auth-form" onSubmit={onSubmit}>
           <label>
@@ -65,7 +65,7 @@ export function EditProfileModal({
               }
             />
           </label>
-          <div style={{ display: "flex", gap: "1rem" }}>
+          <div className="auth-modal-actions">
             <button className="btn primary" disabled={isLoading} type="submit">
               {isLoading ? "Salvando..." : "Salvar"}
             </button>

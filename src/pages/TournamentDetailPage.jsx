@@ -6,6 +6,7 @@ import {
     MatchPanel,
     StandingsTable,
 } from "../components/tournament";
+import { SkeletonTournamentDetail } from "../components";
 
 export function TournamentDetailPage() {
     const navigate = useNavigate();
@@ -70,12 +71,7 @@ export function TournamentDetailPage() {
                 </div>
             )}
 
-            {loading && (
-                <div className="td-loading">
-                    <div className="td-spinner" />
-                    <p>Carregando torneio...</p>
-                </div>
-            )}
+            {loading && <SkeletonTournamentDetail />}
         </div>
     );
 }

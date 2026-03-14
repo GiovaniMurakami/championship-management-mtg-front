@@ -13,9 +13,10 @@ export const cadastrarDeck = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarDecks = (token) =>
+export const listarDecks = (token, usuarioId) =>
   httpClient.get("/deck/listar", {
     headers: { Authorization: `Bearer ${token}` },
+    params: usuarioId ? { usuarioId } : undefined,
   });
 
 // Usuário

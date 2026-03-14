@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { listarTorneios, inscreverTorneio, iniciarTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
-import { TournamentCreateForm } from "../components";
+import { TournamentCreateForm, SkeletonTorneioCard } from "../components";
 
 export function TournamentPage() {
     const { token, usuario } = useAuth();
@@ -128,40 +128,45 @@ export function TournamentPage() {
 
             <section className="tournaments-list-section">
                 <h2>Torneios Disponíveis</h2>
-                {loading && <p>Carregando...</p>}
-                <div className="torneios-list">
-                    {torneios.map((torneio) => (
-                        <div key={torneio.id} className="torneio-card">
-                            <h3>{torneio.nome}</h3>
-                            <p>Formato: {torneio.formato}</p>
-                            <p>Data: {formatDate(torneio.horario)}</p>
-                            <p>
-                                Status: <span className={`status-badge status-${torneio.status}`}>{torneio.status.replace("_", " ")}</span>
-                            </p>
-                            <p>
-                                Rodada: {torneio.rodadaAtual}/{torneio.totalRodadas}
-                            </p>
+                {loading ? (
+                    <div className="torneios-list">
+                        {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
+                    </div>
+                ) : (
+                    <div className="torneios-list">
+                        {torneios.map((torneio) => (
+                            <div key={torneio.id} className="torneio-card">
+                                <h3>{torneio.nome}</h3>
+                                <p>Formato: {torneio.formato}</p>
+                                <p>Data: {formatDate(torneio.horario)}</p>
+                                <p>
+                                    Status: <span className={`status-badge status-${torneio.status}`}>{torneio.status.replace("_", " ")}</span>
+                                </p>
+                                <p>
+                                    Rodada: {torneio.rodadaAtual}/{torneio.totalRodadas}
+                                </p>
 
-                            <div className="actions">
-                                <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
-                                    Ver Torneio
-                                </button>
-
-                                {torneio.status === "inscricoes_abertas" && (
-                                    <button className="btn-inscrever" onClick={() => handleInscrever(torneio.id)}>
-                                        Inscrever-se
+                                <div className="actions">
+                                    <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
+                                        Ver Torneio
                                     </button>
-                                )}
 
-                                {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
-                                    <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
-                                        Iniciar Torneio
-                                    </button>
-                                )}
+                                    {torneio.status === "inscricoes_abertas" && (
+                                        <button className="btn-inscrever" onClick={() => handleInscrever(torneio.id)}>
+                                            Inscrever-se
+                                        </button>
+                                    )}
+
+                                    {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
+                                        <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
+                                            Iniciar Torneio
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </section>
         </div>
     );

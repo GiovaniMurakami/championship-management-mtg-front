@@ -12,9 +12,10 @@ export function StandingsTable({ standings }) {
         player?.nome || player?.username || player?.userName || player?.jogadorNome || "Jogador";
 
     const getDeckName = (player) => {
+        if (player?.deckConfirmado) return "✓";
         if (player?.deckNome) return player.deckNome;
         if (player?.deck?.nome) return player.deck.nome;
-        return "—";
+        return null;
     };
 
     const isCheckedIn = (player) =>
@@ -63,7 +64,11 @@ export function StandingsTable({ standings }) {
                                 <td>{formatPct(player.omwp)}</td>
                                 <td>{formatPct(player.gwp)}</td>
                                 <td>{formatPct(player.ogwp)}</td>
-                                <td className="td-deck-name">{getDeckName(player)}</td>
+                                <td className="td-deck-name">
+                                    <span className={`td-checkin-dot ${getDeckName(player) ? "td-checked" : ""}`}>
+                                        {getDeckName(player) ? "✓" : "—"}
+                                    </span>
+                                </td>
                                 <td>
                                     <span className={`td-checkin-dot ${isCheckedIn(player) ? "td-checked" : ""}`}>
                                         {isCheckedIn(player) ? "✓" : "—"}

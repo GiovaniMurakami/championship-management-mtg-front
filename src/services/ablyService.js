@@ -74,6 +74,12 @@ export const subscribeToTournament = (torneioId, callbacks) => {
             callbacks.onCheckinRealizado(msg);
         });
     }
+    if (callbacks.onDeckInserido) {
+        channel.subscribe("deck_inserido", (msg) => {
+            console.log(`[Ably] Evento recebido "deck_inserido":`, msg.data);
+            callbacks.onDeckInserido(msg);
+        });
+    }
 
     return channel;
 };
