@@ -17,13 +17,15 @@ export function DeckStats({ mainDeck }) {
       totalCards += quantity;
 
       // Curva de mana
-      const cmc = Math.min(card.cmc || 0, 7); // Agrupar 7+ juntos
-      const cmcKey = cmc === 7 && card.cmc > 7 ? "7+" : cmc.toString();
+      const manaValue = Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0;
+      const cmc = Math.min(Math.floor(manaValue), 7); // Agrupar 7+ juntos
+      const cmcKey = cmc === 7 && manaValue > 7 ? "7+" : cmc.toString();
       manaCurve[cmcKey] = (manaCurve[cmcKey] || 0) + quantity;
 
       // Distribuição de cores
-      if (card.colors && card.colors.length > 0) {
-        card.colors.forEach((color) => {
+      const cardColors = card.colors || card.colorIdentity || [];
+      if (cardColors.length > 0) {
+        cardColors.forEach((color) => {
           colorDistribution[color] = (colorDistribution[color] || 0) + quantity;
         });
       } else {

@@ -25,6 +25,7 @@ export async function buscarCartasMTG(termo) {
   return data.data.slice(0, 8).map((card) => {
     const isBasicLand =
       card.type_line?.includes("Basic") && card.type_line?.includes("Land");
+    const cmc = Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0;
 
     const legalities = {
       standard: card.legalities?.standard === "legal",
@@ -44,7 +45,7 @@ export async function buscarCartasMTG(termo) {
       isBasicLand,
       legalities,
       colors: card.colors || [],
-      cmc: card.cmc || 0,
+      cmc,
       manaCost: card.mana_cost || "",
       typeLine: card.type_line || "",
     };
@@ -70,6 +71,7 @@ export async function buscarCartaPorNome(nome) {
   const card = await response.json();
   const isBasicLand =
     card.type_line?.includes("Basic") && card.type_line?.includes("Land");
+  const cmc = Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0;
 
   const legalities = {
     standard: card.legalities?.standard === "legal",
@@ -89,7 +91,7 @@ export async function buscarCartaPorNome(nome) {
     isBasicLand,
     legalities,
     colors: card.colors || [],
-    cmc: card.cmc || 0,
+    cmc,
     manaCost: card.mana_cost || "",
     typeLine: card.type_line || "",
   };

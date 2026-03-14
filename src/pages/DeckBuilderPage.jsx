@@ -71,8 +71,10 @@ export function DeckBuilderPage({
                     imagem: cartaScryfall.imagem || "",
                     isBasicLand: cartaScryfall.isBasicLand,
                     legalities: cartaScryfall.legalities || {},
-                    colors: cartaScryfall.colors || [],
-                    cmc: cartaScryfall.cmc || 0,
+                    colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
+                    cmc: Number.isFinite(cartaScryfall.cmc)
+                      ? cartaScryfall.cmc
+                      : Number(cartaScryfall.cmc) || 0,
                     manaCost: cartaScryfall.manaCost || "",
                     typeLine: cartaScryfall.typeLine || "",
                   });
@@ -91,8 +93,10 @@ export function DeckBuilderPage({
                     imagem: cartaScryfall.imagem || "",
                     isBasicLand: cartaScryfall.isBasicLand,
                     legalities: cartaScryfall.legalities || {},
-                    colors: cartaScryfall.colors || [],
-                    cmc: cartaScryfall.cmc || 0,
+                    colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
+                    cmc: Number.isFinite(cartaScryfall.cmc)
+                      ? cartaScryfall.cmc
+                      : Number(cartaScryfall.cmc) || 0,
                     manaCost: cartaScryfall.manaCost || "",
                     typeLine: cartaScryfall.typeLine || "",
                   });

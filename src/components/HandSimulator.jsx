@@ -73,8 +73,8 @@ export function HandSimulator({ mainDeck }) {
                   key={`${card.nome}-${index}`}
                   className="hs-card"
                   style={{
-                    marginLeft: index === 0 ? "0" : "-16px",
-                    transform: `translateY(${Math.abs(3 - index) * 9}px) rotate(${(index - 3) * 3}deg)`,
+                    marginLeft: index === 0 ? "0" : "-20px",
+                    transform: `translateY(${Math.abs(3 - index) * 9 - 12}px) rotate(${(index - 3) * 3}deg)`,
                     zIndex: index + 1,
                   }}
                   title={card.nome}
