@@ -60,9 +60,15 @@ export function Navbar({
         <Link to="/" onClick={closeMobileMenu}>
           Home
         </Link>
-        <a href="#torneios" onClick={closeMobileMenu}>
-          Torneios
-        </a>
+        {isAuthenticated ? (
+          <Link to="/torneios" onClick={closeMobileMenu}>
+            Torneios
+          </Link>
+        ) : (
+          <a href="#torneios" onClick={closeMobileMenu}>
+            Torneios
+          </a>
+        )}
         {isAuthenticated ? (
           <Link to="/meus-decks" onClick={closeMobileMenu}>
             Meus Decks

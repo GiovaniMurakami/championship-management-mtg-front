@@ -213,7 +213,7 @@ export function DeckStats({ mainDeck }) {
         </h4>
         <div style={{ display: "grid", gap: "0.4rem" }}>
           {Object.entries(stats.colorDistribution)
-            .filter(([_, count]) => count > 0)
+            .filter(([, count]) => count > 0)
             .sort(([, a], [, b]) => b - a)
             .map(([color, count]) => {
               const percent = ((count / stats.totalCards) * 100).toFixed(1);

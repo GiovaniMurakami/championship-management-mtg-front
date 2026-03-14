@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "../components";
-import { Home, DeckBuilderPage, MyDecksPage } from "../pages";
+import { Home, DeckBuilderPage, MyDecksPage, TournamentPage, TournamentDetailPage } from "../pages";
 
 export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
   return (
@@ -85,6 +85,22 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
               onImportDeck={deckBuilder.importDeckFromTxt}
               onSubmit={(event, token, deckId, originalDeck) => deckBuilder.handleCreateDeck(event, auth.token, deckId, originalDeck)}
             />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/torneios"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+            <TournamentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/torneios/:id"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+            <TournamentDetailPage />
           </ProtectedRoute>
         }
       />

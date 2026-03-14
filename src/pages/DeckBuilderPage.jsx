@@ -36,6 +36,7 @@ export function DeckBuilderPage({
   const { id } = useParams();
   const location = useLocation();
   const deck = location.state?.deck;
+  const readOnly = location.state?.readOnly || false;
 
   // Carregar dados e cartas do deck para editar, ou limpar se em modo criação
   useEffect(() => {
@@ -51,7 +52,7 @@ export function DeckBuilderPage({
         nome: deck.nome,
         formato: deck.formato,
       });
-      
+
       // Carregar cartas do deck existente
       if (onSetMainDeck && onSetSideboard) {
         const loadDeckCards = async () => {
@@ -150,23 +151,26 @@ export function DeckBuilderPage({
         importLoading={importLoading}
         importMessage={importMessage}
         onImportDeck={onImportDeck}
-        onSubmit={handleSubmit}
+        onSubmit={readOnly ? null : handleSubmit}
         isEditMode={isEditMode}
+        readOnly={readOnly}
       />
 
-      {/* Seção de Análise de Deck */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1.2rem",
-          marginTop: "1.5rem",
-          width: "100%",
-        }}
-      >
-        <HandSimulator mainDeck={mainDeck} />
-        <DeckStats mainDeck={mainDeck} />
-      </div>
+      {/* Seção de Análise de Deck - só mostrar se não for readOnly */}
+      {!readOnly && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.2rem",
+            marginTop: "1.5rem",
+            width: "100%",
+          }}
+        >
+          <HandSimulator mainDeck={mainDeck} />
+          <DeckStats mainDeck={mainDeck} />
+        </div>
+      )}
     </main>
   );
 }

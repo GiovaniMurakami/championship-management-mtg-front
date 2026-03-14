@@ -3,6 +3,7 @@ export { AuthModal } from "./AuthModal";
 export { EditProfileModal } from "./EditProfileModal";
 export { Hero } from "./Hero";
 export { TournamentSection } from "./TournamentSection";
+export { TournamentCreateForm } from "./TournamentCreateForm";
 export { CardPreviewModal } from "./CardPreviewModal";
 export { CardSearch } from "./CardSearch";
 export { DeckList } from "./DeckList";

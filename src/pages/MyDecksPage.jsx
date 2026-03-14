@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMyDecks } from "../hooks/useMyDecks";
+import { useAuth } from "../hooks/useAuth";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 import { deletarDeck } from "../services/backendApi";
 
@@ -11,12 +12,16 @@ function calcularTotalCartas(cartas) {
 
 export function MyDecksPage({ token }) {
   const { decks, loading, message, fetchDecks } = useMyDecks(token);
+  const { usuario } = useAuth();
   const [deckImages, setDeckImages] = useState({});
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, deck: null });
   const [confirmName, setConfirmName] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const navigate = useNavigate();
+
+  // Verifica se o deck pertence ao usuário atual
+  const isOwner = (deck) => deck.usuarioId === usuario?.id;
 
   // Busca imagem da primeira carta de cada deck
   useEffect(() => {
@@ -170,27 +175,40 @@ export function MyDecksPage({ token }) {
                   Criado em: {new Date(deck.criadoEm).toLocaleDateString("pt-BR")}
                 </p>
                 <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-                  <button
-                    className="btn primary"
-                    style={{ flex: 1 }}
-                    type="button"
-                    onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="btn secondary"
-                    style={{ 
-                      flex: 1,
-                      background: "rgba(252, 88, 119, 0.15)",
-                      borderColor: "rgba(252, 88, 119, 0.4)",
-                      color: "#ffc8d4"
-                    }}
-                    type="button"
-                    onClick={() => handleOpenDeleteModal(deck)}
-                  >
-                    Excluir
-                  </button>
+                  {isOwner(deck) ? (
+                    <>
+                      <button
+                        className="btn primary"
+                        style={{ flex: 1 }}
+                        type="button"
+                        onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn secondary"
+                        style={{
+                          flex: 1,
+                          background: "rgba(252, 88, 119, 0.15)",
+                          borderColor: "rgba(252, 88, 119, 0.4)",
+                          color: "#ffc8d4"
+                        }}
+                        type="button"
+                        onClick={() => handleOpenDeleteModal(deck)}
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="btn primary"
+                      style={{ width: "100%" }}
+                      type="button"
+                      onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck, readOnly: true } })}
+                    >
+                      Visualizar
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

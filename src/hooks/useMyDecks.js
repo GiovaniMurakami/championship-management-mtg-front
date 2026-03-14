@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { listarDecks } from "../services/backendApi";
 
 export function useMyDecks(token) {
@@ -6,7 +6,7 @@ export function useMyDecks(token) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const fetchDecks = async () => {
+  const fetchDecks = useCallback(async () => {
     if (!token) return;
 
     setLoading(true);
@@ -21,11 +21,11 @@ export function useMyDecks(token) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchDecks();
-  }, [token]);
+  }, [fetchDecks]);
 
   return {
     decks,

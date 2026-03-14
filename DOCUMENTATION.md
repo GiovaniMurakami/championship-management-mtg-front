@@ -2,7 +2,7 @@
 
 ## 📋 Visão Geral
 
-Frontend React com Vite para gerenciamento de torneios e decks de Magic: The Gathering. A aplicação oferece autenticação, construção de decks com validação de legalidade por formato, importação de decks e integração com a API Scryfall.
+Frontend React com Vite para gerenciamento de torneios e decks de Magic: The Gathering. A aplicação oferece autenticação, construção e gerenciamento de decks com validação de legalidade por formato, importação de decks, integração com a API Scryfall e atualizações em tempo real via Ably (WebSocket) para eventos de torneio.
 
 ---
 
@@ -15,29 +15,46 @@ src/
 ├── components/           # Componentes reutilizáveis
 │   ├── Navbar.jsx       # Header fixo com navegação e auth
 │   ├── AuthModal.jsx    # Modal de login/cadastro
+│   ├── EditProfileModal.jsx # Modal de edição de perfil
 │   ├── Hero.jsx         # Seção hero da home
-│   ├── TournamentSection.jsx # Grid de torneios mockados
+│   ├── TournamentSection.jsx # Grid de torneios na home
+│   ├── TournamentCreateForm.jsx # Formulário de criação de torneio
 │   ├── CardPreviewModal.jsx  # Preview flutuante de cartas
 │   ├── CardSearch.jsx   # Busca com autocomplete
 │   ├── DeckList.jsx     # Lista de cartas no deck
 │   ├── DeckBuilder.jsx  # Formulário principal de deck
+│   ├── DeckStats.jsx    # Estatísticas do deck
+│   ├── HandSimulator.jsx # Simulador de mão inicial
 │   ├── ProtectedRoute.jsx # Guard de rotas autenticadas
+│   ├── tournament/      # Componentes específicos de torneio
+│   │   ├── MatchPanel.jsx       # Painel de partida atual
+│   │   ├── PlayerProfile.jsx    # Perfil do jogador no torneio
+│   │   ├── StandingsTable.jsx   # Tabela de classificação
+│   │   ├── TournamentHeader.jsx # Cabeçalho do torneio
+│   │   └── index.js             # Barrel exports
 │   └── index.js         # Barrel exports
 ├── hooks/               # Custom hooks (lógica em React)
 │   ├── useAuth.js       # Autenticação e sessão
 │   ├── useDeckBuilder.js # Construção e validação de decks
 │   ├── useCardSearch.js # Busca debounced de cartas
 │   ├── useCardPreview.js # Gerenciar preview de cartas
+│   ├── useMyDecks.js    # Listagem e gerenciamento dos decks do usuário
+│   ├── useTournamentDetail.js # Estado completo de um torneio + Ably
 │   └── index.js         # Barrel exports
 ├── pages/               # Componentes de página (rotas)
 │   ├── Home.jsx         # Página inicial (pública)
-│   ├── DeckBuilderPage.jsx # Página de construtor (protegida)
+│   ├── DeckBuilderPage.jsx # Construtor/editor de deck (protegida)
+│   ├── MyDecksPage.jsx  # Lista de decks do usuário (protegida)
+│   ├── TournamentPage.jsx  # Lista de torneios (protegida)
+│   ├── TournamentDetailPage.jsx # Detalhe do torneio (protegida)
 │   └── index.js         # Barrel exports
 ├── routes/              # Definição de rotas
 │   ├── AppRoutes.jsx    # <Routes> com todas as rotas
 │   └── index.js         # Barrel exports
 ├── services/            # Integrações com APIs
-│   ├── backendApi.js    # Endpoints do backend local
+│   ├── httpClient.js    # Axios configurado com baseURL dinâmica
+│   ├── backendApi.js    # Todos os endpoints do backend
+│   ├── ablyService.js   # Cliente Ably e subscriptions de torneio
 │   └── scryfallApi.js   # Busca de cartas (Scryfall)
 ├── utils/               # Funções utilitárias
 │   ├── parseDeckTxt.js  # Parser de arquivo .txt de deck
@@ -61,13 +78,18 @@ src/
 
 ```bash
 # .env (local, não commitar)
-VITE_API_BASE_URL=http://localhost:3000
+VITE_ENVIRONMENT=development          # "development" ou "production"
+VITE_USE_LOCALHOST=false              # true = usa VITE_BACKEND_DEV_URL como localhost
+VITE_BACKEND_DEV_URL=https://...      # URL da API de desenvolvimento
+VITE_BACKEND_PROD_URL=https://...     # URL da API de produção
+VITE_ABLY_API_KEY=xxxx.yyyy:zzzz     # Chave de API do Ably (realtime)
 ```
 
-```bash
-# .env.example (commitar)
-VITE_API_BASE_URL=http://localhost:3000
-```
+### Resolução de Base URL (`httpClient.js`)
+
+- `VITE_USE_LOCALHOST=true` → usa `VITE_BACKEND_DEV_URL` independente do ambiente
+- `VITE_ENVIRONMENT=production` → usa `VITE_BACKEND_PROD_URL`
+- Default → usa `VITE_BACKEND_DEV_URL`
 
 ---
 
@@ -121,7 +143,97 @@ Gerencia construção, validação e importação de decks.
 - `updateCardQuantity(section, nome, quantidade)`: Altera quantidade
 - `removeCard(section, nome)`: Remove carta do deck
 - `importDeckFromTxt(file)`: Parser e resolução de arquivo .txt
-- `handleCreateDeck(event, token)`: Valida e submete deck ao backend
+- `handleCreateDeck(event, token, deckId?, originalDeck?)`: Valida e submete deck ao backend (cria ou edita)
+
+---
+
+## 📚 Gerenciador de Decks do Usuário
+
+### useMyDecks Hook
+
+Busca e expõe todos os decks do usuário autenticado.
+
+**Estados:**
+
+- `decks`: Array de decks
+- `loading`: Flag durante carregamento
+- `message`: Mensagem de erro, se houver
+
+**Funções:**
+
+- `fetchDecks()`: Recarrega a lista de decks
+
+---
+
+## 🏆 Torneios
+
+### TournamentPage (`/torneios`)
+
+Lista todos os torneios disponíveis. O usuário pode se inscrever e o organizador pode iniciar o torneio. Usa Ably para manter a lista atualizada em tempo real (sem polling).
+
+### TournamentDetailPage (`/torneios/:id`)
+
+Detalhe completo de um torneio: standings, partidas da rodada atual, ações de checkin, escolha de deck e registro de resultado. Toda a lógica de estado fica em `useTournamentDetail`.
+
+### useTournamentDetail Hook
+
+Centraliza o estado de um torneio específico, integrando chamadas HTTP e eventos Ably.
+
+**Estados:**
+
+- `torneio`: Dados gerais do torneio
+- `standings`: Array de participantes com pontuação
+- `partidas`: Partidas da rodada atual
+- `loading`, `actionLoading`: Flags de carregamento
+- `error`, `successMsg`: Feedback ao usuário
+- `selectedDeckId`: Deck selecionado para o torneio
+- `currentPlayer`: Entrada do jogador logado nos standings
+- `myMatch`: Partida atual do jogador logado
+- `decks`: Decks disponíveis do usuário (via `useMyDecks`)
+
+**Funções:**
+
+- `loadTournament()`: Recarrega dados do torneio
+- `loadStandings()`: Recarrega standings e partidas
+- `handleCheckin()`: POST checkin no torneio
+- `handleEscolherDeck(deckId)`: POST deck escolhido
+- `handleRegistrarResultado(partidaId, resultado)`: POST resultado de partida
+
+**Eventos Ably escutados:**
+
+- `rodada_iniciada` → `loadTournament()` + `loadStandings()`
+- `resultado_registrado` → `loadStandings()`
+- `standings_atualizados` → `loadStandings()`
+- `torneio_finalizado` → `loadTournament()` + `loadStandings()`
+- `participante_inscrito` → `loadTournament()`
+- `checkin_realizado` → `loadTournament()`
+
+---
+
+## 📡 Realtime com Ably
+
+### ablyService.js
+
+Gerencia o cliente Ably (singleton) e subscriptions por torneio.
+
+**`getAblyClient()`**
+- Cria o cliente `Realtime` uma única vez (singleton) usando `VITE_ABLY_API_KEY`
+- Loga mudanças de estado de conexão no console: `[Ably] Conexão: initialized → connected`
+
+**`subscribeToTournament(torneioId, callbacks)`**
+- Obtém/cria o canal `torneio-{torneioId}`
+- Loga mudanças de estado do canal
+- Registra listeners para os eventos: `rodada_iniciada`, `resultado_registrado`, `standings_atualizados`, `torneio_finalizado`, `participante_inscrito`, `checkin_realizado`
+- Cada listener loga o payload recebido antes de chamar o callback
+- Retorna o objeto `channel` (necessário para unsubscribe)
+
+**`unsubscribeFromTournament(channel)`**
+- Chama `channel.unsubscribe()` e loga a ação
+
+**Debugando Ably:**
+- Todos os eventos aparecem no console com prefixo `[Ably]`
+- Para ver mensagens brutas: DevTools → Network → aba **WS** → conexão `realtime.ably.io` → **Messages**
+- Para monitorar no dashboard: [app.ably.com](https://app.ably.com) → Dev Console
 
 ---
 
@@ -228,9 +340,13 @@ Sideboard
 ### Definição em `src/routes/AppRoutes.jsx`
 
 ```
-/              → Home (pública)     [Hero + Torneios]
-/decks         → DeckBuilder (protegida) [Construtor de decks]
-/*             → Navigate to /      [Fallback]
+/                    → Home (pública)              [Hero + seção de torneios]
+/decks               → DeckBuilderPage (protegida) [Criar novo deck]
+/editar-deck/:id     → DeckBuilderPage (protegida) [Editar deck existente]
+/meus-decks          → MyDecksPage (protegida)     [Lista de decks do usuário]
+/torneios            → TournamentPage (protegida)  [Lista de torneios]
+/torneios/:id        → TournamentDetailPage (prot) [Detalhe e ações do torneio]
+/*                   → Navigate to /              [Fallback]
 ```
 
 ### Proteção de Rotas
@@ -275,15 +391,66 @@ Headers: `Authorization: Bearer {token}`
   "nome": "Izzet Phoenix",
   "formato": "modern",
   "maindeck": [
-    { "nome": "Battle Screech", "quantidade": 4 },
-    ...
+    { "nome": "Battle Screech", "quantidade": 4 }
   ],
   "sideboard": [
-    { "nome": "Destroy Evil", "quantidade": 2 },
-    ...
+    { "nome": "Destroy Evil", "quantidade": 2 }
   ]
 }
 ```
+
+`GET /deck/listar`
+Headers: `Authorization: Bearer {token}`
+
+`PUT /deck/:deckId`
+Headers: `Authorization: Bearer {token}`
+Body: mesmo formato do cadastrar
+
+`DELETE /deck/:deckId`
+Headers: `Authorization: Bearer {token}`
+
+### Usuário
+
+`PUT /usuario/atualizar`
+Headers: `Authorization: Bearer {token}`
+
+### Torneios
+
+`POST /torneio/criar`
+Headers: `Authorization: Bearer {token}`
+
+`GET /torneio/listar`
+Headers: `Authorization: Bearer {token}`
+
+`GET /torneio/:torneioId`
+Headers: `Authorization: Bearer {token}`
+
+`POST /torneio/:torneioId/inscrever`
+Headers: `Authorization: Bearer {token}`
+
+`POST /torneio/:torneioId/deck`
+Headers: `Authorization: Bearer {token}`
+Body: `{ "deckId": "..." }`
+
+`POST /torneio/:torneioId/checkin`
+Headers: `Authorization: Bearer {token}`
+
+`POST /torneio/:torneioId/iniciar`
+Headers: `Authorization: Bearer {token}`
+
+`POST /torneio/:torneioId/proxima-rodada`
+Headers: `Authorization: Bearer {token}`
+
+`POST /torneio/:torneioId/drop`
+Headers: `Authorization: Bearer {token}`
+Body: `{ "jogadorId": "..." }` (omitir para auto-drop)
+
+`GET /torneio/:torneioId/standings`
+Headers: `Authorization: Bearer {token}`
+
+`POST /torneio/partida/:partidaId/resultado`
+Headers: `Authorization: Bearer {token}`
+Body: `{ "resultado": "..." }`
 
 ---
 
@@ -337,8 +504,13 @@ App (hooks centralizados)
   │
   └── AppRoutes
       ├── Home (pública)
-      └── DeckBuilderPage (protegida)
-          └── DeckBuilder + CardSearch x2 + DeckList x2
+      ├── DeckBuilderPage (protegida)  → useDeckBuilder + useCardSearch
+      ├── MyDecksPage (protegida)      → useMyDecks
+      ├── TournamentPage (protegida)   → backendApi + ablyService (per-torneio)
+      └── TournamentDetailPage (prot.) → useTournamentDetail
+              ├── backendApi (HTTP)
+              ├── useMyDecks
+              └── ablyService (WebSocket) → canal torneio-{id}
 ```
 
 ---
@@ -393,17 +565,29 @@ npm run preview  # Preview local do build
 ## ✅ Checklist de Funcionalidades
 
 - [x] Autenticação (login/registro)
+- [x] Edição de perfil do usuário
 - [x] Construção de decks com busca de cartas
+- [x] Edição e exclusão de decks existentes
+- [x] Listagem de decks do usuário
 - [x] Validação de máx 4 cópias (exceto basic lands)
 - [x] Validação de legalidade por formato
 - [x] Importação de decks via arquivo .txt
 - [x] Preview flutuante de cartas ao hover
-- [x] Proteção de rotas (deck builder privado)
+- [x] Simulador de mão inicial
+- [x] Estatísticas do deck
+- [x] Proteção de rotas (deck builder e torneios privados)
 - [x] Design dark/roxo responsivo
 - [x] Modais flutuantes de auth e preview
 - [x] Validação visual com shake (nome, formato)
 - [x] Auto-limpeza de mensagens de sucesso
 - [x] Integração Scryfall para metadados de cartas
+- [x] Criação e listagem de torneios
+- [x] Inscrição, checkin e escolha de deck no torneio
+- [x] Início de torneio pelo organizador
+- [x] Registro de resultado de partida
+- [x] Tabela de standings em tempo real
+- [x] Drop de jogador
+- [x] Realtime via Ably WebSocket (6 eventos de torneio)
 
 ---
 

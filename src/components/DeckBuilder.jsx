@@ -38,6 +38,7 @@ export function DeckBuilder({
   onImportDeck,
   onSubmit,
   isEditMode = false,
+  readOnly = false,
 }) {
   const [invalidFields, setInvalidFields] = useState({ nome: false, formato: false });
   const [shakeFields, setShakeFields] = useState({ nome: false, formato: false });
@@ -73,7 +74,9 @@ export function DeckBuilder({
   return (
     <section className="deck-builder" id="decks">
       <div className="section-title">
-        <h2>{isEditMode ? "Editar deck" : "Cadastrar deck"}</h2>
+        <h2>
+          {readOnly ? "Visualizar deck" : isEditMode ? "Editar deck" : "Cadastrar deck"}
+        </h2>
         <span>integrado ao backend</span>
       </div>
 
@@ -91,6 +94,7 @@ export function DeckBuilder({
               }}
               placeholder="Ex: Izzet Phoenix"
               required
+              disabled={readOnly}
             />
           </label>
 
@@ -107,6 +111,7 @@ export function DeckBuilder({
                   setInvalidFields((current) => ({ ...current, formato: false }));
                 }}
                 required
+                disabled={readOnly}
               >
                 <option value="" disabled>
                   Selecione um formato
@@ -124,15 +129,18 @@ export function DeckBuilder({
         <div className="card-pickers">
           <div className="picker-column">
             <h3>Maindeck ({totalMain}/60+)</h3>
-            <CardSearch
-              searchValue={mainSearch}
-              onSearchChange={onMainSearchChange}
-              suggestions={mainSuggestions}
-              onCardAdd={(card) => onAddCard(card, "main")}
-              onCardMouseEnter={onCardMouseEnter}
-              onCardMouseLeave={onCardMouseLeave}
-              title=""
-            />
+            {!readOnly && (
+              <CardSearch
+                searchValue={mainSearch}
+                onSearchChange={onMainSearchChange}
+                suggestions={mainSuggestions}
+                onCardAdd={(card) => onAddCard(card, "main")}
+                onCardMouseEnter={onCardMouseEnter}
+                onCardMouseLeave={onCardMouseLeave}
+                title=""
+                readOnly={readOnly}
+              />
+            )}
             <DeckList
               cards={mainDeck}
               onCardRemove={(nome) => onRemoveCard("main", nome)}
@@ -141,20 +149,24 @@ export function DeckBuilder({
               }
               onCardMouseEnter={onCardMouseEnter}
               onCardMouseLeave={onCardMouseLeave}
+              readOnly={readOnly}
             />
           </div>
 
           <div className="picker-column">
             <h3>Sideboard ({totalSide}/15)</h3>
-            <CardSearch
-              searchValue={sideSearch}
-              onSearchChange={onSideSearchChange}
-              suggestions={sideSuggestions}
-              onCardAdd={(card) => onAddCard(card, "side")}
-              onCardMouseEnter={onCardMouseEnter}
-              onCardMouseLeave={onCardMouseLeave}
-              title=""
-            />
+            {!readOnly && (
+              <CardSearch
+                searchValue={sideSearch}
+                onSearchChange={onSideSearchChange}
+                suggestions={sideSuggestions}
+                onCardAdd={(card) => onAddCard(card, "side")}
+                onCardMouseEnter={onCardMouseEnter}
+                onCardMouseLeave={onCardMouseLeave}
+                title=""
+                readOnly={readOnly}
+              />
+            )}
             <DeckList
               cards={sideboard}
               onCardRemove={(nome) => onRemoveCard("side", nome)}
@@ -163,27 +175,30 @@ export function DeckBuilder({
               }
               onCardMouseEnter={onCardMouseEnter}
               onCardMouseLeave={onCardMouseLeave}
+              readOnly={readOnly}
             />
           </div>
         </div>
 
-        <div className="deck-actions">
-          <label className="btn secondary import-btn" htmlFor="import-deck-file">
-            {importLoading ? "Importando..." : "Importar deck (.txt)"}
-          </label>
-          <input
-            id="import-deck-file"
-            type="file"
-            accept=".txt"
-            className="import-file-input"
-            onChange={handleImportFileChange}
-            disabled={importLoading}
-          />
+        {!readOnly && (
+          <div className="deck-actions">
+            <label className="btn secondary import-btn" htmlFor="import-deck-file">
+              {importLoading ? "Importando..." : "Importar deck (.txt)"}
+            </label>
+            <input
+              id="import-deck-file"
+              type="file"
+              accept=".txt"
+              className="import-file-input"
+              onChange={handleImportFileChange}
+              disabled={importLoading}
+            />
 
-          <button className="btn primary" type="submit" disabled={deckLoading || importLoading}>
-            {deckLoading ? (isEditMode ? "Atualizando..." : "Cadastrando...") : isEditMode ? "Atualizar deck" : "Cadastrar deck"}
-          </button>
-        </div>
+            <button className="btn primary" type="submit" disabled={deckLoading || importLoading}>
+              {deckLoading ? (isEditMode ? "Atualizando..." : "Cadastrando...") : isEditMode ? "Atualizar deck" : "Cadastrar deck"}
+            </button>
+          </div>
+        )}
 
         {importMessage ? <p className="feedback">{importMessage}</p> : null}
         {deckMessage ? <p className="feedback">{deckMessage}</p> : null}
