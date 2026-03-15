@@ -1842,6 +1842,10 @@ html {
   align-items: start;
 }
 
+.td-content--finalized {
+  grid-template-columns: 1fr;
+}
+
 .td-main-col {
   display: grid;
   gap: 1.5rem;

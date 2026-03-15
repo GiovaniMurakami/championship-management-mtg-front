@@ -35,6 +35,8 @@ export function TournamentDetailPage() {
         usuario,
     } = useTournamentDetail();
 
+    const isFinished = torneio?.status === "finalizado";
+
     return (
         <div className="td-page">
             <button className="td-back-btn" onClick={() => navigate("/torneios")}>
@@ -50,40 +52,42 @@ export function TournamentDetailPage() {
             <TournamentHeader torneio={torneio} loading={loading} />
 
             {!loading && (
-                <div className="td-content">
-                    <div className="td-main-col">
-                        <MatchPanel
-                            myMatch={myMatch}
-                            usuario={usuario}
-                            onReportResult={handleReportResult}
-                            actionLoading={actionLoading}
-                        />
-
-                        {isOwner && (
-                            <OwnerControlPanel
-                                torneio={torneio}
-                                standings={standings}
-                                usuarioId={usuario?.id}
-                                pendingCheckinPlayers={pendingCheckinPlayers}
-                                onNextRound={handleNextRound}
-                                onDropPlayer={handleDropPlayer}
+                <div className={`td-content${isFinished ? " td-content--finalized" : ""}`}>
+                    {!isFinished && (
+                        <div className="td-main-col">
+                            <MatchPanel
+                                myMatch={myMatch}
+                                usuario={usuario}
+                                onReportResult={handleReportResult}
                                 actionLoading={actionLoading}
-                                droppingPlayerId={droppingPlayerId}
                             />
-                        )}
 
-                        <PlayerProfile
-                            torneio={torneio}
-                            currentPlayer={currentPlayer}
-                            decks={decks}
-                            selectedDeckId={selectedDeckId}
-                            onDeckChange={setSelectedDeckId}
-                            onChooseDeck={handleChooseDeck}
-                            onCheckin={handleCheckin}
-                            onInscrever={handleInscrever}
-                            actionLoading={actionLoading}
-                        />
-                    </div>
+                            {isOwner && (
+                                <OwnerControlPanel
+                                    torneio={torneio}
+                                    standings={standings}
+                                    usuarioId={usuario?.id}
+                                    pendingCheckinPlayers={pendingCheckinPlayers}
+                                    onNextRound={handleNextRound}
+                                    onDropPlayer={handleDropPlayer}
+                                    actionLoading={actionLoading}
+                                    droppingPlayerId={droppingPlayerId}
+                                />
+                            )}
+
+                            <PlayerProfile
+                                torneio={torneio}
+                                currentPlayer={currentPlayer}
+                                decks={decks}
+                                selectedDeckId={selectedDeckId}
+                                onDeckChange={setSelectedDeckId}
+                                onChooseDeck={handleChooseDeck}
+                                onCheckin={handleCheckin}
+                                onInscrever={handleInscrever}
+                                actionLoading={actionLoading}
+                            />
+                        </div>
+                    )}
 
                     <div className="td-side-col">
                         <StandingsTable standings={standings} />
