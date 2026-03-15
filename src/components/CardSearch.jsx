@@ -6,6 +6,7 @@ export function CardSearch({
   onCardMouseEnter,
   onCardMouseLeave,
   title,
+  readOnly = false,
 }) {
   return (
     <div className="card-search">
@@ -14,6 +15,7 @@ export function CardSearch({
         value={searchValue}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Buscar carta na Scryfall"
+        disabled={readOnly}
       />
       {suggestions.length > 0 ? (
         <ul className="suggestions">

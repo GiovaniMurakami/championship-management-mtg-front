@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMyDecks } from "../hooks/useMyDecks";
+import { useAuth } from "../hooks/useAuth";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 import { deletarDeck } from "../services/backendApi";
+import { SkeletonCard } from "../components";
 
 // Função auxiliar para somar quantidades de cartas
 function calcularTotalCartas(cartas) {
@@ -11,12 +13,16 @@ function calcularTotalCartas(cartas) {
 
 export function MyDecksPage({ token }) {
   const { decks, loading, message, fetchDecks } = useMyDecks(token);
+  const { usuario } = useAuth();
   const [deckImages, setDeckImages] = useState({});
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, deck: null });
   const [confirmName, setConfirmName] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const navigate = useNavigate();
+
+  // Verifica se o deck pertence ao usuário atual
+  const isOwner = (deck) => deck.usuarioId === usuario?.id;
 
   // Busca imagem da primeira carta de cada deck
   useEffect(() => {
@@ -82,8 +88,8 @@ export function MyDecksPage({ token }) {
   };
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "6rem 1rem 2rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+    <div className="my-decks-page">
+      <div className="my-decks-header">
         <h1>Meus Decks</h1>
         <button
           className="btn primary"
@@ -95,68 +101,32 @@ export function MyDecksPage({ token }) {
       </div>
 
       {loading ? (
-        <p style={{ textAlign: "center", marginTop: "2rem" }}>Carregando decks...</p>
+        <div className="my-decks-grid">
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+        </div>
       ) : message ? (
-        <p className="feedback" style={{ marginTop: "1rem" }}>
-          {message}
-        </p>
+        <p className="feedback">{message}</p>
       ) : decks.length === 0 ? (
-        <p style={{ textAlign: "center", marginTop: "2rem", opacity: 0.7 }}>
+        <p className="my-decks-empty">
           Nenhum deck encontrado. Crie um novo deck para começar!
         </p>
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-            gap: "1.5rem",
-            marginTop: "1.5rem",
-          }}
-        >
+        <div className="my-decks-grid">
           {decks.map((deck) => (
-            <div
-              key={deck.id}
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: "8px",
-                overflow: "hidden",
-                backgroundColor: "var(--surface-color)",
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-            >
-              {/* Imagem do deck consolidada no topo */}
+            <div key={deck.id} className="my-deck-card">
               {deckImages[deck.id] && (
                 <div
-                  style={{
-                    width: "100%",
-                    height: "180px",
-                    backgroundImage: `url(${deckImages[deck.id]})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
+                  className="my-deck-card-image"
+                  style={{ backgroundImage: `url(${deckImages[deck.id]})` }}
                 />
               )}
 
-              {/* Conteúdo do card */}
-              <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flex: 1 }}>
-                <h3 style={{ marginBottom: "0.5rem", color: "var(--accent-color)" }}>
-                  {deck.nome}
-                </h3>
-                <p style={{ fontSize: "0.9rem", opacity: 0.7, marginBottom: "1rem" }}>
+              <div className="my-deck-card-body">
+                <h3 className="my-deck-card-name">{deck.nome}</h3>
+                <p className="my-deck-card-format">
                   <strong>Formato:</strong> {deck.formato}
                 </p>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "1rem",
-                    fontSize: "0.9rem",
-                    marginBottom: "1rem",
-                  }}
-                >
+                <div className="my-deck-card-stats">
                   <div>
                     <span>Maindeck: </span>
                     <strong>{calcularTotalCartas(deck.maindeck)} cartas</strong>
@@ -166,31 +136,36 @@ export function MyDecksPage({ token }) {
                     <strong>{calcularTotalCartas(deck.sideboard)} cartas</strong>
                   </div>
                 </div>
-                <p style={{ fontSize: "0.85rem", opacity: 0.6, marginBottom: "auto" }}>
+                <p className="my-deck-card-date">
                   Criado em: {new Date(deck.criadoEm).toLocaleDateString("pt-BR")}
                 </p>
-                <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-                  <button
-                    className="btn primary"
-                    style={{ flex: 1 }}
-                    type="button"
-                    onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="btn secondary"
-                    style={{ 
-                      flex: 1,
-                      background: "rgba(252, 88, 119, 0.15)",
-                      borderColor: "rgba(252, 88, 119, 0.4)",
-                      color: "#ffc8d4"
-                    }}
-                    type="button"
-                    onClick={() => handleOpenDeleteModal(deck)}
-                  >
-                    Excluir
-                  </button>
+                <div className="my-deck-card-actions">
+                  {isOwner(deck) ? (
+                    <>
+                      <button
+                        className="btn primary"
+                        type="button"
+                        onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn danger"
+                        type="button"
+                        onClick={() => handleOpenDeleteModal(deck)}
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="btn primary"
+                      type="button"
+                      onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck, readOnly: true } })}
+                    >
+                      Visualizar
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -201,15 +176,13 @@ export function MyDecksPage({ token }) {
       {/* Modal de Confirmação de Exclusão */}
       {deleteModal.isOpen && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && handleCloseDeleteModal()}>
-          <div className="auth-modal" style={{ maxWidth: "500px" }}>
-            <h2 style={{ margin: "0 0 1rem", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.8rem" }}>
-              ⚠️ Confirmar Exclusão
-            </h2>
-            <p style={{ marginBottom: "1rem", color: "var(--text-soft)" }}>
-              Você está prestes a excluir o deck <strong style={{ color: "var(--brand-2)" }}>{deleteModal.deck?.nome}</strong>.
+          <div className="auth-modal delete-modal">
+            <h2 className="delete-modal-title">⚠️ Confirmar Exclusão</h2>
+            <p className="delete-modal-text">
+              Você está prestes a excluir o deck <strong>{deleteModal.deck?.nome}</strong>.
               Esta ação é <strong>irreversível</strong> e todas as cartas do deck serão perdidas.
             </p>
-            <p style={{ marginBottom: "1rem", fontSize: "0.9rem", opacity: 0.8 }}>
+            <p className="delete-modal-hint">
               Para confirmar, digite o nome exato do deck abaixo:
             </p>
             <input
@@ -217,24 +190,16 @@ export function MyDecksPage({ token }) {
               value={confirmName}
               onChange={(e) => setConfirmName(e.target.value)}
               placeholder={`Digite: ${deleteModal.deck?.nome}`}
-              style={{
-                width: "100%",
-                marginBottom: "0.5rem",
-                fontSize: "0.95rem",
-                padding: "0.75rem"
-              }}
+              className="delete-modal-input"
               disabled={deleteLoading}
               autoFocus
             />
             {deleteError && (
-              <p className="feedback limit-warning" style={{ margin: "0.5rem 0" }}>
-                {deleteError}
-              </p>
+              <p className="feedback limit-warning">{deleteError}</p>
             )}
-            <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
+            <div className="delete-modal-actions">
               <button
                 className="btn ghost"
-                style={{ flex: 1 }}
                 type="button"
                 onClick={handleCloseDeleteModal}
                 disabled={deleteLoading}
@@ -242,15 +207,7 @@ export function MyDecksPage({ token }) {
                 Cancelar
               </button>
               <button
-                className="btn secondary"
-                style={{
-                  flex: 1,
-                  background: "linear-gradient(145deg, #fc5877, #d1486a)",
-                  borderColor: "rgba(252, 88, 119, 0.6)",
-                  color: "white",
-                  opacity: deleteLoading ? 0.6 : 1,
-                  cursor: deleteLoading ? "not-allowed" : "pointer"
-                }}
+                className="btn danger-solid"
                 type="button"
                 onClick={handleDeleteDeck}
                 disabled={deleteLoading || !confirmName}

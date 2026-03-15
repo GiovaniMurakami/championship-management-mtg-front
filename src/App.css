@@ -255,6 +255,14 @@ main {
   margin-top: 2.5rem;
 }
 
+.deck-analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
 .locked-route {
   border: 1px solid var(--line);
   border-radius: 1.2rem;
@@ -603,6 +611,13 @@ select {
   text-align: center;
 }
 
+/* Mobile optimized card preview */
+@media (max-width: 640px) {
+  .card-preview-modal {
+    display: none;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -646,6 +661,16 @@ select {
 .auth-form {
   display: grid;
   gap: 0.85rem;
+}
+
+.auth-modal-title {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.auth-modal-actions {
+  display: flex;
+  gap: 1rem;
 }
 
 @media (max-width: 950px) {
@@ -731,6 +756,121 @@ select {
 
   .deck-list li button {
     grid-column: span 2;
+  }
+
+  /* Mobile improvements for deck builder */
+  .deck-form {
+    gap: 1.2rem;
+  }
+
+  .form-row {
+    gap: 1rem;
+  }
+
+  label {
+    font-size: 1rem;
+  }
+
+  input,
+  select {
+    padding: 0.85rem 0.85rem;
+    font-size: 1rem;
+  }
+
+  .format-select {
+    padding-right: 2.5rem;
+    min-height: 44px;
+  }
+
+  .card-pickers {
+    gap: 1rem;
+  }
+
+  .picker-column {
+    padding: 1rem;
+    min-height: clamp(400px, calc(100vh - 280px), 600px);
+  }
+
+  .picker-column h3 {
+    font-size: 1.05rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .card-search {
+    gap: 0.5rem;
+  }
+
+  .suggestions,
+  .deck-list {
+    gap: 0.55rem;
+    max-height: 300px;
+  }
+
+  .suggestions button {
+    padding: 0.5rem;
+    gap: 0.8rem;
+    font-size: 0.95rem;
+    min-height: 52px;
+  }
+
+  .suggestions img {
+    width: 42px;
+    height: 57px;
+  }
+
+  .suggestions small {
+    font-size: 0.8rem;
+  }
+
+  .deck-list li {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    min-height: 48px;
+  }
+
+  .deck-list li span {
+    font-size: 0.95rem;
+  }
+
+  .deck-list li input {
+    padding: 0.6rem 0.4rem;
+    font-size: 1.1rem;
+    min-height: 48px;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .deck-list li button {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+
+  .deck-actions {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .deck-actions .btn,
+  .deck-actions label {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .import-btn {
+    width: 100%;
+  }
+
+  .feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -881,23 +1021,47 @@ select:hover {
 }
 
 /* Botão de exclusão: Estilo vermelho elegante */
-.btn.secondary[style*="rgba(252, 88, 119"] {
+.btn.danger {
+  background: rgba(252, 88, 119, 0.15);
+  border-color: rgba(252, 88, 119, 0.4);
+  color: #ffc8d4;
   box-shadow: 0 2px 8px rgba(252, 88, 119, 0.15);
 }
 
-.btn.secondary[style*="rgba(252, 88, 119"]:hover {
-  background: rgba(252, 88, 119, 0.28) !important;
-  border-color: rgba(252, 88, 119, 0.7) !important;
-  color: #fff !important;
+.btn.danger:hover {
+  background: rgba(252, 88, 119, 0.28);
+  border-color: rgba(252, 88, 119, 0.7);
+  color: #fff;
   transform: translateY(-2px);
   box-shadow:
     0 6px 18px rgba(252, 88, 119, 0.35),
     0 0 12px rgba(252, 88, 119, 0.25);
 }
 
-.btn.secondary[style*="rgba(252, 88, 119"]:active {
+.btn.danger:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(252, 88, 119, 0.2);
+}
+
+/* Botão de exclusão sólido (usado em modals de confirmação) */
+.btn.danger-solid {
+  background: linear-gradient(145deg, #fc5877, #d1486a);
+  border-color: rgba(252, 88, 119, 0.6);
+  color: white;
+  box-shadow: 0 4px 12px rgba(252, 88, 119, 0.25);
+}
+
+.btn.danger-solid:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(252, 88, 119, 0.4),
+    0 0 12px rgba(252, 88, 119, 0.3);
+  border-color: rgba(252, 88, 119, 0.9);
+}
+
+.btn.danger-solid:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Cards: Hover effects elegantes */
@@ -1078,9 +1242,2020 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ============================================
+   TOURNAMENT PAGE STYLES
+   ============================================ */
+
+/* TournamentPage Styles */
+.tournament-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 7.5rem 1rem 3rem;
+}
+
+.tournament-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tournament-page h1 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-create-tournament-route {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #4f46e5;
+  background: rgba(79, 70, 229, 0.12);
+  color: #d9d6ff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.btn-create-tournament-route:hover {
+  background: #4f46e5;
+  color: #fff;
+}
+
+/* Tournaments List Section */
+.tournaments-list-section {
+  margin-top: 3rem;
+}
+
+.tournaments-list-section h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.torneios-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.torneio-card {
+  background: linear-gradient(135deg, #2a2a3e 0%, #1e1e2e 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.torneio-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+}
+
+.torneio-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(79, 70, 229, 0.3);
+}
+
+.torneio-card h3 {
+  color: #fff;
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.torneio-card p {
+  color: #e0e0e0;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.torneio-card p::before {
+  content: '•';
+  color: #4f46e5;
+  font-weight: bold;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-inscricoes_abertas {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+.status-em_andamento {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid #fbbf24;
+}
+
+.status-finalizado {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+/* Actions */
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.torneio-card button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.torneio-card button:hover {
+  transform: translateY(-1px);
+}
+
+.torneio-card button:active {
+  transform: translateY(0);
+}
+
+.btn-view-standings {
+  background: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+  border: 1px solid #4f46e5;
+}
+
+.btn-view-standings:hover {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn-inscrever {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+.btn-inscrever:hover {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-inscrito {
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1;
+  border: 1px solid #94a3b8;
+  cursor: default;
+}
+
+.btn-inscrito:hover {
+  transform: none;
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1;
+}
+
+.torneio-card button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.btn-iniciar {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border: 1px solid #fbbf24;
+}
+
+.btn-iniciar:hover {
+  background: #fbbf24;
+  color: white;
+}
+
+/* Loading state */
+.torneios-list p {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+/* Standings Modal */
+.standings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.standings-modal h2 {
+  color: #fff;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.standings-modal table {
+  background: #1a1a2e;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 800px;
+}
+
+.standings-modal th,
+.standings-modal td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.standings-modal th {
+  background: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.standings-modal td {
+  color: #e0e0e0;
+}
+
+.standings-modal tr:last-child td {
+  border-bottom: none;
+}
+
+.standings-modal button {
+  margin-top: 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  padding: 0.5rem 1.5rem;
+}
+
+.standings-modal button:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* ============================================
+   TOURNAMENT CREATE FORM STYLES
+   ============================================ */
+
+/* TournamentCreateForm Styles */
+.tournament-create-section {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.create-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.create-form-container h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.tournament-create-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: #e0e0e0;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #333;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #888;
+}
+
+.format-select-wrapper {
+  position: relative;
+}
+
+.format-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.5rem;
+}
+
+.format-select-arrow {
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a5b4fc;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.form-hint {
+  color: #a3a3a3;
+  font-size: 0.8rem;
+}
+
+.form-group input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.create-tournament-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.create-tournament-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+}
+
+.create-tournament-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.create-tournament-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tournament-create-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .create-form-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .tournament-create-form {
+    gap: 1.25rem;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .create-tournament-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tournament-create-section {
+    padding: 1rem;
+  }
+
+  .create-form-container h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tournament-create-form {
+    gap: 1rem;
+  }
+}
+
 /* Suavidade de transição em todos os elementos com pseudo-estados */
 *:focus-visible {
   outline: 2px solid rgba(199, 149, 255, 0.5);
   outline-offset: 2px;
   transition: outline 200ms ease;
+}
+
+/* ============================================
+   TOURNAMENT DETAIL PAGE (td-)
+   ============================================ */
+
+/* Page layout */
+.td-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 7.5rem 1rem 3rem;
+  animation: fade-in 400ms ease-out;
+}
+
+.td-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms ease;
+  margin-bottom: 1.5rem;
+}
+
+.td-back-btn:hover {
+  color: #fff;
+  border-color: rgba(199, 149, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(-2px);
+}
+
+/* Toast messages */
+.td-toast {
+  padding: 0.75rem 1rem;
+  border-radius: 0.7rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: slide-up 300ms ease-out;
+}
+
+.td-toast-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.td-toast-success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+/* Header */
+.td-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.td-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0.04em;
+  margin: 0 0 1rem;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(167, 79, 255, 0.2);
+}
+
+.td-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.5rem;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.td-meta-item strong {
+  color: var(--text-main);
+}
+
+.td-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.td-status-inscricoes_abertas {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.td-status-em_andamento {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.td-status-finalizado {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Content grid */
+.td-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.td-main-col {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.td-side-col {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Card (section container) */
+.td-card {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(160deg, rgba(34, 19, 69, 0.6), rgba(15, 10, 29, 0.85));
+  box-shadow: 0 4px 20px rgba(3, 2, 8, 0.3);
+  animation: slide-up 400ms ease-out;
+}
+
+.td-card-title {
+  margin: 0 0 1rem;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.td-empty-text {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Labels and inputs */
+.td-label {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.td-select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.td-select:focus {
+  outline: none;
+  border-color: rgba(199, 149, 255, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.td-hint {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin-top: 0.25rem;
+}
+
+.td-hint strong {
+  color: var(--brand-2);
+}
+
+.td-hint-success {
+  color: #7ef2a3;
+}
+
+.td-hint-success strong {
+  color: #7ef2a3;
+}
+
+.td-link {
+  color: var(--brand-2);
+  text-decoration: underline;
+}
+
+/* Deck picker list */
+.td-deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.td-deck-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease, background 150ms ease;
+  width: 100%;
+}
+
+.td-deck-option:hover {
+  background: rgba(199, 149, 255, 0.07);
+  border-color: rgba(199, 149, 255, 0.4);
+}
+
+.td-deck-option--selected {
+  background: rgba(199, 149, 255, 0.12);
+  border-color: rgba(199, 149, 255, 0.7);
+}
+
+.td-deck-option-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td-deck-option-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.td-format-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.4rem;
+  background: rgba(199, 149, 255, 0.15);
+  color: var(--brand-2);
+}
+
+.td-deck-option-count {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.td-deck-confirm-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* Inline row */
+.td-inline-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Profile */
+.td-profile-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.td-profile-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+/* Buttons */
+.td-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 220ms ease;
+  white-space: nowrap;
+}
+
+.td-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.td-btn-primary {
+  background: linear-gradient(145deg, #8e39ed, #5f23b3);
+  border-color: rgba(199, 149, 255, 0.5);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(167, 79, 255, 0.25);
+}
+
+.td-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(167, 79, 255, 0.4);
+}
+
+.td-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line);
+  color: var(--text-main);
+}
+
+.td-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(199, 149, 255, 0.5);
+}
+
+.td-btn-accent {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #4ade80;
+}
+
+.td-btn-accent:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+.td-btn-success {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #86efac;
+}
+
+.td-btn-danger {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fda4af;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.td-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+/* ============================================
+   OWNER PANEL
+   ============================================ */
+.td-owner-panel {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: linear-gradient(155deg, rgba(52, 30, 5, 0.5), rgba(24, 14, 4, 0.85));
+}
+
+.td-owner-actions {
+  margin-bottom: 1rem;
+}
+
+.td-owner-warning {
+  margin: 0 0 0.6rem;
+  color: #fbbf24;
+}
+
+.td-owner-actions .td-btn {
+  width: 100%;
+}
+
+.td-owner-drop-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.td-owner-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.td-owner-player-grid {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 270px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.td-owner-player-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.td-owner-player-info {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.td-owner-player-name {
+  color: #fff;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td-owner-player-meta {
+  color: #c6b8a0;
+  font-size: 0.8rem;
+}
+
+/* ============================================
+   MATCH PANEL
+   ============================================ */
+.td-match-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.td-match-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8e39ed, #c795ff, #8e39ed);
+  background-size: 200% 100%;
+  animation: shimmer-bar 3s linear infinite;
+}
+
+@keyframes shimmer-bar {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.td-match-versus {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.td-match-bye {
+  text-align: center;
+}
+
+.td-match-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.td-match-you {
+  border-color: rgba(142, 57, 237, 0.4);
+  background: rgba(142, 57, 237, 0.08);
+}
+
+.td-match-opponent {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.td-match-player-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-soft);
+}
+
+.td-match-player-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  word-break: break-word;
+}
+
+.td-match-vs {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.8rem;
+  color: var(--brand-2);
+  text-shadow: 0 0 12px rgba(199, 149, 255, 0.4);
+}
+
+.td-match-bye-text {
+  color: var(--text-soft);
+  margin: 0.75rem 0 0;
+}
+
+/* Reported result */
+.td-match-reported {
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0.75rem;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.td-match-reported-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #86efac;
+}
+
+.td-match-score {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2.4rem;
+  color: #fff;
+  margin: 0.3rem 0 0;
+}
+
+/* Score input */
+.td-match-report {
+  text-align: center;
+}
+
+.td-match-report-title {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.td-match-score-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.td-score-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.td-score-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td-score-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.td-score-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 180ms ease;
+}
+
+.td-score-btn:hover {
+  background: rgba(167, 79, 255, 0.2);
+  border-color: rgba(199, 149, 255, 0.5);
+}
+
+.td-score-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  color: #fff;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.td-score-x {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.4rem;
+  color: var(--text-soft);
+  margin-top: 1.2rem;
+}
+
+.td-btn-report {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   STANDINGS TABLE
+   ============================================ */
+.td-table-wrapper {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+}
+
+.td-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.td-table thead {
+  background: rgba(142, 57, 237, 0.12);
+}
+
+.td-table th {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand-2);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.td-table td {
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+}
+
+.td-table tbody tr {
+  transition: background 150ms ease;
+}
+
+.td-table tbody tr:hover {
+  background: rgba(167, 79, 255, 0.06);
+}
+
+.td-rank {
+  font-weight: 700;
+  color: var(--brand-2);
+}
+
+.td-player-name {
+  font-weight: 600;
+}
+
+.td-deck-name {
+  color: var(--text-soft);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td-checkin-dot {
+  color: var(--text-soft);
+}
+
+.td-checkin-dot.td-checked {
+  color: #4ade80;
+}
+
+.td-row-dropped td {
+  opacity: 0.5;
+}
+
+.td-dropped-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f87171;
+  letter-spacing: 0.05em;
+}
+
+.optional-label {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-soft);
+}
+
+/* Loading */
+.td-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  color: var(--text-soft);
+}
+
+.td-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--line);
+  border-top-color: var(--brand-2);
+  border-radius: 50%;
+  animation: td-spin 0.8s linear infinite;
+}
+
+@keyframes td-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .td-content {
+    grid-template-columns: 1fr;
+  }
+
+  .td-match-versus {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .td-match-vs {
+    font-size: 1.4rem;
+  }
+
+  .td-match-score-input {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .td-score-x {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .td-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .td-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .td-table {
+    font-size: 0.8rem;
+  }
+
+  .td-table th,
+  .td-table td {
+    padding: 0.45rem 0.5rem;
+  }
+}
+
+/* ============================================
+   MY DECKS PAGE
+   ============================================ */
+.my-decks-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 7.5rem 1rem 3rem;
+}
+
+.my-decks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.my-decks-empty {
+  text-align: center;
+  margin-top: 2rem;
+  opacity: 0.7;
+}
+
+.my-decks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.my-deck-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 260ms ease, box-shadow 260ms ease;
+}
+
+.my-deck-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.my-deck-card-image {
+  width: clamp(160px, 45vw, 220px);
+  aspect-ratio: 63 / 88;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  margin: 1rem auto 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.my-deck-card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.my-deck-card-name {
+  margin-bottom: 0.5rem;
+  color: var(--brand-2);
+}
+
+.my-deck-card-format {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-bottom: 1rem;
+}
+
+.my-deck-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.my-deck-card-date {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-bottom: auto;
+}
+
+.my-deck-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.my-deck-card-actions .btn {
+  flex: 1;
+}
+
+/* Delete Modal */
+.delete-modal {
+  max-width: 500px;
+}
+
+.delete-modal-title {
+  margin: 0 0 1rem;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.8rem;
+}
+
+.delete-modal-text {
+  margin-bottom: 1rem;
+  color: var(--text-soft);
+}
+
+.delete-modal-text strong {
+  color: var(--brand-2);
+}
+
+.delete-modal-hint {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.delete-modal-input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  padding: 0.75rem;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.delete-modal-actions .btn {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .my-decks-page {
+    padding: 6.5rem 0.75rem 2rem;
+  }
+
+  .my-decks-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .my-decks-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   DECK STATS
+   ============================================ */
+.ds-container {
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.01);
+  width: 100%;
+}
+
+.ds-title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.ds-empty {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.ds-section {
+  margin-bottom: 1.5rem;
+}
+
+.ds-section-last {
+  margin-bottom: 0;
+}
+
+.ds-section-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--brand-2);
+}
+
+/* Mana Curve Chart */
+.ds-curve-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  height: 148px;
+}
+
+.ds-curve-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 30px;
+}
+
+.ds-curve-count {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.ds-curve-count.ds-zero {
+  font-weight: normal;
+  opacity: 0.45;
+}
+
+.ds-curve-bar-bg {
+  width: 100%;
+  height: 108px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.ds-curve-bar-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #a74fff, #6f23b3);
+  transition: height 280ms ease;
+}
+
+.ds-curve-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* Color Distribution */
+.ds-color-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ds-color-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ds-color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.ds-color-bar-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ds-color-bar-bg {
+  flex: 1;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.ds-color-bar-fill {
+  height: 100%;
+  transition: width 300ms ease;
+}
+
+.ds-color-label {
+  font-size: 0.8rem;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Type Distribution */
+.ds-type-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ds-type-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  background: rgba(167, 79, 255, 0.08);
+  border-radius: 0.4rem;
+  border: 1px solid rgba(167, 79, 255, 0.2);
+}
+
+.ds-type-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.ds-type-value {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* ============================================
+   HAND SIMULATOR
+   ============================================ */
+.hs-container {
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.01);
+  width: 100%;
+}
+
+.hs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.hs-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.hs-count {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.hs-cta {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.hs-cta-text {
+  margin: 0 0 1rem;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.hs-hand-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+  min-height: 245px;
+  padding: 0.5rem 0.25rem 0.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hs-hand-fan {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.hs-card {
+  position: relative;
+  width: 112px;
+  height: 156px;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.3);
+  transform-origin: bottom center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  transition: transform 180ms ease;
+  flex-shrink: 0;
+}
+
+.hs-card:hover {
+  transform: translateY(-12px) !important;
+}
+
+.hs-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hs-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0.25rem;
+  font-size: 0.7rem;
+  text-align: center;
+  word-break: break-word;
+}
+
+.hs-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.hs-actions .btn {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .ds-curve-chart {
+    height: 120px;
+  }
+
+  .ds-curve-bar-bg {
+    height: 80px;
+  }
+
+  .ds-curve-col {
+    min-width: 24px;
+  }
+
+  .hs-card {
+    width: 84px;
+    height: 117px;
+  }
+
+  .hs-hand-area {
+    min-height: 190px;
+  }
+}
+
+/* ============================================
+   SPINNER (reusable)
+   ============================================ */
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 0;
+  color: var(--text-soft);
+}
+
+.spinner {
+  border: 3px solid var(--line);
+  border-top-color: var(--brand-2);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-text {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   SKELETON (reusable)
+   ============================================ */
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Skeleton Deck Card */
+.skeleton-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.skeleton-card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-card-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Skeleton Torneio Card */
+.skeleton-torneio {
+  background: linear-gradient(135deg, #2a2a3e 0%, #1e1e2e 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* Skeleton Tournament Detail */
+.skeleton-td {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.skeleton-td-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-td-content {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+.skeleton-td-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.skeleton-td-side {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 900px) {
+  .skeleton-td-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   MOBILE: TOURNAMENT LIST PAGE
+   ============================================ */
+@media (max-width: 768px) {
+  .tournament-page {
+    padding: 6.5rem 0.75rem 2rem;
+  }
+
+  .tournament-page h1 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .tournaments-list-section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .torneios-list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .torneio-card {
+    padding: 1.2rem;
+  }
+
+  .torneio-card .actions {
+    flex-direction: column;
+  }
+
+  .torneio-card .actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .tournament-page {
+    padding: 6rem 0.5rem 1.5rem;
+  }
+
+  .tournament-page h1 {
+    font-size: 1.5rem;
+  }
+
+  .torneio-card h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* ============================================
+   MOBILE: TOURNAMENT DETAIL PAGE (enhanced)
+   ============================================ */
+@media (max-width: 600px) {
+  .td-page {
+    padding: 6.5rem 0.5rem 1.5rem;
+  }
+
+  .td-back-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .td-header {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .td-title {
+    font-size: 1.3rem;
+  }
+
+  .td-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .td-btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .td-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .td-deck-option {
+    padding: 0.6rem;
+  }
+
+  .td-match-score-input {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* ============================================
+   MOBILE: HOME PAGE
+   ============================================ */
+@media (max-width: 600px) {
+  .hero {
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 1.3rem;
+  }
+
+  .hero p {
+    font-size: 0.85rem;
+  }
+
+  .banner-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .banner-card {
+    padding: 1rem;
+  }
+
+  .section-title h2 {
+    font-size: 1.3rem;
+  }
+}
+
+/* ============================================
+   MOBILE: DECK BUILDER (enhanced small screens)
+   ============================================ */
+@media (max-width: 480px) {
+  main {
+    padding: 6rem 0.5rem 2rem;
+  }
+
+  .deck-builder {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+  }
+
+  .deck-form h2 {
+    font-size: 1.3rem;
+  }
+
+  .deck-actions {
+    flex-direction: column;
+  }
+
+  .deck-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .deck-list li {
+    font-size: 0.85rem;
+  }
+}
+
+/* ============================================
+   MOBILE: AUTH MODAL
+   ============================================ */
+@media (max-width: 480px) {
+  .auth-modal {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+  }
+
+  .delete-modal-actions {
+    flex-direction: column;
+  }
+
+  .delete-modal-actions .btn {
+    width: 100%;
+  }
 }
