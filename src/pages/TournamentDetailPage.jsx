@@ -5,6 +5,7 @@ import {
     PlayerProfile,
     MatchPanel,
     StandingsTable,
+    OwnerControlPanel,
 } from "../components/tournament";
 import { SkeletonTournamentDetail } from "../components";
 
@@ -15,8 +16,11 @@ export function TournamentDetailPage() {
         standings,
         loading,
         actionLoading,
+        droppingPlayerId,
         error,
         successMsg,
+        isOwner,
+        pendingCheckinPlayers,
         currentPlayer,
         myMatch,
         decks,
@@ -26,6 +30,8 @@ export function TournamentDetailPage() {
         handleCheckin,
         handleInscrever,
         handleReportResult,
+        handleNextRound,
+        handleDropPlayer,
         usuario,
     } = useTournamentDetail();
 
@@ -53,7 +59,21 @@ export function TournamentDetailPage() {
                             actionLoading={actionLoading}
                         />
 
+                        {isOwner && (
+                            <OwnerControlPanel
+                                torneio={torneio}
+                                standings={standings}
+                                usuarioId={usuario?.id}
+                                pendingCheckinPlayers={pendingCheckinPlayers}
+                                onNextRound={handleNextRound}
+                                onDropPlayer={handleDropPlayer}
+                                actionLoading={actionLoading}
+                                droppingPlayerId={droppingPlayerId}
+                            />
+                        )}
+
                         <PlayerProfile
+                            torneio={torneio}
                             currentPlayer={currentPlayer}
                             decks={decks}
                             selectedDeckId={selectedDeckId}

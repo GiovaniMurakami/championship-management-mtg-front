@@ -1,4 +1,5 @@
 export function PlayerProfile({
+    torneio,
     currentPlayer,
     decks,
     selectedDeckId,
@@ -8,8 +9,20 @@ export function PlayerProfile({
     onInscrever,
     actionLoading,
 }) {
+    const canEditDeck = torneio?.status === "inscricoes_abertas";
+    const isOngoing = torneio?.status === "em_andamento";
+    const isFinished = torneio?.status === "finalizado";
+
     const isCheckedIn =
         currentPlayer?.checkIn || currentPlayer?.checkin || currentPlayer?.checkedIn || currentPlayer?.presenca || false;
+
+    const isCheckedInNextRound =
+        currentPlayer?.checkInProximaRodada
+        || currentPlayer?.checkinProximaRodada
+        || currentPlayer?.nextRoundCheckin
+        || false;
+
+    const checkinDone = isOngoing ? isCheckedInNextRound : isCheckedIn;
 
     const isDeckConfirmed =
         currentPlayer?.deckConfirmado || currentPlayer?.deckNome || currentPlayer?.deck?.nome || false;
@@ -58,6 +71,12 @@ export function PlayerProfile({
                         </p>
                     )}
 
+                    {!canEditDeck && (
+                        <p className="td-hint">
+                            O torneio já começou. Troca de deck está bloqueada.
+                        </p>
+                    )}
+
                     {decks.length === 0 ? (
                         <p className="td-hint">Você não tem decks cadastrados. <a href="/decks" className="td-link">Criar deck</a></p>
                     ) : (
@@ -69,6 +88,7 @@ export function PlayerProfile({
                                         type="button"
                                         className={`td-deck-option ${selectedDeckId === deck.id ? "td-deck-option--selected" : ""}`}
                                         onClick={() => onDeckChange(deck.id)}
+                                        disabled={!canEditDeck || actionLoading}
                                     >
                                         <span className="td-deck-option-name">{deck.nome}</span>
                                         <span className="td-deck-option-meta">
@@ -80,14 +100,16 @@ export function PlayerProfile({
                             </div>
                             <button
                                 className="td-btn td-btn-secondary td-deck-confirm-btn"
-                                disabled={!selectedDeckId || actionLoading}
+                                disabled={!canEditDeck || !selectedDeckId || actionLoading}
                                 onClick={onChooseDeck}
                             >
                                 {actionLoading
                                     ? "Salvando..."
-                                    : selectedDeck
-                                        ? `Confirmar "${selectedDeck.nome}"`
-                                        : "Selecione um deck"}
+                                    : !canEditDeck
+                                        ? "Troca de deck bloqueada"
+                                        : selectedDeck
+                                            ? `Confirmar "${selectedDeck.nome}"`
+                                            : "Selecione um deck"}
                             </button>
                         </>
                     )}
@@ -98,11 +120,21 @@ export function PlayerProfile({
                     <label className="td-label">Check-in</label>
                     <div className="td-inline-row">
                         <button
-                            className={`td-btn ${isCheckedIn ? "td-btn-success" : "td-btn-primary"}`}
-                            disabled={actionLoading || isCheckedIn}
+                            className={`td-btn ${checkinDone ? "td-btn-success" : "td-btn-primary"}`}
+                            disabled={actionLoading || checkinDone || isFinished}
                             onClick={onCheckin}
                         >
-                            {isCheckedIn ? "✓ Check-in feito" : actionLoading ? "Aguarde..." : "Fazer check-in"}
+                            {isFinished
+                                ? "Torneio finalizado"
+                                : checkinDone
+                                    ? isOngoing
+                                        ? "✓ Check-in da próxima rodada feito"
+                                        : "✓ Check-in feito"
+                                    : actionLoading
+                                        ? "Aguarde..."
+                                        : isOngoing
+                                            ? "Fazer check-in da próxima rodada"
+                                            : "Fazer check-in"}
                         </button>
                     </div>
                 </div>

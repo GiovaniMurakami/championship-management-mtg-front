@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { criarTorneio } from "../services/backendApi";
 
+const TOURNAMENT_FORMATS = [
+    { value: "standard", label: "Standard" },
+    { value: "modern", label: "Modern" },
+    { value: "pioneer", label: "Pioneer" },
+    { value: "pauper", label: "Pauper" },
+    { value: "commander", label: "Commander" },
+];
+
 export function TournamentCreateForm({ token, onTournamentCreated }) {
     const [createForm, setCreateForm] = useState({
         nome: "",
@@ -18,8 +26,8 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
 
         try {
             await criarTorneio(createForm, token);
-            setCreateForm({ nome: "", horario: "", formato: "standard" });
-            onTournamentCreated();
+            setCreateForm({ nome: "", horario: "", formato: "standard", premio: "" });
+            onTournamentCreated?.();
         } catch (error) {
             setError("Erro ao criar torneio. Tente novamente.");
             console.error("Erro ao criar torneio:", error);
@@ -83,18 +91,24 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
 
                     <div className="form-group">
                         <label htmlFor="formato">Formato</label>
-                        <select
-                            id="formato"
-                            name="formato"
-                            value={createForm.formato}
-                            onChange={handleChange}
-                            disabled={loading}
-                        >
-                            <option value="standard">Standard</option>
-                            <option value="modern">Modern</option>
-                            <option value="pioneer">Pioneer</option>
-                            <option value="commander">Commander</option>
-                        </select>
+                        <div className="format-select-wrapper">
+                            <select
+                                id="formato"
+                                name="formato"
+                                className="format-select"
+                                value={createForm.formato}
+                                onChange={handleChange}
+                                disabled={loading}
+                            >
+                                {TOURNAMENT_FORMATS.map((format) => (
+                                    <option key={format.value} value={format.value}>
+                                        {format.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <span className="format-select-arrow" aria-hidden="true">▾</span>
+                        </div>
+                        <small className="form-hint">Escolha o formato oficial do torneio.</small>
                     </div>
 
                     {error && <div className="error-message">{error}</div>}

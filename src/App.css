@@ -1253,13 +1253,37 @@ html {
   padding: 7.5rem 1rem 3rem;
 }
 
+.tournament-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
 .tournament-page h1 {
   color: #fff;
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 0;
   font-size: 2.5rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-create-tournament-route {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #4f46e5;
+  background: rgba(79, 70, 229, 0.12);
+  color: #d9d6ff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.btn-create-tournament-route:hover {
+  background: #4f46e5;
+  color: #fff;
 }
 
 /* Tournaments List Section */
@@ -1408,6 +1432,24 @@ html {
 .btn-inscrever:hover {
   background: #22c55e;
   color: white;
+}
+
+.btn-inscrito {
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1;
+  border: 1px solid #94a3b8;
+  cursor: default;
+}
+
+.btn-inscrito:hover {
+  transform: none;
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1;
+}
+
+.torneio-card button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
 
 .btn-iniciar {
@@ -1560,6 +1602,33 @@ html {
 
 .form-group input::placeholder {
   color: #888;
+}
+
+.format-select-wrapper {
+  position: relative;
+}
+
+.format-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.5rem;
+}
+
+.format-select-arrow {
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a5b4fc;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.form-hint {
+  color: #a3a3a3;
+  font-size: 0.8rem;
 }
 
 .form-group input[type="datetime-local"] {
@@ -2006,6 +2075,89 @@ html {
   background: rgba(34, 197, 94, 0.2);
   border-color: rgba(34, 197, 94, 0.5);
   color: #86efac;
+}
+
+.td-btn-danger {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fda4af;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.td-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+/* ============================================
+   OWNER PANEL
+   ============================================ */
+.td-owner-panel {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: linear-gradient(155deg, rgba(52, 30, 5, 0.5), rgba(24, 14, 4, 0.85));
+}
+
+.td-owner-actions {
+  margin-bottom: 1rem;
+}
+
+.td-owner-warning {
+  margin: 0 0 0.6rem;
+  color: #fbbf24;
+}
+
+.td-owner-actions .td-btn {
+  width: 100%;
+}
+
+.td-owner-drop-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.td-owner-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.td-owner-player-grid {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 270px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.td-owner-player-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.td-owner-player-info {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.td-owner-player-name {
+  color: #fff;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td-owner-player-meta {
+  color: #c6b8a0;
+  font-size: 0.8rem;
 }
 
 /* ============================================

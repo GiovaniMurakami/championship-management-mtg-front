@@ -7,6 +7,8 @@ import {
     inscreverTorneio,
     registrarResultado,
     buscarTorneio,
+    proximaRodada,
+    dropJogador,
 } from "../services/backendApi";
 import {
     subscribeToTournament,
@@ -24,11 +26,19 @@ export function useTournamentDetail() {
     const [partidas, setPartidas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
+    const [droppingPlayerId, setDroppingPlayerId] = useState("");
     const [selectedDeckId, setSelectedDeckId] = useState("");
     const [error, setError] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
     const { decks } = useMyDecks(token, usuario?.id);
+    const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
+    const isCheckedForNextRound = (player) =>
+        Boolean(
+            player?.checkInProximaRodada
+            || player?.checkinProximaRodada
+            || player?.nextRoundCheckin,
+        );
 
     const loadTournament = useCallback(async () => {
         if (!torneioId || !token) return;
@@ -99,7 +109,13 @@ export function useTournamentDetail() {
                 setStandings((prev) =>
                     prev.map((p) =>
                         p.usuarioId === usuarioId || p.id === usuarioId
-                            ? { ...p, checkin: true }
+                            ? {
+                                ...p,
+                                checkin: true,
+                                checkIn: true,
+                                checkInProximaRodada: true,
+                                checkinProximaRodada: true,
+                            }
                             : p
                     )
                 );
@@ -124,10 +140,23 @@ export function useTournamentDetail() {
     const currentPlayer = useMemo(() => {
         return (
             standings.find(
-                (p) => p.usuarioId === usuario?.id || p.id === usuario?.id
+                (p) => normalizeId(p.usuarioId) === normalizeId(usuario?.id) || normalizeId(p.id) === normalizeId(usuario?.id)
             ) || null
         );
     }, [standings, usuario?.id]);
+
+    const isOwner = useMemo(
+        () => normalizeId(torneio?.donoId) === normalizeId(usuario?.id),
+        [torneio?.donoId, usuario?.id],
+    );
+
+    const pendingCheckinPlayers = useMemo(() => {
+        if (torneio?.status !== "em_andamento") {
+            return [];
+        }
+
+        return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player));
+    }, [standings, torneio?.status]);
 
     // Find my current match
     const myMatch = useMemo(() => {
@@ -135,10 +164,10 @@ export function useTournamentDetail() {
         return (
             partidas.find(
                 (p) =>
-                    p.jogador1Id === usuario.id ||
-                    p.jogador2Id === usuario.id ||
-                    p.jogador1?.id === usuario.id ||
-                    p.jogador2?.id === usuario.id
+                    normalizeId(p.jogador1Id) === normalizeId(usuario.id) ||
+                    normalizeId(p.jogador2Id) === normalizeId(usuario.id) ||
+                    normalizeId(p.jogador1?.id) === normalizeId(usuario.id) ||
+                    normalizeId(p.jogador2?.id) === normalizeId(usuario.id)
             ) || null
         );
     }, [partidas, usuario?.id]);
@@ -161,6 +190,11 @@ export function useTournamentDetail() {
 
     const handleChooseDeck = async () => {
         if (!selectedDeckId || !torneioId) return;
+        if (torneio?.status !== "inscricoes_abertas") {
+            setError("Não é possível trocar de deck após o início do torneio.");
+            clearMessages();
+            return;
+        }
         setActionLoading(true);
         setError("");
         try {
@@ -228,14 +262,67 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleNextRound = async () => {
+        if (!torneioId || !isOwner) return;
+        if (pendingCheckinPlayers.length > 0) {
+            const total = pendingCheckinPlayers.length;
+            setError(
+                `Não é possível iniciar a próxima rodada: faltam ${total} jogador(es) fazer check-in da próxima rodada.`,
+            );
+            clearMessages();
+            return;
+        }
+        setActionLoading(true);
+        setError("");
+        try {
+            const data = await proximaRodada(torneioId, token);
+            if (data?.finalizado) {
+                setSuccessMsg("Torneio finalizado com sucesso!");
+            } else {
+                setSuccessMsg(`Rodada ${data?.rodadaAtual || "seguinte"} iniciada!`);
+            }
+            await loadTournament();
+            await loadStandings();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao avançar para a próxima rodada.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDropPlayer = async (jogadorId) => {
+        if (!torneioId || !isOwner || !jogadorId) return;
+        setActionLoading(true);
+        setDroppingPlayerId(jogadorId);
+        setError("");
+        try {
+            await dropJogador(torneioId, jogadorId, token);
+            setSuccessMsg("Jogador dropado com sucesso!");
+            await loadTournament();
+            await loadStandings();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao dropar jogador.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+            setDroppingPlayerId("");
+        }
+    };
+
     return {
         torneio,
         standings,
         partidas,
         loading,
         actionLoading,
+        droppingPlayerId,
         error,
         successMsg,
+        isOwner,
+        pendingCheckinPlayers,
         currentPlayer,
         myMatch,
         decks,
@@ -245,6 +332,8 @@ export function useTournamentDetail() {
         handleCheckin,
         handleInscrever,
         handleReportResult,
+        handleNextRound,
+        handleDropPlayer,
         usuario,
     };
 }

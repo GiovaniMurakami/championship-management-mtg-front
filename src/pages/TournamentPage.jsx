@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { listarTorneios, inscreverTorneio, iniciarTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
-import { TournamentCreateForm, SkeletonTorneioCard } from "../components";
+import { SkeletonTorneioCard } from "../components";
 
 export function TournamentPage() {
     const { token, usuario } = useAuth();
     const [torneios, setTorneios] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [inscricoesLocais, setInscricoesLocais] = useState({});
     const channelsRef = useRef({});
     const navigate = useNavigate();
+
+    const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
 
     const loadTorneios = useCallback(async () => {
         if (!token) return;
@@ -56,9 +59,16 @@ export function TournamentPage() {
     const handleParticipanteInscrito = useCallback(
         (torneioId, data) => {
             console.log("Participante inscrito:", data);
+            const inscritoId = normalizeId(data?.usuarioId || data?.userId || data?.usuario?.id || data?.id);
+            if (inscritoId && inscritoId === normalizeId(usuario?.id)) {
+                setInscricoesLocais((prev) => ({
+                    ...prev,
+                    [torneioId]: true,
+                }));
+            }
             loadTorneios();
         },
-        [loadTorneios]
+        [loadTorneios, usuario?.id]
     );
 
     const handleCheckinRealizado = useCallback(
@@ -95,6 +105,10 @@ export function TournamentPage() {
     const handleInscrever = async (torneioId) => {
         try {
             await inscreverTorneio(torneioId, token);
+            setInscricoesLocais((prev) => ({
+                ...prev,
+                [torneioId]: true,
+            }));
             loadTorneios();
         } catch (error) {
             console.error("Erro ao inscrever:", error);
@@ -118,13 +132,47 @@ export function TournamentPage() {
         return new Date(dateString).toLocaleString("pt-BR");
     };
 
-    const isOwner = (torneio) => torneio.donoId === usuario?.id;
+    const isOwner = (torneio) => normalizeId(torneio.donoId) === normalizeId(usuario?.id);
+
+    const isInscrito = (torneio) => {
+        if (!usuario?.id) return false;
+
+        if (inscricoesLocais[torneio.id]) {
+            return true;
+        }
+
+        if (torneio?.jaInscrito || torneio?.inscrito || torneio?.isInscrito) {
+            return true;
+        }
+
+        const participantes = torneio?.participantes || torneio?.inscritos || torneio?.players || [];
+        if (!Array.isArray(participantes)) {
+            return false;
+        }
+
+        return participantes.some((participante) => {
+            const participanteId =
+                participante?.usuarioId ||
+                participante?.userId ||
+                participante?.usuario?.id ||
+                participante?.id;
+
+            return normalizeId(participanteId) === normalizeId(usuario.id);
+        });
+    };
 
     return (
         <div className="tournament-page">
-            <h1>Torneios</h1>
-
-            <TournamentCreateForm token={token} onTournamentCreated={loadTorneios} />
+            <div className="tournament-page-header">
+                <h1>Torneios</h1>
+                <button
+                    className="btn-create-tournament-route"
+                    type="button"
+                    onClick={() => navigate("/torneios/criar")}
+                >
+                    + Criar Torneio
+                </button>
+            </div>
 
             <section className="tournaments-list-section">
                 <h2>Torneios Disponíveis</h2>
@@ -147,21 +195,33 @@ export function TournamentPage() {
                                 </p>
 
                                 <div className="actions">
-                                    <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
-                                        Ver Torneio
-                                    </button>
+                                    {(() => {
+                                        const inscrito = isInscrito(torneio);
 
-                                    {torneio.status === "inscricoes_abertas" && (
-                                        <button className="btn-inscrever" onClick={() => handleInscrever(torneio.id)}>
-                                            Inscrever-se
-                                        </button>
-                                    )}
+                                        return (
+                                            <>
+                                                <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
+                                                    Ver Torneio
+                                                </button>
 
-                                    {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
-                                        <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
-                                            Iniciar Torneio
-                                        </button>
-                                    )}
+                                                {torneio.status === "inscricoes_abertas" && (
+                                                    <button
+                                                        className={inscrito ? "btn-inscrito" : "btn-inscrever"}
+                                                        onClick={() => handleInscrever(torneio.id)}
+                                                        disabled={inscrito}
+                                                    >
+                                                        {inscrito ? "Inscrito" : "Inscrever-se"}
+                                                    </button>
+                                                )}
+
+                                                {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
+                                                    <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
+                                                        Iniciar Torneio
+                                                    </button>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         ))}
