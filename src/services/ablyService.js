@@ -80,6 +80,12 @@ export const subscribeToTournament = (torneioId, callbacks) => {
             callbacks.onDeckInserido(msg);
         });
     }
+    if (callbacks.onMesaAtualizada) {
+        channel.subscribe("mesa_atualizada", (msg) => {
+            console.log(`[Ably] Evento recebido "mesa_atualizada":`, msg.data);
+            callbacks.onMesaAtualizada(msg);
+        });
+    }
 
     return channel;
 };

@@ -1,5 +1,6 @@
 export function PlayerProfile({
     torneio,
+    usuarioNome,
     currentPlayer,
     decks,
     selectedDeckId,
@@ -38,12 +39,19 @@ export function PlayerProfile({
         deck.maindeck?.reduce((sum, c) => sum + (c.quantidade || 1), 0) || 0;
 
     const selectedDeck = decks.find((d) => d.id === selectedDeckId);
+    const displayName =
+        currentPlayer?.nome
+        || currentPlayer?.username
+        || currentPlayer?.userName
+        || usuarioNome
+        || "";
 
     // Not registered yet
     if (!currentPlayer) {
         return (
             <section className="td-card td-profile-card">
                 <h2 className="td-card-title">Sua Participação</h2>
+                {displayName && <p className="td-hint">Jogador: <strong>{displayName}</strong></p>}
                 <p className="td-empty-text">Você ainda não está inscrito neste torneio.</p>
                 <button
                     className="td-btn td-btn-accent"
@@ -59,6 +67,7 @@ export function PlayerProfile({
     return (
         <section className="td-card td-profile-card">
             <h2 className="td-card-title">Sua Participação</h2>
+            {displayName && <p className="td-hint">Jogador: <strong>{displayName}</strong></p>}
 
             <div className="td-profile-grid">
                 {/* Deck selection */}

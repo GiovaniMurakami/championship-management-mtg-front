@@ -4,6 +4,7 @@ import {
     TournamentHeader,
     PlayerProfile,
     MatchPanel,
+    MatchTablesPanel,
     StandingsTable,
     OwnerControlPanel,
 } from "../components/tournament";
@@ -23,6 +24,7 @@ export function TournamentDetailPage() {
         pendingCheckinPlayers,
         currentPlayer,
         myMatch,
+        partidas,
         decks,
         selectedDeckId,
         setSelectedDeckId,
@@ -77,6 +79,7 @@ export function TournamentDetailPage() {
 
                             <PlayerProfile
                                 torneio={torneio}
+                                usuarioNome={usuario?.nome}
                                 currentPlayer={currentPlayer}
                                 decks={decks}
                                 selectedDeckId={selectedDeckId}
@@ -90,6 +93,11 @@ export function TournamentDetailPage() {
                     )}
 
                     <div className="td-side-col">
+                        <MatchTablesPanel
+                            torneio={torneio}
+                            partidas={partidas}
+                            usuarioId={usuario?.id}
+                        />
                         <StandingsTable standings={standings} />
                     </div>
                 </div>

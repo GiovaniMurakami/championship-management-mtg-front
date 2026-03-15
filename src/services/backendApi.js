@@ -91,3 +91,8 @@ export const getStandings = (torneioId, token) =>
   httpClient.get(`/torneio/${torneioId}/standings`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+export const listarPartidasTorneio = (torneioId, token) =>
+  httpClient.get(`/torneio/${torneioId}/partidas`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
