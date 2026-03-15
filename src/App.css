@@ -128,7 +128,7 @@
 
 .user-chip {
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 0.75rem;
   background: rgba(167, 79, 255, 0.18);
   padding: 0.45rem 0.8rem;
   font-size: 0.85rem;
@@ -442,15 +442,17 @@ select {
   list-style: none;
   display: grid;
   gap: 0.4rem;
-  max-height: 360px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
+.suggestions {
+  max-height: 360px;
+}
+
 .picker-column .deck-list {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
-  max-height: none;
 }
 
 .suggestions button {
@@ -491,6 +493,10 @@ select {
   background: rgba(255, 255, 255, 0.02);
   padding: 0.35rem;
   min-width: 0;
+}
+
+.deck-list li:first-child {
+  margin-top: 0.25rem;
 }
 
 .deck-list li span {
@@ -590,17 +596,23 @@ select {
   right: 1.5rem;
   bottom: 1.5rem;
   z-index: 70;
-  width: min(300px, calc(100vw - 2rem));
+  width: fit-content;
+  max-width: calc(100vw - 2rem);
   border: 1px solid rgba(199, 149, 255, 0.5);
   border-radius: 1rem;
   background: rgba(12, 8, 24, 0.95);
   box-shadow: 0 16px 40px rgba(3, 2, 8, 0.6);
   padding: 0.75rem;
   pointer-events: none;
+  display: grid;
+  justify-items: center;
 }
 
 .card-preview-modal img {
-  width: 100%;
+  width: clamp(180px, 22vw, 230px);
+  max-width: 100%;
+  aspect-ratio: 63 / 88;
+  object-fit: cover;
   border-radius: 0.8rem;
 }
 
@@ -609,6 +621,7 @@ select {
   color: #efe6ff;
   font-weight: 600;
   text-align: center;
+  max-width: clamp(180px, 22vw, 230px);
 }
 
 /* Mobile optimized card preview */
@@ -735,7 +748,7 @@ select {
     border: 1px solid rgba(199, 149, 255, 0.45);
     background: rgba(167, 79, 255, 0.24);
     padding: 0.4rem 0.7rem;
-    border-radius: 999px;
+    border-radius: 0.6rem;
   }
 
   .floating-navbar .auth-actions .logout-btn {
@@ -1093,12 +1106,12 @@ select:hover {
 .suggestions button:hover {
   border-color: rgba(199, 149, 255, 0.6);
   background: rgba(199, 149, 255, 0.1);
-  transform: translateX(4px);
+  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(167, 79, 255, 0.15);
 }
 
 .suggestions button:active {
-  transform: translateX(2px);
+  transform: translateY(0);
 }
 
 /* Deck list: Hover effects */
@@ -1111,7 +1124,7 @@ select:hover {
   border-color: rgba(199, 149, 255, 0.4);
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 2px 8px rgba(167, 79, 255, 0.1);
-  transform: translateX(2px);
+  transform: translateY(-1px);
 }
 
 .deck-list li button {
