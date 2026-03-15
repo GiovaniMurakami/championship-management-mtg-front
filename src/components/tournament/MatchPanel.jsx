@@ -65,7 +65,11 @@ export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading }) 
                             <span className="td-match-player-label">Você</span>
                             <span className="td-match-player-name">{myName}</span>
                         </div>
-                        <div className="td-match-vs">VS</div>
+                        <div className={`td-match-vs${isReported ? " td-match-vs-score" : ""}`}>
+                            {isReported
+                                ? `${myMatch.vitoriasJogador1 ?? "?"} - ${myMatch.vitoriasJogador2 ?? "?"}`
+                                : "VS"}
+                        </div>
                         <div className="td-match-player td-match-opponent">
                             <span className="td-match-player-label">Oponente</span>
                             <span className="td-match-player-name">{opponentName}</span>
@@ -73,12 +77,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading }) 
                     </div>
 
                     {isReported ? (
-                        <div className="td-match-reported">
-                            <span className="td-match-reported-badge">Resultado registrado</span>
-                            <p className="td-match-score">
-                                {myMatch.vitoriasJogador1 ?? "?"} - {myMatch.vitoriasJogador2 ?? "?"}
-                            </p>
-                        </div>
+                        <p className="td-match-reported-inline">
+                            Resultado registrado
+                        </p>
                     ) : (
                         <div className="td-match-report">
                             <h3 className="td-match-report-title">Registrar Resultado</h3>

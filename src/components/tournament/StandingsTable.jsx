@@ -27,7 +27,7 @@ export function StandingsTable({ standings }) {
     return (
         <section className="td-card">
             <h2 className="td-card-title">Standings</h2>
-            <div className="td-table-wrapper">
+            <div className="td-table-wrapper td-desktop-only">
                 <table className="td-table">
                     <thead>
                         <tr>
@@ -78,6 +78,42 @@ export function StandingsTable({ standings }) {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="td-mobile-only td-standings-mobile-list">
+                {standings.map((player, index) => {
+                    const posicao = player.posicao ?? index + 1;
+                    const pontos = player.pontosMesa ?? player.pontos ?? 0;
+                    const vitorias = player.vitoriasPartida ?? player.vitorias ?? 0;
+                    const derrotas = player.derrotasPartida ?? player.derrotas ?? 0;
+                    const empates = player.empatesPartida ?? player.empates ?? 0;
+
+                    return (
+                        <article
+                            key={player.usuarioId || player.id || index}
+                            className={`td-mobile-card ${player.dropped ? "td-mobile-card-dropped" : ""}`}
+                        >
+                            <div className="td-mobile-card-head">
+                                <span className="td-mobile-rank">#{posicao}</span>
+                                <span className="td-mobile-player-name">
+                                    {getPlayerName(player)}
+                                    {player.dropped && <span className="td-dropped-badge"> DROP</span>}
+                                </span>
+                                <span className="td-mobile-points">{pontos} pts</span>
+                            </div>
+
+                            <div className="td-mobile-grid-2">
+                                <span><strong>V-D-E:</strong> {vitorias}-{derrotas}-{empates}</span>
+                                <span><strong>Check-in:</strong> {isCheckedIn(player) ? "✓" : "—"}</span>
+                                <span><strong>Deck:</strong> {getDeckName(player) ? "✓" : "—"}</span>
+                                <span><strong>MWP:</strong> {formatPct(player.mwp)}</span>
+                                <span><strong>OMW%:</strong> {formatPct(player.omwp)}</span>
+                                <span><strong>GW%:</strong> {formatPct(player.gwp)}</span>
+                                <span><strong>OGW%:</strong> {formatPct(player.ogwp)}</span>
+                            </div>
+                        </article>
+                    );
+                })}
             </div>
         </section>
     );

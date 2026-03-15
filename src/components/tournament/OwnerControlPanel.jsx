@@ -68,7 +68,10 @@ export function OwnerControlPanel({
                             return (
                                 <div key={normalizedPlayerId || getPlayerName(player)} className="td-owner-player-row">
                                     <div className="td-owner-player-info">
-                                        <span className="td-owner-player-name">{getPlayerName(player)}</span>
+                                        <span className="td-owner-player-name">
+                                            {getPlayerName(player)}
+                                            {normalizeId(playerId) === normalizeId(usuarioId) ? " (Você)" : ""}
+                                        </span>
                                         <span className="td-owner-player-meta">
                                             {player?.pontosMesa ?? player?.pontos ?? 0} pts
                                         </span>

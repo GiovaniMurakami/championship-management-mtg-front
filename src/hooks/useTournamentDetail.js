@@ -9,6 +9,7 @@ import {
     buscarTorneio,
     proximaRodada,
     dropJogador,
+    listarPartidasTorneio,
 } from "../services/backendApi";
 import {
     subscribeToTournament,
@@ -56,6 +57,21 @@ export function useTournamentDetail() {
         }
     }, [torneioId, token]);
 
+    const loadPartidas = useCallback(async () => {
+        if (!torneioId || !token) return;
+
+        try {
+            const data = await listarPartidasTorneio(torneioId, token);
+            const partidasList = data?.partidas || data?.matches || [];
+
+            if (Array.isArray(partidasList) && partidasList.length > 0) {
+                setPartidas(partidasList);
+            }
+        } catch {
+            // Fallback: manter partidas carregadas por buscarTorneio/standings.
+        }
+    }, [torneioId, token]);
+
     const loadStandings = useCallback(async () => {
         if (!torneioId || !token) return;
         try {
@@ -77,7 +93,8 @@ export function useTournamentDetail() {
     useEffect(() => {
         loadTournament();
         loadStandings();
-    }, [loadTournament, loadStandings]);
+        loadPartidas();
+    }, [loadTournament, loadStandings, loadPartidas]);
 
     // Ably realtime subscriptions
     useEffect(() => {
@@ -86,12 +103,17 @@ export function useTournamentDetail() {
             onRodadaIniciada: () => {
                 loadTournament();
                 loadStandings();
+                loadPartidas();
             },
-            onResultadoRegistrado: () => loadStandings(),
+            onResultadoRegistrado: () => {
+                loadStandings();
+                loadPartidas();
+            },
             onStandingsAtualizados: () => loadStandings(),
             onTorneioFinalizado: () => {
                 loadTournament();
                 loadStandings();
+                loadPartidas();
             },
             onParticipanteInscrito: (msg) => {
                 const { usuarioId, inscricaoId, usuarioNome } = msg.data;
@@ -130,11 +152,14 @@ export function useTournamentDetail() {
                     )
                 );
             },
+            onMesaAtualizada: () => {
+                loadPartidas();
+            },
         });
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings]);
+    }, [torneioId, loadTournament, loadStandings, loadPartidas]);
 
     // Find the current player entry in standings
     const currentPlayer = useMemo(() => {
@@ -201,6 +226,7 @@ export function useTournamentDetail() {
             await escolherDeckTorneio(torneioId, selectedDeckId, token);
             setSuccessMsg("Deck selecionado com sucesso!");
             await loadStandings();
+            await loadPartidas();
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao escolher deck.");
@@ -253,6 +279,7 @@ export function useTournamentDetail() {
             await registrarResultado(partidaId, resultado, token);
             setSuccessMsg("Resultado registrado!");
             await loadStandings();
+            await loadPartidas();
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao registrar resultado.");
@@ -283,6 +310,7 @@ export function useTournamentDetail() {
             }
             await loadTournament();
             await loadStandings();
+            await loadPartidas();
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao avançar para a próxima rodada.");
@@ -302,6 +330,7 @@ export function useTournamentDetail() {
             setSuccessMsg("Jogador dropado com sucesso!");
             await loadTournament();
             await loadStandings();
+            await loadPartidas();
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao dropar jogador.");
