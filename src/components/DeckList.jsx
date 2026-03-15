@@ -1,4 +1,4 @@
-export function DeckList({ cards, onCardRemove, onCardQuantityChange, onCardMouseEnter, onCardMouseLeave }) {
+export function DeckList({ cards, onCardRemove, onCardQuantityChange, onCardMouseEnter, onCardMouseLeave, readOnly = false }) {
   return (
     <ul className="deck-list">
       {cards.map((card) => (
@@ -13,10 +13,13 @@ export function DeckList({ cards, onCardRemove, onCardQuantityChange, onCardMous
             min="1"
             value={card.quantidade}
             onChange={(event) => onCardQuantityChange(card.nome, event.target.value)}
+            disabled={readOnly}
           />
-          <button type="button" onClick={() => onCardRemove(card.nome)}>
-            Remover
-          </button>
+          {!readOnly && (
+            <button type="button" onClick={() => onCardRemove(card.nome)}>
+              Remover
+            </button>
+          )}
         </li>
       ))}
     </ul>

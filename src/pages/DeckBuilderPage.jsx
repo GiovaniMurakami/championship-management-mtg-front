@@ -36,6 +36,7 @@ export function DeckBuilderPage({
   const { id } = useParams();
   const location = useLocation();
   const deck = location.state?.deck;
+  const readOnly = location.state?.readOnly || false;
 
   // Carregar dados e cartas do deck para editar, ou limpar se em modo criação
   useEffect(() => {
@@ -51,7 +52,7 @@ export function DeckBuilderPage({
         nome: deck.nome,
         formato: deck.formato,
       });
-      
+
       // Carregar cartas do deck existente
       if (onSetMainDeck && onSetSideboard) {
         const loadDeckCards = async () => {
@@ -70,8 +71,10 @@ export function DeckBuilderPage({
                     imagem: cartaScryfall.imagem || "",
                     isBasicLand: cartaScryfall.isBasicLand,
                     legalities: cartaScryfall.legalities || {},
-                    colors: cartaScryfall.colors || [],
-                    cmc: cartaScryfall.cmc || 0,
+                    colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
+                    cmc: Number.isFinite(cartaScryfall.cmc)
+                      ? cartaScryfall.cmc
+                      : Number(cartaScryfall.cmc) || 0,
                     manaCost: cartaScryfall.manaCost || "",
                     typeLine: cartaScryfall.typeLine || "",
                   });
@@ -90,8 +93,10 @@ export function DeckBuilderPage({
                     imagem: cartaScryfall.imagem || "",
                     isBasicLand: cartaScryfall.isBasicLand,
                     legalities: cartaScryfall.legalities || {},
-                    colors: cartaScryfall.colors || [],
-                    cmc: cartaScryfall.cmc || 0,
+                    colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
+                    cmc: Number.isFinite(cartaScryfall.cmc)
+                      ? cartaScryfall.cmc
+                      : Number(cartaScryfall.cmc) || 0,
                     manaCost: cartaScryfall.manaCost || "",
                     typeLine: cartaScryfall.typeLine || "",
                   });
@@ -150,23 +155,18 @@ export function DeckBuilderPage({
         importLoading={importLoading}
         importMessage={importMessage}
         onImportDeck={onImportDeck}
-        onSubmit={handleSubmit}
+        onSubmit={readOnly ? null : handleSubmit}
         isEditMode={isEditMode}
+        readOnly={readOnly}
       />
 
-      {/* Seção de Análise de Deck */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1.2rem",
-          marginTop: "1.5rem",
-          width: "100%",
-        }}
-      >
-        <HandSimulator mainDeck={mainDeck} />
-        <DeckStats mainDeck={mainDeck} />
-      </div>
+      {/* Seção de Análise de Deck - só mostrar se não for readOnly */}
+      {!readOnly && (
+        <div className="deck-analysis-section">
+          <HandSimulator mainDeck={mainDeck} />
+          <DeckStats mainDeck={mainDeck} />
+        </div>
+      )}
     </main>
   );
 }

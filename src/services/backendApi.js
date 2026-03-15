@@ -13,9 +13,10 @@ export const cadastrarDeck = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarDecks = (token) =>
+export const listarDecks = (token, usuarioId) =>
   httpClient.get("/deck/listar", {
     headers: { Authorization: `Bearer ${token}` },
+    params: usuarioId ? { usuarioId } : undefined,
   });
 
 // Usuário
@@ -33,5 +34,60 @@ export const atualizarDeck = (deckId, payload, token) =>
 // Deletar Deck
 export const deletarDeck = (deckId, token) =>
   httpClient.delete(`/deck/${deckId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+// Torneios
+export const criarTorneio = (payload, token) =>
+  httpClient.post("/torneio/criar", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const listarTorneios = (token) =>
+  httpClient.get("/torneio/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarTorneio = (torneioId, token) =>
+  httpClient.get(`/torneio/${torneioId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const inscreverTorneio = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/inscrever`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const escolherDeckTorneio = (torneioId, deckId, token) =>
+  httpClient.post(`/torneio/${torneioId}/deck`, { deckId }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const checkinTorneio = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/checkin`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const iniciarTorneio = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/iniciar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const registrarResultado = (partidaId, payload, token) =>
+  httpClient.post(`/torneio/partida/${partidaId}/resultado`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const proximaRodada = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/proxima-rodada`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const dropJogador = (torneioId, jogadorId, token) =>
+  httpClient.post(`/torneio/${torneioId}/drop`, jogadorId ? { jogadorId } : {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getStandings = (torneioId, token) =>
+  httpClient.get(`/torneio/${torneioId}/standings`, {
     headers: { Authorization: `Bearer ${token}` },
   });

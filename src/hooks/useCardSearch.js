@@ -7,6 +7,7 @@ export function useCardSearch() {
   const [sideSearch, setSideSearch] = useState("");
   const [mainSuggestions, setMainSuggestions] = useState([]);
   const [sideSuggestions, setSideSuggestions] = useState([]);
+  const [searchError, setSearchError] = useState("");
 
   // Debounce search para maindeck
   useEffect(() => {
@@ -16,8 +17,14 @@ export function useCardSearch() {
         return;
       }
 
-      const cards = await buscarCartasMTG(mainSearch);
-      setMainSuggestions(cards);
+      try {
+        setSearchError("");
+        const cards = await buscarCartasMTG(mainSearch);
+        setMainSuggestions(cards);
+      } catch {
+        setMainSuggestions([]);
+        setSearchError("Erro ao buscar cartas. Tente novamente.");
+      }
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
@@ -31,8 +38,14 @@ export function useCardSearch() {
         return;
       }
 
-      const cards = await buscarCartasMTG(sideSearch);
-      setSideSuggestions(cards);
+      try {
+        setSearchError("");
+        const cards = await buscarCartasMTG(sideSearch);
+        setSideSuggestions(cards);
+      } catch {
+        setSideSuggestions([]);
+        setSearchError("Erro ao buscar cartas. Tente novamente.");
+      }
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
@@ -45,5 +58,6 @@ export function useCardSearch() {
     setSideSearch,
     mainSuggestions,
     sideSuggestions,
+    searchError,
   };
 }
