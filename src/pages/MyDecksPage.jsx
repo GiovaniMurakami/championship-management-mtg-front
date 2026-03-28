@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 import { deletarDeck } from "../services/backendApi";
 import { SkeletonCard } from "../components";
+import { DeckImageModal } from "../components/deck/DeckImageModal";
 
 const FORMAT_META = {
   standard:  { label: "Standard",  color: "#93c5fd", bg: "rgba(59,130,246,0.18)",  border: "rgba(59,130,246,0.45)" },
@@ -44,12 +45,15 @@ export function MyDecksPage({ token }) {
   const [confirmName, setConfirmName] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [imageModal, setImageModal] = useState(null);
   const navigate = useNavigate();
 
   const isOwner = (deck) => {
     const deckUserId = deck.usuario?.id ?? deck.usuarioId;
     return deckUserId === usuario?.id;
   };
+
+  const myDecks = decks.filter(isOwner);
 
   useEffect(() => {
     const fetchDeckImages = async () => {
@@ -115,9 +119,9 @@ export function MyDecksPage({ token }) {
       <div className="my-decks-header">
         <div>
           <h1 className="my-decks-title">Meus Decks</h1>
-          {!loading && decks.length > 0 && (
+          {!loading && myDecks.length > 0 && (
             <p className="my-decks-subtitle">
-              {decks.length} deck{decks.length !== 1 ? "s" : ""} encontrado{decks.length !== 1 ? "s" : ""}
+              {myDecks.length} deck{myDecks.length !== 1 ? "s" : ""} encontrado{myDecks.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
@@ -140,7 +144,7 @@ export function MyDecksPage({ token }) {
         </div>
       ) : message ? (
         <p className="feedback">{message}</p>
-      ) : decks.length === 0 ? (
+      ) : myDecks.length === 0 ? (
         <div className="my-decks-empty-state">
           <div className="my-decks-empty-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -157,7 +161,7 @@ export function MyDecksPage({ token }) {
         </div>
       ) : (
         <div className="my-decks-grid">
-          {decks.map((deck) => (
+          {myDecks.map((deck) => (
             <div key={deck.id} className="my-deck-card">
               <div
                 className="my-deck-card-banner"
@@ -222,6 +226,14 @@ export function MyDecksPage({ token }) {
                         Editar
                       </button>
                       <button
+                        className="btn deck-img-gen-btn"
+                        type="button"
+                        title="Gerar imagem do deck"
+                        onClick={() => setImageModal(deck)}
+                      >
+                        ✦
+                      </button>
+                      <button
                         className="btn danger"
                         type="button"
                         onClick={() => handleOpenDeleteModal(deck)}
@@ -247,6 +259,14 @@ export function MyDecksPage({ token }) {
             </div>
           ))}
         </div>
+      )}
+
+      {imageModal && (
+        <DeckImageModal
+          deck={imageModal}
+          ownerName={usuario?.nome}
+          onClose={() => setImageModal(null)}
+        />
       )}
 
       {deleteModal.isOpen && (

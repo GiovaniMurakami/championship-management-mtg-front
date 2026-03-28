@@ -114,6 +114,8 @@ export function TournamentDetailPage() {
                             standings={standings}
                             isFinished={isFinished}
                             token={token}
+                            isOwner={isOwner}
+                            torneioNome={torneio?.nome}
                         />
                     </div>
                 </div>
