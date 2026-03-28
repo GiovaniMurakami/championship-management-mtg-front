@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import mukaLogo from "../assets/muka.png";
+import mukaLogo from "../../assets/muka.png";
 
 const SLIDES = [
     {
