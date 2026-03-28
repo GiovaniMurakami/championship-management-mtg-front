@@ -94,5 +94,6 @@ export const unsubscribeFromTournament = (channel) => {
     if (channel) {
         console.log(`[Ably] Desinscrevendo do canal: ${channel.name}`);
         channel.unsubscribe();
+        channel.detach();
     }
 };

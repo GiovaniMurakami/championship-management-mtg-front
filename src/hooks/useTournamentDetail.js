@@ -25,7 +25,7 @@ export function useTournamentDetail() {
     const [torneio, setTorneio] = useState(null);
     const [standings, setStandings] = useState([]);
     const [partidas, setPartidas] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [droppingPlayerId, setDroppingPlayerId] = useState("");
     const [selectedDeckId, setSelectedDeckId] = useState("");
@@ -43,7 +43,6 @@ export function useTournamentDetail() {
 
     const loadTournament = useCallback(async () => {
         if (!torneioId || !token) return;
-        setLoading(true);
         setError("");
         try {
             const data = await buscarTorneio(torneioId, token);
@@ -52,8 +51,6 @@ export function useTournamentDetail() {
         } catch (err) {
             setError("Erro ao carregar dados do torneio.");
             console.error(err);
-        } finally {
-            setLoading(false);
         }
     }, [torneioId, token]);
 
@@ -89,11 +86,15 @@ export function useTournamentDetail() {
         }
     }, [torneioId, token]);
 
-    // Initial load
+    // Initial load — wait for all three before hiding skeleton
     useEffect(() => {
-        loadTournament();
-        loadStandings();
-        loadPartidas();
+        if (!torneioId || !token) {
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        Promise.all([loadTournament(), loadStandings(), loadPartidas()])
+            .finally(() => setLoading(false));
     }, [loadTournament, loadStandings, loadPartidas]);
 
     // Ably realtime subscriptions
@@ -185,18 +186,27 @@ export function useTournamentDetail() {
     );
 
     const pendingCheckinPlayers = useMemo(() => {
-        if (torneio?.status !== "em_andamento") {
-            return [];
-        }
+        if (torneio?.status !== "em_andamento") return [];
+
+        const isLastRound =
+            Number(torneio?.totalRodadas || 0) > 0 &&
+            Number(torneio?.rodadaAtual || 0) >= Number(torneio?.totalRodadas || 0);
+
+        if (isLastRound) return [];
 
         return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player));
-    }, [standings, torneio?.status]);
+    }, [standings, torneio?.status, torneio?.rodadaAtual, torneio?.totalRodadas]);
 
-    // Find my current match
+    // Find my current match — filter to current round to avoid showing stale round matches
     const myMatch = useMemo(() => {
         if (!usuario?.id || !partidas.length) return null;
+        const rodadaAtual = torneio?.rodadaAtual ? Number(torneio.rodadaAtual) : null;
+        const currentRoundPartidas = rodadaAtual
+            ? partidas.filter((p) => Number(p.rodada) === rodadaAtual)
+            : partidas;
+        const source = currentRoundPartidas.length > 0 ? currentRoundPartidas : partidas;
         return (
-            partidas.find(
+            source.find(
                 (p) =>
                     normalizeId(p.jogador1Id) === normalizeId(usuario.id) ||
                     normalizeId(p.jogador2Id) === normalizeId(usuario.id) ||
@@ -204,7 +214,7 @@ export function useTournamentDetail() {
                     normalizeId(p.jogador2?.id) === normalizeId(usuario.id)
             ) || null
         );
-    }, [partidas, usuario?.id]);
+    }, [partidas, usuario?.id, torneio?.rodadaAtual]);
 
     // Set deck from current entry
     useEffect(() => {
