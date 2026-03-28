@@ -71,7 +71,7 @@ export function Navbar({
         )}
         {isAuthenticated ? (
           <Link to="/meus-decks" onClick={closeMobileMenu}>
-            Meus Decks
+            Decks
           </Link>
         ) : (
           <button className="btn ghost" type="button" onClick={() => handleOpenAuth("login")}>

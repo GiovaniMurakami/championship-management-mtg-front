@@ -22,7 +22,10 @@ export function MyDecksPage({ token }) {
   const navigate = useNavigate();
 
   // Verifica se o deck pertence ao usuário atual
-  const isOwner = (deck) => deck.usuarioId === usuario?.id;
+  const isOwner = (deck) => {
+    const deckUserId = deck.usuario?.id ?? deck.usuarioId;
+    return deckUserId === usuario?.id;
+  };
 
   // Busca imagem da primeira carta de cada deck
   useEffect(() => {
@@ -90,7 +93,7 @@ export function MyDecksPage({ token }) {
   return (
     <div className="my-decks-page">
       <div className="my-decks-header">
-        <h1>Meus Decks</h1>
+        <h1>Decks</h1>
         <button
           className="btn primary"
           type="button"

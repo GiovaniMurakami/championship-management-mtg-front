@@ -18,8 +18,7 @@ export function DeckStats({ mainDeck }) {
 
       // Curva de mana
       const manaValue = Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0;
-      const cmc = Math.min(Math.floor(manaValue), 7); // Agrupar 7+ juntos
-      const cmcKey = cmc === 7 && manaValue > 7 ? "7+" : cmc.toString();
+      const cmcKey = manaValue >= 7 ? "7+" : Math.floor(manaValue).toString();
       manaCurve[cmcKey] = (manaCurve[cmcKey] || 0) + quantity;
 
       // Distribuição de cores
@@ -71,8 +70,17 @@ export function DeckStats({ mainDeck }) {
   };
 
   const colorColors = {
-    W: "#f0e68c", U: "#0e68ab", B: "#150b00",
-    R: "#d32029", G: "#00733e", C: "#ccc",
+    W: "#f5e97a", U: "#3b82f6", B: "#a855f7",
+    R: "#ef4444", G: "#22c55e", C: "#94a3b8",
+  };
+
+  const manaSymbols = {
+    W: "https://svgs.scryfall.io/card-symbols/W.svg",
+    U: "https://svgs.scryfall.io/card-symbols/U.svg",
+    B: "https://svgs.scryfall.io/card-symbols/B.svg",
+    R: "https://svgs.scryfall.io/card-symbols/R.svg",
+    G: "https://svgs.scryfall.io/card-symbols/G.svg",
+    C: "https://svgs.scryfall.io/card-symbols/C.svg",
   };
 
   const curveBuckets = ["0", "1", "2", "3", "4", "5", "6", "7+"];
@@ -125,11 +133,14 @@ export function DeckStats({ mainDeck }) {
               const percent = ((count / stats.totalCards) * 100).toFixed(1);
               return (
                 <div key={color} className="ds-color-row">
-                  <div
-                    className="ds-color-dot"
-                    style={{ background: colorColors[color] }}
-                    title={colorNames[color]}
-                  />
+                  <div className="ds-color-identity">
+                    <img
+                      src={manaSymbols[color]}
+                      alt={colorNames[color]}
+                      className="ds-mana-symbol"
+                    />
+                    <span className="ds-color-name">{colorNames[color]}</span>
+                  </div>
                   <div className="ds-color-bar-wrapper">
                     <div className="ds-color-bar-bg">
                       <div

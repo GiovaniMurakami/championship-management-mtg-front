@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { buscarCartaPorNome } from "../services/scryfallApi";
@@ -37,6 +37,7 @@ export function DeckBuilderPage({
   const location = useLocation();
   const deck = location.state?.deck;
   const readOnly = location.state?.readOnly || false;
+  const [analysisTab, setAnalysisTab] = useState("mao");
 
   // Carregar dados e cartas do deck para editar, ou limpar se em modo criação
   useEffect(() => {
@@ -159,13 +160,28 @@ export function DeckBuilderPage({
         readOnly={readOnly}
       />
 
-      {/* Seção de Análise de Deck - só mostrar se não for readOnly */}
-      {!readOnly && (
-        <div className="deck-analysis-section">
-          <HandSimulator mainDeck={mainDeck} />
-          <DeckStats mainDeck={mainDeck} />
+      <div className="deck-analysis-section">
+        <div className="deck-analysis-tabs">
+          <button
+            type="button"
+            className={`deck-analysis-tab${analysisTab === "mao" ? " deck-analysis-tab--active" : ""}`}
+            onClick={() => setAnalysisTab("mao")}
+          >
+            🎴 Mão Inicial
+          </button>
+          <button
+            type="button"
+            className={`deck-analysis-tab${analysisTab === "stats" ? " deck-analysis-tab--active" : ""}`}
+            onClick={() => setAnalysisTab("stats")}
+          >
+            📊 Estatísticas
+          </button>
         </div>
-      )}
+        {analysisTab === "mao"
+          ? <HandSimulator mainDeck={mainDeck} />
+          : <DeckStats mainDeck={mainDeck} />
+        }
+      </div>
     </main>
   );
 }
