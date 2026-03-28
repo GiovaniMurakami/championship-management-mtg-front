@@ -43,6 +43,22 @@ export function SkeletonTorneioCard() {
     );
 }
 
+export function SkeletonBannerCard() {
+    return (
+        <div className="skeleton-banner-card">
+            <div className="skeleton-banner-card__top">
+                <Skeleton width="70px" height="1.35rem" radius="999px" />
+                <Skeleton width="110px" height="1.1rem" radius="999px" />
+            </div>
+            <Skeleton width="80%" height="1.6rem" radius="0.4rem" />
+            <Skeleton width="55%" height="0.85rem" radius="0.3rem" />
+            <div className="skeleton-banner-card__prize">
+                <Skeleton width="65%" height="0.85rem" radius="0.3rem" />
+            </div>
+        </div>
+    );
+}
+
 export function SkeletonTournamentDetail() {
     return (
         <div className="skeleton-td">
