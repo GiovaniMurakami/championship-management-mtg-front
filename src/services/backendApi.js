@@ -7,6 +7,11 @@ export const loginUsuario = (payload) =>
 export const cadastrarUsuario = (payload) =>
   httpClient.post("/usuario/cadastrar", payload);
 
+export const refreshToken = (token) =>
+  httpClient.post("/usuario/refresh-token", {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 // Decks
 export const cadastrarDeck = (payload, token) =>
   httpClient.post("/deck/cadastrar", payload, {

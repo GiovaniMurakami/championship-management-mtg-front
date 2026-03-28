@@ -106,7 +106,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/torneios/criar"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} requireAdmin isAdmin={auth.isAdmin}>
             <TournamentCreatePage />
           </ProtectedRoute>
         }
