@@ -137,29 +137,7 @@ export function TournamentPage() {
 
     const isInscrito = (torneio) => {
         if (!usuario?.id) return false;
-
-        if (inscricoesLocais[torneio.id]) {
-            return true;
-        }
-
-        if (torneio?.jaInscrito || torneio?.inscrito || torneio?.isInscrito) {
-            return true;
-        }
-
-        const participantes = torneio?.participantes || torneio?.inscritos || torneio?.players || [];
-        if (!Array.isArray(participantes)) {
-            return false;
-        }
-
-        return participantes.some((participante) => {
-            const participanteId =
-                participante?.usuarioId ||
-                participante?.userId ||
-                participante?.usuario?.id ||
-                participante?.id;
-
-            return normalizeId(participanteId) === normalizeId(usuario.id);
-        });
+        return !!(inscricoesLocais[torneio.id] || torneio?.inscrito);
     };
 
     const torneiosDisponiveis = useMemo(
@@ -225,44 +203,62 @@ export function TournamentPage() {
                     </p>
                 ) : (
                     <div className="torneios-list">
-                        {torneiosExibidos.map((torneio) => (
-                            <div key={torneio.id} className="torneio-card">
-                                <h3>{torneio.nome}</h3>
-                                <p>Formato: {torneio.formato}</p>
-                                <p>Data: {formatDate(torneio.horario)}</p>
-                                <p>
-                                    Status: <span className={`status-badge status-${torneio.status}`}>{torneio.status.replace("_", " ")}</span>
-                                </p>
-                                <p>
-                                    Rodada: {torneio.rodadaAtual}/{torneio.totalRodadas}
-                                </p>
+                        {torneiosExibidos.map((torneio) => {
+                            const inscrito = isInscrito(torneio);
+                            return (
+                                <div key={torneio.id} className="torneio-card">
+                                    <div className="torneio-card__header">
+                                        <span className="torneio-card__formato">{(torneio.formato || "—").toUpperCase()}</span>
+                                        <span className={`status-badge status-${torneio.status}`}>
+                                            {torneio.status === "inscricoes_abertas" && "Inscrições Abertas"}
+                                            {torneio.status === "em_andamento" && "Em Andamento"}
+                                            {torneio.status === "finalizado" && "Finalizado"}
+                                        </span>
+                                    </div>
 
-                                <div className="actions">
-                                    <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
-                                        Ver Torneio
-                                    </button>
+                                    <h3 className="torneio-card__nome">{torneio.nome}</h3>
 
-                                    {torneio.status === "inscricoes_abertas" && (() => {
-                                        const inscrito = isInscrito(torneio);
-                                        return (
+                                    <div className="torneio-card__info">
+                                        <div className="torneio-card__info-item">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                                            <span>{formatDate(torneio.horario)}</span>
+                                        </div>
+                                        <div className="torneio-card__info-item">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                                            <span>{torneio.totalInscritos ?? "—"} inscritos</span>
+                                        </div>
+                                        {torneio.status !== "inscricoes_abertas" && (
+                                            <div className="torneio-card__info-item">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+                                                <span>Rodada {torneio.rodadaAtual}/{torneio.totalRodadas}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="actions">
+                                        <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
+                                            Ver Torneio
+                                        </button>
+
+                                        {torneio.status === "inscricoes_abertas" && (
                                             <button
                                                 className={inscrito ? "btn-inscrito" : "btn-inscrever"}
-                                                onClick={() => handleInscrever(torneio.id)}
+                                                onClick={() => !inscrito && handleInscrever(torneio.id)}
                                                 disabled={inscrito}
                                             >
-                                                {inscrito ? "Inscrito" : "Inscrever-se"}
+                                                {inscrito ? "✓ Inscrito" : "Inscrever-se"}
                                             </button>
-                                        );
-                                    })()}
+                                        )}
 
-                                    {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
-                                        <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
-                                            Iniciar Torneio
-                                        </button>
-                                    )}
+                                        {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
+                                            <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
+                                                Iniciar Torneio
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </section>

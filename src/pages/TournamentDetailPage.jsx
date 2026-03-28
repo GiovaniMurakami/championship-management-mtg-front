@@ -7,6 +7,7 @@ import {
     MatchTablesPanel,
     StandingsTable,
     OwnerControlPanel,
+    RoundTimer,
 } from "../components/tournament";
 import { SkeletonTournamentDetail } from "../components";
 
@@ -35,6 +36,7 @@ export function TournamentDetailPage() {
         handleNextRound,
         handleDropPlayer,
         usuario,
+        token,
     } = useTournamentDetail();
 
     const isFinished = torneio?.status === "finalizado";
@@ -53,6 +55,14 @@ export function TournamentDetailPage() {
 
             <TournamentHeader torneio={torneio} loading={loading} />
 
+            {!loading && torneio && (
+                <RoundTimer
+                    torneioId={torneio.id}
+                    rodadaAtual={torneio.rodadaAtual}
+                    status={torneio.status}
+                />
+            )}
+
             {!loading && (
                 <div className={`td-content${isFinished ? " td-content--finalized" : ""}`}>
                     {!isFinished && (
@@ -70,8 +80,10 @@ export function TournamentDetailPage() {
                                     standings={standings}
                                     usuarioId={usuario?.id}
                                     pendingCheckinPlayers={pendingCheckinPlayers}
+                                    partidas={partidas}
                                     onNextRound={handleNextRound}
                                     onDropPlayer={handleDropPlayer}
+                                    onEditResult={handleReportResult}
                                     actionLoading={actionLoading}
                                     droppingPlayerId={droppingPlayerId}
                                 />
@@ -98,7 +110,11 @@ export function TournamentDetailPage() {
                             partidas={partidas}
                             usuarioId={usuario?.id}
                         />
-                        <StandingsTable standings={standings} />
+                        <StandingsTable
+                            standings={standings}
+                            isFinished={isFinished}
+                            token={token}
+                        />
                     </div>
                 </div>
             )}
