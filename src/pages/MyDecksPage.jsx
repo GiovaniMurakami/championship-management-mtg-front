@@ -6,9 +6,34 @@ import { buscarCartaPorNome } from "../services/scryfallApi";
 import { deletarDeck } from "../services/backendApi";
 import { SkeletonCard } from "../components";
 
-// Função auxiliar para somar quantidades de cartas
+const FORMAT_META = {
+  standard:  { label: "Standard",  color: "#93c5fd", bg: "rgba(59,130,246,0.18)",  border: "rgba(59,130,246,0.45)" },
+  modern:    { label: "Modern",    color: "#fdba74", bg: "rgba(234,88,12,0.18)",   border: "rgba(234,88,12,0.45)" },
+  pioneer:   { label: "Pioneer",   color: "#6ee7b7", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.45)" },
+  legacy:    { label: "Legacy",    color: "#c4b5fd", bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.45)" },
+  commander: { label: "Commander", color: "#fcd34d", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
+  pauper:    { label: "Pauper",    color: "#cbd5e1", bg: "rgba(148,163,184,0.18)",border: "rgba(148,163,184,0.45)" },
+};
+
 function calcularTotalCartas(cartas) {
   return cartas?.reduce((total, carta) => total + (carta.quantidade || 1), 0) || 0;
+}
+
+function FormatBadge({ formato }) {
+  const meta = FORMAT_META[formato] ?? {
+    label: formato,
+    color: "#beafd7",
+    bg: "rgba(190,175,215,0.15)",
+    border: "rgba(190,175,215,0.4)",
+  };
+  return (
+    <span
+      className="format-badge"
+      style={{ color: meta.color, background: meta.bg, borderColor: meta.border }}
+    >
+      {meta.label}
+    </span>
+  );
 }
 
 export function MyDecksPage({ token }) {
@@ -21,17 +46,14 @@ export function MyDecksPage({ token }) {
   const [deleteError, setDeleteError] = useState("");
   const navigate = useNavigate();
 
-  // Verifica se o deck pertence ao usuário atual
   const isOwner = (deck) => {
     const deckUserId = deck.usuario?.id ?? deck.usuarioId;
     return deckUserId === usuario?.id;
   };
 
-  // Busca imagem da primeira carta de cada deck
   useEffect(() => {
     const fetchDeckImages = async () => {
       const images = {};
-
       for (const deck of decks) {
         if (deck.maindeck?.length > 0) {
           const primeiraCartaNome = deck.maindeck[0].nome;
@@ -45,7 +67,6 @@ export function MyDecksPage({ token }) {
           }
         }
       }
-
       setDeckImages(images);
     };
 
@@ -81,7 +102,6 @@ export function MyDecksPage({ token }) {
     try {
       await deletarDeck(deleteModal.deck.id, token);
       handleCloseDeleteModal();
-      // Recarregar a lista de decks
       await fetchDecks();
     } catch (error) {
       setDeleteError(error.message || "Erro ao excluir o deck. Tente novamente.");
@@ -93,13 +113,24 @@ export function MyDecksPage({ token }) {
   return (
     <div className="my-decks-page">
       <div className="my-decks-header">
-        <h1>Decks</h1>
+        <div>
+          <h1 className="my-decks-title">Meus Decks</h1>
+          {!loading && decks.length > 0 && (
+            <p className="my-decks-subtitle">
+              {decks.length} deck{decks.length !== 1 ? "s" : ""} encontrado{decks.length !== 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
         <button
           className="btn primary"
           type="button"
           onClick={() => navigate("/decks")}
         >
-          + Criar Novo Deck
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Criar deck
         </button>
       </div>
 
@@ -110,45 +141,83 @@ export function MyDecksPage({ token }) {
       ) : message ? (
         <p className="feedback">{message}</p>
       ) : decks.length === 0 ? (
-        <p className="my-decks-empty">
-          Nenhum deck encontrado. Crie um novo deck para começar!
-        </p>
+        <div className="my-decks-empty-state">
+          <div className="my-decks-empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </div>
+          <h3>Nenhum deck ainda</h3>
+          <p>Crie seu primeiro deck para começar a jogar.</p>
+          <button className="btn primary" type="button" onClick={() => navigate("/decks")}>
+            Criar primeiro deck
+          </button>
+        </div>
       ) : (
         <div className="my-decks-grid">
           {decks.map((deck) => (
             <div key={deck.id} className="my-deck-card">
-              {deckImages[deck.id] && (
-                <div
-                  className="my-deck-card-image"
-                  style={{ backgroundImage: `url(${deckImages[deck.id]})` }}
-                />
-              )}
+              <div
+                className="my-deck-card-banner"
+                style={
+                  deckImages[deck.id]
+                    ? { backgroundImage: `url(${deckImages[deck.id]})` }
+                    : undefined
+                }
+              >
+                <div className="my-deck-card-banner-overlay" />
+                <div className="my-deck-card-banner-top">
+                  <FormatBadge formato={deck.formato} />
+                  {!isOwner(deck) && deck.usuario?.nome && (
+                    <span className="my-deck-card-owner-badge">
+                      {deck.usuario.nome}
+                    </span>
+                  )}
+                </div>
+              </div>
 
               <div className="my-deck-card-body">
                 <h3 className="my-deck-card-name">{deck.nome}</h3>
-                <p className="my-deck-card-format">
-                  <strong>Formato:</strong> {deck.formato}
-                </p>
+
                 <div className="my-deck-card-stats">
-                  <div>
-                    <span>Maindeck: </span>
-                    <strong>{calcularTotalCartas(deck.maindeck)} cartas</strong>
+                  <div className="deck-stat-chip">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M8 4v16M16 4v16" />
+                    </svg>
+                    <span>{calcularTotalCartas(deck.maindeck)} main</span>
                   </div>
-                  <div>
-                    <span>Sideboard: </span>
-                    <strong>{calcularTotalCartas(deck.sideboard)} cartas</strong>
+                  <div className="deck-stat-chip">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                      <polyline points="16 3 21 3 21 8" />
+                      <line x1="4" y1="20" x2="21" y2="3" />
+                      <polyline points="21 16 21 21 16 21" />
+                      <line x1="15" y1="15" x2="21" y2="21" />
+                    </svg>
+                    <span>{calcularTotalCartas(deck.sideboard)} side</span>
+                  </div>
+                  <div className="deck-stat-chip deck-stat-chip--date">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span>{new Date(deck.criadoEm).toLocaleDateString("pt-BR")}</span>
                   </div>
                 </div>
-                <p className="my-deck-card-date">
-                  Criado em: {new Date(deck.criadoEm).toLocaleDateString("pt-BR")}
-                </p>
+
                 <div className="my-deck-card-actions">
                   {isOwner(deck) ? (
                     <>
                       <button
                         className="btn primary"
                         type="button"
-                        onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
+                        onClick={() =>
+                          navigate(`/editar-deck/${deck.id}`, { state: { deck } })
+                        }
                       >
                         Editar
                       </button>
@@ -164,7 +233,11 @@ export function MyDecksPage({ token }) {
                     <button
                       className="btn primary"
                       type="button"
-                      onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck, readOnly: true } })}
+                      onClick={() =>
+                        navigate(`/editar-deck/${deck.id}`, {
+                          state: { deck, readOnly: true },
+                        })
+                      }
                     >
                       Visualizar
                     </button>
@@ -176,17 +249,20 @@ export function MyDecksPage({ token }) {
         </div>
       )}
 
-      {/* Modal de Confirmação de Exclusão */}
       {deleteModal.isOpen && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && handleCloseDeleteModal()}>
+        <div
+          className="modal-overlay"
+          onClick={(e) => e.target === e.currentTarget && handleCloseDeleteModal()}
+        >
           <div className="auth-modal delete-modal">
-            <h2 className="delete-modal-title">⚠️ Confirmar Exclusão</h2>
+            <h2 className="delete-modal-title">Confirmar Exclusão</h2>
             <p className="delete-modal-text">
-              Você está prestes a excluir o deck <strong>{deleteModal.deck?.nome}</strong>.
-              Esta ação é <strong>irreversível</strong> e todas as cartas do deck serão perdidas.
+              Você está prestes a excluir o deck{" "}
+              <strong>{deleteModal.deck?.nome}</strong>. Esta ação é{" "}
+              <strong>irreversível</strong>.
             </p>
             <p className="delete-modal-hint">
-              Para confirmar, digite o nome exato do deck abaixo:
+              Para confirmar, digite o nome exato do deck:
             </p>
             <input
               type="text"
@@ -215,7 +291,7 @@ export function MyDecksPage({ token }) {
                 onClick={handleDeleteDeck}
                 disabled={deleteLoading || !confirmName}
               >
-                {deleteLoading ? "Excluindo..." : "Confirmar Exclusão"}
+                {deleteLoading ? "Excluindo..." : "Excluir deck"}
               </button>
             </div>
           </div>

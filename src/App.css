@@ -319,9 +319,52 @@ main {
 .deck-builder {
   border: 1px solid var(--line);
   border-radius: 1.2rem;
-  padding: 1rem;
+  padding: 1.25rem;
   background: rgba(15, 10, 29, 0.84);
   margin-top: 2.5rem;
+}
+
+/* Deck Builder Header */
+.deck-builder-header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.deck-builder-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.deck-builder-title {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.9rem;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+}
+
+.deck-builder-badge {
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+
+.deck-builder-badge--readonly {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.deck-builder-badge--edit {
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
 }
 
 .deck-analysis-section {
@@ -511,7 +554,7 @@ select {
 .picker-column {
   border: 1px solid var(--line);
   border-radius: 0.8rem;
-  padding: 0.7rem;
+  padding: 0.75rem;
   background: rgba(255, 255, 255, 0.01);
   min-height: clamp(520px, calc(100vh - 240px), 760px);
   display: flex;
@@ -519,9 +562,63 @@ select {
   overflow: hidden;
 }
 
-.picker-column h3 {
-  margin: 0 0 0.45rem;
-  font-size: 1rem;
+/* Picker progress header */
+.picker-header {
+  margin-bottom: 0.55rem;
+}
+
+.picker-header-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.picker-header-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.picker-header-count {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.picker-header-limit {
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.picker-count-near {
+  color: #fcd34d;
+}
+
+.picker-count-over {
+  color: #f87171;
+}
+
+.picker-progress-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.picker-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #c795ff);
+  transition: width 300ms ease;
+}
+
+.picker-progress-near {
+  background: linear-gradient(90deg, #d97706, #fcd34d);
+}
+
+.picker-progress-over {
+  background: linear-gradient(90deg, #b91c1c, #f87171);
 }
 
 .card-search {
@@ -531,6 +628,49 @@ select {
 
 .card-search h4 {
   display: none;
+}
+
+/* Card search input with icon */
+.cs-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cs-search-icon {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--text-soft);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.cs-input {
+  width: 100%;
+  padding: 0.55rem 0.65rem 0.55rem 2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.cs-input:focus {
+  outline: none;
+  border-color: rgba(199, 149, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(167, 79, 255, 0.12);
+}
+
+.cs-input::placeholder {
+  color: var(--text-soft);
+  opacity: 0.6;
+}
+
+.cs-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .suggestions,
@@ -583,13 +723,13 @@ select {
 
 .deck-list li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 68px auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   border: 1px solid var(--line);
   border-radius: 0.65rem;
   background: rgba(255, 255, 255, 0.02);
-  padding: 0.35rem;
+  padding: 0.4rem 0.5rem;
   min-width: 0;
 }
 
@@ -597,24 +737,108 @@ select {
   margin-top: 0.25rem;
 }
 
-.deck-list li span {
+/* Card info (colors + name) */
+.dl-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.dl-colors {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.dl-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: block;
+  opacity: 0.9;
+}
+
+.dl-name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
+  color: var(--text-main);
 }
 
-.deck-list li button {
-  border: none;
+/* Stepper control */
+.dl-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--line);
   border-radius: 0.5rem;
-  background: rgba(252, 88, 119, 0.19);
-  color: #ffd9e1;
-  padding: 0.34rem 0.45rem;
-  cursor: pointer;
-  font-size: 0.78rem;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
+.dl-step-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
+  padding: 0.25rem 0.45rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 150ms ease, color 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dl-step-btn:hover {
+  background: rgba(167, 79, 255, 0.2);
+  color: var(--text-main);
+}
+
+.dl-step-btn:active {
+  background: rgba(167, 79, 255, 0.3);
+}
+
+.dl-qty {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brand-2);
+  min-width: 1.4rem;
+  text-align: center;
+  padding: 0 0.1rem;
+  line-height: 1;
+}
+
+/* Remove button */
+.dl-remove-btn {
+  border: none;
+  border-radius: 0.45rem;
+  background: rgba(252, 88, 119, 0.15);
+  color: #ffc8d4;
+  padding: 0.25rem 0.4rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 150ms ease, color 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dl-remove-btn:hover {
+  background: rgba(252, 88, 119, 0.35);
+  color: #ffebf0;
+}
+
+.dl-remove-btn:active {
+  transform: scale(0.95);
+}
+
+/* Keep input style in case it's used elsewhere */
 .deck-list li input {
   min-width: 0;
   width: 100%;
@@ -661,8 +885,9 @@ select {
 }
 
 .export-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
 }
 
 .export-menu {
@@ -716,6 +941,7 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
 }
 
 .feedback {
@@ -911,11 +1137,7 @@ select {
   }
 
   .deck-list li {
-    grid-template-columns: 1fr 72px;
-  }
-
-  .deck-list li button {
-    grid-column: span 2;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   /* Mobile improvements for deck builder */
@@ -983,27 +1205,30 @@ select {
   }
 
   .deck-list li {
-    padding: 0.5rem;
-    gap: 0.5rem;
-    min-height: 48px;
-  }
-
-  .deck-list li span {
-    font-size: 0.95rem;
-  }
-
-  .deck-list li input {
-    padding: 0.6rem 0.4rem;
-    font-size: 1.1rem;
-    min-height: 48px;
-    text-align: center;
-    font-weight: 600;
-  }
-
-  .deck-list li button {
-    padding: 0.5rem 0.6rem;
-    font-size: 0.85rem;
+    padding: 0.45rem 0.55rem;
+    gap: 0.45rem;
     min-height: 44px;
+  }
+
+  .dl-name {
+    font-size: 0.9rem;
+  }
+
+  .dl-step-btn {
+    padding: 0.35rem 0.5rem;
+    font-size: 1rem;
+    min-height: 36px;
+  }
+
+  .dl-qty {
+    font-size: 0.88rem;
+    min-width: 1.6rem;
+  }
+
+  .dl-remove-btn {
+    padding: 0.35rem 0.5rem;
+    font-size: 1.1rem;
+    min-height: 36px;
   }
 
   .deck-actions {
@@ -3034,72 +3259,191 @@ html {
 
 .my-deck-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--bg-card);
+  background: rgba(14, 9, 28, 0.9);
   display: flex;
   flex-direction: column;
   height: 100%;
-  transition: transform 260ms ease, box-shadow 260ms ease;
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
 }
 
 .my-deck-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(199, 149, 255, 0.3);
 }
 
-.my-deck-card-image {
-  width: clamp(160px, 45vw, 220px);
-  aspect-ratio: 63 / 88;
+/* Banner (card art at top) */
+.my-deck-card-banner {
+  position: relative;
+  height: 160px;
+  background:
+    radial-gradient(circle at 70% 40%, rgba(87, 20, 166, 0.5), transparent 60%),
+    linear-gradient(135deg, #1a0d36, #0d071e);
   background-size: cover;
   background-position: center top;
-  background-repeat: no-repeat;
-  margin: 1rem auto 0;
+  overflow: hidden;
+}
+
+.my-deck-card-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 6, 15, 0.15) 0%,
+    rgba(8, 6, 15, 0.65) 100%
+  );
+}
+
+.my-deck-card-banner-top {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Format badge */
+.format-badge {
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid;
+  backdrop-filter: blur(6px);
+}
+
+.my-deck-card-owner-badge {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  background: rgba(14, 9, 28, 0.65);
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .my-deck-card-body {
-  padding: 1.5rem;
+  padding: 1rem 1.1rem 1.1rem;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
 .my-deck-card-name {
-  margin-bottom: 0.5rem;
-  color: var(--brand-2);
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
 }
 
-.my-deck-card-format {
-  font-size: 0.9rem;
-  opacity: 0.7;
-  margin-bottom: 1rem;
-}
-
+/* Stat chips */
 .my-deck-card-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
 }
 
-.my-deck-card-date {
-  font-size: 0.85rem;
-  opacity: 0.6;
-  margin-bottom: auto;
+.deck-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.76rem;
+  color: var(--text-soft);
+}
+
+.deck-stat-chip svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.deck-stat-chip--date {
+  margin-left: auto;
 }
 
 .my-deck-card-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
 }
 
 .my-deck-card-actions .btn {
   flex: 1;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Empty state */
+.my-decks-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-soft);
+}
+
+.my-decks-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(167, 79, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-soft);
+  margin-bottom: 0.5rem;
+}
+
+.my-decks-empty-state h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.my-decks-empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Page header tweaks */
+.my-decks-title {
+  margin: 0 0 0.2rem;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.04em;
+}
+
+.my-decks-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.my-decks-header .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 /* Delete Modal */
@@ -3997,5 +4341,33 @@ html {
 @media (max-width: 600px) {
   .torneio-card__nome {
     font-size: 1.3rem;
+  }
+}
+/* ============================================
+   MY DECKS - Responsive
+   ============================================ */
+@media (max-width: 600px) {
+  .my-decks-header {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .my-decks-header .btn {
+    align-self: flex-start;
+    margin-left: auto;
+  }
+
+  .my-decks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .my-deck-card-banner {
+    height: 130px;
+  }
+
+  .deck-stat-chip--date {
+    margin-left: 0;
   }
 }
