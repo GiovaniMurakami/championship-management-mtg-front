@@ -57,55 +57,54 @@ export function DeckBuilderPage({
       if (onSetMainDeck && onSetSideboard) {
         const loadDeckCards = async () => {
           try {
-            const maindeckCards = [];
-            const sideboardCards = [];
-
-            // Processar maindeck
-            if (Array.isArray(deck.maindeck)) {
-              for (const cartaBackend of deck.maindeck) {
-                const cartaScryfall = await buscarCartaPorNome(cartaBackend.nome);
-                if (cartaScryfall) {
-                  maindeckCards.push({
-                    nome: cartaScryfall.nome,
-                    quantidade: cartaBackend.quantidade || 1,
-                    imagem: cartaScryfall.imagem || "",
-                    isBasicLand: cartaScryfall.isBasicLand,
-                    legalities: cartaScryfall.legalities || {},
-                    colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
-                    cmc: Number.isFinite(cartaScryfall.cmc)
-                      ? cartaScryfall.cmc
-                      : Number(cartaScryfall.cmc) || 0,
-                    manaCost: cartaScryfall.manaCost || "",
-                    typeLine: cartaScryfall.typeLine || "",
-                  });
+            // Agrupa entradas pelo nome (caso o backend retorne uma por cópia)
+            const groupByName = (entries) => {
+              const map = new Map();
+              for (const entry of entries) {
+                const nome = entry.nome;
+                if (map.has(nome)) {
+                  map.get(nome).quantidade += entry.quantidade || 1;
+                } else {
+                  map.set(nome, { nome, quantidade: entry.quantidade || 1 });
                 }
               }
-            }
+              return Array.from(map.values());
+            };
 
-            // Processar sideboard
-            if (Array.isArray(deck.sideboard)) {
-              for (const cartaBackend of deck.sideboard) {
-                const cartaScryfall = await buscarCartaPorNome(cartaBackend.nome);
-                if (cartaScryfall) {
-                  sideboardCards.push({
-                    nome: cartaScryfall.nome,
-                    quantidade: cartaBackend.quantidade || 1,
-                    imagem: cartaScryfall.imagem || "",
-                    isBasicLand: cartaScryfall.isBasicLand,
-                    legalities: cartaScryfall.legalities || {},
-                    colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
-                    cmc: Number.isFinite(cartaScryfall.cmc)
-                      ? cartaScryfall.cmc
-                      : Number(cartaScryfall.cmc) || 0,
-                    manaCost: cartaScryfall.manaCost || "",
-                    typeLine: cartaScryfall.typeLine || "",
-                  });
-                }
-              }
-            }
+            const toCardEntry = (cartaScryfall, quantidade) => ({
+              nome: cartaScryfall.nome,
+              quantidade,
+              imagem: cartaScryfall.imagem || "",
+              isBasicLand: cartaScryfall.isBasicLand,
+              legalities: cartaScryfall.legalities || {},
+              colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
+              cmc: Number.isFinite(cartaScryfall.cmc)
+                ? cartaScryfall.cmc
+                : Number(cartaScryfall.cmc) || 0,
+              manaCost: cartaScryfall.manaCost || "",
+              typeLine: cartaScryfall.typeLine || "",
+            });
 
-            onSetMainDeck(maindeckCards);
-            onSetSideboard(sideboardCards);
+            const mainEntries = groupByName(deck.maindeck || []);
+            const sideEntries = groupByName(deck.sideboard || []);
+
+            const [resolvedMain, resolvedSide] = await Promise.all([
+              Promise.all(
+                mainEntries.map(async (entry) => {
+                  const carta = await buscarCartaPorNome(entry.nome);
+                  return carta ? toCardEntry(carta, entry.quantidade) : null;
+                }),
+              ),
+              Promise.all(
+                sideEntries.map(async (entry) => {
+                  const carta = await buscarCartaPorNome(entry.nome);
+                  return carta ? toCardEntry(carta, entry.quantidade) : null;
+                }),
+              ),
+            ]);
+
+            onSetMainDeck(resolvedMain.filter(Boolean));
+            onSetSideboard(resolvedSide.filter(Boolean));
           } catch (error) {
             console.error("Erro ao carregar cartas do deck:", error);
           }

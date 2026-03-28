@@ -43,6 +43,16 @@ export function useAuth() {
     }
   }, []);
 
+  // Ouvir evento de logout forçado pelo interceptor (token expirado)
+  useEffect(() => {
+    const handleForceLogout = () => {
+      setToken("");
+      setUsuario(null);
+    };
+    window.addEventListener("auth:logout", handleForceLogout);
+    return () => window.removeEventListener("auth:logout", handleForceLogout);
+  }, []);
+
   const saveAuth = (authData) => {
     setToken(authData.token);
     setUsuario(authData.usuario);
@@ -153,6 +163,7 @@ export function useAuth() {
   };
 
   const isAuthenticated = Boolean(token && usuario);
+  const isAdmin = (usuario?.role ?? "user") === "admin";
 
   return {
     // State
@@ -165,6 +176,7 @@ export function useAuth() {
     loginForm,
     registerForm,
     isAuthenticated,
+    isAdmin,
     showEditProfileModal,
     editProfileForm,
     // Setters

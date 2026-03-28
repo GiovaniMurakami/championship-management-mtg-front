@@ -9,7 +9,7 @@ export function StandingsTable({ standings }) {
     }
 
     const getPlayerName = (player) =>
-        player?.nome || player?.username || player?.userName || player?.jogadorNome || "Jogador";
+        player?.usuario?.nome || player?.nome || player?.username || player?.userName || player?.jogadorNome || "Jogador";
 
     const getDeckName = (player) => {
         if (player?.deckConfirmado) return "✓";
@@ -48,7 +48,7 @@ export function StandingsTable({ standings }) {
                     <tbody>
                         {standings.map((player, index) => (
                             <tr
-                                key={player.usuarioId || player.id || index}
+                                key={player.usuario?.id || player.usuarioId || player.id || index}
                                 className={player.dropped ? "td-row-dropped" : ""}
                             >
                                 <td className="td-rank">{player.posicao ?? index + 1}</td>
@@ -90,7 +90,7 @@ export function StandingsTable({ standings }) {
 
                     return (
                         <article
-                            key={player.usuarioId || player.id || index}
+                            key={player.usuario?.id || player.usuarioId || player.id || index}
                             className={`td-mobile-card ${player.dropped ? "td-mobile-card-dropped" : ""}`}
                         >
                             <div className="td-mobile-card-head">
