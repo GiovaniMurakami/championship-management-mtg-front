@@ -373,5 +373,6 @@ export function useTournamentDetail() {
         handleNextRound,
         handleDropPlayer,
         usuario,
+        token,
     };
 }

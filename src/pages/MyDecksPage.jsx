@@ -37,8 +37,8 @@ function FormatBadge({ formato }) {
 }
 
 export function MyDecksPage({ token }) {
-  const { decks, loading, message, fetchDecks } = useMyDecks(token);
   const { usuario } = useAuth();
+  const { decks, loading, message, fetchDecks } = useMyDecks(token, usuario?.id);
   const [deckImages, setDeckImages] = useState({});
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, deck: null });
   const [confirmName, setConfirmName] = useState("");
