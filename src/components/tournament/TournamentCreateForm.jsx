@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { criarTorneio } from "../services/backendApi";
+import { criarTorneio } from "../../services/backendApi";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },

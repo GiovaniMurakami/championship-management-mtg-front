@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { listarTorneios } from "../services/backendApi";
-import { useAuth } from "../hooks/useAuth";
-import { SkeletonBannerCard } from "./Skeleton";
+import { listarTorneios } from "../../services/backendApi";
+import { useAuth } from "../../hooks/useAuth";
+import { SkeletonBannerCard } from "../ui/Skeleton";
 
 const FORMAT_COLORS = {
     modern: "#a78bfa",
