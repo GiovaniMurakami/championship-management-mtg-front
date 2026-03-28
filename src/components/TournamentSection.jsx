@@ -46,13 +46,18 @@ export function TournamentSection() {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
 
-  const displayedTorneios = torneios.length > 0 ? torneios.slice(0, 3) : TOURNAMENT_BANNERS;
+  const torneiosAtivos = torneios.filter(
+    (t) => t.status === "inscricoes_abertas" || t.status === "em_andamento"
+  );
+
+  const displayedTorneios = torneiosAtivos.length > 0 ? torneiosAtivos.slice(0, 3) : TOURNAMENT_BANNERS;
+  const isMock = torneiosAtivos.length === 0;
 
   return (
     <section className="tournaments" id="torneios">
       <div className="section-title">
         <h2>Torneios em destaque</h2>
-        <span>{torneios.length > 0 ? "torneios ativos" : "mock data"}</span>
+        <span>{isMock ? "mock data" : "torneios ativos"}</span>
       </div>
       <div className="banner-grid">
         {displayedTorneios.map((banner) => (

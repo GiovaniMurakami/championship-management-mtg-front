@@ -23,7 +23,7 @@ export function OwnerControlPanel({
         && Number(torneio?.rodadaAtual || 0) >= Number(torneio?.totalRodadas || 0);
 
     const getPlayerName = (player) =>
-        player?.nome || player?.username || player?.userName || player?.jogadorNome || "Jogador";
+        player?.usuario?.nome || player?.nome || player?.username || player?.userName || player?.jogadorNome || "Jogador";
 
     const getPlayerId = (player) =>
         player?.usuarioId || player?.userId || player?.usuario?.id || player?.id;

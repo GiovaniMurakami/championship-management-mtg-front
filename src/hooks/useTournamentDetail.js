@@ -116,21 +116,26 @@ export function useTournamentDetail() {
                 loadPartidas();
             },
             onParticipanteInscrito: (msg) => {
-                const { usuarioId, inscricaoId, usuarioNome } = msg.data;
+                const data = msg.data;
+                const usuarioId = data.usuario?.id || data.usuarioId;
+                const usuarioNome = data.usuario?.nome || data.usuarioNome;
+                const inscricaoId = data.inscricaoId || data.id;
                 setStandings((prev) => {
-                    const jaExiste = prev.some((p) => p.usuarioId === usuarioId || p.id === usuarioId);
+                    const jaExiste = prev.some(
+                        (p) => p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
+                    );
                     if (jaExiste) return prev;
-                    return [...prev, { id: usuarioId, usuarioId, inscricaoId, nome: usuarioNome, pontos: 0 }];
+                    return [...prev, { usuario: { id: usuarioId, nome: usuarioNome }, id: usuarioId, usuarioId, inscricaoId, nome: usuarioNome, pontos: 0 }];
                 });
                 setTorneio((prev) =>
                     prev ? { ...prev, totalInscritos: (prev.totalInscritos || 0) + 1 } : prev
                 );
             },
             onCheckinRealizado: (msg) => {
-                const { usuarioId } = msg.data;
+                const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
                 setStandings((prev) =>
                     prev.map((p) =>
-                        p.usuarioId === usuarioId || p.id === usuarioId
+                        p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
                             ? {
                                 ...p,
                                 checkin: true,
@@ -143,10 +148,11 @@ export function useTournamentDetail() {
                 );
             },
             onDeckInserido: (msg) => {
-                const { usuarioId, deckConfirmado } = msg.data;
+                const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
+                const deckConfirmado = msg.data.deckConfirmado;
                 setStandings((prev) =>
                     prev.map((p) =>
-                        p.usuarioId === usuarioId || p.id === usuarioId
+                        p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
                             ? { ...p, deckConfirmado }
                             : p
                     )
@@ -165,7 +171,10 @@ export function useTournamentDetail() {
     const currentPlayer = useMemo(() => {
         return (
             standings.find(
-                (p) => normalizeId(p.usuarioId) === normalizeId(usuario?.id) || normalizeId(p.id) === normalizeId(usuario?.id)
+                (p) =>
+                    normalizeId(p.usuario?.id) === normalizeId(usuario?.id) ||
+                    normalizeId(p.usuarioId) === normalizeId(usuario?.id) ||
+                    normalizeId(p.id) === normalizeId(usuario?.id)
             ) || null
         );
     }, [standings, usuario?.id]);

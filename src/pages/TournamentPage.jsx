@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, useCallback } from "react";
+﻿import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { listarTorneios, inscreverTorneio, iniciarTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
@@ -6,10 +6,11 @@ import { subscribeToTournament, unsubscribeFromTournament } from "../services/ab
 import { SkeletonTorneioCard } from "../components";
 
 export function TournamentPage() {
-    const { token, usuario } = useAuth();
+    const { token, usuario, isAdmin } = useAuth();
     const [torneios, setTorneios] = useState([]);
     const [loading, setLoading] = useState(false);
     const [inscricoesLocais, setInscricoesLocais] = useState({});
+    const [abaAtiva, setAbaAtiva] = useState("disponiveis");
     const channelsRef = useRef({});
     const navigate = useNavigate();
 
@@ -161,28 +162,70 @@ export function TournamentPage() {
         });
     };
 
+    const torneiosDisponiveis = useMemo(
+        () => torneios.filter((t) => t.status === "inscricoes_abertas" || t.status === "em_andamento"),
+        [torneios],
+    );
+
+    const torneiosAnteriores = useMemo(
+        () => torneios.filter((t) => t.status === "finalizado"),
+        [torneios],
+    );
+
+    const torneiosExibidos = abaAtiva === "disponiveis" ? torneiosDisponiveis : torneiosAnteriores;
+
     return (
         <div className="tournament-page">
             <div className="tournament-page-header">
                 <h1>Torneios</h1>
+                {isAdmin && (
+                    <button
+                        className="btn-create-tournament-route"
+                        type="button"
+                        onClick={() => navigate("/torneios/criar")}
+                    >
+                        + Criar Torneio
+                    </button>
+                )}
+            </div>
+
+            <div className="tournament-tabs">
                 <button
-                    className="btn-create-tournament-route"
                     type="button"
-                    onClick={() => navigate("/torneios/criar")}
+                    className={`tournament-tab${abaAtiva === "disponiveis" ? " tournament-tab--active" : ""}`}
+                    onClick={() => setAbaAtiva("disponiveis")}
                 >
-                    + Criar Torneio
+                    Torneios Disponíveis
+                    {torneiosDisponiveis.length > 0 && (
+                        <span className="tournament-tab-count">{torneiosDisponiveis.length}</span>
+                    )}
+                </button>
+                <button
+                    type="button"
+                    className={`tournament-tab${abaAtiva === "anteriores" ? " tournament-tab--active" : ""}`}
+                    onClick={() => setAbaAtiva("anteriores")}
+                >
+                    Torneios Anteriores
+                    {torneiosAnteriores.length > 0 && (
+                        <span className="tournament-tab-count">{torneiosAnteriores.length}</span>
+                    )}
                 </button>
             </div>
 
             <section className="tournaments-list-section">
-                <h2>Torneios Disponíveis</h2>
                 {loading ? (
                     <div className="torneios-list">
                         {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
                     </div>
+                ) : torneiosExibidos.length === 0 ? (
+                    <p className="torneios-empty">
+                        {abaAtiva === "disponiveis"
+                            ? "Nenhum torneio disponível no momento."
+                            : "Nenhum torneio anterior encontrado."}
+                    </p>
                 ) : (
                     <div className="torneios-list">
-                        {torneios.map((torneio) => (
+                        {torneiosExibidos.map((torneio) => (
                             <div key={torneio.id} className="torneio-card">
                                 <h3>{torneio.nome}</h3>
                                 <p>Formato: {torneio.formato}</p>
@@ -195,33 +238,28 @@ export function TournamentPage() {
                                 </p>
 
                                 <div className="actions">
-                                    {(() => {
+                                    <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
+                                        Ver Torneio
+                                    </button>
+
+                                    {torneio.status === "inscricoes_abertas" && (() => {
                                         const inscrito = isInscrito(torneio);
-
                                         return (
-                                            <>
-                                                <button className="btn-view-standings" onClick={() => handleViewTournament(torneio.id)}>
-                                                    Ver Torneio
-                                                </button>
-
-                                                {torneio.status === "inscricoes_abertas" && (
-                                                    <button
-                                                        className={inscrito ? "btn-inscrito" : "btn-inscrever"}
-                                                        onClick={() => handleInscrever(torneio.id)}
-                                                        disabled={inscrito}
-                                                    >
-                                                        {inscrito ? "Inscrito" : "Inscrever-se"}
-                                                    </button>
-                                                )}
-
-                                                {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
-                                                    <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
-                                                        Iniciar Torneio
-                                                    </button>
-                                                )}
-                                            </>
+                                            <button
+                                                className={inscrito ? "btn-inscrito" : "btn-inscrever"}
+                                                onClick={() => handleInscrever(torneio.id)}
+                                                disabled={inscrito}
+                                            >
+                                                {inscrito ? "Inscrito" : "Inscrever-se"}
+                                            </button>
                                         );
                                     })()}
+
+                                    {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
+                                        <button className="btn-iniciar" onClick={() => handleIniciar(torneio.id)}>
+                                            Iniciar Torneio
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
