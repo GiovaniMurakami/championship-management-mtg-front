@@ -104,10 +104,21 @@ function ExportDropdown({ deckForm, mainDeck, sideboard }) {
   const hasCards = (mainDeck?.length ?? 0) > 0;
 
   return (
-    <div className="export-dropdown" ref={ref}>
+    /* export-dropdown: position: relative */
+    <div className="relative" ref={ref}>
+      {/* btn secondary export-btn */}
       <button
         type="button"
-        className="btn secondary export-btn"
+        className="
+          inline-flex items-center gap-[0.35rem]
+          border border-line rounded-[0.75rem] px-4 py-[0.6rem]
+          cursor-pointer font-bold
+          bg-white/[0.03] text-text-main
+          transition-all duration-[220ms]
+          hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]
+          active:translate-y-0
+          disabled:opacity-60 disabled:cursor-not-allowed
+        "
         onClick={() => setOpen((v) => !v)}
         disabled={!hasCards}
       >
@@ -121,11 +132,31 @@ function ExportDropdown({ deckForm, mainDeck, sideboard }) {
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
+
       {open && (
-        <ul className="export-menu">
+        /* export-menu */
+        <ul
+          className="
+            absolute top-[calc(100%+0.4rem)] left-0 z-50
+            bg-[#1a1030] border border-line rounded-[0.65rem]
+            py-[0.3rem] px-[0.3rem] m-0 list-none min-w-[180px]
+            shadow-[0_8px_28px_rgba(0,0,0,0.5)]
+            animate-[fadeInDown_0.14s_ease]
+          "
+        >
           {EXPORT_FORMATS.map((fmt) => (
             <li key={fmt.key}>
-              <button type="button" onClick={() => handleExport(fmt.key)}>
+              <button
+                type="button"
+                className="
+                  w-full text-left bg-transparent border-none
+                  text-text-soft px-[0.75rem] py-[0.5rem]
+                  rounded-[0.4rem] text-[0.88rem] cursor-pointer
+                  transition-[background,color] duration-[150ms]
+                  hover:bg-[rgba(167,79,255,0.15)] hover:text-text-main
+                "
+                onClick={() => handleExport(fmt.key)}
+              >
                 {fmt.label}
               </button>
             </li>
@@ -142,16 +173,39 @@ function PickerHeader({ label, total, limit }) {
   const isNearFull = !isOver && pct >= 80;
 
   return (
-    <div className="picker-header">
-      <div className="picker-header-top">
-        <span className="picker-header-label">{label}</span>
-        <span className={`picker-header-count${isOver ? " picker-count-over" : isNearFull ? " picker-count-near" : ""}`}>
-          {total}<span className="picker-header-limit">/{limit}</span>
+    /* picker-header */
+    <div className="mb-[0.55rem]">
+      {/* picker-header-top */}
+      <div className="flex items-baseline justify-between mb-[0.3rem]">
+        {/* picker-header-label */}
+        <span className="font-bold text-[0.9rem] text-text-main">{label}</span>
+        {/* picker-header-count with conditional color */}
+        <span
+          className={`text-[0.88rem] font-bold ${
+            isOver
+              ? "text-[#f87171]"
+              : isNearFull
+              ? "text-[#fcd34d]"
+              : "text-text-soft"
+          }`}
+        >
+          {total}
+          {/* picker-header-limit */}
+          <span className="font-normal opacity-60">/{limit}</span>
         </span>
       </div>
-      <div className="picker-progress-track">
+
+      {/* picker-progress-track */}
+      <div className="h-[3px] rounded-full bg-white/[0.08] overflow-hidden">
+        {/* picker-progress-fill with conditional gradient */}
         <div
-          className={`picker-progress-fill${isOver ? " picker-progress-over" : isNearFull ? " picker-progress-near" : ""}`}
+          className={`h-full rounded-full transition-[width] duration-300 ${
+            isOver
+              ? "bg-gradient-to-r from-[#b91c1c] to-[#f87171]"
+              : isNearFull
+              ? "bg-gradient-to-r from-[#d97706] to-[#fcd34d]"
+              : "bg-gradient-to-r from-[#7c3aed] to-[#c795ff]"
+          }`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -221,28 +275,55 @@ export function DeckBuilder({
   };
 
   return (
-    <section className="deck-builder" id="decks">
-      <div className="deck-builder-header">
-        <div className="deck-builder-title-row">
-          <h2 className="deck-builder-title">
+    /* deck-builder: animate fade-in, border, rounded, padding, bg, mt */
+    <section
+      className="animate-[fade-in_400ms_ease-out] border border-line rounded-[1.2rem] p-5 bg-[rgba(15,10,29,0.84)] mt-10"
+      id="decks"
+    >
+      {/* deck-builder-header */}
+      <div className="mb-5 pb-4 border-b border-line">
+        {/* deck-builder-title-row */}
+        <div className="flex items-center gap-3">
+          {/* deck-builder-title */}
+          <h2 className="m-0 font-display text-[1.9rem] tracking-[0.04em] text-text-main">
             {readOnly ? "Visualizar deck" : isEditMode ? "Editar deck" : "Novo deck"}
           </h2>
+
           {readOnly && (
-            <span className="deck-builder-badge deck-builder-badge--readonly">Somente leitura</span>
+            /* deck-builder-badge deck-builder-badge--readonly */
+            <span className="py-[0.2rem] px-[0.65rem] rounded-full text-[0.72rem] font-bold tracking-[0.05em] uppercase border border-[rgba(148,163,184,0.35)] text-[#94a3b8] bg-[rgba(148,163,184,0.12)]">
+              Somente leitura
+            </span>
           )}
           {isEditMode && !readOnly && (
-            <span className="deck-builder-badge deck-builder-badge--edit">Editando</span>
+            /* deck-builder-badge deck-builder-badge--edit */
+            <span className="py-[0.2rem] px-[0.65rem] rounded-full text-[0.72rem] font-bold tracking-[0.05em] uppercase border border-[rgba(139,92,246,0.4)] text-[#c4b5fd] bg-[rgba(139,92,246,0.15)]">
+              Editando
+            </span>
           )}
         </div>
       </div>
 
-      <form className="deck-form" onSubmit={handleFormSubmit}>
-        <div className="form-row two-columns">
+      {/* deck-form: display grid, gap */}
+      <form className="grid gap-4" onSubmit={handleFormSubmit}>
+
+        {/* form-row two-columns */}
+        <div className="grid gap-[0.9rem] sm:grid-cols-2">
+
+          {/* form-label for nome — field-invalid + shake-field applied conditionally */}
           <label
-            className={`form-label ${invalidFields.nome ? "field-invalid" : ""} ${shakeFields.nome ? "shake-field" : ""}`}
+            className={`
+              grid gap-[0.45rem] text-[0.95rem]
+              ${invalidFields.nome
+                ? "text-[#ffb5c3] [&_input]:border-[rgba(255,98,124,0.95)] [&_input]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
+                : "text-text-soft"
+              }
+              ${shakeFields.nome ? "animate-[field-shake_420ms_ease]" : ""}
+            `}
           >
             Nome do deck
             <input
+              className="border border-line rounded-[0.7rem] bg-white/[0.03] text-text-main px-[0.7rem] py-[0.65rem] w-full focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)]"
               value={deckForm.nome}
               onChange={(event) => {
                 onDeckFormChange((current) => ({ ...current, nome: event.target.value }));
@@ -254,13 +335,32 @@ export function DeckBuilder({
             />
           </label>
 
+          {/* form-label for formato — field-invalid + shake-field applied conditionally */}
           <label
-            className={`form-label ${invalidFields.formato ? "field-invalid" : ""} ${shakeFields.formato ? "shake-field" : ""}`}
+            className={`
+              grid gap-[0.45rem] text-[0.95rem]
+              ${invalidFields.formato
+                ? "text-[#ffb5c3] [&_.format-select-wrapper]:border-[rgba(255,98,124,0.95)] [&_.format-select-wrapper]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
+                : "text-text-soft"
+              }
+              ${shakeFields.formato ? "animate-[field-shake_420ms_ease]" : ""}
+            `}
           >
             Formato
-            <div className="select-field">
+            {/* select-field: relative wrapper with CSS arrow via pseudo-element replaced by a real element */}
+            <div className={`relative format-select-wrapper ${invalidFields.formato ? "border border-[rgba(255,98,124,0.95)] shadow-[0_0_0_2px_rgba(255,98,124,0.2)] rounded-[0.7rem]" : ""}`}>
               <select
-                className="format-select"
+                className="
+                  w-full appearance-none
+                  border border-line rounded-[0.7rem]
+                  bg-gradient-to-b from-white/[0.06] to-white/[0.02]
+                  text-text-main px-[0.7rem] py-[0.65rem] pr-[2.1rem]
+                  cursor-pointer
+                  transition-[border-color,box-shadow,background-color] duration-[180ms]
+                  hover:border-[rgba(199,149,255,0.6)]
+                  focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]
+                  [&_option]:text-[#f5edff] [&_option]:bg-[#1a1129]
+                "
                 value={deckForm.formato}
                 onChange={(event) => {
                   onDeckFormChange((current) => ({ ...current, formato: event.target.value }));
@@ -278,12 +378,31 @@ export function DeckBuilder({
                   </option>
                 ))}
               </select>
+              {/* Custom arrow to replace select-field::after pseudo-element */}
+              <span
+                className="absolute right-[0.85rem] top-1/2 -translate-y-[62%] w-2 h-2 border-r-2 border-b-2 border-[rgba(245,237,255,0.72)] rotate-45 pointer-events-none"
+                aria-hidden="true"
+              />
             </div>
           </label>
         </div>
 
-        <div className="card-pickers">
-          <div className="picker-column">
+        {/* card-pickers: 2-col grid */}
+        <div className="grid grid-cols-2 gap-[0.8rem] items-stretch max-sm:grid-cols-1 max-sm:gap-4">
+
+          {/* picker-column (main) */}
+          <div
+            className="
+              border border-line rounded-[0.8rem] p-3
+              bg-white/[0.01]
+              min-h-[clamp(520px,calc(100vh-240px),760px)]
+              flex flex-col overflow-hidden
+              transition-all duration-[220ms]
+              animate-[fade-in_300ms_ease-out]
+              hover:border-[rgba(199,149,255,0.3)] hover:bg-white/[0.03] hover:shadow-[0_2px_8px_rgba(167,79,255,0.05)]
+              max-sm:min-h-[clamp(400px,calc(100vh-280px),600px)] max-sm:p-4
+            "
+          >
             <PickerHeader label="Maindeck" total={totalMain} limit={mainLimit} />
             {!readOnly && (
               <CardSearch
@@ -309,7 +428,19 @@ export function DeckBuilder({
             />
           </div>
 
-          <div className="picker-column">
+          {/* picker-column (side) */}
+          <div
+            className="
+              border border-line rounded-[0.8rem] p-3
+              bg-white/[0.01]
+              min-h-[clamp(520px,calc(100vh-240px),760px)]
+              flex flex-col overflow-hidden
+              transition-all duration-[220ms]
+              animate-[fade-in_300ms_ease-out]
+              hover:border-[rgba(199,149,255,0.3)] hover:bg-white/[0.03] hover:shadow-[0_2px_8px_rgba(167,79,255,0.05)]
+              max-sm:min-h-[clamp(400px,calc(100vh-280px),600px)] max-sm:p-4
+            "
+          >
             <PickerHeader label="Sideboard" total={totalSide} limit={15} />
             {!readOnly && (
               <CardSearch
@@ -336,10 +467,24 @@ export function DeckBuilder({
           </div>
         </div>
 
-        <div className="deck-actions">
+        {/* deck-actions */}
+        <div className="flex gap-3 flex-wrap items-center max-sm:flex-col max-sm:gap-4 max-sm:w-full">
           {!readOnly && (
             <>
-              <label className="btn secondary import-btn" htmlFor="import-deck-file">
+              {/* import-btn: btn secondary + inline-flex */}
+              <label
+                className="
+                  inline-flex items-center justify-center gap-[0.4rem]
+                  border border-line rounded-[0.75rem] px-4 py-[0.6rem]
+                  cursor-pointer font-bold
+                  bg-white/[0.03] text-text-main
+                  transition-all duration-[220ms]
+                  hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]
+                  active:translate-y-0
+                  max-sm:w-full max-sm:py-[0.85rem] max-sm:text-base max-sm:min-h-[52px]
+                "
+                htmlFor="import-deck-file"
+              >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
@@ -347,11 +492,13 @@ export function DeckBuilder({
                 </svg>
                 {importLoading ? "Importando..." : "Importar (.txt)"}
               </label>
+
+              {/* import-file-input: visually hidden */}
               <input
                 id="import-deck-file"
                 type="file"
                 accept=".txt"
-                className="import-file-input"
+                className="absolute w-px h-px opacity-0 pointer-events-none"
                 onChange={handleImportFileChange}
                 disabled={importLoading}
               />
@@ -361,7 +508,22 @@ export function DeckBuilder({
           <ExportDropdown deckForm={deckForm} mainDeck={mainDeck} sideboard={sideboard} />
 
           {!readOnly && (
-            <button className="btn primary" type="submit" disabled={deckLoading || importLoading}>
+            /* btn primary */
+            <button
+              className="
+                border border-[rgba(199,149,255,0.6)] rounded-[0.75rem] px-4 py-[0.6rem]
+                cursor-pointer font-bold
+                bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white
+                shadow-[0_4px_12px_rgba(167,79,255,0.25)]
+                transition-all duration-[220ms]
+                hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4),0_0_12px_rgba(199,149,255,0.3)] hover:border-[rgba(199,149,255,0.9)]
+                active:translate-y-0 active:shadow-[0_2px_8px_rgba(167,79,255,0.3)]
+                disabled:opacity-60 disabled:cursor-not-allowed
+                max-sm:w-full max-sm:py-[0.85rem] max-sm:text-base max-sm:min-h-[52px]
+              "
+              type="submit"
+              disabled={deckLoading || importLoading}
+            >
               {deckLoading
                 ? isEditMode ? "Atualizando..." : "Cadastrando..."
                 : isEditMode ? "Salvar deck" : "Criar deck"}
@@ -369,11 +531,31 @@ export function DeckBuilder({
           )}
         </div>
 
-        {importMessage ? <p className="feedback">{importMessage}</p> : null}
-        {deckMessage ? <p className="feedback">{deckMessage}</p> : null}
-        {cardLimitMessage ? <p className="feedback limit-warning">{cardLimitMessage}</p> : null}
+        {/* feedback messages */}
+        {importMessage ? (
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
+            {importMessage}
+          </p>
+        ) : null}
+
+        {deckMessage ? (
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
+            {deckMessage}
+          </p>
+        ) : null}
+
+        {/* feedback limit-warning */}
+        {cardLimitMessage ? (
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
+            {cardLimitMessage}
+          </p>
+        ) : null}
+
+        {/* feedback illegal-warning */}
         {illegalCardMessage ? (
-          <p className="feedback illegal-warning">{illegalCardMessage}</p>
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(255,107,107,0.18)] text-[#ffb3b3] text-[0.9rem] border-l-[3px] border-l-[#ff6b6b] animate-[fade-in_300ms_ease-out]">
+            {illegalCardMessage}
+          </p>
         ) : null}
       </form>
     </section>

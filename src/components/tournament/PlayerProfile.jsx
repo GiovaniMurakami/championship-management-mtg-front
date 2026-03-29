@@ -46,15 +46,14 @@ export function PlayerProfile({
         || usuarioNome
         || "";
 
-    // Not registered yet
     if (!currentPlayer) {
         return (
-            <section className="td-card td-profile-card">
-                <h2 className="td-card-title">Sua Participação</h2>
-                {displayName && <p className="td-hint">Jogador: <strong>{displayName}</strong></p>}
-                <p className="td-empty-text">Você ainda não está inscrito neste torneio.</p>
+            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
+                <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Sua Participação</h2>
+                {displayName && <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Jogador: <strong className="text-[#c795ff]">{displayName}</strong></p>}
+                <p className="text-[#beafd7] text-[0.9rem] m-0">Você ainda não está inscrito neste torneio.</p>
                 <button
-                    className="td-btn td-btn-accent"
+                    className="inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
                     onClick={onInscrever}
                     disabled={actionLoading}
                 >
@@ -65,50 +64,49 @@ export function PlayerProfile({
     }
 
     return (
-        <section className="td-card td-profile-card">
-            <h2 className="td-card-title">Sua Participação</h2>
-            {displayName && <p className="td-hint">Jogador: <strong>{displayName}</strong></p>}
+        <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
+            <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Sua Participação</h2>
+            {displayName && <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Jogador: <strong className="text-[#c795ff]">{displayName}</strong></p>}
 
-            <div className="td-profile-grid">
-                {/* Deck selection */}
-                <div className="td-profile-field">
-                    <label className="td-label">Deck</label>
+            <div className="grid gap-4">
+                <div className="grid gap-[0.35rem]">
+                    <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Deck</label>
 
                     {isDeckConfirmed && (
-                        <p className="td-hint td-hint-success">
-                            ✓ Deck confirmado: <strong>{getDeckName(currentPlayer) || "—"}</strong>
+                        <p className="text-[0.8rem] text-[#7ef2a3] mt-[0.25rem]">
+                            ✓ Deck confirmado: <strong className="text-[#7ef2a3]">{getDeckName(currentPlayer) || "—"}</strong>
                         </p>
                     )}
 
                     {!canEditDeck && (
-                        <p className="td-hint">
+                        <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">
                             O torneio já começou. Troca de deck está bloqueada.
                         </p>
                     )}
 
                     {decks.length === 0 ? (
-                        <p className="td-hint">Você não tem decks cadastrados. <a href="/decks" className="td-link">Criar deck</a></p>
+                        <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Você não tem decks cadastrados. <a href="/decks" className="text-[#c795ff] underline">Criar deck</a></p>
                     ) : (
                         <>
-                            <div className="td-deck-list">
+                            <div className="flex flex-col gap-[0.4rem] max-h-[220px] overflow-y-auto pr-1">
                                 {decks.map((deck) => (
                                     <button
                                         key={deck.id}
                                         type="button"
-                                        className={`td-deck-option ${selectedDeckId === deck.id ? "td-deck-option--selected" : ""}`}
+                                        className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.9rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedDeckId === deck.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]"}`}
                                         onClick={() => onDeckChange(deck.id)}
                                         disabled={!canEditDeck || actionLoading}
                                     >
-                                        <span className="td-deck-option-name">{deck.nome}</span>
-                                        <span className="td-deck-option-meta">
-                                            <span className="td-format-badge">{deck.formato}</span>
-                                            <span className="td-deck-option-count">{calcTotal(deck)} cartas</span>
+                                        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{deck.nome}</span>
+                                        <span className="flex items-center gap-2 flex-shrink-0">
+                                            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.04em] px-[0.45rem] py-[0.15rem] rounded-[0.4rem] bg-[rgba(199,149,255,0.15)] text-[#c795ff]">{deck.formato}</span>
+                                            <span className="text-[0.78rem] text-[#beafd7] whitespace-nowrap">{calcTotal(deck)} cartas</span>
                                         </span>
                                     </button>
                                 ))}
                             </div>
                             <button
-                                className="td-btn td-btn-secondary td-deck-confirm-btn"
+                                className="inline-flex items-center justify-center mt-2 w-full px-4 py-[0.55rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(255,255,255,0.1)] hover:not-disabled:border-[rgba(199,149,255,0.5)]"
                                 disabled={!canEditDeck || !selectedDeckId || actionLoading}
                                 onClick={onChooseDeck}
                             >
@@ -124,12 +122,11 @@ export function PlayerProfile({
                     )}
                 </div>
 
-                {/* Check-in */}
-                <div className="td-profile-field">
-                    <label className="td-label">Check-in</label>
-                    <div className="td-inline-row">
+                <div className="grid gap-[0.35rem]">
+                    <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Check-in</label>
+                    <div className="flex gap-2 items-center">
                         <button
-                            className={`td-btn ${checkinDone ? "td-btn-success" : "td-btn-primary"}`}
+                            className={`inline-flex items-center justify-center px-4 py-[0.55rem] border rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${checkinDone ? "bg-[rgba(34,197,94,0.2)] border-[rgba(34,197,94,0.5)] text-[#86efac]" : "bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"}`}
                             disabled={actionLoading || checkinDone || isFinished}
                             onClick={onCheckin}
                         >

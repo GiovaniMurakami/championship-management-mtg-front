@@ -1,17 +1,216 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
 
-:root {
-  --bg-1: #08060f;
-  --bg-2: #110a22;
-  --brand-2: #c795ff;
-  --text-main: #f5edff;
-  --text-soft: #beafd7;
-  --line: rgba(217, 180, 255, 0.2);
-  font-family: "Space Grotesk", sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  --color-bg-1: #08060f;
+  --color-bg-2: #110a22;
+  --color-brand: #c795ff;
+  --color-text-main: #f5edff;
+  --color-text-soft: #beafd7;
+  --color-line: rgba(217, 180, 255, 0.2);
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-display: "Bebas Neue", sans-serif;
+  --breakpoint-nav: 59.375rem;
+  /* 950px */
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes mobile-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-focus {
+  from {
+    transform: scale(0.98);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer-bar {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes rt-pulse {
+
+  0%,
+  100% {
+    box-shadow: none;
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+}
+
+@keyframes deck-skeleton-shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+@keyframes story-gif-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes storySlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* story-player: kept as CSS class — relies on storySlideIn keyframe */
+.story-player {
+  animation: storySlideIn 0.38s ease both;
+}
+
+/* Base styles for inputs/selects */
+input,
+select {
+  border: 1px solid rgba(217, 180, 255, 0.2);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: #f5edff;
+  padding: 0.65rem 0.7rem;
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+input:hover,
+select:hover {
+  border-color: rgba(199, 149, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.045);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(199, 149, 255, 0.92);
+  box-shadow: 0 0 0 3px rgba(167, 79, 255, 0.22);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+*:focus-visible {
+  outline: 2px solid rgba(199, 149, 255, 0.5);
+  outline-offset: 2px;
+}
+
+@keyframes field-shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* DeckImageModal – card stack (CSS vars cannot be expressed as Tailwind utilities) */
+.dip-card-stack {
+  position: relative;
+  width: 100px;
+  height: calc(140px + (min(var(--qty, 1), 4) - 1) * 30px);
+  flex-shrink: 0;
+}
+
+.dip-card-item {
+  position: absolute;
+  top: calc(var(--i) * 30px);
+  left: 0;
+  width: 100px;
+  height: 140px;
+  z-index: calc(10 - var(--i));
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
 }
 
 * {
@@ -27,12 +226,13 @@ body,
 
 body {
   min-width: 320px;
+  font-family: "Space Grotesk", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background:
     radial-gradient(circle at 8% 18%, rgba(87, 20, 166, 0.27), transparent 30%),
-    radial-gradient(
-      circle at 90% 85%,
-      rgba(161, 58, 255, 0.22),
-      transparent 28%
-    ),
-    linear-gradient(120deg, var(--bg-1), var(--bg-2));
+    radial-gradient(circle at 90% 85%, rgba(161, 58, 255, 0.22), transparent 28%),
+    linear-gradient(120deg, #08060f, #110a22);
 }

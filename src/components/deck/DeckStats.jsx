@@ -57,9 +57,9 @@ export function DeckStats({ mainDeck }) {
 
   if (!stats) {
     return (
-      <div className="ds-container">
-        <h3 className="ds-title">📊 Estatísticas do Deck</h3>
-        <p className="ds-empty">Adicione cartas ao deck para ver estatísticas</p>
+      <div className="flex flex-col gap-4 border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full">
+        <h3 className="text-[1.1rem] m-0 text-text-main">📊 Estatísticas do Deck</h3>
+        <p className="text-text-soft text-[0.9rem] text-center m-0">Adicione cartas ao deck para ver estatísticas</p>
       </div>
     );
   }
@@ -90,32 +90,43 @@ export function DeckStats({ mainDeck }) {
   );
 
   return (
-    <div className="ds-container">
-      <h3 className="ds-title">📊 Estatísticas do Deck</h3>
+    <div className="flex flex-col gap-4 border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full">
+      <h3 className="text-[1.1rem] m-0 text-text-main">📊 Estatísticas do Deck</h3>
 
       {/* Curva de Mana */}
-      <div className="ds-section">
-        <h4 className="ds-section-title">Curva de Mana</h4>
-        <div className="ds-curve-chart">
+      <div className="mb-6">
+        <h4 className="text-[0.95rem] text-[#beafd7] mb-2 mt-0">Curva de Mana</h4>
+        {/* ds-curve-chart: flex items-end gap-[0.3rem] h-[148px], responsive h-[120px] */}
+        <div className="flex items-end gap-[0.3rem] h-[148px] max-[600px]:h-[120px]">
           {curveBuckets.map((cmc) => {
             const count = stats.manaCurve[cmc] || 0;
             const heightPercent = (count / maxCurveCount) * 100;
 
             return (
-              <div key={cmc} className="ds-curve-col">
-                <span className={`ds-curve-count${count === 0 ? " ds-zero" : ""}`}>
+              /* ds-curve-col: flex-1 flex flex-col items-center gap-[0.35rem] min-w-[30px], responsive min-w-[24px] */
+              <div key={cmc} className="flex-1 flex flex-col items-center gap-[0.35rem] min-w-[30px] max-[600px]:min-w-[24px]">
+                {/* ds-curve-count / ds-curve-count.ds-zero */}
+                <span
+                  className={`text-[0.7rem] font-bold text-text-main leading-none${count === 0 ? " font-normal opacity-45" : ""}`}
+                >
                   {count}
                 </span>
-                <div className="ds-curve-bar-bg" title={`${cmc} mana: ${count} cartas`}>
+                {/* ds-curve-bar-bg: w-full h-[108px] bg-white/[0.05] rounded border border-white/[0.08] relative overflow-hidden, responsive h-[80px] */}
+                <div
+                  className="w-full h-[108px] max-[600px]:h-[80px] bg-white/[0.05] rounded border border-white/[0.08] relative overflow-hidden"
+                  title={`${cmc} mana: ${count} cartas`}
+                >
+                  {/* ds-curve-bar-fill: absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease */}
                   <div
-                    className="ds-curve-bar-fill"
+                    className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease-[ease]"
                     style={{
                       height: `${Math.max(0, Math.round(heightPercent))}%`,
                       minHeight: count > 0 ? "4px" : "0",
                     }}
                   />
                 </div>
-                <span className="ds-curve-label">{cmc}</span>
+                {/* ds-curve-label: text-[0.75rem] opacity-70 */}
+                <span className="text-[0.75rem] opacity-70">{cmc}</span>
               </div>
             );
           })}
@@ -123,32 +134,41 @@ export function DeckStats({ mainDeck }) {
       </div>
 
       {/* Distribuição de Cores */}
-      <div className="ds-section">
-        <h4 className="ds-section-title">Distribuição de Cores</h4>
-        <div className="ds-color-list">
+      <div className="mb-6">
+        <h4 className="text-[0.95rem] text-[#beafd7] mb-2 mt-0">Distribuição de Cores</h4>
+        {/* ds-color-list: grid gap-[0.4rem] */}
+        <div className="grid gap-[0.4rem]">
           {Object.entries(stats.colorDistribution)
             .filter(([, count]) => count > 0)
             .sort(([, a], [, b]) => b - a)
             .map(([color, count]) => {
               const percent = ((count / stats.totalCards) * 100).toFixed(1);
               return (
-                <div key={color} className="ds-color-row">
-                  <div className="ds-color-identity">
+                /* ds-color-row: flex items-center gap-[0.5rem] */
+                <div key={color} className="flex items-center gap-[0.5rem]">
+                  {/* ds-color-identity: flex items-center gap-[0.45rem] w-[90px] shrink-0 */}
+                  <div className="flex items-center gap-[0.45rem] w-[90px] shrink-0">
+                    {/* ds-mana-symbol: w-[22px] h-[22px] shrink-0 */}
                     <img
                       src={manaSymbols[color]}
                       alt={colorNames[color]}
-                      className="ds-mana-symbol"
+                      className="w-[22px] h-[22px] shrink-0"
                     />
-                    <span className="ds-color-name">{colorNames[color]}</span>
+                    {/* ds-color-name: text-[0.82rem] text-text-soft whitespace-nowrap */}
+                    <span className="text-[0.82rem] text-text-soft whitespace-nowrap">{colorNames[color]}</span>
                   </div>
-                  <div className="ds-color-bar-wrapper">
-                    <div className="ds-color-bar-bg">
+                  {/* ds-color-bar-wrapper: flex-1 flex items-center gap-[0.5rem] */}
+                  <div className="flex-1 flex items-center gap-[0.5rem]">
+                    {/* ds-color-bar-bg: flex-1 h-[20px] bg-white/[0.05] rounded overflow-hidden relative */}
+                    <div className="flex-1 h-[20px] bg-white/[0.05] rounded overflow-hidden relative">
+                      {/* ds-color-bar-fill: h-full transition-[width] duration-300 ease */}
                       <div
-                        className="ds-color-bar-fill"
+                        className="h-full transition-[width] duration-300 ease-[ease]"
                         style={{ width: `${percent}%`, background: colorColors[color] }}
                       />
                     </div>
-                    <span className="ds-color-label">
+                    {/* ds-color-label: text-[0.8rem] min-w-[60px] text-right */}
+                    <span className="text-[0.8rem] min-w-[60px] text-right">
                       {count} ({percent}%)
                     </span>
                   </div>
@@ -158,18 +178,25 @@ export function DeckStats({ mainDeck }) {
         </div>
       </div>
 
-      {/* Tipos de Carta */}
-      <div className="ds-section ds-section-last">
-        <h4 className="ds-section-title">Tipos de Carta</h4>
-        <div className="ds-type-list">
+      {/* Tipos de Carta — ds-section-last has mb-0 */}
+      <div className="mb-0">
+        <h4 className="text-[0.95rem] text-[#beafd7] mb-2 mt-0">Tipos de Carta</h4>
+        {/* ds-type-list: grid gap-[0.4rem] */}
+        <div className="grid gap-[0.4rem]">
           {Object.entries(stats.typeDistribution)
             .sort(([, a], [, b]) => b - a)
             .map(([type, count]) => {
               const percent = ((count / stats.totalCards) * 100).toFixed(1);
               return (
-                <div key={type} className="ds-type-row">
-                  <span className="ds-type-name">{type}</span>
-                  <span className="ds-type-value">{count} ({percent}%)</span>
+                /* ds-type-row: flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(167,79,255,0.08)] rounded-[0.4rem] border border-[rgba(167,79,255,0.2)] */
+                <div
+                  key={type}
+                  className="flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(167,79,255,0.08)] rounded-[0.4rem] border border-[rgba(167,79,255,0.2)]"
+                >
+                  {/* ds-type-name: text-[0.85rem] font-medium */}
+                  <span className="text-[0.85rem] font-medium">{type}</span>
+                  {/* ds-type-value: text-[0.8rem] opacity-80 */}
+                  <span className="text-[0.8rem] opacity-80">{count} ({percent}%)</span>
                 </div>
               );
             })}

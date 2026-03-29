@@ -44,19 +44,25 @@ export function HandSimulator({ mainDeck }) {
   const isDisabled = !mainDeck || mainDeck.length === 0 || totalCards < 7;
 
   return (
-    <div className="hs-container">
-      <div className="hs-header">
-        <h3 className="hs-title">🎴 Mão Inicial</h3>
-        <span className="hs-count">{totalCards} cartas no deck</span>
+    /* hs-container: border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full */
+    <div className="border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full">
+      {/* hs-header: flex justify-between items-center mb-3 */}
+      <div className="flex justify-between items-center mb-3">
+        {/* hs-title: text-[1.1rem] m-0 text-text-main */}
+        <h3 className="text-[1.1rem] m-0 text-text-main">🎴 Mão Inicial</h3>
+        {/* hs-count: text-[0.85rem] opacity-70 */}
+        <span className="text-[0.85rem] opacity-70">{totalCards} cartas no deck</span>
       </div>
 
       {!showHand ? (
-        <div className="hs-cta">
-          <p className="hs-cta-text">
+        /* hs-cta: text-center py-6 */
+        <div className="text-center py-6">
+          {/* hs-cta-text: mb-4 text-text-soft text-[0.9rem] */}
+          <p className="mb-4 text-text-soft text-[0.9rem]">
             Simule uma mão inicial de 7 cartas aleatórias do seu deck
           </p>
           <button
-            className="btn primary"
+            className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
             type="button"
             onClick={drawHand}
             disabled={isDisabled}
@@ -66,12 +72,15 @@ export function HandSimulator({ mainDeck }) {
         </div>
       ) : (
         <>
-          <div className="hs-hand-area">
-            <div className="hs-hand-fan">
+          {/* hs-hand-area: flex justify-center items-center mb-4 min-h-[245px] max-[600px]:min-h-[190px] px-1 py-2 overflow-x-auto overflow-y-hidden */}
+          <div className="flex justify-center items-center mb-4 min-h-[245px] max-[600px]:min-h-[190px] px-1 py-2 overflow-x-auto overflow-y-hidden">
+            {/* hs-hand-fan: flex justify-center items-end w-fit mx-auto */}
+            <div className="flex justify-center items-end w-fit mx-auto">
               {hand.map((card, index) => (
+                /* hs-card: relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease shrink-0 hover:-translate-y-3 */
                 <div
                   key={`${card.nome}-${index}`}
-                  className="hs-card"
+                  className="relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease-[ease] shrink-0 hover:!-translate-y-3"
                   style={{
                     marginLeft: index === 0 ? "0" : "-20px",
                     transform: `translateY(${Math.abs(3 - index) * 9 - 12}px) rotate(${(index - 3) * 3}deg)`,
@@ -80,20 +89,23 @@ export function HandSimulator({ mainDeck }) {
                   title={card.nome}
                 >
                   {card.imagem ? (
-                    <img src={card.imagem} alt={card.nome} className="hs-card-img" />
+                    /* hs-card-img: w-full h-full object-cover */
+                    <img src={card.imagem} alt={card.nome} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="hs-card-name">{card.nome}</div>
+                    /* hs-card-name: flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words */
+                    <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{card.nome}</div>
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="hs-actions">
-            <button className="btn secondary" type="button" onClick={drawHand}>
+          {/* hs-actions: flex gap-2 — each btn gets flex-1 */}
+          <div className="flex gap-2">
+            <button className="flex-1 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-white/[0.03] text-[#f5edff] transition-all duration-[220ms] hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08]" type="button" onClick={drawHand}>
               ⟳ Mulligan
             </button>
-            <button className="btn ghost" type="button" onClick={closeHand}>
+            <button className="flex-1 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-[220ms] hover:border-[rgba(199,149,255,0.5)] hover:text-white hover:bg-white/[0.05]" type="button" onClick={closeHand}>
               Fechar
             </button>
           </div>

@@ -160,18 +160,26 @@ export function DeckBuilderPage({
         readOnly={readOnly}
       />
 
-      <div className="deck-analysis-section">
-        <div className="deck-analysis-tabs">
+      <div className="flex flex-col gap-0 mt-6 w-full">
+        <div className="flex gap-[0.4rem] mb-[0.85rem]">
           <button
             type="button"
-            className={`deck-analysis-tab${analysisTab === "mao" ? " deck-analysis-tab--active" : ""}`}
+            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
+              analysisTab === "mao"
+                ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
+                : "border-[rgba(217,180,255,0.2)] bg-transparent text-[#beafd7] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff]"
+            }`}
             onClick={() => setAnalysisTab("mao")}
           >
             🎴 Mão Inicial
           </button>
           <button
             type="button"
-            className={`deck-analysis-tab${analysisTab === "stats" ? " deck-analysis-tab--active" : ""}`}
+            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
+              analysisTab === "stats"
+                ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
+                : "border-[rgba(217,180,255,0.2)] bg-transparent text-[#beafd7] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff]"
+            }`}
             onClick={() => setAnalysisTab("stats")}
           >
             📊 Estatísticas

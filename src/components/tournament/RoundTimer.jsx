@@ -42,32 +42,54 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
   const isUrgent = !isOver && secondsLeft <= 5 * 60;
   const isWarning = !isOver && !isUrgent && secondsLeft <= 15 * 60;
 
-  const stateClass = isOver ? "rt--over" : isUrgent ? "rt--urgent" : isWarning ? "rt--warning" : "";
+  const timerBorderClass = isOver
+    ? "border-[rgba(239,68,68,0.8)]"
+    : isUrgent
+    ? "border-[rgba(239,68,68,0.6)] animate-[rt-pulse_1.5s_ease-in-out_infinite]"
+    : isWarning
+    ? "border-[rgba(251,191,36,0.5)]"
+    : "border-[rgba(199,149,255,0.3)]";
+
+  const displayColorClass = isOver || isUrgent
+    ? "text-[#f87171]"
+    : isWarning
+    ? "text-[#fcd34d]"
+    : "text-[#c795ff]";
+
+  const displaySizeClass = isOver
+    ? "text-[1.1rem] tracking-[0.02em]"
+    : "text-[2rem] tracking-[0.05em]";
+
+  const fillGradientClass = isUrgent
+    ? "bg-[linear-gradient(90deg,#b91c1c,#f87171)]"
+    : isWarning
+    ? "bg-[linear-gradient(90deg,#d97706,#fcd34d)]"
+    : "bg-[linear-gradient(90deg,#7c3aed,#c795ff)]";
 
   return (
-    <div className={`round-timer ${stateClass}`}>
-      <div className="rt-inner">
-        <div className="rt-left">
+    <div className={`border rounded-[0.9rem] bg-[rgba(14,9,28,0.85)] mt-3 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>
+      <div className="flex items-center justify-between px-4 py-[0.65rem] gap-4">
+        <div className="flex items-center gap-[0.45rem] text-[#beafd7] text-[0.85rem] font-semibold">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          <span className="rt-label">Rodada {rodadaAtual}</span>
+          <span className="text-[#beafd7]">Rodada {rodadaAtual}</span>
         </div>
 
-        <div className={`rt-display ${stateClass}`}>
+        <div className={`font-['Bebas_Neue',monospace] transition-[color] duration-300 ${displayColorClass} ${displaySizeClass}`}>
           {isOver ? "Tempo esgotado" : timeStr}
         </div>
 
         {isOver && (
-          <span className="rt-overtime-badge">+Tempo Extra</span>
+          <span className="text-[0.72rem] font-bold text-[#f87171] bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] rounded-full px-[0.55rem] py-[0.2rem]">+Tempo Extra</span>
         )}
       </div>
 
       {!isOver && (
-        <div className="rt-progress-track">
+        <div className="h-[3px] bg-[rgba(255,255,255,0.07)] overflow-hidden">
           <div
-            className={`rt-progress-fill ${stateClass}`}
+            className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${fillGradientClass}`}
             style={{ width: `${(secondsLeft / ROUND_DURATION) * 100}%` }}
           />
         </div>
