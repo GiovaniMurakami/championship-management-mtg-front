@@ -406,7 +406,7 @@ export function StandingsTable({
 
       {filtered.length > 0 && (
         <>
-          <div className="overflow-x-auto rounded-xl border border-[rgba(217,180,255,0.2)] hidden max-[480px]:hidden [&]:block max-[480px]:[&]:hidden">
+          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] hidden max-[480px]:hidden [&]:block max-[480px]:[&]:hidden">
             <table className="w-full border-collapse text-[0.88rem]">
               <thead className="bg-[rgba(142,57,237,0.12)]">
                 <tr>
