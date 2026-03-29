@@ -1,49 +1,136 @@
-export function TournamentHeader({ torneio, loading }) {
-    const formatDate = (dateString) => {
-        if (!dateString) return "—";
-        return new Date(dateString).toLocaleString("pt-BR");
-    };
+const STATUS_CONFIG = {
+  inscricoes_abertas: {
+    label: "Inscrições Abertas",
+    dot: "#4ade80",
+    badge: "bg-[rgba(34,197,94,0.14)] text-[#4ade80] border border-[rgba(34,197,94,0.35)]",
+  },
+  em_andamento: {
+    label: "Em Andamento",
+    dot: "#fbbf24",
+    badge: "bg-[rgba(251,191,36,0.14)] text-[#fbbf24] border border-[rgba(251,191,36,0.35)]",
+  },
+  finalizado: {
+    label: "Finalizado",
+    dot: "#f87171",
+    badge: "bg-[rgba(239,68,68,0.14)] text-[#f87171] border border-[rgba(239,68,68,0.35)]",
+  },
+};
 
-    const statusLabels = {
-        inscricoes_abertas: "Inscrições Abertas",
-        em_andamento: "Em Andamento",
-        finalizado: "Finalizado",
-    };
+const DEFAULT_STATUS = {
+  label: "—",
+  dot: "#beafd7",
+  badge: "bg-[rgba(255,255,255,0.06)] text-[#beafd7] border border-[rgba(217,180,255,0.2)]",
+};
 
-    const status = torneio?.status || "—";
+function StatChip({ icon, label, value }) {
+  return (
+    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.14)]">
+      <span className="text-[#8b7aab]">{icon}</span>
+      <span className="text-[0.78rem] text-[#8b7aab] font-medium">{label}</span>
+      <span className="text-[0.85rem] font-semibold text-[#f5edff]">{value}</span>
+    </div>
+  );
+}
 
-    return (
-        <div className="td-header">
-            <h1 className="td-title">
-                {loading ? "Carregando..." : torneio?.nome || torneio?.torneioNome || "Torneio"}
-            </h1>
-            {!loading && torneio && (
-                <div className="td-meta">
-                    <span className={`td-status-badge td-status-${status}`}>
-                        {statusLabels[status] || status.replace("_", " ")}
-                    </span>
-                    <span className="td-meta-item">
-                        <strong>Formato:</strong> {torneio.formato || "—"}
-                    </span>
-                    <span className="td-meta-item">
-                        <strong>Rodada:</strong> {torneio.rodadaAtual ?? 0}/{torneio.totalRodadas ?? 0}
-                    </span>
-                    {torneio.totalInscritos != null && (
-                        <span className="td-meta-item">
-                            <strong>Inscritos:</strong> {torneio.totalInscritos}
-                            {torneio.totalCheckin != null && ` (${torneio.totalCheckin} check-in)`}
-                        </span>
-                    )}
-                    {torneio.premio && (
-                        <span className="td-meta-item">
-                            <strong>Prêmio:</strong> {torneio.premio}
-                        </span>
-                    )}
-                    <span className="td-meta-item">
-                        <strong>Data:</strong> {formatDate(torneio.horario)}
-                    </span>
-                </div>
-            )}
+const IconFormat = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M4 7h16M4 12h16M4 17h10" />
+  </svg>
+);
+
+const IconRound = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+const IconPlayers = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const IconPrize = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <circle cx="12" cy="8" r="6" />
+    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+  </svg>
+);
+
+const IconDate = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+export function TournamentHeader({ torneio, loading, className = "" }) {
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
+  };
+
+  const status = torneio?.status || "—";
+  const statusConfig = STATUS_CONFIG[status] || DEFAULT_STATUS;
+
+  return (
+    <div className={`mb-8 max-[480px]:mb-5 ${className}`}>
+      {/* Status badge */}
+      {!loading && torneio && (
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className={`inline-flex items-center gap-[0.4rem] px-3 py-[0.22rem] rounded-full text-[0.75rem] font-semibold uppercase tracking-[0.06em] ${statusConfig.badge}`}
+          >
+            <span
+              className="w-[6px] h-[6px] rounded-full flex-shrink-0"
+              style={{ backgroundColor: statusConfig.dot, boxShadow: `0 0 6px ${statusConfig.dot}` }}
+            />
+            {statusConfig.label}
+          </span>
         </div>
-    );
+      )}
+
+      {/* Title */}
+      <h1 className="font-['Bebas_Neue',sans-serif] text-[clamp(2rem,4vw,3rem)] tracking-[0.04em] m-0 mb-5 text-white [text-shadow:0_2px_16px_rgba(167,79,255,0.25)] leading-[1.0]">
+        {loading ? "Carregando..." : torneio?.nome || torneio?.torneioNome || "Torneio"}
+      </h1>
+
+      {/* Stat chips */}
+      {!loading && torneio && (
+        <div className="flex flex-wrap gap-2 max-[480px]:gap-[0.4rem]">
+          {torneio.formato && (
+            <StatChip icon={<IconFormat />} label="Formato" value={torneio.formato} />
+          )}
+          <StatChip
+            icon={<IconRound />}
+            label="Rodada"
+            value={`${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas ?? 0}`}
+          />
+          {torneio.totalInscritos != null && (
+            <StatChip
+              icon={<IconPlayers />}
+              label="Inscritos"
+              value={
+                torneio.totalCheckin != null
+                  ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)`
+                  : String(torneio.totalInscritos)
+              }
+            />
+          )}
+          {torneio.premio && (
+            <StatChip icon={<IconPrize />} label="Prêmio" value={torneio.premio} />
+          )}
+          {torneio.horario && (
+            <StatChip icon={<IconDate />} label="Data" value={formatDate(torneio.horario)} />
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

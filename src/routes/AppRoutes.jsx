@@ -12,7 +12,7 @@ import {
 export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Home onOpenAuth={auth.openAuth} isAuthenticated={auth.isAuthenticated} />} />
       <Route
         path="/decks"
         element={

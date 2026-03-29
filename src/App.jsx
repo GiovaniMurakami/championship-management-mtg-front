@@ -1,5 +1,4 @@
 import { BrowserRouter } from "react-router-dom";
-import "./App.css";
 import { Navbar, AuthModal, CardPreviewModal, EditProfileModal } from "./components";
 import { useAuth, useCardPreview, useCardSearch, useDeckBuilder } from "./hooks";
 import { AppRoutes } from "./routes";
@@ -12,7 +11,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-shell">
+      <div className="min-h-screen text-[#f5edff]">
         <Navbar
           usuario={auth.usuario}
           onOpenAuth={auth.openAuth}
