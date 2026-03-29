@@ -43,9 +43,22 @@ export function TournamentDetailPage() {
 
     return (
         <div className="td-page">
+
+
             <button className="td-back-btn" onClick={() => navigate("/torneios")}>
                 ← Voltar para torneios
             </button>
+
+            <div className="td-twitch-banner mt-2">
+                <iframe
+                    src={`https://player.twitch.tv/?channel=tiagofuguete&parent=${window.location.hostname}`}
+                    height="450"
+                    width="100%"
+                    allowFullScreen
+                    title="Twitch - tiagofuguete"
+                    className="td-twitch-iframe"
+                />
+            </div>
 
             {(error || successMsg) && (
                 <div className={`td-toast ${error ? "td-toast-error" : "td-toast-success"}`}>

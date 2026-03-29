@@ -40,7 +40,7 @@ export function TournamentSection() {
     }, [token]);
 
     const formatDate = (dateString) =>
-        new Date(dateString).toLocaleDateString("pt-BR");
+        new Date(dateString).toLocaleDateString("pt-BR", { timeZone: "UTC" });
 
     const items = torneios
         .filter((t) => t.status === "inscricoes_abertas" || t.status === "em_andamento")

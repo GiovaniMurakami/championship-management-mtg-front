@@ -1,7 +1,7 @@
 export function TournamentHeader({ torneio, loading }) {
     const formatDate = (dateString) => {
         if (!dateString) return "—";
-        return new Date(dateString).toLocaleString("pt-BR");
+        return new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
     };
 
     const statusLabels = {

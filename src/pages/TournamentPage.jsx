@@ -130,7 +130,7 @@ export function TournamentPage() {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleString("pt-BR");
+        return new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
     };
 
     const isOwner = (torneio) => normalizeId(torneio.donoId) === normalizeId(usuario?.id);

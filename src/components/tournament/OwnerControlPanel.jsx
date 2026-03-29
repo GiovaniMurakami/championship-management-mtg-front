@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ReviewRoundModal } from "./ReviewRoundModal";
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
 
@@ -104,6 +105,7 @@ export function OwnerControlPanel({
   const isOwner = normalizeId(torneio?.donoId) === normalizeId(usuarioId);
   const isOngoing = torneio?.status === "em_andamento";
   const [activeTab, setActiveTab] = useState("mesas");
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   if (!isOwner || !isOngoing) return null;
 
@@ -148,18 +150,12 @@ export function OwnerControlPanel({
             </p>
           )}
           <button
-            className={`td-btn ${canStart ? "td-btn-primary" : "td-btn-disabled"}`}
+            className="td-btn td-btn-accent"
             type="button"
-            onClick={onNextRound}
-            disabled={actionLoading || !canStart}
+            onClick={() => setReviewModalOpen(true)}
+            disabled={actionLoading}
           >
-            {actionLoading
-              ? "Processando..."
-              : !canStart
-                ? "Aguardando check-in"
-                : isLastRound
-                  ? "Finalizar Torneio"
-                  : "Iniciar Próxima Rodada"}
+            Revisar Rodada
           </button>
         </div>
       </div>
@@ -264,6 +260,20 @@ export function OwnerControlPanel({
           )}
         </div>
       )}
+
+      <ReviewRoundModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        torneio={torneio}
+        standings={standings}
+        partidas={partidas}
+        pendingCheckinPlayers={pendingCheckinPlayers}
+        onDropPlayer={onDropPlayer}
+        onNextRound={onNextRound}
+        actionLoading={actionLoading}
+        droppingPlayerId={droppingPlayerId}
+        usuarioId={usuarioId}
+      />
     </section>
   );
 }
