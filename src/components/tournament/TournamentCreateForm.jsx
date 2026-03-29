@@ -23,12 +23,12 @@ const INITIAL_FORM = {
     formato: "standard",
     premio: "",
     maxJogadores: "",
-    totalRodadas: "",
+    maxRodadas: "",
     corteTop: "",
     bannerUrl: "",
-    bannerLink: "",
-    somNovaRodada: "",
-    urlLiveYoutube: "",
+    linkBanner: "",
+    somRodada: "",
+    linkLive: "",
 };
 
 const inputClass =
@@ -81,7 +81,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                 ...createForm,
                 bannerUrl,
                 maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
-                totalRodadas: createForm.totalRodadas ? Number(createForm.totalRodadas) : undefined,
+                maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
                 corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
             };
 
@@ -210,16 +210,16 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label htmlFor="totalRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                                <label htmlFor="maxRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">
                                     Máx. Rodadas <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
                                 </label>
                                 <input
-                                    id="totalRodadas"
-                                    name="totalRodadas"
+                                    id="maxRodadas"
+                                    name="maxRodadas"
                                     type="number"
                                     min="1"
                                     placeholder="Ex: 5"
-                                    value={createForm.totalRodadas}
+                                    value={createForm.maxRodadas}
                                     onChange={handleChange}
                                     disabled={isSubmitting}
                                     className={inputClass}
@@ -309,15 +309,15 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="bannerLink" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                            <label htmlFor="linkBanner" className="text-[#e0e0e0] font-medium text-[0.95rem]">
                                 Link do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
                             </label>
                             <input
-                                id="bannerLink"
-                                name="bannerLink"
+                                id="linkBanner"
+                                name="linkBanner"
                                 type="url"
                                 placeholder="https://..."
-                                value={createForm.bannerLink}
+                                value={createForm.linkBanner}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
                                 className={inputClass}
@@ -335,15 +335,15 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                         </h3>
 
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="somNovaRodada" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                            <label htmlFor="somRodada" className="text-[#e0e0e0] font-medium text-[0.95rem]">
                                 Som de Nova Rodada <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
                             </label>
                             <input
-                                id="somNovaRodada"
-                                name="somNovaRodada"
+                                id="somRodada"
+                                name="somRodada"
                                 type="url"
                                 placeholder="https://.../som.mp3"
-                                value={createForm.somNovaRodada}
+                                value={createForm.somRodada}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
                                 className={inputClass}
@@ -354,15 +354,15 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="urlLiveYoutube" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                            <label htmlFor="linkLive" className="text-[#e0e0e0] font-medium text-[0.95rem]">
                                 Live no YouTube <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
                             </label>
                             <input
-                                id="urlLiveYoutube"
-                                name="urlLiveYoutube"
+                                id="linkLive"
+                                name="linkLive"
                                 type="url"
                                 placeholder="https://youtube.com/watch?v=..."
-                                value={createForm.urlLiveYoutube}
+                                value={createForm.linkLive}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
                                 className={inputClass}
