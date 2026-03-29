@@ -106,3 +106,44 @@ export const buscarDeck = (deckId, token) =>
   httpClient.get(`/deck/${deckId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+export const atualizarTorneio = (torneioId, payload, token) =>
+  httpClient.put(`/torneio/${torneioId}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deletarTorneio = (torneioId, token) =>
+  httpClient.delete(`/torneio/${torneioId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// Ligas
+export const criarLiga = (payload, token) =>
+  httpClient.post("/liga/criar", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const listarLigas = (token) =>
+  httpClient.get("/liga/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarLiga = (ligaId, token) =>
+  httpClient.get(`/liga/${ligaId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const atualizarLiga = (ligaId, payload, token) =>
+  httpClient.put(`/liga/${ligaId}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deletarLiga = (ligaId, token) =>
+  httpClient.delete(`/liga/${ligaId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getRankingLiga = (ligaId, token) =>
+  httpClient.get(`/liga/${ligaId}/ranking`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });

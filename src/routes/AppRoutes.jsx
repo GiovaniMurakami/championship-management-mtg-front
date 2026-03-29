@@ -7,6 +7,9 @@ import {
   TournamentPage,
   TournamentDetailPage,
   TournamentCreatePage,
+  LigaPage,
+  LigaDetailPage,
+  LigaCreatePage,
 } from "../pages";
 
 export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
@@ -116,6 +119,38 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         element={
           <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
             <TournamentDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ligas"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+            <LigaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ligas/criar"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} requireAdmin isAdmin={auth.isAdmin}>
+            <LigaCreatePage editMode={false} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ligas/:id"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+            <LigaDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ligas/:id/editar"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} requireAdmin isAdmin={auth.isAdmin}>
+            <LigaCreatePage editMode={true} />
           </ProtectedRoute>
         }
       />
