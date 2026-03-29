@@ -10,6 +10,8 @@ import {
     proximaRodada,
     dropJogador,
     listarPartidasTorneio,
+    atualizarTorneio,
+    deletarTorneio,
 } from "../services/backendApi";
 import {
     subscribeToTournament,
@@ -19,7 +21,7 @@ import { useAuth } from "./useAuth";
 import { useMyDecks } from "./useMyDecks";
 
 export function useTournamentDetail() {
-    const { token, usuario } = useAuth();
+    const { token, usuario, isAdmin } = useAuth();
     const { id: torneioId } = useParams();
 
     const [torneio, setTorneio] = useState(null);
@@ -360,6 +362,38 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleEditTorneio = async (payload) => {
+        if (!torneioId) return;
+        setActionLoading(true);
+        setError("");
+        try {
+            await atualizarTorneio(torneioId, payload, token);
+            setSuccessMsg("Torneio atualizado com sucesso!");
+            await loadTournament();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao atualizar torneio.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDeleteTorneio = async () => {
+        if (!torneioId) return;
+        setActionLoading(true);
+        setError("");
+        try {
+            await deletarTorneio(torneioId, token);
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao excluir torneio.");
+            clearMessages();
+            setActionLoading(false);
+            return false;
+        }
+    };
+
     return {
         torneio,
         standings,
@@ -382,7 +416,10 @@ export function useTournamentDetail() {
         handleReportResult,
         handleNextRound,
         handleDropPlayer,
+        handleEditTorneio,
+        handleDeleteTorneio,
         usuario,
+        isAdmin,
         token,
     };
 }
