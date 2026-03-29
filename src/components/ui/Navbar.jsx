@@ -128,9 +128,13 @@ export function Navbar({
             Torneios
           </NavLink>
         ) : (
-          <a href="#torneios" className="text-[#beafd7] no-underline font-semibold text-[0.9rem] hover:text-white transition-colors duration-200" onClick={close}>
+          <button
+            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
+            type="button"
+            onClick={() => { onOpenAuth("login"); close(); }}
+          >
             Torneios
-          </a>
+          </button>
         )}
 
         {isAuthenticated ? (
@@ -246,14 +250,14 @@ export function Navbar({
                 <span>Torneios</span>
               </NavLink>
             ) : (
-              <a
-                href="#torneios"
-                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] no-underline font-semibold text-[0.92rem] hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                onClick={close}
+              <button
+                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
+                type="button"
+                onClick={() => { onOpenAuth("login"); close(); }}
               >
                 <IconTrophy />
                 <span>Torneios</span>
-              </a>
+              </button>
             )}
 
             {isAuthenticated ? (
