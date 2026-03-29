@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+package-lock.json
 
 # Environment files
 .env
@@ -37,3 +38,5 @@ coverage
 *.sln
 *.sw?
 .claude
+.vscode
+

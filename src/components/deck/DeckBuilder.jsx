@@ -277,7 +277,7 @@ export function DeckBuilder({
   return (
     /* deck-builder: animate fade-in, border, rounded, padding, bg, mt */
     <section
-      className="animate-[fade-in_400ms_ease-out] border border-line rounded-[1.2rem] p-5 bg-[rgba(15,10,29,0.84)] mt-10"
+      className="animate-[fade-in_400ms_ease-out] border border-line rounded-[1.2rem] p-5 bg-[rgba(15,10,29,0.84)]"
       id="decks"
     >
       {/* deck-builder-header */}

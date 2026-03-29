@@ -133,7 +133,7 @@ export function TournamentPage() {
   const torneiosExibidos = abaAtiva === "disponiveis" ? torneiosDisponiveis : torneiosAnteriores;
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 pt-20 pb-12 max-[768px]:px-4 max-[768px]:pt-[4.5rem]">
+    <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6 max-[768px]:mb-5">
         <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">

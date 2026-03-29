@@ -55,10 +55,13 @@ export function TournamentSection() {
 
   return (
     <section className="mb-10" id="torneios">
-      <div className="flex items-baseline justify-between mt-[2.1rem] mb-4">
-        <h2 className="m-0 font-['Bebas_Neue',sans-serif] tracking-[0.06em] text-[2.1rem]">
-          Torneios em destaque
-        </h2>
+      <div className="flex items-center justify-between mt-[2.1rem] mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-7 rounded-full bg-[linear-gradient(180deg,#c795ff,#7c3aed)]" />
+          <h2 className="m-0 font-['Bebas_Neue',sans-serif] tracking-[0.06em] text-[2.1rem]">
+            Torneios em destaque
+          </h2>
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-4 max-nav:grid-cols-1">
         {loading
@@ -73,14 +76,19 @@ export function TournamentSection() {
               return (
                 <article
                   key={item.id}
-                  className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.1rem] px-5 pt-5 pb-[1.1rem] bg-[linear-gradient(160deg,rgba(28,16,55,0.97),rgba(18,10,36,0.97))] shadow-[0_4px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden cursor-pointer transition-all duration-[220ms] hover:-translate-y-[3px] hover:shadow-[0_8px_32px_rgba(0,0,0,0.45)]"
-                  style={{ "--format-color": cor }}
+                  className="relative border border-[rgba(217,180,255,0.18)] rounded-[1.1rem] px-5 pt-5 pb-[1.1rem] bg-[linear-gradient(160deg,rgba(22,12,46,0.98),rgba(14,8,30,0.98))] shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer card-hover-glow"
+                  style={{ "--format-color": cor, "--glow-color": cor }}
                   onClick={() => navigate(`/torneios/${item.id}`)}
                 >
                   {/* Accent bar */}
                   <div
-                    className="absolute top-0 left-0 right-0 h-[3px] opacity-85"
-                    style={{ background: cor }}
+                    className="absolute top-0 left-0 right-0 h-[3px]"
+                    style={{ background: `linear-gradient(90deg, transparent, ${cor}, transparent)`, opacity: 0.9 }}
+                  />
+                  {/* Subtle corner glow */}
+                  <div
+                    className="absolute top-0 left-0 w-[120px] h-[120px] pointer-events-none opacity-[0.06]"
+                    style={{ background: `radial-gradient(circle at 0% 0%, ${cor}, transparent 70%)` }}
                   />
 
                   <div className="flex items-center justify-between gap-2 mb-[0.85rem]">

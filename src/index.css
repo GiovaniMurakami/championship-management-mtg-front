@@ -193,6 +193,34 @@ select:focus {
   }
 }
 
+/* Glow utilities */
+.glow-brand {
+  box-shadow: 0 0 24px rgba(199, 149, 255, 0.18), 0 0 48px rgba(167, 79, 255, 0.1);
+}
+
+.glow-brand-lg {
+  box-shadow: 0 0 40px rgba(199, 149, 255, 0.25), 0 0 80px rgba(167, 79, 255, 0.15);
+}
+
+/* Gradient text utility */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #d4a8ff, #a855f7, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover glow — uses --glow-color CSS var set inline */
+.card-hover-glow {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.card-hover-glow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 24px color-mix(in srgb, var(--glow-color, #c795ff) 25%, transparent);
+  border-color: color-mix(in srgb, var(--glow-color, #c795ff) 45%, transparent) !important;
+}
+
 /* DeckImageModal – card stack (CSS vars cannot be expressed as Tailwind utilities) */
 .dip-card-stack {
   position: relative;
@@ -231,8 +259,11 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
   background:
-    radial-gradient(circle at 8% 18%, rgba(87, 20, 166, 0.27), transparent 30%),
-    radial-gradient(circle at 90% 85%, rgba(161, 58, 255, 0.22), transparent 28%),
-    linear-gradient(120deg, #08060f, #110a22);
+    radial-gradient(ellipse at 12% 10%, rgba(103, 28, 196, 0.35), transparent 38%),
+    radial-gradient(ellipse at 88% 80%, rgba(148, 42, 240, 0.28), transparent 36%),
+    radial-gradient(ellipse at 55% 50%, rgba(60, 15, 120, 0.15), transparent 55%),
+    linear-gradient(150deg, #06040e 0%, #0e0820 50%, #120930 100%);
+  background-attachment: fixed;
 }

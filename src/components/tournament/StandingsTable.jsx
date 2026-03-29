@@ -2,7 +2,11 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { Top8StoryModal } from "./Top8StoryModal";
 
-const MEDAL = { 1: "🥇", 2: "🥈", 3: "🥉" };
+const RANK_BADGE = {
+  1: "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]",
+  2: "bg-[linear-gradient(135deg,#d0d0d0,#888)] text-[#1e1e1e] shadow-[0_0_6px_rgba(200,200,200,0.3)]",
+  3: "bg-[linear-gradient(135deg,#cd7f32,#8b4513)] text-[#fff8f0] shadow-[0_0_6px_rgba(205,127,50,0.35)]",
+};
 
 function DeckDropdown({ deckId, deckNome, token, onClose }) {
   const [deck, setDeck] = useState(null);
@@ -525,9 +529,13 @@ export function StandingsTable({
                     className={`border rounded-xl p-[0.7rem] ${mobileBorderClass} ${player.dropped ? "opacity-65" : ""}`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-[0.45rem]">
-                      <span className={`font-bold ${mobileRankColor}`}>
-                        {MEDAL[posicao] ?? `#${posicao}`}
-                      </span>
+                      {isTop3 ? (
+                        <span className={`inline-flex items-center justify-center w-[1.6rem] h-[1.6rem] rounded-full text-[0.72rem] font-extrabold leading-none flex-shrink-0 ${RANK_BADGE[posicao]}`}>
+                          {posicao}
+                        </span>
+                      ) : (
+                        <span className={`font-bold flex-shrink-0 ${mobileRankColor}`}>#{posicao}</span>
+                      )}
                       <span className="font-semibold text-white break-words">
                         {getPlayerName(player)}
                         {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}

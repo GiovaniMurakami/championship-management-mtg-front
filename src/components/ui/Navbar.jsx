@@ -167,14 +167,14 @@ export function Navbar({
         ) : (
           <>
             <button
-              className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-[#beafd7]"
+              className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:text-[#f5edff] hover:bg-[rgba(167,79,255,0.08)]"
               type="button"
               onClick={() => { onOpenAuth("register"); close(); }}
             >
               Cadastro
             </button>
             <button
-              className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white"
+              className="border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white transition-all duration-200 hover:shadow-[0_4px_20px_rgba(142,57,237,0.45)] hover:-translate-y-[1px] active:translate-y-0"
               type="button"
               onClick={() => { onOpenAuth("login"); close(); }}
             >
@@ -281,14 +281,14 @@ export function Navbar({
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-[#beafd7]"
+                  className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:text-[#f5edff] hover:bg-[rgba(167,79,255,0.08)] min-h-[44px]"
                   type="button"
                   onClick={() => { onOpenAuth("register"); close(); }}
                 >
                   Cadastro
                 </button>
                 <button
-                  className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white"
+                  className="border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white transition-all duration-200 hover:shadow-[0_4px_16px_rgba(142,57,237,0.4)] min-h-[44px]"
                   type="button"
                   onClick={() => { onOpenAuth("login"); close(); }}
                 >
