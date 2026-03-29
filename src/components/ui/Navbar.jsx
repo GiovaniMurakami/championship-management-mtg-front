@@ -38,6 +38,13 @@ const IconDeck = () => (
   </svg>
 );
 
+const IconLiga = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <circle cx="12" cy="8" r="6" />
+    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+  </svg>
+);
+
 const IconEdit = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -137,6 +144,20 @@ export function Navbar({
             onClick={() => { onOpenAuth("login"); close(); }}
           >
             Decks
+          </button>
+        )}
+
+        {isAuthenticated ? (
+          <NavLink to="/ligas" className={desktopLinkClass} onClick={close}>
+            Ligas
+          </NavLink>
+        ) : (
+          <button
+            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
+            type="button"
+            onClick={() => { onOpenAuth("login"); close(); }}
+          >
+            Ligas
           </button>
         )}
       </nav>
@@ -248,6 +269,22 @@ export function Navbar({
               >
                 <IconDeck />
                 <span>Decks</span>
+              </button>
+            )}
+
+            {isAuthenticated ? (
+              <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
+                <IconLiga />
+                <span>Ligas</span>
+              </NavLink>
+            ) : (
+              <button
+                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
+                type="button"
+                onClick={() => { onOpenAuth("login"); close(); }}
+              >
+                <IconLiga />
+                <span>Ligas</span>
               </button>
             )}
           </nav>
