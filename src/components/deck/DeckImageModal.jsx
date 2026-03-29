@@ -309,17 +309,35 @@ function buildCanvas(deck, cardDataMap, ownerName) {
 function CardStack({ card, imgUrl }) {
   const qty = card.quantidade || 1;
   return (
+    // dip-card-stack: position relative, w-[100px], flex-shrink-0
+    // height uses CSS calc with --qty var → kept in index.css via .dip-card-stack
     <div className="dip-card-stack" style={{ "--qty": qty }}>
       {Array.from({ length: Math.min(qty, 4) }).map((_, i) => (
+        // dip-card-item: position absolute, top/z-index use --i var → kept in index.css via .dip-card-item
         <div key={i} className="dip-card-item" style={{ "--i": i }}>
           {imgUrl ? (
-            <img className="dip-card-img" src={imgUrl} alt={card.nome} loading="lazy" />
+            // dip-card-img: w-full h-full object-cover block
+            <img className="w-full h-full object-cover block" src={imgUrl} alt={card.nome} loading="lazy" />
           ) : (
-            <div className="dip-card-placeholder"><span>{card.nome}</span></div>
+            // dip-card-placeholder: w-full h-full flex items-center justify-center p-1
+            // background: linear-gradient(160deg, #2d1a5e, #1a0a35); border: 1px solid rgba(167,79,255,0.3)
+            <div
+              className="w-full h-full flex items-center justify-center p-1 border border-[rgba(167,79,255,0.3)]"
+              style={{ background: "linear-gradient(160deg, #2d1a5e, #1a0a35)" }}
+            >
+              {/* dip-card-placeholder span: text-[0.55rem] text-[#c4b5fd] text-center leading-[1.3] break-words */}
+              <span className="text-[0.55rem] text-[#c4b5fd] text-center leading-[1.3] break-words">{card.nome}</span>
+            </div>
           )}
         </div>
       ))}
-      {qty > 1 && <span className="dip-qty-badge">×{qty}</span>}
+      {qty > 1 && (
+        // dip-qty-badge: absolute bottom-[-2px] right-[-2px] bg-[rgba(0,0,0,0.88)] text-[#fcd34d]
+        // text-[0.6rem] font-bold rounded-full px-[5px] py-[1px] border border-[rgba(252,211,77,0.3)] z-20
+        <span className="absolute bottom-[-2px] right-[-2px] bg-[rgba(0,0,0,0.88)] text-[#fcd34d] text-[0.6rem] font-bold rounded-full px-[5px] py-[1px] border border-[rgba(252,211,77,0.3)] z-20">
+          ×{qty}
+        </span>
+      )}
     </div>
   );
 }
@@ -397,42 +415,100 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   );
 
   return (
-    <div className="deck-img-overlay" onClick={onClose}>
-      <div className="deck-img-wrapper" onClick={(e) => e.stopPropagation()}>
-        <div className="deck-img-modal-bar">
-          <span className="deck-img-modal-title">{deck.nome}</span>
-          <div className="deck-img-modal-actions">
+    // deck-img-overlay: fixed inset-0 z-[200] bg-[rgba(5,2,14,0.9)] flex items-center justify-center p-4 overflow-y-auto
+    <div
+      className="fixed inset-0 z-[200] bg-[rgba(5,2,14,0.9)] flex items-center justify-center p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      {/* deck-img-wrapper: flex flex-col gap-[0.85rem] w-full max-w-[min(98vw,1500px)] */}
+      <div
+        className="flex flex-col gap-[0.85rem] w-full max-w-[min(98vw,1500px)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* deck-img-modal-bar: flex items-center justify-between gap-3 */}
+        <div className="flex items-center justify-between gap-3">
+          {/* deck-img-modal-title: text-[0.95rem] font-bold text-[#c4b5fd] overflow-hidden text-ellipsis whitespace-nowrap */}
+          <span className="text-[0.95rem] font-bold text-[#c4b5fd] overflow-hidden text-ellipsis whitespace-nowrap">
+            {deck.nome}
+          </span>
+          {/* deck-img-modal-actions: flex items-center gap-2 flex-shrink-0 */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             {stage === "done" && (
-              <button className="story-download-btn" onClick={handleDownload}>
+              // story-download-btn (actual App.css): inline-flex items-center gap-[0.3rem] px-[0.9rem] py-[0.38rem]
+              // border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d]
+              // text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color] duration-[160ms]
+              // hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)]
+              <button
+                className="inline-flex items-center gap-[0.3rem] px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold cursor-pointer transition-[background,border-color] duration-[160ms] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)]"
+                onClick={handleDownload}
+              >
                 ↓ Baixar PNG
               </button>
             )}
-            <button className="story-close-btn" onClick={onClose} aria-label="Fechar">×</button>
+            {/* story-close-btn (actual App.css): w-8 h-8 flex items-center justify-center
+                border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-[#beafd7]
+                text-[1.2rem] cursor-pointer transition-[background,color] duration-[150ms] flex-shrink-0
+                hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff] */}
+            <button
+              className="w-8 h-8 flex items-center justify-center border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-[#beafd7] text-[1.2rem] cursor-pointer transition-[background,color] duration-[150ms] flex-shrink-0 hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              ×
+            </button>
           </div>
         </div>
 
         {stage !== "done" ? (
-          <div className="deck-img-loading">
-            <div className="deck-img-progress-track">
-              <div className="deck-img-progress-fill" style={{ width: `${progress}%` }} />
+          // deck-img-loading: flex flex-col items-center gap-4 py-12 px-4
+          <div className="flex flex-col items-center gap-4 py-12 px-4">
+            {/* deck-img-progress-track: w-full max-w-[400px] h-[6px] rounded-full bg-[rgba(167,79,255,0.15)] overflow-hidden */}
+            <div className="w-full max-w-[400px] h-[6px] rounded-full bg-[rgba(167,79,255,0.15)] overflow-hidden">
+              {/* deck-img-progress-fill: h-full rounded-full transition-[width] duration-200
+                  background: linear-gradient(90deg, #7c3aed, #a855f7) */}
+              <div
+                className="h-full rounded-full transition-[width] duration-200"
+                style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }}
+              />
             </div>
-            <p className="deck-img-status">
+            {/* deck-img-status: text-[0.82rem] text-[#beafd7] m-0 */}
+            <p className="text-[0.82rem] text-[#beafd7] m-0">
               {stage === "meta" ? `Buscando dados… ${progress}%` : `Carregando imagens… ${progress}%`}
             </p>
           </div>
         ) : (
-          <div className="dip-preview">
-            <div className="dip-left">
-              <h2 className="dip-deck-name">{deck.nome}</h2>
-              <p className="dip-owner">por {ownerName || "—"}</p>
-              <div className="dip-stats">
-                <span className="dip-stat">{(deck.maindeck || []).reduce((s, c) => s + (c.quantidade || 1), 0)} main</span>
-                <span className="dip-stat-sep">·</span>
-                <span className="dip-stat">{(deck.sideboard || []).reduce((s, c) => s + (c.quantidade || 1), 0)} side</span>
+          // dip-preview: flex gap-4 rounded-[0.85rem] p-4 overflow-x-auto min-h-[calc(100vh-120px)]
+          // border border-[rgba(199,149,255,0.2)]
+          // background: linear-gradient(160deg, #09050f, #0f0618)
+          // sm responsive: flex-col min-h-unset
+          <div
+            className="flex gap-4 rounded-[0.85rem] p-4 overflow-x-auto min-h-[calc(100vh-120px)] border border-[rgba(199,149,255,0.2)] max-sm:flex-col max-sm:min-h-0"
+            style={{ background: "linear-gradient(160deg, #09050f, #0f0618)" }}
+          >
+            {/* dip-left: flex-shrink-0 w-[170px] flex flex-col gap-2; max-sm: w-full */}
+            <div className="flex-shrink-0 w-[170px] flex flex-col gap-2 max-sm:w-full">
+              {/* dip-deck-name: text-[1.05rem] font-extrabold text-[#e9d5ff] m-0 leading-[1.2] break-words */}
+              <h2 className="text-[1.05rem] font-extrabold text-[#e9d5ff] m-0 leading-[1.2] break-words">
+                {deck.nome}
+              </h2>
+              {/* dip-owner: text-[0.78rem] text-[#9d74e8] m-0 */}
+              <p className="text-[0.78rem] text-[#9d74e8] m-0">por {ownerName || "—"}</p>
+              {/* dip-stats: flex items-center gap-[0.35rem] text-[0.75rem] text-[#6b4a9e] */}
+              <div className="flex items-center gap-[0.35rem] text-[0.75rem] text-[#6b4a9e]">
+                {/* dip-stat: inherits from dip-stats, no extra rule */}
+                <span>{(deck.maindeck || []).reduce((s, c) => s + (c.quantidade || 1), 0)} main</span>
+                {/* dip-stat-sep: text-[#4b2d8a] */}
+                <span className="text-[#4b2d8a]">·</span>
+                <span>{(deck.sideboard || []).reduce((s, c) => s + (c.quantidade || 1), 0)} side</span>
               </div>
-              <div className="dip-cmc-chart">
-                <p className="dip-cmc-label">Curva de Mana</p>
-                <div className="dip-cmc-bars">
+              {/* dip-cmc-chart: mt-2 */}
+              <div className="mt-2">
+                {/* dip-cmc-label: text-[0.68rem] font-bold uppercase tracking-[0.07em] text-[#6b4a9e] m-0 mb-2 */}
+                <p className="text-[0.68rem] font-bold uppercase tracking-[0.07em] text-[#6b4a9e] m-0 mb-2">
+                  Curva de Mana
+                </p>
+                {/* dip-cmc-bars: flex items-end gap-[3px] h-[80px] */}
+                <div className="flex items-end gap-[3px] h-[80px]">
                   {Array.from({ length: 8 }, (_, i) => {
                     const cnt = (deck.maindeck || []).reduce((s, c) => {
                       const v = Math.min(Math.floor(cardDataMap[c.nome]?.cmc ?? 0), 7);
@@ -446,12 +522,22 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                     ), 1);
                     const pct = cnt > 0 ? Math.max(8, Math.round((cnt / max) * 100)) : 0;
                     return (
-                      <div key={i} className="dip-cmc-col">
-                        {cnt > 0 && <span className="dip-cmc-count">{cnt}</span>}
-                        <div className="dip-cmc-bar-track">
-                          <div className="dip-cmc-bar-fill" style={{ height: `${pct}%` }} />
+                      // dip-cmc-col: flex flex-col items-center gap-[2px] flex-1
+                      <div key={i} className="flex flex-col items-center gap-[2px] flex-1">
+                        {/* dip-cmc-count: text-[0.6rem] font-bold text-[#c4b5fd] leading-none */}
+                        {cnt > 0 && <span className="text-[0.6rem] font-bold text-[#c4b5fd] leading-none">{cnt}</span>}
+                        {/* dip-cmc-bar-track: flex-1 w-full bg-[rgba(100,60,180,0.12)] rounded-[3px]
+                            flex items-end min-h-[8px] */}
+                        <div className="flex-1 w-full bg-[rgba(100,60,180,0.12)] rounded-[3px] flex items-end min-h-[8px]">
+                          {/* dip-cmc-bar-fill: w-full rounded-[3px] transition-[height] duration-[400ms]
+                              background: linear-gradient(to top, #7c3aed, #c084fc) */}
+                          <div
+                            className="w-full rounded-[3px] transition-[height] duration-[400ms]"
+                            style={{ height: `${pct}%`, background: "linear-gradient(to top, #7c3aed, #c084fc)" }}
+                          />
                         </div>
-                        <span className="dip-cmc-x">{i === 7 ? "7+" : i}</span>
+                        {/* dip-cmc-x: text-[0.58rem] text-[#5a3d8a] leading-none */}
+                        <span className="text-[0.58rem] text-[#5a3d8a] leading-none">{i === 7 ? "7+" : i}</span>
                       </div>
                     );
                   })}
@@ -459,20 +545,49 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               </div>
             </div>
 
-            <div className="dip-main-area">
+            {/* dip-main-area: flex-1 flex flex-col gap-[0.65rem] overflow-y-auto
+                max-h-[calc(100vh-140px)] min-w-0; max-sm: max-h-[500px] */}
+            <div className="flex-1 flex flex-col gap-[0.65rem] overflow-y-auto max-h-[calc(100vh-140px)] min-w-0 max-sm:max-h-[500px]">
               {mainGroups.map((g) => {
                 const cards = (deck.maindeck || []).filter(
                   (c) => getTypeGroup(cardDataMap[c.nome]?.typeLine) === g
                 );
                 if (!cards.length) return null;
                 return (
-                  <div key={g} className="dip-group">
-                    <div className="dip-group-header" style={{ "--gc": GROUP_COLOR[g] }}>
-                      <span className="dip-group-dot" />
-                      <span className="dip-group-name">{g}</span>
-                      <span className="dip-group-count">{cards.reduce((s, c) => s + (c.quantidade || 1), 0)}</span>
+                  // dip-group: flex flex-col gap-[0.4rem]
+                  <div key={g} className="flex flex-col gap-[0.4rem]">
+                    {/* dip-group-header: flex items-center gap-[0.4rem] py-[0.2rem] px-[0.5rem]
+                        rounded-[4px] w-fit
+                        background uses color-mix(in srgb, var(--gc) 12%, transparent) → inline style */}
+                    <div
+                      className="flex items-center gap-[0.4rem] py-[0.2rem] px-[0.5rem] rounded-[4px] w-fit"
+                      style={{
+                        "--gc": GROUP_COLOR[g],
+                        background: `color-mix(in srgb, ${GROUP_COLOR[g]} 12%, transparent)`,
+                      }}
+                    >
+                      {/* dip-group-dot: w-[7px] h-[7px] rounded-full flex-shrink-0; color = --gc */}
+                      <span
+                        className="w-[7px] h-[7px] rounded-full flex-shrink-0"
+                        style={{ background: GROUP_COLOR[g] }}
+                      />
+                      {/* dip-group-name: text-[0.7rem] font-bold uppercase tracking-[0.06em]; color = --gc */}
+                      <span
+                        className="text-[0.7rem] font-bold uppercase tracking-[0.06em]"
+                        style={{ color: GROUP_COLOR[g] }}
+                      >
+                        {g}
+                      </span>
+                      {/* dip-group-count: text-[0.65rem]; color = color-mix(in srgb, --gc 60%, #888) → inline */}
+                      <span
+                        className="text-[0.65rem]"
+                        style={{ color: `color-mix(in srgb, ${GROUP_COLOR[g]} 60%, #888)` }}
+                      >
+                        {cards.reduce((s, c) => s + (c.quantidade || 1), 0)}
+                      </span>
                     </div>
-                    <div className="dip-group-cards">
+                    {/* dip-group-cards: flex flex-wrap gap-[0.4rem] items-start */}
+                    <div className="flex flex-wrap gap-[0.4rem] items-start">
                       {cards.map((c) => (
                         <CardStack key={c.nome} card={c} imgUrl={cardDataMap[c.nome]?.imagem} />
                       ))}
@@ -483,9 +598,14 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
             </div>
 
             {(deck.sideboard || []).length > 0 && (
-              <div className="dip-side-area">
-                <p className="dip-side-label">Side</p>
-                <div className="dip-side-grid">
+              // dip-side-area: flex-shrink-0 w-[220px] flex flex-col gap-[0.4rem]
+              // border-l border-[rgba(167,79,255,0.2)] pl-3 overflow-y-auto max-h-[calc(100vh-140px)]
+              // max-sm: w-full border-l-0 border-t border-[rgba(167,79,255,0.2)] pl-0 pt-3 max-h-[500px]
+              <div className="flex-shrink-0 w-[220px] flex flex-col gap-[0.4rem] border-l border-[rgba(167,79,255,0.2)] pl-3 overflow-y-auto max-h-[calc(100vh-140px)] max-sm:w-full max-sm:border-l-0 max-sm:border-t max-sm:pl-0 max-sm:pt-3 max-sm:max-h-[500px]">
+                {/* dip-side-label: text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#4b2d8a] m-0 */}
+                <p className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#4b2d8a] m-0">Side</p>
+                {/* dip-side-grid: flex flex-wrap gap-[0.4rem] content-start justify-start */}
+                <div className="flex flex-wrap gap-[0.4rem] content-start justify-start">
                   {(deck.sideboard || []).map((c) => (
                     <CardStack key={c.nome} card={c} imgUrl={cardDataMap[c.nome]?.imagem} />
                   ))}

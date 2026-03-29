@@ -453,20 +453,33 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
   };
 
   return (
-    <div className="story-overlay" onClick={onClose}>
-      <div className="story-wrapper" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-[200] bg-[rgba(5,2,14,0.88)] backdrop-blur-[6px] flex flex-col items-center justify-start pt-6 px-4 pb-8 overflow-y-auto"
+      onClick={onClose}
+    >
+      {/* story-wrapper: flex-col items-center gap-[0.85rem] w-full max-w-[440px] */}
+      <div
+        className="flex flex-col items-center gap-[0.85rem] w-full max-w-[440px]"
+        onClick={(e) => e.stopPropagation()}
+      >
 
-        {/* Bar */}
-        <div className="story-modal-bar">
-          <span className="story-modal-bar-title">Story</span>
+        {/* story-modal-bar: flex items-center justify-between w-full gap-3 flex-wrap */}
+        <div className="flex items-center justify-between w-full gap-3 flex-wrap">
+          {/* story-modal-bar-title: 0.9rem bold text-soft tracking-[0.05em] uppercase */}
+          <span className="text-[0.9rem] font-bold text-text-soft tracking-[0.05em] uppercase">Story</span>
 
-          {/* Top N selector */}
-          <div className="story-topn-selector">
+          {/* story-topn-selector: flex items-center gap-1 flex-wrap */}
+          <div className="flex items-center gap-1 flex-wrap">
             {topNOptions.map((n) => (
               <button
                 key={n}
                 type="button"
-                className={`story-topn-btn${topN === n ? " story-topn-btn--active" : ""}`}
+                className={[
+                  "px-[0.6rem] py-[0.22rem] border rounded-full bg-transparent text-[0.72rem] font-semibold font-[inherit] cursor-pointer transition-[background,border-color,color] duration-[140ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed",
+                  topN === n
+                    ? "bg-[rgba(167,79,255,0.2)] border-[rgba(199,149,255,0.6)] text-[#c4b5fd]"
+                    : "border-[rgba(199,149,255,0.25)] text-text-soft hover:bg-[rgba(167,79,255,0.12)] hover:border-[rgba(199,149,255,0.45)] hover:text-[#c4b5fd]",
+                ].join(" ")}
                 onClick={() => setTopN(n)}
                 disabled={gifProgress !== null}
               >
@@ -475,24 +488,35 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
             ))}
           </div>
 
-          <div className="story-modal-bar-btns">
+          {/* story-modal-bar-btns: flex items-center gap-2 */}
+          <div className="flex items-center gap-2">
+            {/* story-download-btn: inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold cursor-pointer transition hover */}
             <button
-              className="story-download-btn"
+              className="inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color] duration-[160ms] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] disabled:cursor-not-allowed"
               onClick={() => downloadTop8Canvas(players, torneioNome)}
               disabled={gifProgress !== null}
             >
               ↓ PNG
             </button>
 
+            {/* story-gif-btn */}
             <button
-              className={`story-gif-btn${gifProgress !== null ? " story-gif-btn--busy" : ""}`}
+              className={[
+                "inline-flex items-center gap-[0.35rem] px-[0.9rem] py-[0.38rem] border border-[rgba(167,79,255,0.5)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color,opacity] duration-[160ms] whitespace-nowrap",
+                gifProgress !== null
+                  ? "opacity-75 cursor-not-allowed"
+                  : "hover:bg-[rgba(167,79,255,0.25)] hover:border-[rgba(199,149,255,0.7)]",
+              ].join(" ")}
               onClick={handleGif}
               disabled={gifProgress !== null}
               title="Gerar GIF animado revelando do último ao primeiro"
             >
               {gifProgress !== null ? (
                 <>
-                  <span className="story-gif-spinner" />
+                  {/* story-gif-spinner: inline-block 11px border spinner, animate-spin at 0.7s */}
+                  <span
+                    className="inline-block w-[11px] h-[11px] rounded-full border-2 border-[rgba(199,149,255,0.35)] border-t-[#c4b5fd] shrink-0 animate-[story-gif-spin_0.7s_linear_infinite]"
+                  />
                   {gifProgress}%
                 </>
               ) : (
@@ -505,57 +529,106 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
               )}
             </button>
 
-            <button className="story-close-btn" onClick={onClose} aria-label="Fechar">×</button>
+            {/* story-close-btn: 2rem circle border flex-center text-soft 1.2rem cursor hover */}
+            <button
+              className="w-8 h-8 flex items-center justify-center border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-text-soft text-[1.2rem] cursor-pointer transition-[background,color] duration-[150ms] shrink-0 hover:bg-white/[0.08] hover:text-text-main"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              ×
+            </button>
           </div>
         </div>
 
-        {/* Progress */}
+        {/* story-gif-progress: w-full flex-col gap-[0.35rem] shrink-0 */}
         {gifProgress !== null && (
-          <div className="story-gif-progress">
-            <div className="story-gif-progress-track">
-              <div className="story-gif-progress-fill" style={{ width: `${gifProgress}%` }} />
+          <div className="w-full flex flex-col gap-[0.35rem] shrink-0">
+            {/* story-gif-progress-track: w-full h-1 bg-white/[0.07] rounded-full overflow-hidden */}
+            <div className="w-full h-1 bg-white/[0.07] rounded-full overflow-hidden">
+              {/* story-gif-progress-fill: h-full bg-gradient-to-r from-[#8e39ed] to-[#c795ff] rounded-full transition-[width] shadow glow min-w-1 */}
+              <div
+                className="h-full bg-gradient-to-r from-[#8e39ed] to-[#c795ff] rounded-full transition-[width] duration-[120ms] shadow-[0_0_8px_rgba(199,149,255,0.5)] min-w-1"
+                style={{ width: `${gifProgress}%` }}
+              />
             </div>
-            <span className="story-gif-progress-label">
+            {/* story-gif-progress-label: text-center 0.7rem text-soft whitespace-nowrap */}
+            <span className="text-center text-[0.7rem] text-text-soft whitespace-nowrap">
               Gerando GIF… {gifProgress}% — revelando do #{topN} ao #1
             </span>
           </div>
         )}
 
-        {/* Preview card */}
-        <div className="story-card">
-          <div className="story-band story-band--top" />
+        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
+        <div className="w-full aspect-[9/16] bg-[linear-gradient(160deg,#0e091c_0%,#150825_50%,#0e091c_100%)] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+          {/* story-band story-band--top: h-[6px] shrink-0 gradient */}
+          <div className="h-[6px] shrink-0 bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
 
-          <div className="story-head">
-            <h1 className="story-top8-label">TOP {topN}</h1>
-            <p className="story-tournament-name">{torneioNome || "Torneio"}</p>
+          {/* story-head: flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0 */}
+          <div className="flex flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0">
+            {/* story-top8-label: clamp font-size, font-black, tracking, gradient text */}
+            <h1 className="text-[clamp(2.4rem,10vw,3.8rem)] font-black tracking-[0.06em] m-0 leading-[1.1] bg-gradient-to-r from-[#c4b5fd] via-[#ffd700] to-[#c4b5fd] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]">
+              TOP {topN}
+            </h1>
+            {/* story-tournament-name: clamp 0.72rem–1rem, font-semibold, #c4b5fd, mt-1, text-center, opacity-90 */}
+            <p className="text-[clamp(0.72rem,3vw,1rem)] font-semibold text-[#c4b5fd] mt-1 mb-0 text-center opacity-90">
+              {torneioNome || "Torneio"}
+            </p>
           </div>
 
-          <div className="story-separator" />
+          {/* story-separator: h-px mx-4 my-2 gradient bg shrink-0 */}
+          <div className="h-px mx-4 my-2 bg-[linear-gradient(90deg,rgba(199,149,255,0)_0%,rgba(199,149,255,0.5)_30%,rgba(255,215,0,0.35)_70%,rgba(199,149,255,0)_100%)] shrink-0" />
 
-          <ul className="story-players">
+          {/* story-players: list-none m-0 px-[0.65rem] py-[0.3rem] flex-col gap-[0.3rem] flex-1 overflow-hidden */}
+          <ul className="list-none m-0 px-[0.65rem] py-[0.3rem] flex flex-col gap-[0.3rem] flex-1 overflow-hidden">
             {players.map((player, i) => {
               const pos = player.posicao ?? i + 1;
               const name = player.usuario?.nome || player.nome || "Jogador";
               const deck = player.deckNome;
               const tier =
                 pos === 1 ? "gold" : pos === 2 ? "silver" : pos === 3 ? "bronze" : "default";
+
+              const tierClasses = {
+                gold:    "border-[rgba(255,215,0,0.55)] bg-[rgba(255,215,0,0.12)]",
+                silver:  "border-[rgba(192,192,192,0.45)] bg-[rgba(192,192,192,0.08)]",
+                bronze:  "border-[rgba(205,127,50,0.45)] bg-[rgba(205,127,50,0.08)]",
+                default: "border-[rgba(167,79,255,0.22)] bg-[rgba(100,60,180,0.1)]",
+              };
+
+              const posColorClasses = {
+                gold:    "text-[#ffd700]",
+                silver:  "text-[#c0c0c0]",
+                bronze:  "text-[#cd7f32]",
+                default: "text-[#9d74e8]",
+              };
+
               return (
                 <li
                   key={player.usuario?.id || i}
-                  className={`story-player story-player--${tier}`}
+                  className={`flex items-center gap-2 px-[0.65rem] py-[0.42rem] rounded-[0.6rem] border story-player ${tierClasses[tier]}`}
                   style={{ animationDelay: `${i * 0.12}s` }}
                 >
-                  <span className="story-player-pos">#{pos}</span>
-                  <div className="story-player-details">
-                    <span className="story-player-name">{name}</span>
-                    <span className="story-player-deck">{deck}</span>
+                  {/* story-player-pos: clamp 0.85rem–1.2rem font-black min-w-[2.6rem] text-center shrink-0 */}
+                  <span className={`text-[clamp(0.85rem,3.5vw,1.2rem)] font-black min-w-[2.6rem] text-center shrink-0 ${posColorClasses[tier]}`}>
+                    #{pos}
+                  </span>
+                  {/* story-player-details: flex-col gap-[0.06rem] min-w-0 */}
+                  <div className="flex flex-col gap-[0.06rem] min-w-0">
+                    {/* story-player-name: clamp 0.7rem–0.98rem font-bold text-[#f0e6ff] (gold: #fff8e0) truncate */}
+                    <span className={`text-[clamp(0.7rem,3vw,0.98rem)] font-bold whitespace-nowrap overflow-hidden text-ellipsis ${tier === "gold" ? "text-[#fff8e0]" : "text-[#f0e6ff]"}`}>
+                      {name}
+                    </span>
+                    {/* story-player-deck: clamp 0.6rem–0.8rem text-[#a78bfa] (gold: #fcd34d) truncate */}
+                    <span className={`text-[clamp(0.6rem,2.4vw,0.8rem)] whitespace-nowrap overflow-hidden text-ellipsis ${tier === "gold" ? "text-[#fcd34d]" : "text-[#a78bfa]"}`}>
+                      {deck}
+                    </span>
                   </div>
                 </li>
               );
             })}
           </ul>
 
-          <div className="story-band story-band--bottom" />
+          {/* story-band story-band--bottom: same as top band but mt-auto */}
+          <div className="h-[6px] shrink-0 mt-auto bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
         </div>
       </div>
     </div>

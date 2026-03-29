@@ -9,11 +9,13 @@ export function CardSearch({
   readOnly = false,
 }) {
   return (
-    <div className="card-search">
+    <div className="relative w-full">
       <h4>{title}</h4>
-      <div className="cs-input-wrapper">
+      {/* cs-input-wrapper */}
+      <div className="relative flex items-center">
+        {/* cs-search-icon */}
         <svg
-          className="cs-search-icon"
+          className="absolute left-3 text-[rgba(217,180,255,0.5)] pointer-events-none flex"
           width="14"
           height="14"
           viewBox="0 0 24 24"
@@ -25,8 +27,9 @@ export function CardSearch({
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
+        {/* cs-input */}
         <input
-          className="cs-input"
+          className="w-full py-[0.6rem] pr-[0.75rem] pl-[2.35rem] border border-[rgba(217,180,255,0.2)] rounded-[0.65rem] bg-white/[0.04] text-[#f5edff] text-[0.9rem] focus:outline-none focus:border-[rgba(199,149,255,0.7)] focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.18)]"
           value={searchValue}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Buscar carta..."
@@ -34,11 +37,15 @@ export function CardSearch({
         />
       </div>
       {suggestions.length > 0 ? (
-        <ul className="suggestions">
+        <ul className="absolute top-[calc(100%+0.35rem)] left-0 right-0 z-30 border border-[rgba(199,149,255,0.3)] rounded-[0.7rem] bg-[rgba(14,9,28,0.97)] backdrop-blur-[12px] max-h-[280px] overflow-y-auto shadow-[0_12px_30px_rgba(0,0,0,0.5)] m-0 p-0 list-none">
           {suggestions.map((card) => (
-            <li key={card.id}>
+            <li
+              key={card.id}
+              className="border-b border-[rgba(217,180,255,0.08)] last:border-b-0"
+            >
               <button
                 type="button"
+                className="flex items-center gap-[0.6rem] w-full px-[0.75rem] py-[0.55rem] cursor-pointer text-[0.87rem] text-[#beafd7] hover:bg-[rgba(167,79,255,0.12)] hover:text-[#f5edff] transition-colors duration-100 bg-transparent border-none text-left"
                 onClick={() => onCardAdd(card)}
                 onMouseEnter={() => onCardMouseEnter(card)}
                 onMouseLeave={onCardMouseLeave}

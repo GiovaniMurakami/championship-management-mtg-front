@@ -2,87 +2,126 @@ import { useState, useEffect, useCallback } from "react";
 import mukaLogo from "../../assets/muka.png";
 
 const SLIDES = [
-    {
-        id: 1,
-        tag: "Patrocinador Oficial",
-        headline: "Muka Trader",
-        sub: "A sua loja de Magic: The Gathering em São Paulo. A melhor seleção de singles, boosters e acessórios para jogadores competitivos.",
-        cta: "Conheça a loja",
-    },
-    {
-        id: 2,
-        tag: "Promoção",
-        headline: "Singles com até 30% OFF",
-        sub: "Encontre as melhores cartas para montar seu deck de torneio com os preços mais competitivos do mercado. Modern, Pioneer, Standard e mais.",
-        cta: "Ver singles",
-    },
-    {
-        id: 3,
-        tag: "Novidade",
-        headline: "Boosters & Sealed",
-        sub: "Abra boosters dos sets mais recentes e monte sua coleção. Disponível na loja física e com entrega para todo o Brasil.",
-        cta: "Ver produtos",
-    },
+  {
+    id: 1,
+    tag: "Patrocinador Oficial",
+    headline: "Muka Trader",
+    sub: "A sua loja de Magic: The Gathering em São Paulo. A melhor seleção de singles, boosters e acessórios para jogadores competitivos.",
+    cta: "Conheça a loja",
+  },
+  {
+    id: 2,
+    tag: "Promoção",
+    headline: "Singles com até 30% OFF",
+    sub: "Encontre as melhores cartas para montar seu deck de torneio com os preços mais competitivos do mercado. Modern, Pioneer, Standard e mais.",
+    cta: "Ver singles",
+  },
+  {
+    id: 3,
+    tag: "Novidade",
+    headline: "Boosters & Sealed",
+    sub: "Abra boosters dos sets mais recentes e monte sua coleção. Disponível na loja física e com entrega para todo o Brasil.",
+    cta: "Ver produtos",
+  },
 ];
 
 export function SponsorSection() {
-    const [current, setCurrent] = useState(0);
-    const [animating, setAnimating] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [animating, setAnimating] = useState(false);
 
-    const goTo = useCallback((index) => {
-        setAnimating(true);
-        setTimeout(() => {
-            setCurrent(index);
-            setAnimating(false);
-        }, 200);
-    }, []);
+  const goTo = useCallback((index) => {
+    setAnimating(true);
+    setTimeout(() => {
+      setCurrent(index);
+      setAnimating(false);
+    }, 200);
+  }, []);
 
-    const next = useCallback(() => {
-        goTo((current + 1) % SLIDES.length);
-    }, [current, goTo]);
+  const next = useCallback(() => {
+    goTo((current + 1) % SLIDES.length);
+  }, [current, goTo]);
 
-    const prev = () => goTo((current - 1 + SLIDES.length) % SLIDES.length);
+  const prev = () => goTo((current - 1 + SLIDES.length) % SLIDES.length);
 
-    useEffect(() => {
-        const id = setInterval(next, 5500);
-        return () => clearInterval(id);
-    }, [next]);
+  useEffect(() => {
+    const id = setInterval(next, 5500);
+    return () => clearInterval(id);
+  }, [next]);
 
-    const slide = SLIDES[current];
+  const slide = SLIDES[current];
 
-    return (
-        <section className="sponsor-section">
-            <div className="sponsor-header">
-                <span className="sponsor-eyebrow">Patrocinador Oficial</span>
-            </div>
-            <div className="sponsor-carousel">
-                <div className={`sponsor-carousel__body${animating ? " sponsor-carousel__body--out" : ""}`}>
-                    <div className="sponsor-logo-wrap">
-                        <img src={mukaLogo} alt="Muka Trader" className="sponsor-logo" />
-                    </div>
-                    <div className="sponsor-slide-content">
-                        <span className="sponsor-tag">{slide.tag}</span>
-                        <h3 className="sponsor-headline">{slide.headline}</h3>
-                        <p className="sponsor-sub">{slide.sub}</p>
-                        <button type="button" className="sponsor-cta">{slide.cta} →</button>
-                    </div>
-                </div>
-                <div className="sponsor-carousel__controls">
-                    <button type="button" className="sponsor-nav-btn" onClick={prev} aria-label="Anterior">‹</button>
-                    <div className="sponsor-dots">
-                        {SLIDES.map((s, i) => (
-                            <button
-                                key={s.id}
-                                type="button"
-                                className={`sponsor-dot${i === current ? " sponsor-dot--active" : ""}`}
-                                onClick={() => goTo(i)}
-                                aria-label={`Slide ${i + 1}`}
-                            />
-                        ))}
-                    </div>
-                    <button type="button" className="sponsor-nav-btn" onClick={next} aria-label="Próximo">›</button>
-                </div>
-            </div>
-        </section>
-    );
+  return (
+    <section className="mb-10">
+      <div className="flex items-center mb-3">
+        <span className="text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-[#beafd7] px-[0.7rem] py-[0.2rem] border border-[rgba(217,180,255,0.2)] rounded-full bg-white/[0.03]">
+          Patrocinador Oficial
+        </span>
+      </div>
+
+      <div className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.25rem] overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#7c3aed,#c795ff,#ec4899)]">
+        {/* Body */}
+        <div
+          className={`flex items-center gap-10 px-10 pt-8 pb-6 transition-all duration-200 max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-5 max-[600px]:px-5 max-[600px]:pt-6 max-[600px]:pb-4 ${
+            animating ? "opacity-0 translate-y-[6px]" : "opacity-100 translate-y-0"
+          }`}
+        >
+          <div className="shrink-0 w-[120px] h-[120px] rounded-2xl border border-[rgba(199,149,255,0.25)] bg-white/[0.04] flex items-center justify-center overflow-hidden shadow-[0_0_32px_rgba(167,79,255,0.15)] max-[600px]:w-[72px] max-[600px]:h-[72px]">
+            <img src={mukaLogo} alt="Muka Trader" className="w-full h-full object-contain p-2" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="inline-block text-[0.7rem] font-semibold tracking-[0.12em] uppercase text-[#c795ff] mb-2">
+              {slide.tag}
+            </span>
+            <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-[#f5edff] max-[600px]:text-[1.7rem]">
+              {slide.headline}
+            </h3>
+            <p className="m-0 mb-[1.1rem] text-[#beafd7] text-[0.9rem] leading-[1.55] max-w-[520px]">
+              {slide.sub}
+            </p>
+            <button
+              type="button"
+              className="inline-flex items-center gap-[0.3rem] bg-[rgba(167,79,255,0.18)] border border-[rgba(199,149,255,0.4)] text-[#c795ff] rounded-full px-[1.1rem] py-[0.45rem] text-[0.85rem] font-semibold cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.32)] hover:border-[rgba(199,149,255,0.7)] hover:text-white"
+            >
+              {slide.cta} →
+            </button>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-3 px-4 py-3 pb-4 border-t border-[rgba(217,180,255,0.2)]">
+          <button
+            type="button"
+            className="bg-transparent border border-[rgba(217,180,255,0.2)] rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-[#beafd7] text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-[#c795ff] hover:bg-[rgba(199,149,255,0.08)]"
+            onClick={prev}
+            aria-label="Anterior"
+          >
+            ‹
+          </button>
+          <div className="flex gap-[0.4rem] items-center">
+            {SLIDES.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`w-[7px] h-[7px] rounded-full border-none p-0 cursor-pointer transition-all duration-200 ${
+                  i === current
+                    ? "bg-[#c795ff] scale-[1.3]"
+                    : "bg-[rgba(199,149,255,0.25)]"
+                }`}
+                onClick={() => goTo(i)}
+                aria-label={`Slide ${i + 1}`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="bg-transparent border border-[rgba(217,180,255,0.2)] rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-[#beafd7] text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-[#c795ff] hover:bg-[rgba(199,149,255,0.08)]"
+            onClick={next}
+            aria-label="Próximo"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+    </section>
+  );
 }
