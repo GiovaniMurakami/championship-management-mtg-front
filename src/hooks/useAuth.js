@@ -53,6 +53,15 @@ export function useAuth() {
     return () => window.removeEventListener("auth:logout", handleForceLogout);
   }, []);
 
+  // Sincronizar token renovado pelo refresh preventivo do interceptor
+  useEffect(() => {
+    const handleTokenRefreshed = (event) => {
+      setToken(event.detail.token);
+    };
+    window.addEventListener("auth:tokenRefreshed", handleTokenRefreshed);
+    return () => window.removeEventListener("auth:tokenRefreshed", handleTokenRefreshed);
+  }, []);
+
   const saveAuth = (authData) => {
     setToken(authData.token);
     setUsuario(authData.usuario);
