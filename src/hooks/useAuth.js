@@ -13,6 +13,7 @@ export function useAuth() {
   const [authMessage, setAuthMessage] = useState("");
   const [token, setToken] = useState("");
   const [usuario, setUsuario] = useState(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: "", senha: "" });
   const [registerForm, setRegisterForm] = useState({
@@ -32,7 +33,10 @@ export function useAuth() {
   // Restaurar sessão ao montar
   useEffect(() => {
     const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!savedAuth) return;
+    if (!savedAuth) {
+      setAuthInitialized(true);
+      return;
+    }
 
     try {
       const parsed = JSON.parse(savedAuth);
@@ -40,6 +44,8 @@ export function useAuth() {
       setUsuario(parsed.usuario || null);
     } catch {
       window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    } finally {
+      setAuthInitialized(true);
     }
   }, []);
 
@@ -176,6 +182,7 @@ export function useAuth() {
 
   return {
     // State
+    authInitialized,
     showAuthModal,
     authTab,
     authLoading,
