@@ -3,6 +3,7 @@ import { listarDecks } from "../services/backendApi";
 
 export function useMyDecks(token, usuarioId) {
   const [decks, setDecks] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -14,7 +15,9 @@ export function useMyDecks(token, usuarioId) {
 
     try {
       const data = await listarDecks(token, usuarioId);
-      setDecks(Array.isArray(data) ? data : []);
+      const list = data.decks ?? (Array.isArray(data) ? data : []);
+      setDecks(list);
+      setTotal(data.total ?? list.length);
     } catch (error) {
       setMessage(error.message);
       setDecks([]);
@@ -29,6 +32,7 @@ export function useMyDecks(token, usuarioId) {
 
   return {
     decks,
+    total,
     loading,
     message,
     fetchDecks,

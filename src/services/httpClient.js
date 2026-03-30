@@ -35,6 +35,74 @@ const rejectPending = (error) => {
   pendingRequests = [];
 };
 
+const getTokenExpiry = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+const doRefresh = async (currentToken) => {
+  const savedAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+  const data = await httpClient.post(
+    "/usuario/refresh-token",
+    {},
+    { headers: { Authorization: `Bearer ${currentToken}` } },
+  );
+  const newToken = data.token;
+  const updatedAuth = { ...savedAuth, token: newToken };
+  window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuth));
+  window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: newToken } }));
+  return newToken;
+};
+
+// Interceptor de request: refresh preventivo se o token expira em < 5 min
+httpClient.interceptors.request.use(
+  async (config) => {
+    const isRefreshEndpoint = config.url?.includes("/usuario/refresh-token");
+    if (isRefreshEndpoint) return config;
+
+    const authHeader = config.headers?.Authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return config;
+
+    const token = authHeader.replace("Bearer ", "");
+    const expiresAt = getTokenExpiry(token);
+    if (!expiresAt) return config;
+
+    const fiveMinutes = 5 * 60 * 1000;
+    const now = Date.now();
+    const isExpiringSoon = expiresAt - now < fiveMinutes && expiresAt > now;
+
+    if (!isExpiringSoon) return config;
+
+    if (isRefreshing) {
+      const newToken = await new Promise((resolve, reject) => {
+        pendingRequests.push({ resolve, reject });
+      });
+      config.headers["Authorization"] = `Bearer ${newToken}`;
+      return config;
+    }
+
+    isRefreshing = true;
+    try {
+      const newToken = await doRefresh(token);
+      notifyPending(newToken);
+      config.headers["Authorization"] = `Bearer ${newToken}`;
+      return config;
+    } catch {
+      rejectPending(new Error("Sessão expirada."));
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent("auth:logout"));
+      throw new Error("Sessão expirada. Faça login novamente.");
+    } finally {
+      isRefreshing = false;
+    }
+  },
+  (error) => Promise.reject(error),
+);
+
 httpClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
