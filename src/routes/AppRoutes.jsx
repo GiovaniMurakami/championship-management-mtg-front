@@ -19,7 +19,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/decks"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <DeckBuilderPage
               isEditMode={false}
               deckForm={deckBuilder.deckForm}
@@ -56,7 +56,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/meus-decks"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <MyDecksPage token={auth.token} />
           </ProtectedRoute>
         }
@@ -64,7 +64,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/editar-deck/:id"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <DeckBuilderPage
               isEditMode={true}
               deckForm={deckBuilder.deckForm}
@@ -101,7 +101,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/torneios"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <TournamentPage />
           </ProtectedRoute>
         }
@@ -109,7 +109,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/torneios/criar"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated} requireAdmin isAdmin={auth.isAdmin}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized} requireAdmin isAdmin={auth.isAdmin}>
             <TournamentCreatePage />
           </ProtectedRoute>
         }
@@ -117,7 +117,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/torneios/:id"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <TournamentDetailPage />
           </ProtectedRoute>
         }
@@ -125,7 +125,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/ligas"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <LigaPage />
           </ProtectedRoute>
         }
@@ -133,7 +133,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/ligas/criar"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated} requireAdmin isAdmin={auth.isAdmin}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized} requireAdmin isAdmin={auth.isAdmin}>
             <LigaCreatePage editMode={false} />
           </ProtectedRoute>
         }
@@ -141,7 +141,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/ligas/:id"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <LigaDetailPage />
           </ProtectedRoute>
         }
@@ -149,7 +149,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
       <Route
         path="/ligas/:id/editar"
         element={
-          <ProtectedRoute isAuthenticated={auth.isAuthenticated} requireAdmin isAdmin={auth.isAdmin}>
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized} requireAdmin isAdmin={auth.isAdmin}>
             <LigaCreatePage editMode={true} />
           </ProtectedRoute>
         }
