@@ -1,8 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 
-function NavAvatar({ nome }) {
+function NavAvatar({ usuario }) {
+  const nome = usuario?.nome;
+  const foto = usuario?.fotoUrl;
   const initial = (nome?.[0] ?? "?").toUpperCase();
+  if (foto) {
+    return (
+      <img
+        src={foto}
+        alt={nome || "avatar"}
+        className="w-7 h-7 rounded-full object-cover shrink-0"
+      />
+    );
+  }
+
   return (
     <span
       className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[rgba(167,79,255,0.35)] border border-[rgba(199,149,255,0.4)] text-[0.78rem] font-bold text-[#f5edff] shrink-0 select-none"
@@ -162,6 +174,19 @@ export function Navbar({
             Ligas
           </button>
         )}
+        {isAuthenticated ? (
+          <NavLink to="/times" className={desktopLinkClass} onClick={close}>
+            Times
+          </NavLink>
+        ) : (
+          <button
+            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
+            type="button"
+            onClick={() => { onOpenAuth("login"); close(); }}
+          >
+            Times
+          </button>
+        )}
       </nav>
 
       {/* Desktop auth */}
@@ -174,7 +199,7 @@ export function Navbar({
               onClick={() => { onOpenEditProfile(); close(); }}
               title="Editar perfil"
             >
-              <NavAvatar nome={usuario.nome} />
+              <NavAvatar usuario={usuario} />
               <span className="text-[0.84rem] font-semibold text-[#f5edff]">{usuario.nome}</span>
             </button>
             <button
@@ -289,6 +314,21 @@ export function Navbar({
                 <span>Ligas</span>
               </button>
             )}
+            {isAuthenticated ? (
+              <NavLink to="/times" className={mobileLinkClass} onClick={close}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><circle cx="12" cy="8" r="3" /><path d="M4 20c1.5-3 4.5-4 8-4s6.5 1 8 4" /></svg>
+                <span>Times</span>
+              </NavLink>
+            ) : (
+              <button
+                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-180"
+                type="button"
+                onClick={() => { onOpenAuth("login"); close(); }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><circle cx="12" cy="8" r="3" /><path d="M4 20c1.5-3 4.5-4 8-4s6.5 1 8 4" /></svg>
+                <span>Times</span>
+              </button>
+            )}
           </nav>
 
           <div className="h-px bg-[rgba(217,180,255,0.2)] my-3" />
@@ -301,7 +341,7 @@ export function Navbar({
                   type="button"
                   onClick={() => { onOpenEditProfile(); close(); }}
                 >
-                  <NavAvatar nome={usuario.nome} />
+                  <NavAvatar usuario={usuario} />
                   <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
                     <span className="text-[0.9rem] font-semibold text-[#f5edff] whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
                     <span className="text-[0.74rem] text-[#beafd7]">Editar perfil</span>

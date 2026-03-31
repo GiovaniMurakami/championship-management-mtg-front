@@ -1,3 +1,5 @@
+import { ImageUploader } from "../ui";
+
 const inputClass =
   "border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.7rem] py-[0.65rem] w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.045] focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
 
@@ -28,6 +30,12 @@ export function EditProfileModal({
         <h2 className="mb-6 text-center m-0">Editar Perfil</h2>
 
         <form className="grid gap-[0.85rem]" onSubmit={onSubmit}>
+          <ImageUploader
+            value={form.fotoUrl}
+            onChange={(url) => onFormChange((current) => ({ ...current, fotoUrl: url }))}
+            uploadType="avatar"
+            label="Foto de Perfil"
+          />
           <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
             Nome
             <input

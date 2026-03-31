@@ -10,6 +10,8 @@ import {
   LigaPage,
   LigaDetailPage,
   LigaCreatePage,
+  TeamsPage,
+  TeamDetailPage,
 } from "../pages";
 
 export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
@@ -143,6 +145,22 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         element={
           <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
             <LigaDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/times"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
+            <TeamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/time/:id"
+        element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
+            <TeamDetailPage />
           </ProtectedRoute>
         }
       />

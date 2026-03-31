@@ -4,3 +4,4 @@ export { useCardSearch } from "./useCardSearch";
 export { useDeckBuilder } from "./useDeckBuilder";
 export { useMyDecks } from "./useMyDecks";
 export { useTournamentDetail } from "./useTournamentDetail";
+export { useUpload } from "./useUpload";

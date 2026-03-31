@@ -28,6 +28,7 @@ export function useAuth() {
     telefone: "",
     nickMTGO: "",
     nickArena: "",
+    fotoUrl: "",
   });
 
   // Restaurar sessão ao montar
@@ -137,6 +138,7 @@ export function useAuth() {
         telefone: usuario.telefone || "",
         nickMTGO: usuario.nickMTGO || "",
         nickArena: usuario.nickArena || "",
+        fotoUrl: usuario.fotoUrl || "",
       });
     }
     setAuthMessage("");
@@ -165,6 +167,7 @@ export function useAuth() {
       if (editProfileForm.nickMTGO) payload.nickMTGO = editProfileForm.nickMTGO;
       if (editProfileForm.nickArena)
         payload.nickArena = editProfileForm.nickArena;
+      if (editProfileForm.fotoUrl) payload.fotoUrl = editProfileForm.fotoUrl;
 
       const updatedUsuario = await atualizarUsuario(payload, token);
       saveAuth({ token, usuario: updatedUsuario });
