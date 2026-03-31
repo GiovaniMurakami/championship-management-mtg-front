@@ -22,10 +22,10 @@ const DEFAULT_STATUS = {
   badge: "bg-[rgba(255,255,255,0.06)] text-[#beafd7] border border-[rgba(217,180,255,0.2)]",
 };
 
-function StatChip({ icon, label, value }) {
+function StatChip({ icon, label, value, accent }) {
   return (
     <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.14)]">
-      <span className="text-[#8b7aab]">{icon}</span>
+      <span style={accent ? { color: accent } : undefined} className={accent ? undefined : "text-[#8b7aab]"}>{icon}</span>
       <span className="text-[0.78rem] text-[#8b7aab] font-medium">{label}</span>
       <span className="text-[0.85rem] font-semibold text-[#f5edff]">{value}</span>
     </div>
@@ -105,12 +105,13 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
       {!loading && torneio && (
         <div className="flex flex-wrap gap-2 max-[480px]:gap-[0.4rem]">
           {torneio.formato && (
-            <StatChip icon={<IconFormat />} label="Formato" value={torneio.formato} />
+            <StatChip icon={<IconFormat />} label="Formato" value={torneio.formato} accent="#c795ff" />
           )}
           <StatChip
             icon={<IconRound />}
             label="Rodada"
             value={`${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas ?? 0}`}
+            accent="#2ccfb4"
           />
           {torneio.totalInscritos != null && (
             <StatChip
@@ -121,10 +122,11 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
                   ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)`
                   : String(torneio.totalInscritos)
               }
+              accent="#2ccfb4"
             />
           )}
           {torneio.premio && (
-            <StatChip icon={<IconPrize />} label="Prêmio" value={torneio.premio} />
+            <StatChip icon={<IconPrize />} label="Prêmio" value={torneio.premio} accent="#f0b429" />
           )}
           {torneio.horario && (
             <StatChip icon={<IconDate />} label="Data" value={formatDate(torneio.horario)} />

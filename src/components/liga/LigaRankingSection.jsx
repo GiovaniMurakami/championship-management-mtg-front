@@ -15,7 +15,7 @@ export function LigaRankingSection({ ranking, loading }) {
   const decks = ranking.rankingDecks || ranking.decks || [];
   const cartas = ranking.rankingCartas || ranking.cartas || ranking.cards || [];
 
-  const thClass = "px-4 py-3 text-left text-[0.75rem] font-bold tracking-[0.07em] uppercase text-[#a5b4fc] border-b border-[rgba(217,180,255,0.12)]";
+  const thClass = "px-4 py-3 text-left text-[0.75rem] font-bold tracking-[0.07em] uppercase text-[#2ccfb4] border-b border-[rgba(44,207,180,0.15)]";
   const tdClass = "px-4 py-3 text-[0.88rem] text-[#beafd7] border-b border-[rgba(217,180,255,0.07)]";
   const tdHighlight = "px-4 py-3 text-[0.88rem] text-[#f5edff] font-medium border-b border-[rgba(217,180,255,0.07)]";
   const sectionClass = "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden";
@@ -59,7 +59,7 @@ export function LigaRankingSection({ ranking, loading }) {
                         )}
                       </td>
                       <td className={tdHighlight}>{nome}</td>
-                      <td className={`${tdClass} font-semibold text-[#c795ff]`}>{j.pontos ?? "—"}</td>
+                      <td className={`${tdClass} font-semibold text-[#f0b429]`}>{j.pontos ?? "—"}</td>
                       <td className={`${tdClass} text-[#22c55e]`}>{j.vitorias ?? j.wins ?? "—"}</td>
                       <td className={`${tdClass} text-[#ef4444]`}>{j.derrotas ?? j.losses ?? "—"}</td>
                       <td className={`${tdClass} text-[#fbbf24]`}>{j.empates ?? j.draws ?? "—"}</td>

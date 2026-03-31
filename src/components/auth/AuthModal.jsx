@@ -26,13 +26,12 @@ export function AuthModal({
     <div
       className="fixed inset-0 z-[60] grid place-items-center bg-[rgba(5,3,9,0.72)] backdrop-blur-sm animate-[fade-in_250ms_ease-out]"
       role="presentation"
-      onClick={onClose}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <section
-        className="w-[min(460px,calc(100vw-1.4rem))] border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-4 animate-[scale-focus_350ms_cubic-bezier(0.34,1.56,0.64,1)]"
+        className="w-[min(460px,calc(100vw-1.4rem))] border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-4 animate-[scale-focus_350ms_cubic-bezier(0.34,1.56,0.64,1)] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)]"
         role="dialog"
         aria-modal="true"
-        onClick={(event) => event.stopPropagation()}
       >
         {/* Tabs */}
         <div className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-4">
@@ -134,7 +133,7 @@ export function AuthModal({
         )}
 
         {message && (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[slide-up_300ms_ease-out,fade-in_300ms_ease-out]">
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(44,207,180,0.1)] border border-[rgba(44,207,180,0.25)] text-[#5eead4] text-[0.9rem] animate-[slide-up_300ms_ease-out,fade-in_300ms_ease-out]">
             {message}
           </p>
         )}
