@@ -84,7 +84,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-[fade-in_200ms_ease-out]"
-            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+            onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
             <div className="bg-[#110a22] border border-[rgba(217,180,255,0.2)] rounded-2xl w-full max-w-[580px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out]">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(217,180,255,0.15)]">

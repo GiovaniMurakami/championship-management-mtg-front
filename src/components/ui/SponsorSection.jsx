@@ -58,7 +58,7 @@ export function SponsorSection() {
         </span>
       </div>
 
-      <div className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.25rem] overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#7c3aed,#c795ff,#ec4899)]">
+      <div className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.25rem] overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#2ccfb4,#7c3aed,#c795ff,#ec4899)]">
         {/* Body */}
         <div
           className={`flex items-center gap-10 px-10 pt-8 pb-6 transition-all duration-200 max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-5 max-[600px]:px-5 max-[600px]:pt-6 max-[600px]:pb-4 ${
@@ -80,7 +80,7 @@ export function SponsorSection() {
             </p>
             <button
               type="button"
-              className="inline-flex items-center gap-[0.3rem] bg-[rgba(167,79,255,0.18)] border border-[rgba(199,149,255,0.4)] text-[#c795ff] rounded-full px-[1.1rem] py-[0.45rem] text-[0.85rem] font-semibold cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.32)] hover:border-[rgba(199,149,255,0.7)] hover:text-white"
+              className="inline-flex items-center gap-[0.3rem] bg-[rgba(44,207,180,0.12)] border border-[rgba(44,207,180,0.4)] text-[#2ccfb4] rounded-full px-[1.1rem] py-[0.45rem] text-[0.85rem] font-semibold cursor-pointer transition-all duration-200 hover:bg-[rgba(44,207,180,0.25)] hover:border-[rgba(44,207,180,0.7)] hover:text-white"
             >
               {slide.cta} →
             </button>
@@ -104,8 +104,8 @@ export function SponsorSection() {
                 type="button"
                 className={`w-[7px] h-[7px] rounded-full border-none p-0 cursor-pointer transition-all duration-200 ${
                   i === current
-                    ? "bg-[#c795ff] scale-[1.3]"
-                    : "bg-[rgba(199,149,255,0.25)]"
+                    ? "bg-[#2ccfb4] scale-[1.3]"
+                    : "bg-[rgba(44,207,180,0.25)]"
                 }`}
                 onClick={() => goTo(i)}
                 aria-label={`Slide ${i + 1}`}

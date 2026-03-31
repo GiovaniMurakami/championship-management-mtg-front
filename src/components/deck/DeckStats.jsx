@@ -118,7 +118,7 @@ export function DeckStats({ mainDeck }) {
                 >
                   {/* ds-curve-bar-fill: absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease */}
                   <div
-                    className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease-[ease]"
+                    className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#0d7a6e] via-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease-[ease]"
                     style={{
                       height: `${Math.max(0, Math.round(heightPercent))}%`,
                       minHeight: count > 0 ? "4px" : "0",
@@ -191,7 +191,7 @@ export function DeckStats({ mainDeck }) {
                 /* ds-type-row: flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(167,79,255,0.08)] rounded-[0.4rem] border border-[rgba(167,79,255,0.2)] */
                 <div
                   key={type}
-                  className="flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(167,79,255,0.08)] rounded-[0.4rem] border border-[rgba(167,79,255,0.2)]"
+                  className="flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(44,207,180,0.06)] rounded-[0.4rem] border border-[rgba(44,207,180,0.18)]"
                 >
                   {/* ds-type-name: text-[0.85rem] font-medium */}
                   <span className="text-[0.85rem] font-medium">{type}</span>

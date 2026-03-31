@@ -16,13 +16,13 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
       <div className="absolute top-[-60px] right-[-60px] w-[320px] h-[320px] rounded-full bg-[radial-gradient(circle,rgba(167,79,255,0.22),transparent_70%)] pointer-events-none" />
 
       {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-[linear-gradient(90deg,transparent,#a855f7,#c795ff,#7c3aed,transparent)]" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,#7c3aed,transparent)]" />
 
       <div className="relative px-[clamp(1.4rem,3vw,2.8rem)] pt-[clamp(2rem,4vw,3.2rem)] pb-[clamp(1.8rem,3.5vw,2.8rem)]">
         {/* Eyebrow */}
         <div className="inline-flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-          <p className="m-0 text-[#c795ff] font-['Bebas_Neue',sans-serif] tracking-[0.14em] text-[0.95rem]">
+          <span className="w-2 h-2 rounded-full bg-[#2ccfb4] shadow-[0_0_8px_rgba(44,207,180,0.8)]" />
+          <p className="m-0 text-[#2ccfb4] font-['Bebas_Neue',sans-serif] tracking-[0.14em] text-[0.95rem]">
             Liga competitiva de Magic
           </p>
         </div>
@@ -32,7 +32,7 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
           Torneios com energia de{" "}
           <span className="text-gradient-brand">stream</span>,{" "}
           foco competitivo e a vibe{" "}
-          <span className="text-gradient-brand">da cena BR</span>.
+          <span className="text-gradient-teal">da cena BR</span>.
         </h1>
 
         {/* Subtitle */}
@@ -73,12 +73,15 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
         {/* Stats row */}
         <div className="flex flex-wrap gap-x-6 gap-y-3 mt-7 pt-6 border-t border-[rgba(217,180,255,0.12)]">
           {[
-            { label: "Torneios realizados", value: "50+" },
-            { label: "Jogadores ativos", value: "200+" },
-            { label: "Formatos suportados", value: "6" },
+            { label: "Torneios realizados", value: "50+", color: "#c795ff" },
+            { label: "Jogadores ativos", value: "200+", color: "#2ccfb4" },
+            { label: "Formatos suportados", value: "6", color: "#f0b429" },
           ].map((stat) => (
             <div key={stat.label} className="flex flex-col gap-[0.15rem]">
-              <span className="font-['Bebas_Neue',sans-serif] text-[1.6rem] leading-none text-[#f5edff] tracking-[0.03em]">
+              <span
+                className="font-['Bebas_Neue',sans-serif] text-[1.6rem] leading-none tracking-[0.03em]"
+                style={{ color: stat.color, textShadow: `0 0 12px ${stat.color}55` }}
+              >
                 {stat.value}
               </span>
               <span className="text-[0.75rem] text-[#8b7aab] font-medium tracking-[0.04em] uppercase">

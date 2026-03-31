@@ -61,17 +61,15 @@ const IconLogout = () => (
 );
 
 const mobileLinkClass = ({ isActive }) =>
-  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${
-    isActive
-      ? "bg-[rgba(167,79,255,0.18)] text-[#f5edff]"
-      : "text-[#beafd7] hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff]"
+  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
+    ? "bg-[rgba(167,79,255,0.18)] text-[#f5edff]"
+    : "text-[#beafd7] hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff]"
   }`;
 
 const desktopLinkClass = ({ isActive }) =>
-  `no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
-    isActive
-      ? "text-white [text-shadow:0_0_18px_rgba(167,79,255,0.6)]"
-      : "text-[#beafd7] hover:text-white"
+  `no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${isActive
+    ? "text-white [text-shadow:0_0_18px_rgba(167,79,255,0.6)]"
+    : "text-[#beafd7] hover:text-white"
   }`;
 
 export function Navbar({
