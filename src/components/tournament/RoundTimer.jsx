@@ -48,13 +48,13 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
     ? "border-[rgba(239,68,68,0.6)] animate-[rt-pulse_1.5s_ease-in-out_infinite]"
     : isWarning
     ? "border-[rgba(251,191,36,0.5)]"
-    : "border-[rgba(199,149,255,0.3)]";
+    : "border-[rgba(44,207,180,0.35)]";
 
   const displayColorClass = isOver || isUrgent
     ? "text-[#f87171]"
     : isWarning
     ? "text-[#fcd34d]"
-    : "text-[#c795ff]";
+    : "text-[#2ccfb4]";
 
   const displaySizeClass = isOver
     ? "text-[1.1rem] tracking-[0.02em]"
@@ -64,7 +64,7 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
     ? "bg-[linear-gradient(90deg,#b91c1c,#f87171)]"
     : isWarning
     ? "bg-[linear-gradient(90deg,#d97706,#fcd34d)]"
-    : "bg-[linear-gradient(90deg,#7c3aed,#c795ff)]";
+    : "bg-[linear-gradient(90deg,#0d9488,#2ccfb4)]";
 
   return (
     <div className={`border rounded-[0.9rem] bg-[rgba(14,9,28,0.85)] mt-3 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>

@@ -5,6 +5,8 @@
   --color-bg-1: #08060f;
   --color-bg-2: #110a22;
   --color-brand: #c795ff;
+  --color-teal: #2ccfb4;
+  --color-gold: #f0b429;
   --color-text-main: #f5edff;
   --color-text-soft: #beafd7;
   --color-line: rgba(217, 180, 255, 0.2);
@@ -202,9 +204,31 @@ select:focus {
   box-shadow: 0 0 40px rgba(199, 149, 255, 0.25), 0 0 80px rgba(167, 79, 255, 0.15);
 }
 
+.glow-teal {
+  box-shadow: 0 0 24px rgba(44, 207, 180, 0.2), 0 0 48px rgba(44, 207, 180, 0.1);
+}
+
+.glow-gold {
+  box-shadow: 0 0 24px rgba(240, 180, 41, 0.22), 0 0 48px rgba(240, 180, 41, 0.1);
+}
+
 /* Gradient text utility */
 .text-gradient-brand {
   background: linear-gradient(135deg, #d4a8ff, #a855f7, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-teal {
+  background: linear-gradient(135deg, #5eead4, #2ccfb4, #0d9488);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fde68a, #f0b429, #d97706);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -263,6 +287,7 @@ body {
   background:
     radial-gradient(ellipse at 12% 10%, rgba(103, 28, 196, 0.35), transparent 38%),
     radial-gradient(ellipse at 88% 80%, rgba(148, 42, 240, 0.28), transparent 36%),
+    radial-gradient(ellipse at 92% 8%, rgba(44, 207, 180, 0.07), transparent 30%),
     radial-gradient(ellipse at 55% 50%, rgba(60, 15, 120, 0.15), transparent 55%),
     linear-gradient(150deg, #06040e 0%, #0e0820 50%, #120930 100%);
   background-attachment: fixed;
