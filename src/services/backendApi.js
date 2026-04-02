@@ -7,6 +7,12 @@ export const loginUsuario = (payload) =>
 export const cadastrarUsuario = (payload) =>
   httpClient.post("/usuario/cadastrar", payload);
 
+export const solicitarResetSenha = (email) =>
+  httpClient.post("/usuario/reset-senha/solicitar", { email });
+
+export const confirmarResetSenha = (token, novaSenha) =>
+  httpClient.post("/usuario/reset-senha/confirmar", { token, novaSenha });
+
 export const refreshToken = (refreshTokenValue) =>
   httpClient.post("/usuario/refresh-token", { refreshToken: refreshTokenValue });
 

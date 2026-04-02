@@ -10,6 +10,8 @@ import {
   LigaPage,
   LigaDetailPage,
   LigaCreatePage,
+  EsqueciSenhaPage,
+  ResetSenhaPage,
 } from "../pages";
 
 export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
@@ -154,6 +156,8 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
           </ProtectedRoute>
         }
       />
+      <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
+      <Route path="/reset-senha" element={<ResetSenhaPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
