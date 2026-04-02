@@ -1,8 +1,14 @@
 import { useState } from "react";
 
-export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading }) {
+export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading, torneio }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
+
+    const isEliminationPhase = Boolean(
+        torneio?.corteTop &&
+        Number(torneio?.rodadaAtual || 0) > Number(torneio?.totalRodadas || 0)
+    );
+    const isTie = winsPlayer1 === winsPlayer2;
 
     if (!myMatch) {
         return (
@@ -131,11 +137,16 @@ export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading }) 
 
                             <button
                                 className="inline-flex items-center justify-center w-full py-3 px-4 border border-[rgba(199,149,255,0.5)] rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
-                                disabled={actionLoading || (winsPlayer1 === 0 && winsPlayer2 === 0)}
+                                disabled={actionLoading || (winsPlayer1 === 0 && winsPlayer2 === 0) || (isEliminationPhase && isTie)}
                                 onClick={handleSubmit}
                             >
                                 {actionLoading ? "Enviando..." : "Enviar Resultado"}
                             </button>
+                            {isEliminationPhase && isTie && (winsPlayer1 > 0 || winsPlayer2 > 0) && (
+                                <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
+                                    Empates não são permitidos na fase eliminatória. Um jogador deve vencer a partida.
+                                </p>
+                            )}
                         </div>
                     )}
                 </>

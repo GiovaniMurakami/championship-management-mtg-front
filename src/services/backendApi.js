@@ -7,8 +7,11 @@ export const loginUsuario = (payload) =>
 export const cadastrarUsuario = (payload) =>
   httpClient.post("/usuario/cadastrar", payload);
 
-export const refreshToken = (token) =>
-  httpClient.post("/usuario/refresh-token", {}, {
+export const refreshToken = (refreshTokenValue) =>
+  httpClient.post("/usuario/refresh-token", { refreshToken: refreshTokenValue });
+
+export const logoutUsuario = (token) =>
+  httpClient.post("/usuario/logout", {}, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

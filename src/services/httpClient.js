@@ -44,15 +44,14 @@ const getTokenExpiry = (token) => {
   }
 };
 
-const doRefresh = async (currentToken) => {
+const doRefresh = async () => {
   const savedAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
-  const data = await httpClient.post(
-    "/usuario/refresh-token",
-    {},
-    { headers: { Authorization: `Bearer ${currentToken}` } },
-  );
+  const currentRefreshToken = savedAuth.refreshToken;
+  if (!currentRefreshToken) throw new Error("no_refresh_token");
+  const data = await httpClient.post("/usuario/refresh-token", { refreshToken: currentRefreshToken });
   const newToken = data.token;
-  const updatedAuth = { ...savedAuth, token: newToken };
+  const newRefreshToken = data.refreshToken;
+  const updatedAuth = { ...savedAuth, token: newToken, refreshToken: newRefreshToken };
   window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuth));
   window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: newToken } }));
   return newToken;
@@ -87,7 +86,7 @@ httpClient.interceptors.request.use(
 
     isRefreshing = true;
     try {
-      const newToken = await doRefresh(token);
+      const newToken = await doRefresh();
       notifyPending(newToken);
       config.headers["Authorization"] = `Bearer ${newToken}`;
       return config;
@@ -125,20 +124,7 @@ httpClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const savedAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
-        const currentToken = savedAuth.token;
-
-        if (!currentToken) throw new Error("no_token");
-
-        const data = await httpClient.post(
-          "/usuario/refresh-token",
-          {},
-          { headers: { Authorization: `Bearer ${currentToken}` } },
-        );
-
-        const newToken = data.token;
-        const updatedAuth = { ...savedAuth, token: newToken };
-        window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuth));
+        const newToken = await doRefresh();
 
         notifyPending(newToken);
 
@@ -152,6 +138,20 @@ httpClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    // Global 429 rate-limit handling
+    if (error.response?.status === 429) {
+      const msg429 = error.response?.data?.mensagem || error.response?.data?.message || "Muitas requisições. Aguarde um momento e tente novamente.";
+      window.dispatchEvent(new CustomEvent("auth:rateLimited", { detail: { message: msg429 } }));
+      throw new Error(msg429);
+    }
+
+    // Handle Zod structured validation errors (errors[] array)
+    const zodErrors = error.response?.data?.errors;
+    if (Array.isArray(zodErrors) && zodErrors.length > 0) {
+      const messages = zodErrors.map((e) => e.message || e.msg || JSON.stringify(e)).join("; ");
+      throw new Error(messages);
     }
 
     const message =
