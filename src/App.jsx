@@ -12,6 +12,12 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen text-[#f5edff]">
+        {/* Global rate-limit toast */}
+        {auth.rateLimitMsg && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl border border-[rgba(252,88,119,0.4)] bg-[rgba(30,15,45,0.95)] backdrop-blur-md text-[#ffa8b8] text-[0.9rem] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-[slide-up_300ms_ease-out]">
+            {auth.rateLimitMsg}
+          </div>
+        )}
         <Navbar
           usuario={auth.usuario}
           onOpenAuth={auth.openAuth}
@@ -42,6 +48,7 @@ function App() {
           onRegisterFormChange={auth.setRegisterForm}
           onLoginSubmit={auth.handleLogin}
           onRegisterSubmit={auth.handleRegister}
+          loginLockout={auth.loginLockout}
         />
 
         <EditProfileModal
