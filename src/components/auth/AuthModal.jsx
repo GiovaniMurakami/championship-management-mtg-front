@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 const inputClass =
   "border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.7rem] py-[0.65rem] w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.045] focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
 
@@ -18,7 +20,10 @@ export function AuthModal({
   onLoginSubmit,
   onRegisterSubmit,
   loginLockout,
+  onForgotPassword,
 }) {
+  const navigate = useNavigate();
+
   if (!isOpen) {
     return null;
   }
@@ -39,8 +44,8 @@ export function AuthModal({
           <button
             type="button"
             className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "login"
-                ? "bg-[rgba(167,79,255,0.2)] text-white"
-                : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
+              ? "bg-[rgba(167,79,255,0.2)] text-white"
+              : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
               }`}
             onClick={() => onTabChange("login")}
           >
@@ -49,8 +54,8 @@ export function AuthModal({
           <button
             type="button"
             className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "register"
-                ? "bg-[rgba(167,79,255,0.2)] text-white"
-                : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
+              ? "bg-[rgba(167,79,255,0.2)] text-white"
+              : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
               }`}
             onClick={() => onTabChange("register")}
           >
@@ -86,6 +91,13 @@ export function AuthModal({
             </label>
             <button className={btnPrimary} disabled={isLoading || loginLockout} type="submit">
               {loginLockout ? "Conta bloqueada temporariamente" : isLoading ? "Entrando..." : "Entrar"}
+            </button>
+            <button
+              type="button"
+              className="text-[#beafd7] text-[0.85rem] text-center underline underline-offset-2 cursor-pointer bg-transparent border-none p-0 hover:text-[#c795ff] transition-colors duration-200"
+              onClick={() => { onClose(); if (onForgotPassword) onForgotPassword(); else navigate("/esqueci-senha"); }}
+            >
+              Esqueci minha senha
             </button>
           </form>
         ) : (

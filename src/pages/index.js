@@ -7,3 +7,5 @@ export { TournamentCreatePage } from "./TournamentCreatePage";
 export { LigaPage } from "./LigaPage";
 export { LigaDetailPage } from "./LigaDetailPage";
 export { LigaCreatePage } from "./LigaCreatePage";
+export { EsqueciSenhaPage } from "./EsqueciSenhaPage";
+export { ResetSenhaPage } from "./ResetSenhaPage";
