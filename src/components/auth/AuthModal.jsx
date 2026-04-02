@@ -17,6 +17,7 @@ export function AuthModal({
   onRegisterFormChange,
   onLoginSubmit,
   onRegisterSubmit,
+  loginLockout,
 }) {
   if (!isOpen) {
     return null;
@@ -37,22 +38,20 @@ export function AuthModal({
         <div className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-4">
           <button
             type="button"
-            className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${
-              activeTab === "login"
+            className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "login"
                 ? "bg-[rgba(167,79,255,0.2)] text-white"
                 : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
-            }`}
+              }`}
             onClick={() => onTabChange("login")}
           >
             Login
           </button>
           <button
             type="button"
-            className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${
-              activeTab === "register"
+            className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "register"
                 ? "bg-[rgba(167,79,255,0.2)] text-white"
                 : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
-            }`}
+              }`}
             onClick={() => onTabChange("register")}
           >
             Cadastro
@@ -85,8 +84,8 @@ export function AuthModal({
                 className={inputClass}
               />
             </label>
-            <button className={btnPrimary} disabled={isLoading} type="submit">
-              {isLoading ? "Entrando..." : "Entrar"}
+            <button className={btnPrimary} disabled={isLoading || loginLockout} type="submit">
+              {loginLockout ? "Conta bloqueada temporariamente" : isLoading ? "Entrando..." : "Entrar"}
             </button>
           </form>
         ) : (

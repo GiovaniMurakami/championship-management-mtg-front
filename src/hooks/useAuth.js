@@ -3,6 +3,7 @@ import {
   loginUsuario,
   cadastrarUsuario,
   atualizarUsuario,
+  logoutUsuario,
 } from "../services/backendApi";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
 
@@ -29,6 +30,9 @@ export function useAuth() {
     nickMTGO: "",
     nickArena: "",
   });
+
+  const [loginLockout, setLoginLockout] = useState(false);
+  const [rateLimitMsg, setRateLimitMsg] = useState("");
 
   // Restaurar sessão ao montar
   useEffect(() => {
@@ -68,13 +72,33 @@ export function useAuth() {
     return () => window.removeEventListener("auth:tokenRefreshed", handleTokenRefreshed);
   }, []);
 
+  // Ouvir eventos de rate-limit global (429)
+  useEffect(() => {
+    const handleRateLimit = (event) => {
+      setRateLimitMsg(event.detail.message);
+      setTimeout(() => setRateLimitMsg(""), 8000);
+    };
+    window.addEventListener("auth:rateLimited", handleRateLimit);
+    return () => window.removeEventListener("auth:rateLimited", handleRateLimit);
+  }, []);
+
   const saveAuth = (authData) => {
     setToken(authData.token);
     setUsuario(authData.usuario);
-    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
+    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+      token: authData.token,
+      refreshToken: authData.refreshToken,
+      usuario: authData.usuario,
+    }));
   };
 
-  const clearAuth = () => {
+  const clearAuth = async () => {
+    // Call backend logout to invalidate refresh tokens
+    try {
+      if (token) await logoutUsuario(token);
+    } catch {
+      // Ignore errors — clear local state regardless
+    }
     setToken("");
     setUsuario(null);
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -102,7 +126,14 @@ export function useAuth() {
       setShowAuthModal(false);
       setLoginForm({ email: "", senha: "" });
     } catch (error) {
-      setAuthMessage(error.message);
+      // Handle 429 lockout — message comes already extracted from interceptor
+      if (error.message?.includes("bloqueada") || error.message?.includes("429") || error.message?.includes("Tente novamente em")) {
+        setLoginLockout(true);
+        setAuthMessage(error.message);
+        setTimeout(() => setLoginLockout(false), 15 * 60 * 1000);
+      } else {
+        setAuthMessage(error.message);
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -195,6 +226,8 @@ export function useAuth() {
     isAdmin,
     showEditProfileModal,
     editProfileForm,
+    loginLockout,
+    rateLimitMsg,
     // Setters
     setLoginForm,
     setRegisterForm,

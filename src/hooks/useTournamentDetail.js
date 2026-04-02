@@ -286,6 +286,11 @@ export function useTournamentDetail() {
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao se inscrever.");
+            // Reload tournament state on max-players error so UI reflects full capacity
+            if (err.message?.includes("limite máximo")) {
+                await loadTournament();
+                await loadStandings();
+            }
             clearMessages();
         } finally {
             setActionLoading(false);
