@@ -43,6 +43,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
               onUpdateCardQuantity={deckBuilder.updateCardQuantity}
               onCardMouseEnter={cardPreview.openCardPreview}
               onCardMouseLeave={cardPreview.closeCardPreview}
+              onPreviewDismiss={cardPreview.closeCardPreview}
               deckLoading={deckBuilder.deckLoading}
               deckMessage={deckBuilder.deckMessage}
               cardLimitMessage={deckBuilder.cardLimitMessage}
@@ -88,6 +89,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
               onUpdateCardQuantity={deckBuilder.updateCardQuantity}
               onCardMouseEnter={cardPreview.openCardPreview}
               onCardMouseLeave={cardPreview.closeCardPreview}
+              onPreviewDismiss={cardPreview.closeCardPreview}
               deckLoading={deckBuilder.deckLoading}
               deckMessage={deckBuilder.deckMessage}
               cardLimitMessage={deckBuilder.cardLimitMessage}

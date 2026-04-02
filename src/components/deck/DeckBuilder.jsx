@@ -12,9 +12,9 @@ const FORMATS = [
 ];
 
 const EXPORT_FORMATS = [
-  { key: "arena",    label: "MTG Arena" },
-  { key: "mtgo",     label: "MTGO (.dek)" },
-  { key: "txt",      label: "Texto (.txt)" },
+  { key: "arena", label: "MTG Arena" },
+  { key: "mtgo", label: "MTGO (.dek)" },
+  { key: "txt", label: "Texto (.txt)" },
   { key: "moxfield", label: "Moxfield / Archidekt" },
 ];
 
@@ -181,13 +181,12 @@ function PickerHeader({ label, total, limit }) {
         <span className="font-bold text-[0.9rem] text-text-main">{label}</span>
         {/* picker-header-count with conditional color */}
         <span
-          className={`text-[0.88rem] font-bold ${
-            isOver
+          className={`text-[0.88rem] font-bold ${isOver
               ? "text-[#f87171]"
               : isNearFull
-              ? "text-[#fcd34d]"
-              : "text-text-soft"
-          }`}
+                ? "text-[#fcd34d]"
+                : "text-text-soft"
+            }`}
         >
           {total}
           {/* picker-header-limit */}
@@ -199,13 +198,12 @@ function PickerHeader({ label, total, limit }) {
       <div className="h-[3px] rounded-full bg-white/[0.08] overflow-hidden">
         {/* picker-progress-fill with conditional gradient */}
         <div
-          className={`h-full rounded-full transition-[width] duration-300 ${
-            isOver
+          className={`h-full rounded-full transition-[width] duration-300 ${isOver
               ? "bg-gradient-to-r from-[#b91c1c] to-[#f87171]"
               : isNearFull
-              ? "bg-gradient-to-r from-[#d97706] to-[#fcd34d]"
-              : "bg-gradient-to-r from-[#7c3aed] to-[#c795ff]"
-          }`}
+                ? "bg-gradient-to-r from-[#d97706] to-[#fcd34d]"
+                : "bg-gradient-to-r from-[#7c3aed] to-[#c795ff]"
+            }`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -231,6 +229,7 @@ export function DeckBuilder({
   onUpdateCardQuantity,
   onCardMouseEnter,
   onCardMouseLeave,
+  onPreviewDismiss,
   deckLoading,
   deckMessage,
   cardLimitMessage,
@@ -412,6 +411,7 @@ export function DeckBuilder({
                 onCardAdd={(card) => onAddCard(card, "main")}
                 onCardMouseEnter={onCardMouseEnter}
                 onCardMouseLeave={onCardMouseLeave}
+                onPreviewDismiss={onPreviewDismiss}
                 title=""
                 readOnly={readOnly}
               />
@@ -450,6 +450,7 @@ export function DeckBuilder({
                 onCardAdd={(card) => onAddCard(card, "side")}
                 onCardMouseEnter={onCardMouseEnter}
                 onCardMouseLeave={onCardMouseLeave}
+                onPreviewDismiss={onPreviewDismiss}
                 title=""
                 readOnly={readOnly}
               />
