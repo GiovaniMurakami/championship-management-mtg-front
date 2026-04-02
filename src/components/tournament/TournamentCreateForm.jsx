@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { criarTorneio } from "../../services/backendApi";
+import { ImageUploader } from "../ui";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -36,31 +37,17 @@ const inputClass =
 
 export function TournamentCreateForm({ token, onTournamentCreated }) {
     const [createForm, setCreateForm] = useState(INITIAL_FORM);
-    const [bannerFile, setBannerFile] = useState(null);
-    const [bannerPreview, setBannerPreview] = useState(null);
     const [uploadingBanner, setUploadingBanner] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const bannerInputRef = useRef(null);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCreateForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleBannerFileChange = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setBannerFile(file);
-        const reader = new FileReader();
-        reader.onloadend = () => setBannerPreview(reader.result);
-        reader.readAsDataURL(file);
-    };
-
     const removeBanner = () => {
-        setBannerFile(null);
-        setBannerPreview(null);
-        if (bannerInputRef.current) bannerInputRef.current.value = "";
+        setCreateForm((prev) => ({ ...prev, bannerUrl: "" }));
     };
 
     const handleSubmit = async (e) => {
@@ -70,12 +57,6 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
 
         try {
             let bannerUrl = createForm.bannerUrl;
-
-            if (bannerFile) {
-                setUploadingBanner(true);
-                // Upload pendente — endpoint de presigned URL a implementar
-                setUploadingBanner(false);
-            }
 
             const payload = {
                 ...createForm,
@@ -259,51 +240,15 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                         </h3>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                                Imagem do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
-                            </label>
-
-                            {bannerPreview ? (
-                                <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
-                                    <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[180px] object-cover" />
-                                    <button
-                                        type="button"
-                                        className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50"
-                                        onClick={removeBanner}
-                                        disabled={isSubmitting}
-                                        aria-label="Remover banner"
-                                    >
-                                        ✕ Remover
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    type="button"
-                                    className="flex items-center justify-center gap-[0.6rem] w-full py-[0.85rem] px-4 border-2 border-dashed border-[rgba(79,70,229,0.4)] rounded-lg bg-[rgba(79,70,229,0.04)] text-[#a5b4fc] text-[0.9rem] cursor-pointer transition-all duration-200 hover:border-[#a5b4fc] hover:bg-[rgba(79,70,229,0.1)] hover:text-[#c7d2fe] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onClick={() => bannerInputRef.current?.click()}
-                                    disabled={isSubmitting}
-                                >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                                        <polyline points="16 16 12 12 8 16" />
-                                        <line x1="12" y1="12" x2="12" y2="21" />
-                                        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-                                    </svg>
-                                    Selecionar imagem
-                                </button>
-                            )}
-
-                            <input
-                                ref={bannerInputRef}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleBannerFileChange}
-                                disabled={isSubmitting}
+                            <ImageUploader
+                                value={createForm.bannerUrl}
+                                onChange={(url) => setCreateForm((prev) => ({ ...prev, bannerUrl: url }))}
+                                uploadType="banner-torneio"
+                                label="Banner do Torneio"
                             />
-
-                            {bannerFile && (
+                            {createForm.bannerUrl && (
                                 <small className="text-[#fbbf24] text-[0.8rem]">
-                                    Upload será realizado ao criar o torneio (endpoint de presigned URL pendente).
+                                    Banner enviado.
                                 </small>
                             )}
                         </div>

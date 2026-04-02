@@ -147,3 +147,39 @@ export const getRankingLiga = (ligaId, token) =>
   httpClient.get(`/liga/${ligaId}/ranking`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+// Times
+export const listarTimes = (token) =>
+  httpClient.get("/time/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarTime = (id, token) =>
+  httpClient.get(`/time/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const criarTime = (payload, token) =>
+  httpClient.post("/time/criar", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const atualizarTime = (id, payload, token) =>
+  httpClient.put(`/time/${id}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deletarTime = (id, token) =>
+  httpClient.delete(`/time/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const adicionarMembro = (id, payload, token) =>
+  httpClient.post(`/time/${id}/membro`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const removerMembro = (id, membroId, token) =>
+  httpClient.delete(`/time/${id}/membro/${membroId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });

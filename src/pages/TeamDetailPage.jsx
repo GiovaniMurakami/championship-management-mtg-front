@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { buscarTime } from "../services/teamApi";
+import { buscarTime } from "../services/backendApi";
 
 export default function TeamDetailPage() {
     const { id } = useParams();

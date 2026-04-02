@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { ImageUploader } from "../components/ui";
 
 const inputClass =
   "px-4 py-3 border-2 border-[#333] rounded-lg bg-white/[0.05] text-white text-base transition-all duration-300 focus:outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] focus:bg-white/[0.1] placeholder:text-[#888]";
@@ -11,7 +12,7 @@ export function LigaCreatePage({ editMode = false }) {
   const { token } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ nome: "", descricao: "" });
+  const [form, setForm] = useState({ nome: "", descricao: "", bannerUrl: "" });
   const [torneiosDisponiveis, setTorneiosDisponiveis] = useState([]);
   const [torneiosSelecionados, setTorneiosSelecionados] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export function LigaCreatePage({ editMode = false }) {
       setTorneiosDisponiveis(torneiosData.torneios || []);
       if (ligaData) {
         const liga = ligaData.liga || ligaData;
-        setForm({ nome: liga.nome || "", descricao: liga.descricao || "" });
+        setForm({ nome: liga.nome || "", descricao: liga.descricao || "", bannerUrl: liga.bannerUrl || "" });
         const ids = (liga.torneios || []).map((t) => t.id ?? t);
         setTorneiosSelecionados(ids.map(String));
       }
@@ -143,6 +144,14 @@ export function LigaCreatePage({ editMode = false }) {
                   className={`${inputClass} resize-y min-h-[80px]`}
                 />
               </div>
+              <div className="flex flex-col gap-2">
+                <ImageUploader
+                  value={form.bannerUrl}
+                  onChange={(url) => setForm((prev) => ({ ...prev, bannerUrl: url }))}
+                  uploadType="banner-liga"
+                  label="Banner da Liga (opcional)"
+                />
+              </div>
             </div>
 
             {/* Torneios */}
@@ -159,11 +168,10 @@ export function LigaCreatePage({ editMode = false }) {
                     return (
                       <label
                         key={torneio.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
-                          selected
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${selected
                             ? "border-[rgba(79,70,229,0.6)] bg-[rgba(79,70,229,0.12)]"
                             : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
-                        }`}
+                          }`}
                       >
                         <input
                           type="checkbox"
