@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 export function CardSearch({
   searchValue,
   onSearchChange,
@@ -5,9 +7,23 @@ export function CardSearch({
   onCardAdd,
   onCardMouseEnter,
   onCardMouseLeave,
+  onPreviewDismiss,
   title,
   readOnly = false,
 }) {
+  // Fecha a preview quando a lista some do DOM (mouseleave não dispara nesse caso)
+  useEffect(() => {
+    if (suggestions.length === 0) {
+      onPreviewDismiss?.();
+    }
+  }, [suggestions, onPreviewDismiss]);
+
+  const handleCardAdd = (card) => {
+    onCardAdd(card);
+    onPreviewDismiss?.();
+    onSearchChange("");
+  };
+
   return (
     <div className="relative w-full">
       <h4>{title}</h4>
@@ -46,7 +62,7 @@ export function CardSearch({
               <button
                 type="button"
                 className="flex items-center gap-[0.6rem] w-full px-[0.75rem] py-[0.55rem] cursor-pointer text-[0.87rem] text-[#beafd7] hover:bg-[rgba(167,79,255,0.12)] hover:text-[#f5edff] transition-colors duration-100 bg-transparent border-none text-left"
-                onClick={() => { onCardAdd(card); onSearchChange(""); }}
+                onClick={() => handleCardAdd(card)}
                 onMouseEnter={() => onCardMouseEnter(card)}
                 onMouseLeave={onCardMouseLeave}
               >

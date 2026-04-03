@@ -100,8 +100,8 @@ export function TournamentDetailPage() {
       {(error || successMsg) && (
         <div
           className={`px-4 py-3 rounded-[0.7rem] mb-5 text-[0.9rem] font-medium animate-[slide-up_300ms_ease-out] ${error
-              ? "bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#fca5a5]"
-              : "bg-[rgba(34,197,94,0.15)] border border-[rgba(34,197,94,0.4)] text-[#86efac]"
+            ? "bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#fca5a5]"
+            : "bg-[rgba(34,197,94,0.15)] border border-[rgba(34,197,94,0.4)] text-[#86efac]"
             }`}
         >
           {error || successMsg}
@@ -185,6 +185,7 @@ export function TournamentDetailPage() {
         onClose={() => setShowEditModal(false)}
         onSubmit={handleEditSubmit}
         loading={actionLoading}
+        token={token}
       />
 
       {showDeleteConfirm && (

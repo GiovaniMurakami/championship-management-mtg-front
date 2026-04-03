@@ -1,4 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { obterPresignedUrl, uploadParaS3 } from "../../services/backendApi";
+
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_BANNER_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -30,7 +34,7 @@ function toDatetimeLocal(dateStr) {
     }
 }
 
-export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loading }) {
+export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loading, token }) {
     const [form, setForm] = useState({
         nome: "",
         horario: "",
@@ -39,14 +43,25 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         maxJogadores: "",
         maxRodadas: "",
         corteTop: "",
-        bannerUrl: "",
         linkBanner: "",
         somRodada: "",
         linkLive: "",
     });
+    const [bannerFile, setBannerFile] = useState(null);
+    const [bannerPreview, setBannerPreview] = useState(null);
+    const [uploadingBanner, setUploadingBanner] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [bannerError, setBannerError] = useState("");
+    const bannerInputRef = useRef(null);
+    const existingBannerUrlRef = useRef("");
 
     useEffect(() => {
         if (torneio && isOpen) {
+            existingBannerUrlRef.current = torneio.bannerUrl || "";
+            setBannerFile(null);
+            setBannerPreview(torneio.bannerUrl || null);
+            setBannerError("");
+            setUploadProgress(0);
             setForm({
                 nome: torneio.nome || "",
                 horario: toDatetimeLocal(torneio.horario),
@@ -55,7 +70,6 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 maxJogadores: torneio.maxJogadores ?? "",
                 maxRodadas: torneio.maxRodadas ?? torneio.totalRodadas ?? "",
                 corteTop: torneio.corteTop ?? "",
-                bannerUrl: torneio.bannerUrl || "",
                 linkBanner: torneio.linkBanner || "",
                 somRodada: torneio.somRodada || "",
                 linkLive: torneio.linkLive || "",
@@ -70,10 +84,80 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleBannerFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setBannerError("");
+        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+            setBannerError("Formato inválido. Use JPEG, PNG, GIF ou WebP.");
+            if (bannerInputRef.current) bannerInputRef.current.value = "";
+            return;
+        }
+        if (file.size > MAX_BANNER_SIZE) {
+            setBannerError("Imagem muito grande. O limite é 5 MB.");
+            if (bannerInputRef.current) bannerInputRef.current.value = "";
+            return;
+        }
+        setBannerFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setBannerPreview(reader.result);
+        reader.readAsDataURL(file);
+    };
+
+    const removeBanner = () => {
+        setBannerFile(null);
+        setBannerPreview(null);
+        setBannerError("");
+        setUploadProgress(0);
+        existingBannerUrlRef.current = "";
+        if (bannerInputRef.current) bannerInputRef.current.value = "";
+    };
+
+    const isUploading = uploadingBanner;
+    const isDisabled = loading || isUploading;
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        let bannerUrl = existingBannerUrlRef.current;
+
+        if (bannerFile && token) {
+            setUploadingBanner(true);
+            setUploadProgress(0);
+            try {
+                const doUpload = async () => {
+                    const res = await obterPresignedUrl(
+                        { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
+                        token
+                    );
+                    const { uploadUrl, urlPublica } = res.data ?? res;
+                    try {
+                        await uploadParaS3(uploadUrl, bannerFile, setUploadProgress);
+                    } catch (s3Err) {
+                        if (s3Err.s3Status === 403 || s3Err.s3Status === 400) {
+                            const retry = await obterPresignedUrl(
+                                { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
+                                token
+                            );
+                            const { uploadUrl: newUrl, urlPublica: newPublica } = retry.data ?? retry;
+                            await uploadParaS3(newUrl, bannerFile, setUploadProgress);
+                            return newPublica;
+                        }
+                        throw s3Err;
+                    }
+                    return urlPublica;
+                };
+                bannerUrl = await doUpload();
+            } catch (err) {
+                setBannerError("Falha ao enviar o banner. Tente novamente.");
+                setUploadingBanner(false);
+                return;
+            }
+            setUploadingBanner(false);
+        }
+
         const payload = {
             ...form,
+            bannerUrl,
             maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
             maxRodadas: form.maxRodadas ? Number(form.maxRodadas) : undefined,
             corteTop: form.corteTop ? Number(form.corteTop) : undefined,
@@ -163,17 +247,83 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                         <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">
                             Mídia
                         </h3>
+
+                        {/* Banner upload */}
                         <div className="flex flex-col gap-1.5">
-                            <label htmlFor="edit-bannerUrl" className="text-[#e0e0e0] font-medium text-[0.9rem]">URL do Banner <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span></label>
-                            <input id="edit-bannerUrl" name="bannerUrl" type="url" placeholder="https://..." value={form.bannerUrl} onChange={handleChange} disabled={loading} className={inputClass} />
+                            <label className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                                Imagem do Banner <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span>
+                            </label>
+
+                            {bannerPreview ? (
+                                <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
+                                    <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[160px] object-cover" />
+                                    <button
+                                        type="button"
+                                        className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50"
+                                        onClick={removeBanner}
+                                        disabled={isDisabled}
+                                        aria-label="Remover banner"
+                                    >
+                                        ✕ Remover
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="flex items-center justify-center gap-[0.6rem] w-full py-[0.75rem] px-4 border-2 border-dashed border-[rgba(79,70,229,0.4)] rounded-lg bg-[rgba(79,70,229,0.04)] text-[#a5b4fc] text-[0.85rem] cursor-pointer transition-all duration-200 hover:border-[#a5b4fc] hover:bg-[rgba(79,70,229,0.1)] hover:text-[#c7d2fe] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => bannerInputRef.current?.click()}
+                                    disabled={isDisabled}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                        <polyline points="16 16 12 12 8 16" />
+                                        <line x1="12" y1="12" x2="12" y2="21" />
+                                        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                                    </svg>
+                                    Selecionar imagem
+                                </button>
+                            )}
+
+                            <input
+                                ref={bannerInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                className="hidden"
+                                onChange={handleBannerFileChange}
+                                disabled={isDisabled}
+                            />
+
+                            {bannerError && (
+                                <small className="text-[#fca5a5] text-[0.8rem]">{bannerError}</small>
+                            )}
+
+                            {isUploading && (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex justify-between text-[0.75rem] text-[#a5b4fc]">
+                                        <span>Enviando banner…</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-[width] duration-200"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="edit-linkBanner" className="text-[#e0e0e0] font-medium text-[0.9rem]">Link do Banner <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span></label>
+                            <input id="edit-linkBanner" name="linkBanner" type="url" placeholder="https://..." value={form.linkBanner} onChange={handleChange} disabled={isDisabled} className={inputClass} />
+                            <small className="text-[#a3a3a3] text-[0.8rem]">URL para onde o banner redireciona ao ser clicado (não é a imagem).</small>
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="edit-somRodada" className="text-[#e0e0e0] font-medium text-[0.9rem]">Som de Nova Rodada <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span></label>
-                            <input id="edit-somRodada" name="somRodada" type="url" placeholder="https://.../som.mp3" value={form.somRodada} onChange={handleChange} disabled={loading} className={inputClass} />
+                            <input id="edit-somRodada" name="somRodada" type="url" placeholder="https://.../som.mp3" value={form.somRodada} onChange={handleChange} disabled={isDisabled} className={inputClass} />
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="edit-linkLive" className="text-[#e0e0e0] font-medium text-[0.9rem]">Live no YouTube <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span></label>
-                            <input id="edit-linkLive" name="linkLive" type="url" placeholder="https://youtube.com/..." value={form.linkLive} onChange={handleChange} disabled={loading} className={inputClass} />
+                            <input id="edit-linkLive" name="linkLive" type="url" placeholder="https://youtube.com/..." value={form.linkLive} onChange={handleChange} disabled={isDisabled} className={inputClass} />
                         </div>
                     </div>
 
@@ -181,17 +331,17 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                         <button
                             type="button"
                             onClick={onClose}
-                            disabled={loading}
+                            disabled={isDisabled}
                             className="px-5 py-2.5 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] bg-transparent cursor-pointer font-medium text-[0.9rem] transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.4)] hover:bg-white/[0.05] disabled:opacity-50"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isDisabled}
                             className="px-5 py-2.5 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white border-none rounded-lg font-semibold text-[0.9rem] cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)] disabled:opacity-60 disabled:cursor-not-allowed disabled:!transform-none"
                         >
-                            {loading ? "Salvando..." : "Salvar Alterações"}
+                            {isUploading ? "Enviando banner..." : loading ? "Salvando..." : "Salvar Alterações"}
                         </button>
                     </div>
                 </form>

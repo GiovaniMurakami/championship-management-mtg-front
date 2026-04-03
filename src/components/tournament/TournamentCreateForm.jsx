@@ -1,5 +1,8 @@
 import { useState, useRef } from "react";
-import { criarTorneio } from "../../services/backendApi";
+import { criarTorneio, obterPresignedUrl, uploadParaS3 } from "../../services/backendApi";
+
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_BANNER_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -25,7 +28,6 @@ const INITIAL_FORM = {
     maxJogadores: "",
     maxRodadas: "",
     corteTop: "",
-    bannerUrl: "",
     linkBanner: "",
     somRodada: "",
     linkLive: "",
@@ -39,6 +41,8 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
     const [bannerFile, setBannerFile] = useState(null);
     const [bannerPreview, setBannerPreview] = useState(null);
     const [uploadingBanner, setUploadingBanner] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [bannerError, setBannerError] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const bannerInputRef = useRef(null);
@@ -51,6 +55,17 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
     const handleBannerFileChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setBannerError("");
+        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+            setBannerError("Formato inválido. Use JPEG, PNG, GIF ou WebP.");
+            if (bannerInputRef.current) bannerInputRef.current.value = "";
+            return;
+        }
+        if (file.size > MAX_BANNER_SIZE) {
+            setBannerError("Imagem muito grande. O limite é 5 MB.");
+            if (bannerInputRef.current) bannerInputRef.current.value = "";
+            return;
+        }
         setBannerFile(file);
         const reader = new FileReader();
         reader.onloadend = () => setBannerPreview(reader.result);
@@ -60,6 +75,8 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
     const removeBanner = () => {
         setBannerFile(null);
         setBannerPreview(null);
+        setBannerError("");
+        setUploadProgress(0);
         if (bannerInputRef.current) bannerInputRef.current.value = "";
     };
 
@@ -69,17 +86,43 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
         setError("");
 
         try {
-            let bannerUrl = createForm.bannerUrl;
+            let bannerUrl;
 
             if (bannerFile) {
                 setUploadingBanner(true);
-                // Upload pendente — endpoint de presigned URL a implementar
+                setUploadProgress(0);
+
+                const doUpload = async () => {
+                    const res = await obterPresignedUrl(
+                        { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
+                        token
+                    );
+                    const { uploadUrl, urlPublica } = res.data ?? res;
+                    try {
+                        await uploadParaS3(uploadUrl, bannerFile, setUploadProgress);
+                    } catch (s3Err) {
+                        // Se a URL expirou (403/400), buscar nova e tentar novamente
+                        if (s3Err.s3Status === 403 || s3Err.s3Status === 400) {
+                            const retry = await obterPresignedUrl(
+                                { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
+                                token
+                            );
+                            const { uploadUrl: newUploadUrl, urlPublica: newPublica } = retry.data ?? retry;
+                            await uploadParaS3(newUploadUrl, bannerFile, setUploadProgress);
+                            return newPublica;
+                        }
+                        throw s3Err;
+                    }
+                    return urlPublica;
+                };
+
+                bannerUrl = await doUpload();
                 setUploadingBanner(false);
             }
 
             const payload = {
                 ...createForm,
-                bannerUrl,
+                ...(bannerUrl !== undefined ? { bannerUrl } : {}),
                 maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
                 maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
                 corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
@@ -295,16 +338,29 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                             <input
                                 ref={bannerInputRef}
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
                                 className="hidden"
                                 onChange={handleBannerFileChange}
                                 disabled={isSubmitting}
                             />
 
-                            {bannerFile && (
-                                <small className="text-[#fbbf24] text-[0.8rem]">
-                                    Upload será realizado ao criar o torneio (endpoint de presigned URL pendente).
-                                </small>
+                            {bannerError && (
+                                <small className="text-[#fca5a5] text-[0.8rem]">{bannerError}</small>
+                            )}
+
+                            {uploadingBanner && (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex justify-between text-[0.78rem] text-[#a5b4fc]">
+                                        <span>Enviando banner…</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-[width] duration-200"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -323,7 +379,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                                 className={inputClass}
                             />
                             <small className="text-[#a3a3a3] text-[0.8rem]">
-                                URL para onde o banner redireciona ao ser clicado.
+                                URL para onde o banner redireciona ao ser clicado (não é a imagem).
                             </small>
                         </div>
                     </div>
