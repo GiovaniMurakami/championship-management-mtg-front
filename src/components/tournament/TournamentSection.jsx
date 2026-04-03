@@ -83,7 +83,7 @@ export function TournamentSection() {
               >
                 {/* Banner image */}
                 {banner ? (
-                  <div className="relative w-full h-[120px] overflow-hidden">
+                  <div className="relative w-full h-[160px] overflow-hidden">
                     <img
                       src={banner}
                       alt={`Banner de ${item.nome}`}

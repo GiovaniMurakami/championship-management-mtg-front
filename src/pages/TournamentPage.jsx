@@ -160,8 +160,8 @@ export function TournamentPage() {
             key={key}
             type="button"
             className={`flex items-center gap-2 px-5 py-[0.65rem] bg-transparent border-none border-b-2 -mb-[2px] text-[0.95rem] font-medium cursor-pointer transition-colors duration-200 ${abaAtiva === key
-                ? "text-white border-b-[#4f46e5] border-b-2"
-                : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
+              ? "text-white border-b-[#4f46e5] border-b-2"
+              : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
               }`}
             onClick={() => setAbaAtiva(key)}
           >
@@ -198,7 +198,7 @@ export function TournamentPage() {
                 >
                   {/* Banner image */}
                   {torneio.bannerUrl && (
-                    <div className="relative w-full h-[130px] overflow-hidden rounded-t-[1.1rem]">
+                    <div className="relative w-full h-[220px] overflow-hidden rounded-t-[1.1rem]">
                       <img
                         src={torneio.bannerUrl}
                         alt={`Banner de ${torneio.nome}`}
@@ -266,8 +266,8 @@ export function TournamentPage() {
                     {torneio.status === "inscricoes_abertas" && (
                       <button
                         className={`px-4 py-2 border rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] transition-all duration-300 hover:-translate-y-px active:translate-y-0 max-[768px]:w-full disabled:opacity-80 disabled:cursor-not-allowed ${inscrito
-                            ? "bg-[rgba(148,163,184,0.16)] text-[#cbd5e1] border-[#94a3b8] cursor-default hover:translate-y-0"
-                            : "bg-[rgba(34,197,94,0.1)] text-[#22c55e] border-[#22c55e] hover:bg-[#22c55e] hover:text-white"
+                          ? "bg-[rgba(148,163,184,0.16)] text-[#cbd5e1] border-[#94a3b8] cursor-default hover:translate-y-0"
+                          : "bg-[rgba(34,197,94,0.1)] text-[#22c55e] border-[#22c55e] hover:bg-[#22c55e] hover:text-white"
                           }`}
                         onClick={() => !inscrito && handleInscrever(torneio.id)}
                         disabled={inscrito}
