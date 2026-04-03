@@ -156,3 +156,37 @@ export const getRankingLiga = (ligaId, token) =>
   httpClient.get(`/liga/${ligaId}/ranking`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+// Imagens
+export const obterPresignedUrl = (payload, token) =>
+  httpClient.post("/imagem/upload-url", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+/**
+ * Faz PUT direto para o S3 via presigned URL.
+ * onProgress(percent: number) é chamado durante o envio.
+ * Retorna uma Promise que resolve quando o upload conclui.
+ */
+export const uploadParaS3 = (uploadUrl, file, onProgress) =>
+  new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(Object.assign(new Error(`S3 upload falhou: ${xhr.status}`), { s3Status: xhr.status }));
+      }
+    };
+    xhr.onerror = () => reject(new Error("Erro de rede ao enviar para o S3"));
+    xhr.send(file);
+  });
