@@ -23,10 +23,12 @@ export function TournamentDetailPage() {
     loading,
     actionLoading,
     droppingPlayerId,
+    adminActionKey,
     error,
     successMsg,
     isOwner,
     isAdmin,
+    canManageTournament,
     pendingCheckinPlayers,
     currentPlayer,
     myMatch,
@@ -39,7 +41,9 @@ export function TournamentDetailPage() {
     handleInscrever,
     handleReportResult,
     handleContestResult,
+    handleStartTournament,
     handleNextRound,
+    handleBulkDropPlayers,
     handleDropPlayer,
     handleEditTorneio,
     handleDeleteTorneio,
@@ -48,7 +52,8 @@ export function TournamentDetailPage() {
   } = useTournamentDetail();
 
   const isFinished = torneio?.status === "finalizado";
-  const canManage = (isOwner || isAdmin) && torneio?.status === "inscricoes_abertas";
+  const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
+  const canManage = (isOwner || isAdmin) && isRegistrationOpen;
 
   useEffect(() => {
     if (!torneio) return;
@@ -155,6 +160,34 @@ export function TournamentDetailPage() {
         <div className={`grid gap-6 items-start ${isFinished ? "grid-cols-1" : "grid-cols-2 max-[900px]:grid-cols-1"}`}>
           {!isFinished && (
             <div className="grid gap-6">
+              {canManageTournament && isRegistrationOpen && (
+                <OwnerControlPanel
+                  torneio={torneio}
+                  standings={standings}
+                  usuarioId={usuario?.id}
+                  pendingCheckinPlayers={pendingCheckinPlayers}
+                  partidas={partidas}
+                  canManage={canManageTournament}
+                  onStartTournament={handleStartTournament}
+                  onNextRound={handleNextRound}
+                  onDropPlayersWithoutDeck={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-decks",
+                    successMessage: "Jogadores sem deck dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem deck.",
+                  })}
+                  onDropPlayersWithoutCheckin={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-checkin",
+                    successMessage: "Jogadores sem check-in dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem check-in.",
+                  })}
+                  onDropPlayer={handleDropPlayer}
+                  onEditResult={handleReportResult}
+                  actionLoading={actionLoading}
+                  adminActionKey={adminActionKey}
+                  droppingPlayerId={droppingPlayerId}
+                />
+              )}
+
               <MatchPanel
                 myMatch={myMatch}
                 usuario={usuario}
@@ -165,17 +198,30 @@ export function TournamentDetailPage() {
                 isOwner={isOwner}
               />
 
-              {isOwner && (
+              {canManageTournament && !isRegistrationOpen && (
                 <OwnerControlPanel
                   torneio={torneio}
                   standings={standings}
                   usuarioId={usuario?.id}
                   pendingCheckinPlayers={pendingCheckinPlayers}
                   partidas={partidas}
+                  canManage={canManageTournament}
+                  onStartTournament={handleStartTournament}
                   onNextRound={handleNextRound}
+                  onDropPlayersWithoutDeck={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-decks",
+                    successMessage: "Jogadores sem deck dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem deck.",
+                  })}
+                  onDropPlayersWithoutCheckin={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-checkin",
+                    successMessage: "Jogadores sem check-in dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem check-in.",
+                  })}
                   onDropPlayer={handleDropPlayer}
                   onEditResult={handleReportResult}
                   actionLoading={actionLoading}
+                  adminActionKey={adminActionKey}
                   droppingPlayerId={droppingPlayerId}
                 />
               )}

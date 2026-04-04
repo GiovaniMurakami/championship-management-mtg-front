@@ -5,6 +5,7 @@ import {
     escolherDeckTorneio,
     checkinTorneio,
     inscreverTorneio,
+    iniciarTorneio,
     registrarResultado,
     contestarResultado,
     buscarTorneio,
@@ -36,6 +37,7 @@ export function useTournamentDetail() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [droppingPlayerId, setDroppingPlayerId] = useState("");
+    const [adminActionKey, setAdminActionKey] = useState("");
     const [selectedDeckId, setSelectedDeckId] = useState("");
     const [error, setError] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
@@ -228,6 +230,11 @@ export function useTournamentDetail() {
         [torneio?.donoId, usuario?.id],
     );
 
+    const canManageTournament = useMemo(
+        () => isOwner || isAdmin,
+        [isOwner, isAdmin],
+    );
+
     const pendingCheckinPlayers = useMemo(() => {
         if (!shouldRequestNextRoundCheckin(torneio)) return [];
 
@@ -414,7 +421,7 @@ export function useTournamentDetail() {
     };
 
     const handleNextRound = async () => {
-        if (!torneioId || !isOwner) return;
+        if (!torneioId || !canManageTournament) return;
         if (requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
             const total = pendingCheckinPlayers.length;
             setError(
@@ -424,6 +431,7 @@ export function useTournamentDetail() {
             return;
         }
         setActionLoading(true);
+        setAdminActionKey("next-round");
         setError("");
         try {
             const actionBeforeRequest = nextRoundAction;
@@ -447,12 +455,96 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
+    const handleStartTournament = async () => {
+        if (!torneioId || !canManageTournament) return;
+
+        setActionLoading(true);
+        setAdminActionKey("start-tournament");
+        setError("");
+        try {
+            await iniciarTorneio(torneioId, token);
+            setSuccessMsg("Torneio iniciado com sucesso!");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao iniciar torneio.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
+    const handleBulkDropPlayers = async (playerIds, options = {}) => {
+        if (!torneioId || !canManageTournament) return false;
+
+        const uniquePlayerIds = [...new Set(
+            (playerIds || [])
+                .map((playerId) => normalizeId(playerId))
+                .filter(Boolean),
+        )];
+
+        if (uniquePlayerIds.length === 0) {
+            return false;
+        }
+
+        const {
+            actionKey = "bulk-drop",
+            successMessage = "Jogadores dropados com sucesso!",
+            errorMessage = "Erro ao dropar jogadores.",
+        } = options;
+
+        setActionLoading(true);
+        setAdminActionKey(actionKey);
+        setDroppingPlayerId("__bulk__");
+        setError("");
+
+        try {
+            const results = await Promise.allSettled(
+                uniquePlayerIds.map((playerId) => dropJogador(torneioId, playerId, token)),
+            );
+
+            const failedResults = results.filter((result) => result.status === "rejected");
+
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+
+            if (failedResults.length === uniquePlayerIds.length) {
+                throw failedResults[0]?.reason || new Error(errorMessage);
+            }
+
+            if (failedResults.length > 0) {
+                setError(`${failedResults.length} de ${uniquePlayerIds.length} drop(s) falharam.`);
+            } else {
+                setSuccessMsg(successMessage);
+            }
+
+            clearMessages();
+            return failedResults.length === 0;
+        } catch (err) {
+            setError(err.message || errorMessage);
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
         }
     };
 
     const handleDropPlayer = async (jogadorId) => {
-        if (!torneioId || !isOwner || !jogadorId) return;
+        if (!torneioId || !canManageTournament || !jogadorId) return;
         setActionLoading(true);
+        setAdminActionKey("drop-player");
         setDroppingPlayerId(jogadorId);
         setError("");
         try {
@@ -467,6 +559,7 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+            setAdminActionKey("");
             setDroppingPlayerId("");
         }
     };
@@ -510,9 +603,11 @@ export function useTournamentDetail() {
         loading,
         actionLoading,
         droppingPlayerId,
+        adminActionKey,
         error,
         successMsg,
         isOwner,
+        canManageTournament,
         pendingCheckinPlayers,
         requiresNextRoundCheckin,
         nextRoundAction,
@@ -527,7 +622,9 @@ export function useTournamentDetail() {
         handleInscrever,
         handleReportResult,
         handleContestResult,
+        handleStartTournament,
         handleNextRound,
+        handleBulkDropPlayers,
         handleDropPlayer,
         handleEditTorneio,
         handleDeleteTorneio,
