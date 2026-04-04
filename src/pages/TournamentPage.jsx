@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { listarTorneios, inscreverTorneio, iniciarTorneio } from "../services/backendApi";
+import { listarTorneios, inscreverTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { SkeletonTorneioCard } from "../components";
@@ -102,15 +102,6 @@ export function TournamentPage() {
       loadTorneios();
     } catch (error) {
       console.error("Erro ao inscrever:", error);
-    }
-  };
-
-  const handleIniciar = async (torneioId) => {
-    try {
-      await iniciarTorneio(torneioId, token);
-      loadTorneios();
-    } catch (error) {
-      console.error("Erro ao iniciar torneio:", error);
     }
   };
 
@@ -285,15 +276,6 @@ export function TournamentPage() {
                         disabled={inscrito}
                       >
                         {inscrito ? "✓ Inscrito" : "Inscrever-se"}
-                      </button>
-                    )}
-
-                    {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
-                      <button
-                        className="px-4 py-2 border border-[#fbbf24] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(251,191,36,0.1)] text-[#fbbf24] transition-all duration-300 hover:bg-[#fbbf24] hover:text-white hover:-translate-y-px active:translate-y-0 max-[768px]:w-full"
-                        onClick={() => handleIniciar(torneio.id)}
-                      >
-                        Iniciar Torneio
                       </button>
                     )}
                   </div>

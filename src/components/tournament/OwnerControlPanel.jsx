@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
+const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
+const hasInitialCheckin = (player) => Boolean(player?.checkIn || player?.checkin || player?.checkedIn || player?.presenca);
 
 function ScoreSelect({ value, onChange }) {
   return (
@@ -96,24 +98,37 @@ export function OwnerControlPanel({
   standings,
   usuarioId,
   pendingCheckinPlayers,
+  canManage,
+  onStartTournament,
   onNextRound,
+  onDropPlayersWithoutDeck,
+  onDropPlayersWithoutCheckin,
   onDropPlayer,
   onEditResult,
   actionLoading,
+  adminActionKey,
   droppingPlayerId,
   partidas,
 }) {
-  const isOwner = normalizeId(torneio?.donoId) === normalizeId(usuarioId);
+  const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
-  const [activeTab, setActiveTab] = useState("mesas");
+  const [activeTab, setActiveTab] = useState(isOngoing ? "mesas" : "jogadores");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
-  if (!isOwner || !isOngoing) return null;
+  useEffect(() => {
+    setActiveTab(isOngoing ? "mesas" : "jogadores");
+  }, [isOngoing]);
+
+  if (!canManage || (!isRegistrationOpen && !isOngoing)) return null;
 
   const jogadoresAtivos = (standings || []).filter((p) => !p?.dropped);
+  const jogadoresSemDeck = jogadoresAtivos.filter((player) => !hasConfirmedDeck(player));
+  const jogadoresSemCheckinInicial = jogadoresAtivos.filter((player) => !hasInitialCheckin(player));
   const pendentesCheckin = pendingCheckinPlayers || [];
   const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
   const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
+  const jogadoresSemCheckin = isRegistrationOpen ? jogadoresSemCheckinInicial : pendentesCheckin;
+  const canDropByCheckin = isRegistrationOpen || requiresNextRoundCheckin;
 
   const getPlayerName = (p) =>
     p?.usuario?.nome || p?.nome || p?.username || p?.userName || "Jogador";
@@ -126,19 +141,28 @@ export function OwnerControlPanel({
   );
   const pendentes = partidasRodada.filter((p) => p.status !== "finalizada");
   const finalizadas = partidasRodada.filter((p) => p.status === "finalizada");
+  const isBulkDroppingDeck = actionLoading && adminActionKey === "drop-missing-decks";
+  const isBulkDroppingCheckin = actionLoading && adminActionKey === "drop-missing-checkin";
+  const isStartingTournament = actionLoading && adminActionKey === "start-tournament";
 
   return (
     <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
       <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
         <div>
-          <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Painel do Organizador</h2>
-          <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
-            Rodada {torneio?.rodadaAtual ?? "—"} de {torneio?.totalRodadas ?? "—"}
-          </p>
+          <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Painel do Administrador</h2>
+          {isOngoing ? (
+            <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
+              Rodada {torneio?.rodadaAtual ?? "—"} de {torneio?.totalRodadas ?? "—"}
+            </p>
+          ) : (
+            <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
+              Revise presença e decks antes de iniciar o torneio.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-end gap-[0.4rem] flex-shrink-0">
-          {requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
+          {isOngoing && requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
             <p className="flex items-center gap-[0.3rem] m-0 text-[0.82rem] text-[#fbbf24]">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
@@ -148,33 +172,85 @@ export function OwnerControlPanel({
               {pendentesCheckin.length} jogador(es) sem check-in
             </p>
           )}
-          {nextRoundLabels.status && (
-            <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right">
+          {isOngoing && nextRoundLabels.status && (
+            <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right max-w-[320px]">
               {nextRoundLabels.status}
             </p>
           )}
+          {isRegistrationOpen && (
+            <button
+              className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+              type="button"
+              onClick={onStartTournament}
+              disabled={actionLoading}
+            >
+              {isStartingTournament ? "Iniciando..." : "Iniciar Torneio"}
+            </button>
+          )}
+          {isOngoing && (
+            <button
+              className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+              type="button"
+              onClick={() => setReviewModalOpen(true)}
+              disabled={actionLoading}
+            >
+              Revisar Rodada
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-3 mb-4 min-[720px]:grid-cols-2">
+        {isRegistrationOpen && (
+          <div className="rounded-[0.9rem] border border-[rgba(239,68,68,0.24)] bg-[rgba(239,68,68,0.08)] p-4">
+            <p className="m-0 text-[0.78rem] uppercase tracking-[0.08em] text-[#fca5a5] font-semibold">Pendência de deck</p>
+            <p className="mt-2 mb-3 text-[0.88rem] text-[#f5d5d8]">
+              {jogadoresSemDeck.length} jogador(es) inscrito(s) ainda não enviaram deck.
+            </p>
+            <button
+              type="button"
+              className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fecaca] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.22)]"
+              onClick={() => onDropPlayersWithoutDeck(jogadoresSemDeck.map(getPlayerId))}
+              disabled={actionLoading || jogadoresSemDeck.length === 0}
+            >
+              {isBulkDroppingDeck ? "Dropando..." : "Dropar sem deck"}
+            </button>
+          </div>
+        )}
+
+        <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.24)] bg-[rgba(251,191,36,0.08)] p-4">
+          <p className="m-0 text-[0.78rem] uppercase tracking-[0.08em] text-[#fde68a] font-semibold">Pendência de check-in</p>
+          <p className="mt-2 mb-3 text-[0.88rem] text-[#f6ebc4]">
+            {isRegistrationOpen
+              ? `${jogadoresSemCheckin.length} jogador(es) inscrito(s) ainda não fizeram check-in inicial.`
+              : canDropByCheckin
+                ? `${jogadoresSemCheckin.length} jogador(es) ainda não fizeram check-in para a próxima rodada.`
+                : "Nenhum novo check-in é exigido neste momento."}
+          </p>
           <button
-            className="inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
             type="button"
-            onClick={() => setReviewModalOpen(true)}
-            disabled={actionLoading}
+            className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
+            onClick={() => onDropPlayersWithoutCheckin(jogadoresSemCheckin.map(getPlayerId))}
+            disabled={actionLoading || jogadoresSemCheckin.length === 0 || !canDropByCheckin}
           >
-            Revisar Rodada
+            {isBulkDroppingCheckin ? "Dropando..." : "Dropar sem check-in"}
           </button>
         </div>
       </div>
 
       <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-[rgba(217,180,255,0.2)] pb-0">
-        <button
-          type="button"
-          className={`inline-flex items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
-          onClick={() => setActiveTab("mesas")}
-        >
-          Mesas
-          {pendentes.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-full text-[0.7rem] font-bold bg-[rgba(167,79,255,0.25)] text-[#c4b5fd]">{pendentes.length}</span>
-          )}
-        </button>
+        {isOngoing && (
+          <button
+            type="button"
+            className={`inline-flex items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+            onClick={() => setActiveTab("mesas")}
+          >
+            Mesas
+            {pendentes.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-full text-[0.7rem] font-bold bg-[rgba(167,79,255,0.25)] text-[#c4b5fd]">{pendentes.length}</span>
+            )}
+          </button>
+        )}
         <button
           type="button"
           className={`inline-flex items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "jogadores" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
@@ -237,18 +313,29 @@ export function OwnerControlPanel({
                     <span className="text-white font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
                       {getPlayerName(player)}{isMe ? " (Você)" : ""}
                     </span>
-                    <div className="flex items-center gap-[0.6rem] text-[#c6b8a0] text-[0.8rem]">
-                      <span>{player?.pontosMesa ?? player?.pontos ?? 0} pts</span>
-                      {requiresNextRoundCheckin ? (
-                        <span className={`text-[0.78rem] font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
-                          {checkinOk ? "✓ check-in" : "⏳ aguardando"}
+                    {isRegistrationOpen ? (
+                      <div className="flex items-center gap-[0.6rem] text-[#c6b8a0] text-[0.8rem] flex-wrap">
+                        <span className={`text-[0.78rem] font-semibold ${hasConfirmedDeck(player) ? "text-[#6ee7b7]" : "text-[#fca5a5]"}`}>
+                          {hasConfirmedDeck(player) ? "✓ deck enviado" : "sem deck"}
                         </span>
-                      ) : (
-                        <span className="text-[0.78rem] font-semibold text-[#93c5fd]">
-                          sem novo check-in
+                        <span className={`text-[0.78rem] font-semibold ${hasInitialCheckin(player) ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
+                          {hasInitialCheckin(player) ? "✓ check-in" : "sem check-in"}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-[0.6rem] text-[#c6b8a0] text-[0.8rem] flex-wrap">
+                        <span>{player?.pontosMesa ?? player?.pontos ?? 0} pts</span>
+                        {requiresNextRoundCheckin ? (
+                          <span className={`text-[0.78rem] font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
+                            {checkinOk ? "✓ check-in" : "⏳ aguardando"}
+                          </span>
+                        ) : (
+                          <span className="text-[0.78rem] font-semibold text-[#93c5fd]">
+                            sem novo check-in
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <button
