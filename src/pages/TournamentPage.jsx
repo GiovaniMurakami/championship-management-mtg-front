@@ -16,6 +16,7 @@ export function TournamentPage() {
   const [torneios, setTorneios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [inscricoesLocais, setInscricoesLocais] = useState({});
+  const [inscricaoErro, setInscricaoErro] = useState("");
   const [abaAtiva, setAbaAtiva] = useState("disponiveis");
   const channelsRef = useRef({});
   const navigate = useNavigate();
@@ -90,6 +91,11 @@ export function TournamentPage() {
   }, [torneios, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
 
   const handleInscrever = async (torneioId) => {
+    if (!usuario?.nickMTGO) {
+      setInscricaoErro("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever. Acesse seu perfil pelo menu superior.");
+      setTimeout(() => setInscricaoErro(""), 6000);
+      return;
+    }
     try {
       await inscreverTorneio(torneioId, token);
       setInscricoesLocais((prev) => ({ ...prev, [torneioId]: true }));
@@ -134,6 +140,12 @@ export function TournamentPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
+      {inscricaoErro && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl border border-[rgba(252,88,119,0.4)] bg-[rgba(30,15,45,0.95)] backdrop-blur-md text-[#ffa8b8] text-[0.9rem] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.4)] max-w-[90vw] text-center flex items-center gap-3">
+          <span>{inscricaoErro}</span>
+          <button type="button" onClick={() => setInscricaoErro("")} className="ml-1 text-[#ffa8b8] hover:text-white bg-transparent border-none cursor-pointer text-lg leading-none">×</button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6 max-[768px]:mb-5">
         <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">
