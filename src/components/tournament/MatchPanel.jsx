@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading, torneio }) {
+export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, actionLoading, torneio, isOwner }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
 
@@ -32,9 +32,18 @@ export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading, to
 
     const isBye = !myMatch.jogador2Id && !myMatch.jogador2;
     const isReported = myMatch.status === "finalizada" || myMatch.resultado || myMatch.reportado;
+    const hasLaterRound = Number(torneio?.rodadaAtual || 0) > Number(myMatch?.rodada || 0);
 
     const isPlayer1 =
         myMatch.jogador1Id === usuario?.id || myMatch.jogador1?.id === usuario?.id;
+    const isPlayer2 =
+        myMatch.jogador2Id === usuario?.id || myMatch.jogador2?.id === usuario?.id;
+    const canContest =
+        torneio?.status === "em_andamento"
+        && isReported
+        && !isBye
+        && !hasLaterRound
+        && (isPlayer1 || isPlayer2 || isOwner);
 
     const myName = isPlayer1 ? player1Name : player2Name;
     const opponentName = isPlayer1
@@ -83,9 +92,21 @@ export function MatchPanel({ myMatch, usuario, onReportResult, actionLoading, to
                     </div>
 
                     {isReported ? (
-                        <p className="mt-[-0.2rem] mb-[0.8rem] text-center text-[0.82rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">
-                            Resultado registrado
-                        </p>
+                        <div className="mt-[-0.2rem] mb-[0.8rem] flex flex-col items-center gap-3">
+                            <p className="m-0 text-center text-[0.82rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">
+                                Resultado registrado
+                            </p>
+                            {canContest && (
+                                <button
+                                    type="button"
+                                    className="inline-flex min-h-11 items-center justify-center px-4 py-2 border border-[rgba(251,191,36,0.45)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.08)] hover:bg-[rgba(251,191,36,0.16)] hover:border-[rgba(251,191,36,0.7)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => onContestResult(myMatch.id)}
+                                    disabled={actionLoading}
+                                >
+                                    {actionLoading ? "Contestando..." : "Contestar resultado"}
+                                </button>
+                            )}
+                        </div>
                     ) : (
                         <div className="text-center">
                             <h3 className="m-0 mb-4 text-[0.95rem] font-semibold text-[#beafd7]">Registrar Resultado</h3>
