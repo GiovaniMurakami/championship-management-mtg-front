@@ -1,8 +1,6 @@
 import { useState, useRef } from "react";
-import { criarTorneio, obterPresignedUrl, uploadParaS3 } from "../../services/backendApi";
-
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_BANNER_SIZE = 5 * 1024 * 1024; // 5 MB
+import { criarTorneio } from "../../services/backendApi";
+import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -56,13 +54,9 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
         const file = e.target.files?.[0];
         if (!file) return;
         setBannerError("");
-        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-            setBannerError("Formato inválido. Use JPEG, PNG, GIF ou WebP.");
-            if (bannerInputRef.current) bannerInputRef.current.value = "";
-            return;
-        }
-        if (file.size > MAX_BANNER_SIZE) {
-            setBannerError("Imagem muito grande. O limite é 5 MB.");
+        const validationError = validateBannerImageFile(file);
+        if (validationError) {
+            setBannerError(validationError.userMessage);
             if (bannerInputRef.current) bannerInputRef.current.value = "";
             return;
         }
@@ -84,6 +78,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
         e.preventDefault();
         setLoading(true);
         setError("");
+        setBannerError("");
 
         try {
             let bannerUrl;
@@ -92,31 +87,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                 setUploadingBanner(true);
                 setUploadProgress(0);
 
-                const doUpload = async () => {
-                    const res = await obterPresignedUrl(
-                        { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
-                        token
-                    );
-                    const { uploadUrl, urlPublica } = res.data ?? res;
-                    try {
-                        await uploadParaS3(uploadUrl, bannerFile, setUploadProgress);
-                    } catch (s3Err) {
-                        // Se a URL expirou (403/400), buscar nova e tentar novamente
-                        if (s3Err.s3Status === 403 || s3Err.s3Status === 400) {
-                            const retry = await obterPresignedUrl(
-                                { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
-                                token
-                            );
-                            const { uploadUrl: newUploadUrl, urlPublica: newPublica } = retry.data ?? retry;
-                            await uploadParaS3(newUploadUrl, bannerFile, setUploadProgress);
-                            return newPublica;
-                        }
-                        throw s3Err;
-                    }
-                    return urlPublica;
-                };
-
-                bannerUrl = await doUpload();
+                bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
                 setUploadingBanner(false);
             }
 
@@ -133,7 +104,11 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
             removeBanner();
             onTournamentCreated?.();
         } catch (err) {
-            setError("Erro ao criar torneio. Tente novamente.");
+            if (err?.code) {
+                setBannerError(err.userMessage || err.message);
+            } else {
+                setError(err.message || "Erro ao criar torneio. Tente novamente.");
+            }
             console.error("Erro ao criar torneio:", err);
         } finally {
             setLoading(false);
@@ -254,7 +229,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
 
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="maxRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                                    Máx. Rodadas <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
+                                    Limite de Rodadas <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
                                 </label>
                                 <input
                                     id="maxRodadas"
@@ -265,8 +240,12 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                                     value={createForm.maxRodadas}
                                     onChange={handleChange}
                                     disabled={isSubmitting}
+                                    aria-describedby="maxRodadas-help"
                                     className={inputClass}
                                 />
+                                <small id="maxRodadas-help" className="text-[#a3a3a3] text-[0.8rem]">
+                                    O sistema calcula as rodadas automaticamente pelo numero de jogadores com check-in. Este campo apenas define o teto e impede ultrapassar esse valor.
+                                </small>
                             </div>
                         </div>
 

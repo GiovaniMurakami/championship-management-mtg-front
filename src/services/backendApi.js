@@ -177,6 +177,7 @@ export const uploadParaS3 = (uploadUrl, file, onProgress) =>
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadUrl);
+    xhr.withCredentials = false;
     xhr.setRequestHeader("Content-Type", file.type);
     if (onProgress) {
       xhr.upload.onprogress = (e) => {
@@ -189,9 +190,16 @@ export const uploadParaS3 = (uploadUrl, file, onProgress) =>
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve();
       } else {
-        reject(Object.assign(new Error(`S3 upload falhou: ${xhr.status}`), { s3Status: xhr.status }));
+        const expired = xhr.status === 400 || xhr.status === 403;
+        reject(
+          Object.assign(new Error(`S3 upload falhou: ${xhr.status}`), {
+            code: expired ? "s3-upload-expired" : "s3-upload-failed",
+            s3Status: xhr.status,
+            status: xhr.status,
+          }),
+        );
       }
     };
-    xhr.onerror = () => reject(new Error("Erro de rede ao enviar para o S3"));
+    xhr.onerror = () => reject(Object.assign(new Error("Erro de CORS ao enviar para o S3"), { code: "s3-upload-cors" }));
     xhr.send(file);
   });

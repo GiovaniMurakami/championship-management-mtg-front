@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { obterPresignedUrl, uploadParaS3 } from "../../services/backendApi";
-
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_BANNER_SIZE = 5 * 1024 * 1024; // 5 MB
+import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
+import { calculateAutomaticSwissRounds, calculateSwissRounds } from "../../utils/tournamentFlow";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -58,21 +56,23 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     useEffect(() => {
         if (torneio && isOpen) {
             existingBannerUrlRef.current = torneio.bannerUrl || "";
-            setBannerFile(null);
-            setBannerPreview(torneio.bannerUrl || null);
-            setBannerError("");
-            setUploadProgress(0);
-            setForm({
-                nome: torneio.nome || "",
-                horario: toDatetimeLocal(torneio.horario),
-                formato: torneio.formato || "standard",
-                premio: torneio.premio || "",
-                maxJogadores: torneio.maxJogadores ?? "",
-                maxRodadas: torneio.maxRodadas ?? torneio.totalRodadas ?? "",
-                corteTop: torneio.corteTop ?? "",
-                linkBanner: torneio.linkBanner || "",
-                somRodada: torneio.somRodada || "",
-                linkLive: torneio.linkLive || "",
+            queueMicrotask(() => {
+                setBannerFile(null);
+                setBannerPreview(torneio.bannerUrl || null);
+                setBannerError("");
+                setUploadProgress(0);
+                setForm({
+                    nome: torneio.nome || "",
+                    horario: toDatetimeLocal(torneio.horario),
+                    formato: torneio.formato || "standard",
+                    premio: torneio.premio || "",
+                    maxJogadores: torneio.maxJogadores ?? "",
+                    maxRodadas: torneio.maxRodadas ?? "",
+                    corteTop: torneio.corteTop ?? "",
+                    linkBanner: torneio.linkBanner || "",
+                    somRodada: torneio.somRodada || "",
+                    linkLive: torneio.linkLive || "",
+                });
             });
         }
     }, [torneio, isOpen]);
@@ -88,13 +88,9 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         const file = e.target.files?.[0];
         if (!file) return;
         setBannerError("");
-        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-            setBannerError("Formato inválido. Use JPEG, PNG, GIF ou WebP.");
-            if (bannerInputRef.current) bannerInputRef.current.value = "";
-            return;
-        }
-        if (file.size > MAX_BANNER_SIZE) {
-            setBannerError("Imagem muito grande. O limite é 5 MB.");
+        const validationError = validateBannerImageFile(file);
+        if (validationError) {
+            setBannerError(validationError.userMessage);
             if (bannerInputRef.current) bannerInputRef.current.value = "";
             return;
         }
@@ -115,40 +111,22 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
     const isUploading = uploadingBanner;
     const isDisabled = loading || isUploading;
+    const totalCheckin = Number(torneio?.totalCheckin || 0);
+    const automaticSwissRounds = calculateAutomaticSwissRounds(totalCheckin);
+    const limitedSwissRounds = calculateSwissRounds(totalCheckin, form.maxRodadas);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         let bannerUrl = existingBannerUrlRef.current;
+        setBannerError("");
 
         if (bannerFile && token) {
             setUploadingBanner(true);
             setUploadProgress(0);
             try {
-                const doUpload = async () => {
-                    const res = await obterPresignedUrl(
-                        { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
-                        token
-                    );
-                    const { uploadUrl, urlPublica } = res.data ?? res;
-                    try {
-                        await uploadParaS3(uploadUrl, bannerFile, setUploadProgress);
-                    } catch (s3Err) {
-                        if (s3Err.s3Status === 403 || s3Err.s3Status === 400) {
-                            const retry = await obterPresignedUrl(
-                                { contentType: bannerFile.type, tamanhoBytes: bannerFile.size },
-                                token
-                            );
-                            const { uploadUrl: newUrl, urlPublica: newPublica } = retry.data ?? retry;
-                            await uploadParaS3(newUrl, bannerFile, setUploadProgress);
-                            return newPublica;
-                        }
-                        throw s3Err;
-                    }
-                    return urlPublica;
-                };
-                bannerUrl = await doUpload();
+                bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
             } catch (err) {
-                setBannerError("Falha ao enviar o banner. Tente novamente.");
+                setBannerError(err.userMessage || err.message || "Falha ao enviar o banner. Tente novamente.");
                 setUploadingBanner(false);
                 return;
             }
@@ -225,8 +203,16 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                                 <input id="edit-maxJogadores" name="maxJogadores" type="number" min="2" value={form.maxJogadores} onChange={handleChange} disabled={loading} className={inputClass} />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label htmlFor="edit-maxRodadas" className="text-[#e0e0e0] font-medium text-[0.9rem]">Máx. Rodadas</label>
-                                <input id="edit-maxRodadas" name="maxRodadas" type="number" min="1" value={form.maxRodadas} onChange={handleChange} disabled={loading} className={inputClass} />
+                                <label htmlFor="edit-maxRodadas" className="text-[#e0e0e0] font-medium text-[0.9rem]">Limite de Rodadas</label>
+                                <input id="edit-maxRodadas" name="maxRodadas" type="number" min="1" value={form.maxRodadas} onChange={handleChange} disabled={loading} aria-describedby="edit-maxRodadas-help" className={inputClass} />
+                                <small id="edit-maxRodadas-help" className="text-[#a3a3a3] text-[0.8rem]">
+                                    O sistema calcula as rodadas automaticamente pelo numero de jogadores com check-in. Este campo apenas define o teto e impede ultrapassar esse valor.
+                                </small>
+                                {totalCheckin > 0 && (
+                                    <small className="text-[#a5b4fc] text-[0.8rem]">
+                                        Com {totalCheckin} jogador(es) em check-in, o suíço teria {automaticSwissRounds} rodada(s) automaticamente{form.maxRodadas ? ` e ficaria limitado a ${limitedSwissRounds}.` : "."}
+                                    </small>
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
