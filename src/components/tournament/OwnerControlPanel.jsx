@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
+import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
 
@@ -111,10 +112,8 @@ export function OwnerControlPanel({
 
   const jogadoresAtivos = (standings || []).filter((p) => !p?.dropped);
   const pendentesCheckin = pendingCheckinPlayers || [];
-  const canStart = pendentesCheckin.length === 0;
-  const isLastRound =
-    Number(torneio?.totalRodadas || 0) > 0 &&
-    Number(torneio?.rodadaAtual || 0) >= Number(torneio?.totalRodadas || 0);
+  const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
+  const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
 
   const getPlayerName = (p) =>
     p?.usuario?.nome || p?.nome || p?.username || p?.userName || "Jogador";
@@ -139,7 +138,7 @@ export function OwnerControlPanel({
         </div>
 
         <div className="flex flex-col items-end gap-[0.4rem] flex-shrink-0">
-          {!canStart && (
+          {requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
             <p className="flex items-center gap-[0.3rem] m-0 text-[0.82rem] text-[#fbbf24]">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
@@ -147,6 +146,11 @@ export function OwnerControlPanel({
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               {pendentesCheckin.length} jogador(es) sem check-in
+            </p>
+          )}
+          {nextRoundLabels.status && (
+            <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right">
+              {nextRoundLabels.status}
             </p>
           )}
           <button
@@ -235,9 +239,15 @@ export function OwnerControlPanel({
                     </span>
                     <div className="flex items-center gap-[0.6rem] text-[#c6b8a0] text-[0.8rem]">
                       <span>{player?.pontosMesa ?? player?.pontos ?? 0} pts</span>
-                      <span className={`text-[0.78rem] font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
-                        {checkinOk ? "✓ check-in" : "⏳ aguardando"}
-                      </span>
+                      {requiresNextRoundCheckin ? (
+                        <span className={`text-[0.78rem] font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
+                          {checkinOk ? "✓ check-in" : "⏳ aguardando"}
+                        </span>
+                      ) : (
+                        <span className="text-[0.78rem] font-semibold text-[#93c5fd]">
+                          sem novo check-in
+                        </span>
+                      )}
                     </div>
                   </div>
 

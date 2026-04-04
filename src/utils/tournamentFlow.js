@@ -1,0 +1,132 @@
+export const NEXT_ROUND_ACTION = {
+    NONE: "none",
+    NEXT_SWISS_ROUND: "next-swiss-round",
+    START_TOP_CUT: "start-top-cut",
+    ADVANCE_TOP_CUT: "advance-top-cut",
+    FINISH_TOURNAMENT: "finish-tournament",
+};
+
+const toPositiveNumber = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+
+export function calculateAutomaticSwissRounds(playerCount) {
+    const totalPlayers = toPositiveNumber(playerCount);
+
+    if (totalPlayers < 2) {
+        return 0;
+    }
+
+    return Math.ceil(Math.log2(totalPlayers));
+}
+
+export function calculateSwissRounds(playerCount, maxRodadas) {
+    const automaticRounds = calculateAutomaticSwissRounds(playerCount);
+    const roundLimit = toPositiveNumber(maxRodadas);
+
+    if (!roundLimit) {
+        return automaticRounds;
+    }
+
+    return Math.min(automaticRounds, roundLimit);
+}
+
+export function hasTopCut(torneio) {
+    return toPositiveNumber(torneio?.corteTop) > 0;
+}
+
+export function isEliminationPhase(torneio) {
+    return hasTopCut(torneio) && toPositiveNumber(torneio?.rodadaAtual) > toPositiveNumber(torneio?.totalRodadas);
+}
+
+export function isSwissLastRound(torneio) {
+    const totalRounds = toPositiveNumber(torneio?.totalRodadas);
+    const currentRound = toPositiveNumber(torneio?.rodadaAtual);
+
+    if (!totalRounds) {
+        return false;
+    }
+
+    return currentRound >= totalRounds;
+}
+
+export function shouldRequestNextRoundCheckin(torneio) {
+    if (torneio?.status !== "em_andamento") {
+        return false;
+    }
+
+    if (isEliminationPhase(torneio)) {
+        return false;
+    }
+
+    return !isSwissLastRound(torneio);
+}
+
+export function getTournamentNextAction(torneio) {
+    if (torneio?.status !== "em_andamento") {
+        return NEXT_ROUND_ACTION.NONE;
+    }
+
+    if (isEliminationPhase(torneio)) {
+        return NEXT_ROUND_ACTION.ADVANCE_TOP_CUT;
+    }
+
+    if (shouldRequestNextRoundCheckin(torneio)) {
+        return NEXT_ROUND_ACTION.NEXT_SWISS_ROUND;
+    }
+
+    if (hasTopCut(torneio)) {
+        return NEXT_ROUND_ACTION.START_TOP_CUT;
+    }
+
+    return NEXT_ROUND_ACTION.FINISH_TOURNAMENT;
+}
+
+export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
+    const nextAction = getTournamentNextAction(torneio);
+    const pendingCount = toPositiveNumber(pendingCheckinCount);
+
+    switch (nextAction) {
+        case NEXT_ROUND_ACTION.NEXT_SWISS_ROUND:
+            return {
+                action: nextAction,
+                cta: "Iniciar Próxima Rodada",
+                blockedCta: "Aguardando check-in",
+                status:
+                    pendingCount > 0
+                        ? "Aguardando check-in para próxima rodada"
+                        : "Check-ins concluídos. Pronto para gerar a próxima rodada",
+            };
+        case NEXT_ROUND_ACTION.START_TOP_CUT:
+            return {
+                action: nextAction,
+                cta: "Entrar no Corte",
+                blockedCta: "Entrar no Corte",
+                status: hasTopCut(torneio)
+                    ? `Rodada suíça encerrada. Pronto para iniciar o corte Top ${toPositiveNumber(torneio?.corteTop)}`
+                    : "Rodada suíça encerrada. Pronto para iniciar o corte",
+            };
+        case NEXT_ROUND_ACTION.ADVANCE_TOP_CUT:
+            return {
+                action: nextAction,
+                cta: "Avançar Corte",
+                blockedCta: "Avançar Corte",
+                status: "Fase eliminatória pronta para avançar",
+            };
+        case NEXT_ROUND_ACTION.FINISH_TOURNAMENT:
+            return {
+                action: nextAction,
+                cta: "Finalizar Torneio",
+                blockedCta: "Finalizar Torneio",
+                status: "Rodada suíça encerrada. Pronto para finalizar",
+            };
+        default:
+            return {
+                action: NEXT_ROUND_ACTION.NONE,
+                cta: "",
+                blockedCta: "",
+                status: "",
+            };
+    }
+}

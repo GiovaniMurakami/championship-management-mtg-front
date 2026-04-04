@@ -159,7 +159,11 @@ httpClient.interceptors.response.use(
       error.response?.data?.message ||
       error.message ||
       "Falha na requisição";
-    throw new Error(message);
+    const normalizedError = new Error(message);
+    normalizedError.status = error.response?.status;
+    normalizedError.responseData = error.response?.data;
+    normalizedError.originalError = error;
+    throw normalizedError;
   },
 );
 

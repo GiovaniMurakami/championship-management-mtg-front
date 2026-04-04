@@ -20,6 +20,11 @@ import {
 } from "../services/ablyService";
 import { useAuth } from "./useAuth";
 import { useMyDecks } from "./useMyDecks";
+import {
+    getNextRoundActionLabels,
+    getTournamentNextAction,
+    shouldRequestNextRoundCheckin,
+} from "../utils/tournamentFlow";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin } = useAuth();
@@ -152,6 +157,7 @@ export function useTournamentDetail() {
             },
             onStandingsAtualizados: () => loadStandings(),
             onTorneioFinalizado: () => {
+                setTorneio((prev) => (prev ? { ...prev, status: "finalizado" } : prev));
                 loadTournament();
                 loadStandings();
                 loadPartidas();
@@ -223,16 +229,25 @@ export function useTournamentDetail() {
     );
 
     const pendingCheckinPlayers = useMemo(() => {
-        if (torneio?.status !== "em_andamento") return [];
-
-        const isLastRound =
-            Number(torneio?.totalRodadas || 0) > 0 &&
-            Number(torneio?.rodadaAtual || 0) >= Number(torneio?.totalRodadas || 0);
-
-        if (isLastRound) return [];
+        if (!shouldRequestNextRoundCheckin(torneio)) return [];
 
         return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player));
-    }, [standings, torneio?.status, torneio?.rodadaAtual, torneio?.totalRodadas]);
+    }, [standings, torneio]);
+
+    const requiresNextRoundCheckin = useMemo(
+        () => shouldRequestNextRoundCheckin(torneio),
+        [torneio],
+    );
+
+    const nextRoundAction = useMemo(
+        () => getTournamentNextAction(torneio),
+        [torneio],
+    );
+
+    const nextRoundActionLabels = useMemo(
+        () => getNextRoundActionLabels(torneio, pendingCheckinPlayers.length),
+        [torneio, pendingCheckinPlayers.length],
+    );
 
     // Find my current match — filter to current round to avoid showing stale round matches
     const myMatch = useMemo(() => {
@@ -400,7 +415,7 @@ export function useTournamentDetail() {
 
     const handleNextRound = async () => {
         if (!torneioId || !isOwner) return;
-        if (pendingCheckinPlayers.length > 0) {
+        if (requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
             const total = pendingCheckinPlayers.length;
             setError(
                 `Não é possível iniciar a próxima rodada: faltam ${total} jogador(es) fazer check-in da próxima rodada.`,
@@ -411,9 +426,15 @@ export function useTournamentDetail() {
         setActionLoading(true);
         setError("");
         try {
+            const actionBeforeRequest = nextRoundAction;
             const data = await proximaRodada(torneioId, token);
             if (data?.finalizado) {
+                setTorneio((prev) => (prev ? { ...prev, ...data, status: "finalizado" } : { ...data, status: "finalizado" }));
                 setSuccessMsg("Torneio finalizado com sucesso!");
+            } else if (actionBeforeRequest === "start-top-cut") {
+                setSuccessMsg("Corte iniciado com sucesso!");
+            } else if (actionBeforeRequest === "advance-top-cut") {
+                setSuccessMsg("Fase eliminatória avançada com sucesso!");
             } else {
                 setSuccessMsg(`Rodada ${data?.rodadaAtual || "seguinte"} iniciada!`);
             }
@@ -493,6 +514,9 @@ export function useTournamentDetail() {
         successMsg,
         isOwner,
         pendingCheckinPlayers,
+        requiresNextRoundCheckin,
+        nextRoundAction,
+        nextRoundActionLabels,
         currentPlayer,
         myMatch,
         decks,
