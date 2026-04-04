@@ -1,5 +1,6 @@
 export function PlayerProfile({
     torneio,
+    usuario,
     usuarioNome,
     currentPlayer,
     decks,
@@ -47,17 +48,37 @@ export function PlayerProfile({
         || "";
 
     if (!currentPlayer) {
+        const isFull = torneio?.maxJogadores != null && (torneio?.totalInscritos ?? 0) >= torneio.maxJogadores;
+        const missingNick = !usuario?.nickMTGO;
+        const isOpen = torneio?.status === "inscricoes_abertas";
+
         return (
             <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
                 <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Sua Participação</h2>
                 {displayName && <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Jogador: <strong className="text-[#c795ff]">{displayName}</strong></p>}
-                <p className="text-[#beafd7] text-[0.9rem] m-0">Você ainda não está inscrito neste torneio.</p>
+
+                {torneio?.maxJogadores != null && (
+                    <p className="text-[0.82rem] text-[#beafd7] mt-[0.3rem] mb-1">
+                        Vagas: <strong className={isFull ? "text-[#f87171]" : "text-[#4ade80]"}>{torneio.totalInscritos ?? 0} / {torneio.maxJogadores}</strong>
+                        {isFull && <span className="ml-2 text-[#f87171]">— Torneio lotado</span>}
+                    </p>
+                )}
+
+                <p className="text-[#beafd7] text-[0.9rem] m-0 mt-2">Você ainda não está inscrito neste torneio.</p>
+
+                {missingNick && isOpen && (
+                    <div className="mt-3 px-3 py-[0.6rem] rounded-[0.6rem] bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] text-[#fbbf24] text-[0.82rem]">
+                        ⚠ Configure seu <strong>nick do MTGO</strong> no perfil (menu superior → seu nome) para poder se inscrever.
+                    </div>
+                )}
+
                 <button
-                    className="inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+                    className="mt-3 inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
                     onClick={onInscrever}
-                    disabled={actionLoading}
+                    disabled={actionLoading || missingNick || isFull || !isOpen}
+                    title={missingNick ? "Configure seu nick do MTGO no perfil para se inscrever" : isFull ? "Torneio lotado" : undefined}
                 >
-                    {actionLoading ? "Inscrevendo..." : "Inscrever-se"}
+                    {actionLoading ? "Inscrevendo..." : isFull ? "Torneio lotado" : "Inscrever-se"}
                 </button>
             </section>
         );

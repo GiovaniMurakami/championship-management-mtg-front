@@ -276,6 +276,14 @@ export function useTournamentDetail() {
 
     const handleInscrever = async () => {
         if (!torneioId) return;
+
+        // Proactive check: require nickMTGO before attempting API call
+        if (!usuario?.nickMTGO) {
+            setError("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever. Acesse seu perfil pelo menu superior.");
+            clearMessages();
+            return;
+        }
+
         setActionLoading(true);
         setError("");
         try {
@@ -285,7 +293,12 @@ export function useTournamentDetail() {
             await loadStandings();
             clearMessages();
         } catch (err) {
-            setError(err.message || "Erro ao se inscrever.");
+            const isNickError = err.message?.toLowerCase().includes("nick") || err.message?.toLowerCase().includes("mtgo");
+            if (isNickError) {
+                setError(err.message + " Acesse seu perfil pelo menu superior para configurar.");
+            } else {
+                setError(err.message || "Erro ao se inscrever.");
+            }
             // Reload tournament state on max-players error so UI reflects full capacity
             if (err.message?.includes("limite máximo")) {
                 await loadTournament();

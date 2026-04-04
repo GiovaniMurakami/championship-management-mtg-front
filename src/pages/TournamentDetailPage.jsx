@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTournamentDetail } from "../hooks/useTournamentDetail";
 import {
@@ -48,6 +48,38 @@ export function TournamentDetailPage() {
 
   const isFinished = torneio?.status === "finalizado";
   const canManage = (isOwner || isAdmin) && torneio?.status === "inscricoes_abertas";
+
+  useEffect(() => {
+    if (!torneio) return;
+    const title = torneio.nome || torneio.torneioNome || "Tiago Fuguete";
+    const image = torneio.bannerUrl || "";
+
+    document.title = title;
+
+    const setMeta = (selector, attr, value) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        const [attrName] = selector.match(/\[([^\]]+)=/)?.[1]?.split("=") ?? [];
+        if (attrName) el.setAttribute(attrName, value);
+        document.head.appendChild(el);
+      }
+      el.setAttribute(attr, value);
+    };
+
+    setMeta('meta[property="og:title"]', "content", title);
+    setMeta('meta[property="og:image"]', "content", image);
+    setMeta('meta[name="twitter:title"]', "content", title);
+    setMeta('meta[name="twitter:image"]', "content", image);
+
+    return () => {
+      document.title = "Tiago Fuguete";
+      setMeta('meta[property="og:title"]', "content", "Tiago Fuguete");
+      setMeta('meta[property="og:image"]', "content", "");
+      setMeta('meta[name="twitter:title"]', "content", "Tiago Fuguete");
+      setMeta('meta[name="twitter:image"]', "content", "");
+    };
+  }, [torneio]);
 
   const handleEditSubmit = async (payload) => {
     await handleEditTorneio(payload);
@@ -147,6 +179,7 @@ export function TournamentDetailPage() {
 
               <PlayerProfile
                 torneio={torneio}
+                usuario={usuario}
                 usuarioNome={usuario?.nome}
                 currentPlayer={currentPlayer}
                 decks={decks}
