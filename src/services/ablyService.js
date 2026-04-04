@@ -56,9 +56,9 @@ export const subscribeToTournament = (torneioId, callbacks) => {
             callbacks.onDeckInserido(msg);
         });
     }
-    if (callbacks.onMesaAtualizada) {
-        channel.subscribe("mesa_atualizada", (msg) => {
-            callbacks.onMesaAtualizada(msg);
+    if (callbacks.onResultadoContestado) {
+        channel.subscribe("resultado_contestado", (msg) => {
+            callbacks.onResultadoContestado(msg);
         });
     }
 

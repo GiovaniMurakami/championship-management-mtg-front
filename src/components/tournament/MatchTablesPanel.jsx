@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
 
@@ -31,10 +31,19 @@ function isUserMatch(partida, usuarioId) {
     );
 }
 
-function MatchCard({ partida, index, usuarioId }) {
+function canContestMatch(partida, torneio, usuarioId, isOwner) {
+    if (!partida || partida.status !== "finalizada") return false;
+    if (torneio?.status !== "em_andamento") return false;
+    if (!partida.jogador2Id && !partida.jogador2) return false;
+    if (Number(torneio?.rodadaAtual || 0) > Number(partida?.rodada || 0)) return false;
+    return isOwner || isUserMatch(partida, usuarioId);
+}
+
+function MatchCard({ partida, index, usuarioId, torneio, isOwner, onContestResult, actionLoading }) {
     const isFinalizada = partida.status === "finalizada";
     const isBye = !partida.jogador2Id && !partida.jogador2;
     const isMe = isUserMatch(partida, usuarioId);
+    const showContestButton = canContestMatch(partida, torneio, usuarioId, isOwner);
 
     const p1 = getPlayerName(partida, 1, usuarioId);
     const p2 = isBye ? { nome: "BYE", isMe: false } : getPlayerName(partida, 2, usuarioId);
@@ -67,15 +76,24 @@ function MatchCard({ partida, index, usuarioId }) {
                     <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.nome}</span>
                 </div>
             </div>
+
+            {showContestButton && (
+                <button
+                    type="button"
+                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-[0.7rem] border border-[rgba(251,191,36,0.4)] bg-[rgba(251,191,36,0.08)] px-4 py-2 text-[0.88rem] font-semibold text-[#fde68a] cursor-pointer transition-all duration-150 hover:bg-[rgba(251,191,36,0.16)] hover:border-[rgba(251,191,36,0.7)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => onContestResult(partida.id)}
+                    disabled={actionLoading}
+                >
+                    {actionLoading ? "Contestando..." : "Contestar resultado"}
+                </button>
+            )}
         </article>
     );
 }
 
-export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
+export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, onContestResult, actionLoading }) {
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
-
-    if (!isOngoing && !isFinished) return null;
 
     const rodadaAtual = Number(torneio?.rodadaAtual || 0);
 
@@ -90,13 +108,15 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
         ? roundNumbers[roundNumbers.length - 1] ?? 1
         : rodadaAtual || 1;
 
-    const [selectedRound, setSelectedRound] = useState(defaultRound);
+    const [selectedRoundOverride, setSelectedRoundOverride] = useState(null);
 
-    useEffect(() => {
-        if (isOngoing) setSelectedRound(rodadaAtual || 1);
-        else if (isFinished && roundNumbers.length > 0)
-            setSelectedRound(roundNumbers[roundNumbers.length - 1]);
-    }, [isOngoing, isFinished, rodadaAtual, roundNumbers]);
+    const selectedRound = useMemo(() => {
+        const normalizedOverride = Number(selectedRoundOverride);
+        if (Number.isFinite(normalizedOverride) && roundNumbers.includes(normalizedOverride)) {
+            return normalizedOverride;
+        }
+        return defaultRound;
+    }, [defaultRound, roundNumbers, selectedRoundOverride]);
 
     const partidasRodada = useMemo(() =>
         (partidas || []).filter((p) => {
@@ -113,6 +133,8 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
     const allDone = total > 0 && finalizadas === total;
 
     const showRoundPicker = roundNumbers.length > 1;
+
+    if (!isOngoing && !isFinished) return null;
 
     return (
         <section className="border border-[rgba(56,189,248,0.3)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(7,37,49,0.6),rgba(8,20,34,0.9))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-[480px]:p-4 max-[480px]:rounded-xl">
@@ -136,7 +158,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
                                 role="tab"
                                 aria-selected={Number(selectedRound) === r}
                                 className={`border rounded-full px-[0.6rem] py-[0.25rem] min-w-[2.2rem] text-[0.75rem] font-bold cursor-pointer transition-all duration-150 flex-shrink-0 ${Number(selectedRound) === r ? "bg-[rgba(56,189,248,0.22)] border-[rgba(56,189,248,0.7)] text-white" : "border-[rgba(125,211,252,0.3)] bg-[rgba(125,211,252,0.06)] text-[#93c5fd] hover:bg-[rgba(125,211,252,0.16)] hover:border-[rgba(125,211,252,0.5)] hover:text-[#bae6fd]"}`}
-                                onClick={() => setSelectedRound(r)}
+                                onClick={() => setSelectedRoundOverride(r)}
                             >
                                 R{r}
                             </button>
@@ -173,6 +195,10 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
                             partida={partida}
                             index={index}
                             usuarioId={usuarioId}
+                            torneio={torneio}
+                            isOwner={isOwner}
+                            onContestResult={onContestResult}
+                            actionLoading={actionLoading}
                         />
                     ))}
                 </div>

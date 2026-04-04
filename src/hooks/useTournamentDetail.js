@@ -6,6 +6,7 @@ import {
     checkinTorneio,
     inscreverTorneio,
     registrarResultado,
+    contestarResultado,
     buscarTorneio,
     proximaRodada,
     dropJogador,
@@ -42,6 +43,29 @@ export function useTournamentDetail() {
             || player?.checkinProximaRodada
             || player?.nextRoundCheckin,
         );
+
+    const mergePartidaState = useCallback((incomingPartida) => {
+        if (!incomingPartida?.id) return false;
+
+        let updated = false;
+
+        setPartidas((prev) => prev.map((partida) => {
+            if (normalizeId(partida?.id) !== normalizeId(incomingPartida.id)) return partida;
+
+            updated = true;
+
+            return {
+                ...partida,
+                ...incomingPartida,
+                jogador1: incomingPartida.jogador1 ?? partida.jogador1,
+                jogador2: incomingPartida.jogador2 ?? partida.jogador2,
+                jogador1Nome: incomingPartida.jogador1Nome ?? partida.jogador1Nome,
+                jogador2Nome: incomingPartida.jogador2Nome ?? partida.jogador2Nome,
+            };
+        }));
+
+        return updated;
+    }, []);
 
     const loadTournament = useCallback(async () => {
         if (!torneioId || !token) return;
@@ -97,7 +121,7 @@ export function useTournamentDetail() {
         setLoading(true);
         Promise.all([loadTournament(), loadStandings(), loadPartidas()])
             .finally(() => setLoading(false));
-    }, [loadTournament, loadStandings, loadPartidas]);
+    }, [torneioId, token, loadTournament, loadStandings, loadPartidas]);
 
     // Ably realtime subscriptions
     useEffect(() => {
@@ -108,9 +132,23 @@ export function useTournamentDetail() {
                 loadStandings();
                 loadPartidas();
             },
-            onResultadoRegistrado: () => {
+            onResultadoRegistrado: (msg) => {
+                const partidaAtualizada = msg?.data?.partida || msg?.data;
+                const updated = mergePartidaState(partidaAtualizada);
+                if (!updated) loadPartidas();
                 loadStandings();
-                loadPartidas();
+            },
+            onResultadoContestado: (msg) => {
+                const partidaContestada = msg?.data?.partida || msg?.data;
+                const updated = mergePartidaState({
+                    id: partidaContestada?.id,
+                    ...partidaContestada,
+                    status: "pendente",
+                    vitoriasJogador1: 0,
+                    vitoriasJogador2: 0,
+                });
+                if (!updated) loadPartidas();
+                loadStandings();
             },
             onStandingsAtualizados: () => loadStandings(),
             onTorneioFinalizado: () => {
@@ -161,14 +199,11 @@ export function useTournamentDetail() {
                     )
                 );
             },
-            onMesaAtualizada: () => {
-                loadPartidas();
-            },
         });
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings, loadPartidas]);
+    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState]);
 
     // Find the current player entry in standings
     const currentPlayer = useMemo(() => {
@@ -315,13 +350,48 @@ export function useTournamentDetail() {
         setActionLoading(true);
         setError("");
         try {
-            await registrarResultado(partidaId, resultado, token);
+            const data = await registrarResultado(partidaId, resultado, token);
+            const updated = mergePartidaState({
+                id: partidaId,
+                ...(data?.partida || data),
+                status: "finalizada",
+                ...resultado,
+            });
             setSuccessMsg("Resultado registrado!");
             await loadStandings();
-            await loadPartidas();
+            if (!updated) {
+                await loadPartidas();
+            }
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao registrar resultado.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleContestResult = async (partidaId) => {
+        if (!partidaId) return;
+        setActionLoading(true);
+        setError("");
+        try {
+            const data = await contestarResultado(partidaId, token);
+            const updated = mergePartidaState({
+                id: partidaId,
+                ...(data?.partida || data),
+                status: "pendente",
+                vitoriasJogador1: 0,
+                vitoriasJogador2: 0,
+            });
+            setSuccessMsg("Resultado contestado!");
+            await loadStandings();
+            if (!updated) {
+                await loadPartidas();
+            }
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao contestar resultado.");
             clearMessages();
         } finally {
             setActionLoading(false);
@@ -432,6 +502,7 @@ export function useTournamentDetail() {
         handleCheckin,
         handleInscrever,
         handleReportResult,
+        handleContestResult,
         handleNextRound,
         handleDropPlayer,
         handleEditTorneio,

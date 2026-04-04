@@ -91,6 +91,11 @@ export const registrarResultado = (partidaId, payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const contestarResultado = (partidaId, token) =>
+  httpClient.post(`/torneio/partida/${partidaId}/contestar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const proximaRodada = (torneioId, token) =>
   httpClient.post(`/torneio/${torneioId}/proxima-rodada`, {}, {
     headers: { Authorization: `Bearer ${token}` },

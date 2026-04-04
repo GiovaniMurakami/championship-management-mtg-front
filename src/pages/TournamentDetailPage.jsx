@@ -38,6 +38,7 @@ export function TournamentDetailPage() {
     handleCheckin,
     handleInscrever,
     handleReportResult,
+    handleContestResult,
     handleNextRound,
     handleDropPlayer,
     handleEditTorneio,
@@ -158,8 +159,10 @@ export function TournamentDetailPage() {
                 myMatch={myMatch}
                 usuario={usuario}
                 onReportResult={handleReportResult}
+                onContestResult={handleContestResult}
                 actionLoading={actionLoading}
                 torneio={torneio}
+                isOwner={isOwner}
               />
 
               {isOwner && (
@@ -198,6 +201,9 @@ export function TournamentDetailPage() {
               torneio={torneio}
               partidas={partidas}
               usuarioId={usuario?.id}
+              isOwner={isOwner}
+              onContestResult={handleContestResult}
+              actionLoading={actionLoading}
             />
             <StandingsTable
               standings={standings}
