@@ -179,6 +179,7 @@ export function TournamentDetailPage() {
 
               <PlayerProfile
                 torneio={torneio}
+                usuario={usuario}
                 usuarioNome={usuario?.nome}
                 currentPlayer={currentPlayer}
                 decks={decks}

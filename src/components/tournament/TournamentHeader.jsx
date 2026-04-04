@@ -118,9 +118,11 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
               icon={<IconPlayers />}
               label="Inscritos"
               value={
-                torneio.totalCheckin != null
-                  ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)`
-                  : String(torneio.totalInscritos)
+                torneio.maxJogadores != null
+                  ? `${torneio.totalInscritos} / ${torneio.maxJogadores}`
+                  : torneio.totalCheckin != null
+                    ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)`
+                    : String(torneio.totalInscritos)
               }
               accent="#2ccfb4"
             />
