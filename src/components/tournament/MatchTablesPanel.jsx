@@ -31,19 +31,10 @@ function isUserMatch(partida, usuarioId) {
     );
 }
 
-function canContestMatch(partida, torneio, usuarioId, isOwner) {
-    if (!partida || partida.status !== "finalizada") return false;
-    if (torneio?.status !== "em_andamento") return false;
-    if (!partida.jogador2Id && !partida.jogador2) return false;
-    if (Number(torneio?.rodadaAtual || 0) > Number(partida?.rodada || 0)) return false;
-    return isOwner || isUserMatch(partida, usuarioId);
-}
-
-function MatchCard({ partida, index, usuarioId, torneio, isOwner, onContestResult, actionLoading }) {
+function MatchCard({ partida, index, usuarioId, torneio, isOwner }) {
     const isFinalizada = partida.status === "finalizada";
     const isBye = !partida.jogador2Id && !partida.jogador2;
     const isMe = isUserMatch(partida, usuarioId);
-    const showContestButton = canContestMatch(partida, torneio, usuarioId, isOwner);
 
     const p1 = getPlayerName(partida, 1, usuarioId);
     const p2 = isBye ? { nome: "BYE", isMe: false } : getPlayerName(partida, 2, usuarioId);
@@ -84,21 +75,11 @@ function MatchCard({ partida, index, usuarioId, torneio, isOwner, onContestResul
                 </div>
             </div>
 
-            {showContestButton && (
-                <button
-                    type="button"
-                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-[0.7rem] border border-[rgba(251,191,36,0.4)] bg-[rgba(251,191,36,0.08)] px-4 py-2 text-[0.88rem] font-semibold text-[#fde68a] cursor-pointer transition-all duration-150 hover:bg-[rgba(251,191,36,0.16)] hover:border-[rgba(251,191,36,0.7)] disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => onContestResult(partida.id)}
-                    disabled={actionLoading}
-                >
-                    {actionLoading ? "Contestando..." : "Contestar resultado"}
-                </button>
-            )}
         </article>
     );
 }
 
-export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, onContestResult, actionLoading }) {
+export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner }) {
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
 
@@ -276,8 +257,6 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, onCont
                             usuarioId={usuarioId}
                             torneio={torneio}
                             isOwner={isOwner}
-                            onContestResult={onContestResult}
-                            actionLoading={actionLoading}
                         />
                     ))}
                 </div>
