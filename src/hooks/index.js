@@ -1,3 +1,4 @@
+export { useActionGuard } from "./useActionGuard";
 export { useAuth } from "./useAuth";
 export { useCardPreview } from "./useCardPreview";
 export { useCardSearch } from "./useCardSearch";

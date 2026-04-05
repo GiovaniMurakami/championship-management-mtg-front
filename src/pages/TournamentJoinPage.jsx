@@ -25,12 +25,28 @@ export function TournamentJoinPage() {
     useEffect(() => {
         if (!joinToken || !authToken) return;
 
+        // Basic token format validation (UUID v4)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(joinToken)) {
+            setErrorMsg("Link de ingresso inválido. Verifique o link e tente novamente.");
+            setStatus("error");
+            return;
+        }
+
         let cancelled = false;
 
         (async () => {
             try {
                 const data = await ingressarComToken(joinToken, authToken);
                 if (cancelled) return;
+
+                // Block if tournament is in top-cut phase
+                if (data?.emCorte) {
+                    setErrorMsg("O torneio está na fase de corte (eliminatórias). Não é possível ingressar neste momento.");
+                    setStatus("error");
+                    return;
+                }
+
                 const partida = data?.partida || data?.match || data || null;
                 setMatchData(partida);
                 const tid = data?.torneioId || partida?.torneioId || null;

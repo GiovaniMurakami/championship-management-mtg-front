@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { calculateAutomaticSwissRounds, calculateSwissRounds } from "../../utils/tournamentFlow";
+import { sanitizeText } from "../../utils/sanitize";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -137,6 +138,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
         const payload = {
             ...form,
+            nome: sanitizeText(form.nome),
+            premio: sanitizeText(form.premio),
             bannerUrl,
             maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
             maxRodadas: form.maxRodadas ? Number(form.maxRodadas) : undefined,

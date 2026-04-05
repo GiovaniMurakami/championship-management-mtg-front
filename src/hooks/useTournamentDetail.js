@@ -23,6 +23,7 @@ import {
 } from "../services/ablyService";
 import { useAuth } from "./useAuth";
 import { useMyDecks } from "./useMyDecks";
+import { useActionGuard } from "./useActionGuard";
 import {
     getNextRoundActionLabels,
     getTournamentNextAction,
@@ -45,6 +46,7 @@ export function useTournamentDetail() {
     const [successMsg, setSuccessMsg] = useState("");
 
     const { decks } = useMyDecks(token, usuario?.id);
+    const guard = useActionGuard(800);
     const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
     const isCheckedForNextRound = (player) =>
         Boolean(
@@ -136,10 +138,19 @@ export function useTournamentDetail() {
     useEffect(() => {
         if (!torneioId) return;
         const channel = subscribeToTournament(torneioId, {
-            onRodadaIniciada: () => {
+            onRodadaIniciada: (msg) => {
                 loadTournament();
                 loadStandings();
                 loadPartidas();
+                // Play somRodada if the tournament has a sound URL
+                const somUrl = msg?.data?.somRodada || torneio?.somRodada;
+                if (somUrl) {
+                    try {
+                        const audio = new Audio(somUrl);
+                        audio.volume = 0.7;
+                        audio.play().catch(() => { /* autoplay blocked */ });
+                    } catch { /* ignore audio errors */ }
+                }
             },
             onResultadoRegistrado: (msg) => {
                 const partidaAtualizada = msg?.data?.partida || msg?.data;
@@ -215,7 +226,7 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState]);
+    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, torneio?.somRodada]);
 
     // Find the current player entry in standings
     const currentPlayer = useMemo(() => {
@@ -675,19 +686,19 @@ export function useTournamentDetail() {
         decks,
         selectedDeckId,
         setSelectedDeckId,
-        handleChooseDeck,
-        handleCheckin,
-        handleInscrever,
-        handleReportResult,
-        handleContestResult,
-        handleAdjustResult,
+        handleChooseDeck: guard(handleChooseDeck),
+        handleCheckin: guard(handleCheckin),
+        handleInscrever: guard(handleInscrever),
+        handleReportResult: guard(handleReportResult),
+        handleContestResult: guard(handleContestResult),
+        handleAdjustResult: guard(handleAdjustResult),
         handleGerarLinkIngresso,
-        handleStartTournament,
-        handleNextRound,
-        handleBulkDropPlayers,
-        handleDropPlayer,
-        handleEditTorneio,
-        handleDeleteTorneio,
+        handleStartTournament: guard(handleStartTournament),
+        handleNextRound: guard(handleNextRound),
+        handleBulkDropPlayers: guard(handleBulkDropPlayers),
+        handleDropPlayer: guard(handleDropPlayer),
+        handleEditTorneio: guard(handleEditTorneio),
+        handleDeleteTorneio: guard(handleDeleteTorneio),
         usuario,
         isAdmin,
         token,
