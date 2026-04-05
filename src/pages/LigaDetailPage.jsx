@@ -16,6 +16,18 @@ const statusLabel = {
   finalizado: "Finalizado",
 };
 
+const torneioStatusBadge = {
+  inscricoes_abertas: "bg-[rgba(34,197,94,0.15)] text-[#4ade80] border border-[rgba(34,197,94,0.4)]",
+  em_andamento: "bg-[rgba(251,191,36,0.15)] text-[#fbbf24] border border-[rgba(251,191,36,0.4)]",
+  finalizado: "bg-[rgba(148,163,184,0.12)] text-[#94a3b8] border border-[rgba(148,163,184,0.3)]",
+};
+
+const torneioStatusLabel = {
+  inscricoes_abertas: "Inscrições",
+  em_andamento: "Ao Vivo",
+  finalizado: "Finalizado",
+};
+
 export function LigaDetailPage() {
   const { id: ligaId } = useParams();
   const { token, isAdmin, usuario } = useAuth();
@@ -94,12 +106,35 @@ export function LigaDetailPage() {
       ) : liga ? (
         <>
           <div className="mb-6">
-            <h1 className="m-0 mb-2 text-white text-[2rem] font-['Bebas_Neue',sans-serif] tracking-[0.03em] max-[768px]:text-[1.6rem]">
-              {liga.nome}
-            </h1>
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <h1 className="m-0 text-white text-[2rem] font-['Bebas_Neue',sans-serif] tracking-[0.03em] max-[768px]:text-[1.6rem]">
+                {liga.nome}
+              </h1>
+              {liga.status && (
+                <span className={`inline-block px-[0.65rem] py-[0.2rem] rounded-full text-[0.72rem] font-semibold uppercase tracking-[0.05em] ${statusBadgeClass[liga.status] ?? ""}`}>
+                  {statusLabel[liga.status] ?? liga.status}
+                </span>
+              )}
+            </div>
             {liga.descricao && (
-              <p className="m-0 text-[#beafd7] text-[0.95rem] leading-relaxed max-w-[680px]">{liga.descricao}</p>
+              <p className="m-0 text-[#beafd7] text-[0.95rem] leading-relaxed max-w-[680px] mb-3">{liga.descricao}</p>
             )}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-[0.4rem] text-[0.8rem] text-[#beafd7]">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+                </svg>
+                {liga.totalTorneios ?? torneios.length} torneio{(liga.totalTorneios ?? torneios.length) !== 1 ? "s" : ""}
+              </span>
+              {liga.formato && (
+                <span className="inline-block px-[0.5rem] py-[0.15rem] rounded-[0.4rem] text-[0.72rem] font-semibold bg-[rgba(199,149,255,0.12)] text-[#c795ff] border border-[rgba(199,149,255,0.25)]">
+                  {liga.formato}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Tabs */}
@@ -111,11 +146,10 @@ export function LigaDetailPage() {
               <button
                 key={key}
                 type="button"
-                className={`flex items-center gap-2 px-5 py-[0.65rem] bg-transparent border-none border-b-2 -mb-[2px] text-[0.95rem] font-medium cursor-pointer transition-colors duration-200 ${
-                  abaAtiva === key
+                className={`flex items-center gap-2 px-5 py-[0.65rem] bg-transparent border-none border-b-2 -mb-[2px] text-[0.95rem] font-medium cursor-pointer transition-colors duration-200 ${abaAtiva === key
                     ? "text-white border-b-[#4f46e5] border-b-2"
                     : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
-                }`}
+                  }`}
                 onClick={() => setAbaAtiva(key)}
               >
                 {label}
@@ -134,26 +168,61 @@ export function LigaDetailPage() {
               {torneios.length === 0 ? (
                 <p className="text-center text-[#888] py-12 text-base">Nenhum torneio nesta liga.</p>
               ) : (
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 max-[768px]:grid-cols-1">
-                  {torneios.map((torneio) => (
-                    <div
-                      key={torneio.id}
-                      className="bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.15)] rounded-[0.85rem] p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.3)] hover:bg-white/[0.05] cursor-pointer"
-                      onClick={() => navigate(`/torneios/${torneio.id}`)}
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <span className="font-['Bebas_Neue',sans-serif] text-[0.95rem] tracking-[0.1em] text-[#c795ff]">
-                          {(torneio.formato || "—").toUpperCase()}
-                        </span>
-                        <span className={`inline-block px-2 py-[2px] rounded-full text-[0.72rem] font-medium uppercase tracking-[0.5px] ${statusBadgeClass[torneio.status] ?? ""}`}>
-                          {statusLabel[torneio.status] ?? torneio.status}
-                        </span>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 max-[768px]:grid-cols-1">
+                  {torneios.map((torneio) => {
+                    const badge = torneioStatusBadge[torneio.status] ?? "";
+                    const label = torneioStatusLabel[torneio.status] ?? torneio.status;
+                    const isLive = torneio.status === "em_andamento";
+                    return (
+                      <div
+                        key={torneio.id}
+                        className="bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.15)] rounded-[0.9rem] p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.35)] hover:bg-white/[0.055] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(0,0,0,0.3)] cursor-pointer group"
+                        onClick={() => navigate(`/torneios/${torneio.id}`)}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <span className="font-['Bebas_Neue',sans-serif] text-[0.88rem] tracking-[0.1em] text-[#c795ff]">
+                            {(torneio.formato || "—").toUpperCase()}
+                          </span>
+                          <span className={`inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.15rem] rounded-full text-[0.7rem] font-semibold uppercase tracking-[0.04em] ${badge}`}>
+                            {isLive && (
+                              <span className="w-[6px] h-[6px] rounded-full bg-current animate-pulse inline-block" />
+                            )}
+                            {label}
+                          </span>
+                        </div>
+                        <h4 className="m-0 mb-3 text-[#f5edff] font-semibold text-[0.95rem] leading-snug group-hover:text-white transition-colors">
+                          {torneio.nome}
+                        </h4>
+                        <div className="flex items-center gap-2 text-[0.78rem] text-[rgba(190,175,215,0.6)]">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                          {torneio.data
+                            ? new Date(torneio.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
+                            : torneio.dataInicio
+                              ? new Date(torneio.dataInicio).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
+                              : "Data não definida"}
+                          {(torneio.totalInscritos != null || torneio.maxJogadores != null) && (
+                            <>
+                              <span className="text-[rgba(190,175,215,0.3)]">·</span>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                              </svg>
+                              {torneio.totalInscritos ?? "?"}{
+                                torneio.maxJogadores ? ` / ${torneio.maxJogadores}` : ""
+                              }
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <h4 className="m-0 text-[#f5edff] font-semibold text-[0.95rem] leading-snug">
-                        {torneio.nome}
-                      </h4>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

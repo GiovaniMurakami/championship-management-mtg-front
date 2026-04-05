@@ -218,24 +218,24 @@ export function OwnerControlPanel({
           </div>
         )}
 
-        <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.24)] bg-[rgba(251,191,36,0.08)] p-4">
-          <p className="m-0 text-[0.78rem] uppercase tracking-[0.08em] text-[#fde68a] font-semibold">Pendência de check-in</p>
-          <p className="mt-2 mb-3 text-[0.88rem] text-[#f6ebc4]">
-            {isRegistrationOpen
-              ? `${jogadoresSemCheckin.length} jogador(es) inscrito(s) ainda não fizeram check-in inicial.`
-              : canDropByCheckin
-                ? `${jogadoresSemCheckin.length} jogador(es) ainda não fizeram check-in para a próxima rodada.`
-                : "Nenhum novo check-in é exigido neste momento."}
-          </p>
-          <button
-            type="button"
-            className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
-            onClick={() => onDropPlayersWithoutCheckin(jogadoresSemCheckin.map(getPlayerId))}
-            disabled={actionLoading || jogadoresSemCheckin.length === 0 || !canDropByCheckin}
-          >
-            {isBulkDroppingCheckin ? "Dropando..." : "Dropar sem check-in"}
-          </button>
-        </div>
+        {canDropByCheckin && (
+          <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.24)] bg-[rgba(251,191,36,0.08)] p-4">
+            <p className="m-0 text-[0.78rem] uppercase tracking-[0.08em] text-[#fde68a] font-semibold">Pendência de check-in</p>
+            <p className="mt-2 mb-3 text-[0.88rem] text-[#f6ebc4]">
+              {isRegistrationOpen
+                ? `${jogadoresSemCheckin.length} jogador(es) inscrito(s) ainda não fizeram check-in inicial.`
+                : `${jogadoresSemCheckin.length} jogador(es) ainda não fizeram check-in para a próxima rodada.`}
+            </p>
+            <button
+              type="button"
+              className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
+              onClick={() => onDropPlayersWithoutCheckin(jogadoresSemCheckin.map(getPlayerId))}
+              disabled={actionLoading || jogadoresSemCheckin.length === 0}
+            >
+              {isBulkDroppingCheckin ? "Dropando..." : "Dropar sem check-in"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-[rgba(217,180,255,0.2)] pb-0">
@@ -277,7 +277,7 @@ export function OwnerControlPanel({
                   {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div className="grid gap-2 max-h-[320px] overflow-y-auto pr-[0.2rem]">
+              <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
                 {partidasRodada.map((partida) => (
                   <MatchEditRow
                     key={partida.id}
@@ -293,7 +293,7 @@ export function OwnerControlPanel({
       )}
 
       {activeTab === "jogadores" && (
-        <div className="grid gap-2 max-h-[320px] overflow-y-auto pr-[0.2rem]">
+        <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
           {jogadoresAtivos.length === 0 ? (
             <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador ativo.</p>
           ) : (

@@ -3,6 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { listarLigas, deletarLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 
+const ligaStatusBadge = {
+  inscricoes_abertas: "bg-[rgba(34,197,94,0.15)] text-[#4ade80] border border-[rgba(34,197,94,0.35)]",
+  em_andamento: "bg-[rgba(251,191,36,0.15)] text-[#fbbf24] border border-[rgba(251,191,36,0.35)]",
+  finalizado: "bg-[rgba(148,163,184,0.1)] text-[#94a3b8] border border-[rgba(148,163,184,0.25)]",
+};
+const ligaStatusLabel = {
+  inscricoes_abertas: "Inscrições Abertas",
+  em_andamento: "Em Andamento",
+  finalizado: "Finalizado",
+};
+
 export function LigaPage() {
   const { token, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -77,22 +88,36 @@ export function LigaPage() {
               className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1.1rem] shadow-[0_6px_28px_rgba(0,0,0,0.35)] border border-[rgba(217,180,255,0.2)] transition-all duration-[220ms] overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_14px_44px_rgba(0,0,0,0.45)] hover:border-[rgba(167,79,255,0.3)]"
             >
               <div className="px-5 pt-5 pb-4 flex-1">
-                <h3 className="text-[#f5edff] m-0 mb-2 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.03em] leading-[1.1]">
-                  {liga.nome}
-                </h3>
+                <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
+                  <h3 className="text-[#f5edff] m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.03em] leading-[1.1]">
+                    {liga.nome}
+                  </h3>
+                  {liga.status && (
+                    <span className={`inline-block px-[0.55rem] py-[0.18rem] rounded-full text-[0.68rem] font-semibold uppercase tracking-[0.04em] flex-shrink-0 mt-[0.25rem] ${ligaStatusBadge[liga.status] ?? ""}`}>
+                      {ligaStatusLabel[liga.status] ?? liga.status}
+                    </span>
+                  )}
+                </div>
                 {liga.descricao && (
-                  <p className="text-[#beafd7] text-[0.875rem] m-0 mb-3 leading-relaxed line-clamp-3">
+                  <p className="text-[#beafd7] text-[0.875rem] m-0 mb-3 leading-relaxed line-clamp-2">
                     {liga.descricao}
                   </p>
                 )}
-                <div className="flex items-center gap-2 text-[#beafd7] text-[0.82rem]">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                    <path d="M4 22h16" />
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
-                  </svg>
-                  <span>{liga.totalTorneios ?? liga.torneios?.length ?? 0} torneios</span>
+                <div className="flex items-center gap-3 flex-wrap text-[#beafd7] text-[0.8rem]">
+                  <span className="flex items-center gap-[0.35rem]">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                      <path d="M4 22h16" />
+                      <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+                    </svg>
+                    {liga.totalTorneios ?? liga.torneios?.length ?? 0} torneios
+                  </span>
+                  {liga.formato && (
+                    <span className="px-[0.45rem] py-[0.12rem] rounded-[0.35rem] text-[0.7rem] font-semibold bg-[rgba(199,149,255,0.1)] text-[#c795ff] border border-[rgba(199,149,255,0.22)]">
+                      {liga.formato}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="px-5 py-3 border-t border-[rgba(217,180,255,0.15)] bg-white/[0.015] flex gap-2 flex-wrap">

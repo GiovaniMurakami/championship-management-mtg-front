@@ -45,16 +45,16 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
   const timerBorderClass = isOver
     ? "border-[rgba(239,68,68,0.8)]"
     : isUrgent
-    ? "border-[rgba(239,68,68,0.6)] animate-[rt-pulse_1.5s_ease-in-out_infinite]"
-    : isWarning
-    ? "border-[rgba(251,191,36,0.5)]"
-    : "border-[rgba(44,207,180,0.35)]";
+      ? "border-[rgba(239,68,68,0.6)] animate-[rt-pulse_1.5s_ease-in-out_infinite]"
+      : isWarning
+        ? "border-[rgba(251,191,36,0.5)]"
+        : "border-[rgba(44,207,180,0.35)]";
 
   const displayColorClass = isOver || isUrgent
     ? "text-[#f87171]"
     : isWarning
-    ? "text-[#fcd34d]"
-    : "text-[#2ccfb4]";
+      ? "text-[#fcd34d]"
+      : "text-[#2ccfb4]";
 
   const displaySizeClass = isOver
     ? "text-[1.1rem] tracking-[0.02em]"
@@ -63,11 +63,11 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
   const fillGradientClass = isUrgent
     ? "bg-[linear-gradient(90deg,#b91c1c,#f87171)]"
     : isWarning
-    ? "bg-[linear-gradient(90deg,#d97706,#fcd34d)]"
-    : "bg-[linear-gradient(90deg,#0d9488,#2ccfb4)]";
+      ? "bg-[linear-gradient(90deg,#d97706,#fcd34d)]"
+      : "bg-[linear-gradient(90deg,#0d9488,#2ccfb4)]";
 
   return (
-    <div className={`border rounded-[0.9rem] bg-[rgba(14,9,28,0.85)] mt-3 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>
+    <div className={`border rounded-[0.9rem] bg-[rgba(14,9,28,0.85)] mt-5 mb-5 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>
       <div className="flex items-center justify-between px-4 py-[0.65rem] gap-4">
         <div className="flex items-center gap-[0.45rem] text-[#beafd7] text-[0.85rem] font-semibold">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">

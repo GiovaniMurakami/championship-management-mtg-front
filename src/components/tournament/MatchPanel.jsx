@@ -58,9 +58,18 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         onReportResult(myMatch.id, resultado);
     };
 
+    const mesaNum = myMatch?.mesa ?? myMatch?.mesaNumero ?? myMatch?.numeroMesa;
+
     return (
         <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite]">
-            <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
+            <div className="flex items-center gap-3 flex-wrap m-0 mb-5">
+                <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
+                {mesaNum != null && (
+                    <span className="text-[0.73rem] font-bold text-[#7dd3fc] bg-[rgba(56,189,248,0.1)] border border-[rgba(56,189,248,0.28)] rounded-full px-[0.75rem] py-[0.2rem] tracking-[0.05em] uppercase">
+                        Mesa {mesaNum}
+                    </span>
+                )}
+            </div>
 
             {isBye ? (
                 <div className="text-center">

@@ -1,4 +1,4 @@
-import { getTournamentNextAction, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
+import { shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
 export function PlayerProfile({
     torneio,
@@ -17,7 +17,6 @@ export function PlayerProfile({
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
     const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
-    const nextRoundAction = getTournamentNextAction(torneio);
 
     const isCheckedIn =
         currentPlayer?.checkIn || currentPlayer?.checkin || currentPlayer?.checkedIn || currentPlayer?.presenca || false;
@@ -147,17 +146,9 @@ export function PlayerProfile({
                     )}
                 </div>
 
-                <div className="grid gap-[0.35rem]">
-                    <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Check-in</label>
-                    {isOngoing && !requiresNextRoundCheckin ? (
-                        <p className="m-0 text-[0.84rem] text-[#beafd7]">
-                            {nextRoundAction === "start-top-cut"
-                                ? "Nenhum novo check-in é necessário. O próximo passo é iniciar o corte."
-                                : nextRoundAction === "finish-tournament"
-                                    ? "Nenhum novo check-in é necessário. O torneio está pronto para finalizar."
-                                    : "Nenhum novo check-in é necessário neste momento."}
-                        </p>
-                    ) : (
+                {(!isOngoing || requiresNextRoundCheckin) && (
+                    <div className="grid gap-[0.35rem]">
+                        <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Check-in</label>
                         <div className="flex gap-2 items-center">
                             <button
                                 className={`inline-flex items-center justify-center px-4 py-[0.55rem] border rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${checkinDone ? "bg-[rgba(34,197,94,0.2)] border-[rgba(34,197,94,0.5)] text-[#86efac]" : "bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"}`}
@@ -177,8 +168,8 @@ export function PlayerProfile({
                                                 : "Fazer check-in"}
                             </button>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </section>
     );
