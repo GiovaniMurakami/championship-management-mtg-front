@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
     getStandings,
@@ -44,6 +44,10 @@ export function useTournamentDetail() {
     const [selectedDeckId, setSelectedDeckId] = useState("");
     const [error, setError] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
+    const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
+    const [corteInfo, setCorteInfo] = useState(null); // { corteTop, jogadoresClassificados }
+    const [checkinRodadaAberto, setCheckinRodadaAberto] = useState(false);
+    const toastTimeoutRef = useRef(null);
 
     const { decks } = useMyDecks(token, usuario?.id);
     const guard = useActionGuard(800);
@@ -54,6 +58,15 @@ export function useTournamentDetail() {
             || player?.checkinProximaRodada
             || player?.nextRoundCheckin,
         );
+
+    const showToast = useCallback((msg, type = "info") => {
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        setRealtimeToast({ msg, type });
+        toastTimeoutRef.current = setTimeout(() => setRealtimeToast(null), 5000);
+    }, []);
+
+    // Cleanup toast timeout on unmount
+    useEffect(() => () => { if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current); }, []);
 
     const mergePartidaState = useCallback((incomingPartida) => {
         if (!incomingPartida?.id) return false;
@@ -139,11 +152,15 @@ export function useTournamentDetail() {
         if (!torneioId) return;
         const channel = subscribeToTournament(torneioId, {
             onRodadaIniciada: (msg) => {
+                const data = msg?.data || {};
+                if (data.emCorte) {
+                    setTorneio((prev) => prev ? { ...prev, emCorte: true } : prev);
+                }
+                setCheckinRodadaAberto(false);
                 loadTournament();
                 loadStandings();
                 loadPartidas();
-                // Play somRodada if the tournament has a sound URL
-                const somUrl = msg?.data?.somRodada || torneio?.somRodada;
+                const somUrl = data.somRodada || torneio?.somRodada;
                 if (somUrl) {
                     try {
                         const audio = new Audio(somUrl);
@@ -222,11 +239,90 @@ export function useTournamentDetail() {
                     )
                 );
             },
+            onTorneioIniciado: (msg) => {
+                const data = msg?.data || {};
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    status: data.status || "em_andamento",
+                    totalRodadas: data.totalRodadas ?? prev.totalRodadas,
+                    totalPartidas: data.totalPartidas ?? prev.totalPartidas,
+                } : prev);
+                loadTournament();
+                loadStandings();
+                loadPartidas();
+            },
+            onJogadorDropou: (msg) => {
+                const data = msg?.data || {};
+                const { jogadorId, jogadorNome, partidasResolvidas } = data;
+                setStandings((prev) => prev.map((p) => {
+                    const pId = normalizeId(p.usuario?.id || p.usuarioId || p.id);
+                    if (pId !== normalizeId(jogadorId)) return p;
+                    return { ...p, dropped: true };
+                }));
+                if (Array.isArray(partidasResolvidas)) {
+                    partidasResolvidas.forEach(({ partidaId, vencedorId }) => {
+                        setPartidas((prev) => prev.map((p) => {
+                            if (normalizeId(p.id) !== normalizeId(partidaId)) return p;
+                            const isJ1 = normalizeId(p.jogador1Id || p.jogador1?.id) === normalizeId(vencedorId);
+                            return { ...p, status: "finalizada", vitoriasJogador1: isJ1 ? 2 : 0, vitoriasJogador2: isJ1 ? 0 : 2 };
+                        }));
+                    });
+                }
+                showToast(`${jogadorNome || "Jogador"} saiu do torneio.`, "warning");
+                loadStandings();
+            },
+            onResultadoAjustado: (msg) => {
+                const data = msg?.data || {};
+                mergePartidaState({
+                    id: data.partidaId,
+                    rodada: data.rodada,
+                    vitoriasJogador1: data.vitoriasJogador1,
+                    vitoriasJogador2: data.vitoriasJogador2,
+                    contestado: false,
+                    status: "finalizada",
+                });
+                loadStandings();
+                showToast("Resultado da partida foi ajustado pelo admin.", "info");
+            },
+            onCorteIniciado: (msg) => {
+                const data = msg?.data || {};
+                setCorteInfo({ corteTop: data.corteTop, jogadoresClassificados: data.jogadoresClassificados || [] });
+                setTorneio((prev) => prev ? { ...prev, emCorte: true, rodadaAtual: data.rodadaAtual ?? prev.rodadaAtual } : prev);
+                loadTournament();
+                loadStandings();
+                loadPartidas();
+            },
+            onJogadorIngressou: (msg) => {
+                const data = msg?.data || {};
+                const { usuarioId: uid, usuarioNome, substituiuBye } = data;
+                setStandings((prev) => {
+                    const jaExiste = prev.some((p) => normalizeId(p.usuario?.id || p.usuarioId || p.id) === normalizeId(uid));
+                    if (jaExiste) return prev;
+                    return [...prev, { usuario: { id: uid, nome: usuarioNome }, id: uid, usuarioId: uid, nome: usuarioNome, pontos: 0 }];
+                });
+                setTorneio((prev) => prev ? { ...prev, totalInscritos: (prev.totalInscritos || 0) + 1 } : prev);
+                if (substituiuBye) loadPartidas();
+                const toastMsg = substituiuBye
+                    ? `${usuarioNome || "Jogador"} entrou no torneio (substituiu BYE).`
+                    : `${usuarioNome || "Jogador"} entrou no torneio.`;
+                showToast(toastMsg, "success");
+            },
+            onTotalRodadasAlterado: (msg) => {
+                const data = msg?.data || {};
+                setTorneio((prev) => prev ? { ...prev, totalRodadas: data.totalRodadas } : prev);
+                showToast(`Torneio estendido para ${data.totalRodadas} rodadas (ingresso tardio).`, "info");
+            },
+            onCheckinRodadaAberto: () => {
+                setCheckinRodadaAberto(true);
+            },
         });
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, torneio?.somRodada]);
+    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, torneio?.somRodada]);
+
+    const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
+    const dismissCheckinBanner = useCallback(() => setCheckinRodadaAberto(false), []);
 
     // Find the current player entry in standings
     const currentPlayer = useMemo(() => {
@@ -699,6 +795,11 @@ export function useTournamentDetail() {
         handleDropPlayer: guard(handleDropPlayer),
         handleEditTorneio: guard(handleEditTorneio),
         handleDeleteTorneio: guard(handleDeleteTorneio),
+        realtimeToast,
+        corteInfo,
+        dismissCorteInfo,
+        checkinRodadaAberto,
+        dismissCheckinBanner,
         usuario,
         isAdmin,
         token,

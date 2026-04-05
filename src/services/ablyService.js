@@ -61,6 +61,27 @@ export const subscribeToTournament = (torneioId, callbacks) => {
             callbacks.onResultadoContestado(msg);
         });
     }
+    if (callbacks.onTorneioIniciado) {
+        channel.subscribe("torneio_iniciado", (msg) => callbacks.onTorneioIniciado(msg));
+    }
+    if (callbacks.onJogadorDropou) {
+        channel.subscribe("jogador_dropou", (msg) => callbacks.onJogadorDropou(msg));
+    }
+    if (callbacks.onResultadoAjustado) {
+        channel.subscribe("resultado_ajustado", (msg) => callbacks.onResultadoAjustado(msg));
+    }
+    if (callbacks.onCorteIniciado) {
+        channel.subscribe("corte_iniciado", (msg) => callbacks.onCorteIniciado(msg));
+    }
+    if (callbacks.onJogadorIngressou) {
+        channel.subscribe("jogador_ingressou", (msg) => callbacks.onJogadorIngressou(msg));
+    }
+    if (callbacks.onTotalRodadasAlterado) {
+        channel.subscribe("total_rodadas_alterado", (msg) => callbacks.onTotalRodadasAlterado(msg));
+    }
+    if (callbacks.onCheckinRodadaAberto) {
+        channel.subscribe("checkin_rodada_aberto", (msg) => callbacks.onCheckinRodadaAberto(msg));
+    }
 
     return channel;
 };
