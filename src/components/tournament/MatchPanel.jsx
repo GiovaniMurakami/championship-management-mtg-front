@@ -7,6 +7,8 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
 
     const eliminationPhase = isEliminationPhase(torneio);
     const isTie = winsPlayer1 === winsPlayer2;
+    const totalWins = winsPlayer1 + winsPlayer2;
+    const isInvalidScore = totalWins > 3;
 
     if (!myMatch) {
         return (
@@ -80,6 +82,11 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                     </div>
                     <div className="font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)]">BYE</div>
                     <p className="text-[#beafd7] mt-3">Você recebeu bye nesta rodada.</p>
+                    {myMatch.tipoBye && (
+                        <span className={`inline-block mt-2 text-[0.75rem] font-bold uppercase tracking-[0.06em] px-[0.6rem] py-[0.15rem] rounded-full border ${myMatch.tipoBye === "penalidade" ? "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.35)] text-[#fca5a5]" : "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.35)] text-[#86efac]"}`}>
+                            {myMatch.tipoBye === "penalidade" ? "Bye por penalidade" : "Bye normal"}
+                        </span>
+                    )}
                 </div>
             ) : (
                 <>
@@ -179,11 +186,16 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
 
                             <button
                                 className="inline-flex items-center justify-center w-full py-3 px-4 border border-[rgba(199,149,255,0.5)] rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
-                                disabled={actionLoading || (winsPlayer1 === 0 && winsPlayer2 === 0) || (eliminationPhase && isTie)}
+                                disabled={actionLoading || (winsPlayer1 === 0 && winsPlayer2 === 0) || (eliminationPhase && isTie) || isInvalidScore}
                                 onClick={handleSubmit}
                             >
                                 {actionLoading ? "Enviando..." : "Enviar Resultado"}
                             </button>
+                            {isInvalidScore && (
+                                <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
+                                    A soma das vitórias não pode ultrapassar 3.
+                                </p>
+                            )}
                             {eliminationPhase && isTie && (winsPlayer1 > 0 || winsPlayer2 > 0) && (
                                 <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
                                     Empates não são permitidos na fase eliminatória. Um jogador deve vencer a partida.

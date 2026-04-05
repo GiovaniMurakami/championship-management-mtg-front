@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { criarTorneio } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
+import { sanitizeText } from "../../utils/sanitize";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -94,6 +95,8 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
             const payload = {
                 ...createForm,
+                nome: sanitizeText(createForm.nome),
+                premio: sanitizeText(createForm.premio),
                 ...(bannerUrl !== undefined ? { bannerUrl } : {}),
                 maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
                 maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,

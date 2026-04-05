@@ -451,7 +451,7 @@ export function StandingsTable({
                           )}
                         </td>
                         <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] font-semibold">
-                          {getPlayerName(player)}
+                          <span className={player.dropped ? "line-through" : ""}>{getPlayerName(player)}</span>
                           {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                         </td>
                         {!isRegistrationOpen && (
@@ -539,7 +539,7 @@ export function StandingsTable({
                       ) : (
                         <span className={`font-bold flex-shrink-0 ${mobileRankColor}`}>#{posicao}</span>
                       )}
-                      <span className="font-semibold text-white break-words">
+                      <span className={`font-semibold text-white break-words ${player.dropped ? "line-through" : ""}`}>
                         {getPlayerName(player)}
                         {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                       </span>

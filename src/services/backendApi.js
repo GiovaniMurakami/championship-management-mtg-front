@@ -131,6 +131,11 @@ export const listarPartidasTorneio = (torneioId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const buscarMeuHistorico = (torneioId, token) =>
+  httpClient.get(`/torneio/${torneioId}/meu-historico`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const buscarDeck = (deckId, token) =>
   httpClient.get(`/deck/${deckId}`, {
     headers: { Authorization: `Bearer ${token}` },

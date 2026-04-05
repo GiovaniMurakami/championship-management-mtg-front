@@ -73,7 +73,7 @@ const IconDate = () => (
 export function TournamentHeader({ torneio, loading, className = "" }) {
   const formatDate = (dateString) => {
     if (!dateString) return "—";
-    return new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
+    return new Date(dateString).toLocaleString("pt-BR");
   };
 
   const status = torneio?.status || "—";
@@ -110,7 +110,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
           <StatChip
             icon={<IconRound />}
             label="Rodada"
-            value={`${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas ?? 0}`}
+            value={torneio.totalRodadas ? `${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas}` : `${torneio.rodadaAtual ?? 0} / Sem limite`}
             accent="#2ccfb4"
           />
           {torneio.totalInscritos != null && (
@@ -132,6 +132,19 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
           )}
           {torneio.horario && (
             <StatChip icon={<IconDate />} label="Data" value={formatDate(torneio.horario)} />
+          )}
+          {torneio.linkLive && (
+            <a
+              href={torneio.linkLive}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#f87171] text-[0.82rem] font-semibold no-underline transition-all duration-200 hover:bg-[rgba(239,68,68,0.18)] hover:text-[#fca5a5]"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+              </svg>
+              Assistir ao vivo
+            </a>
           )}
         </div>
       )}
