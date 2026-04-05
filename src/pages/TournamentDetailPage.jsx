@@ -49,6 +49,11 @@ export function TournamentDetailPage() {
     handleDropPlayer,
     handleEditTorneio,
     handleDeleteTorneio,
+    realtimeToast,
+    corteInfo,
+    dismissCorteInfo,
+    checkinRodadaAberto,
+    dismissCheckinBanner,
     usuario,
     token,
   } = useTournamentDetail();
@@ -174,6 +179,37 @@ export function TournamentDetailPage() {
 
       <TournamentHeader torneio={torneio} loading={loading} className="mt-6" />
 
+      {!loading && checkinRodadaAberto && currentPlayer && !currentPlayer?.checkInProximaRodada && !currentPlayer?.checkinProximaRodada && (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 mb-4 rounded-[0.75rem] border border-[rgba(251,191,36,0.45)] bg-[rgba(251,191,36,0.09)] animate-[slide-up_300ms_ease-out]">
+          <div className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p className="m-0 text-[0.88rem] font-semibold text-[#fde68a]">
+              Faça o check-in para a próxima rodada!
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center px-3 py-[0.35rem] border border-[rgba(251,191,36,0.5)] rounded-[0.6rem] text-[0.82rem] font-semibold cursor-pointer text-[#fde68a] bg-[rgba(251,191,36,0.1)] hover:bg-[rgba(251,191,36,0.2)] transition-all duration-150 disabled:opacity-50"
+              onClick={handleCheckin}
+              disabled={actionLoading}
+            >
+              Check-in
+            </button>
+            <button
+              type="button"
+              className="text-[#fde68a] opacity-50 hover:opacity-100 cursor-pointer bg-transparent border-none text-lg leading-none"
+              onClick={dismissCheckinBanner}
+              aria-label="Fechar"
+            >✕</button>
+          </div>
+        </div>
+      )}
+
       {!loading && torneio && (
         <RoundTimer
           torneioId={torneio.id}
@@ -295,6 +331,61 @@ export function TournamentDetailPage() {
       )}
 
       {loading && <SkeletonTournamentDetail />}
+
+      {/* Corte modal */}
+      {corteInfo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-[fade-in_200ms_ease-out]"
+          onClick={(e) => { if (e.target === e.currentTarget) dismissCorteInfo(); }}
+        >
+          <div className="bg-[#110a22] border border-[rgba(199,149,255,0.4)] rounded-2xl w-full max-w-[440px] p-7 shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out] text-center">
+            <div className="text-[2.5rem] mb-3">⚔️</div>
+            <h3 className="text-white font-['Bebas_Neue',sans-serif] text-[1.8rem] tracking-[0.06em] m-0 mb-2">
+              Top {corteInfo.corteTop} — Fase Eliminatória!
+            </h3>
+            <p className="text-[#beafd7] text-[0.9rem] m-0 mb-5">
+              Os {corteInfo.corteTop} melhores jogadores classificados avançam para a fase eliminatória.
+            </p>
+            {corteInfo.jogadoresClassificados?.length > 0 && (
+              <div className="text-left mb-5 max-h-[180px] overflow-y-auto flex flex-col gap-1">
+                {corteInfo.jogadoresClassificados.map((j, i) => (
+                  <div key={j.usuarioId || i} className="flex items-center gap-2 px-3 py-[0.35rem] rounded-lg bg-[rgba(199,149,255,0.08)] border border-[rgba(199,149,255,0.18)]">
+                    <span className="text-[0.72rem] font-bold text-[#a78bfa] w-5 text-center">{i + 1}.</span>
+                    <span className="text-[0.88rem] font-semibold text-[#f5edff]">{j.nome}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(167,79,255,0.4)] transition-all duration-200"
+              onClick={dismissCorteInfo}
+            >
+              Entendido!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Realtime toast */}
+      {realtimeToast && (
+        <div
+          className={`fixed bottom-6 right-6 z-[200] max-w-[340px] flex items-start gap-3 px-4 py-3 rounded-[0.8rem] shadow-[0_8px_24px_rgba(0,0,0,0.5)] border animate-[slide-up_300ms_ease-out] ${realtimeToast.type === "success"
+              ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.45)] text-[#86efac]"
+              : realtimeToast.type === "warning"
+                ? "bg-[rgba(251,191,36,0.13)] border-[rgba(251,191,36,0.45)] text-[#fde68a]"
+                : "bg-[rgba(56,189,248,0.12)] border-[rgba(56,189,248,0.4)] text-[#7dd3fc]"
+            }`}
+        >
+          <span className="text-[0.88rem] font-semibold leading-snug flex-1">{realtimeToast.msg}</span>
+          <button
+            type="button"
+            className="text-inherit opacity-60 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-[1rem] leading-none flex-shrink-0"
+            onClick={() => { }}
+            aria-label="Fechar"
+          >✕</button>
+        </div>
+      )}
 
       <TournamentEditModal
         torneio={torneio}

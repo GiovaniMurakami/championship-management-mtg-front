@@ -224,9 +224,16 @@ export function TournamentJoinPage() {
                             )}
                         </div>
 
+                        {decks.length > 0 && !deckSaved && (
+                            <p className="text-[0.8rem] text-[#fbbf24] text-center mb-2">
+                                Escolha e confirme um deck antes de entrar no torneio.
+                            </p>
+                        )}
+
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-200 text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                            disabled={decks.length > 0 && !deckSaved}
+                            className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-200 text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
                             onClick={handleGoToTournament}
                         >
                             Ir para o torneio
