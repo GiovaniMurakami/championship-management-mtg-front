@@ -306,6 +306,7 @@ function DeckViewButton({ player, token, isOwner, deckNameOverride, onDeckNameUp
 export function StandingsTable({
   standings,
   isFinished = false,
+  isRegistrationOpen = false,
   token,
   isOwner = false,
   torneioNome = "",
@@ -350,17 +351,17 @@ export function StandingsTable({
 
   const filtered = search
     ? enrichedStandings.filter((p) =>
-        getPlayerName(p).toLowerCase().includes(search.toLowerCase())
-      )
+      getPlayerName(p).toLowerCase().includes(search.toLowerCase())
+    )
     : enrichedStandings;
 
-  const hasTop8Cut = standings.length > 8 && !search;
-  const colCount = isFinished ? 11 : 12;
+  const hasTop8Cut = standings.length > 8 && !search && !isRegistrationOpen;
+  const colCount = isRegistrationOpen ? 4 : isFinished ? 11 : 12;
 
   return (
     <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
       <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-        <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Standings</h2>
+        <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">{isRegistrationOpen ? 'Jogadores Inscritos' : 'Standings'}</h2>
         <div className="flex items-center gap-[0.6rem] flex-wrap">
           {standings.length > 5 && (
             <div className="relative flex items-center">
@@ -412,14 +413,14 @@ export function StandingsTable({
                 <tr>
                   <th className="w-10 text-center px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">#</th>
                   <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Jogador</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Pts</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">V</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">D</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">E</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">MWP</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">OMW%</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">GW%</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">OGW%</th>
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Pts</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">V</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">D</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">E</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">MWP</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">OMW%</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">GW%</th>}
+                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">OGW%</th>}
                   <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Deck</th>
                   {!isFinished && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Check-in</th>}
                 </tr>
@@ -453,18 +454,20 @@ export function StandingsTable({
                           {getPlayerName(player)}
                           {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                         </td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">
-                          <span className={isTop8 && !player.dropped ? "text-[#fde68a] font-bold" : undefined}>
-                            {player.pontosMesa ?? player.pontos ?? 0}
-                          </span>
-                        </td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#86efac] font-semibold">{player.vitoriasPartida ?? player.vitorias ?? 0}</td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#fca5a5]">{player.derrotasPartida ?? player.derrotas ?? 0}</td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">{player.empatesPartida ?? player.empates ?? 0}</td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.mwp)}</td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.omwp)}</td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.gwp)}</td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.ogwp)}</td>
+                        {!isRegistrationOpen && (
+                          <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">
+                            <span className={isTop8 && !player.dropped ? "text-[#fde68a] font-bold" : undefined}>
+                              {player.pontosMesa ?? player.pontos ?? 0}
+                            </span>
+                          </td>
+                        )}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#86efac] font-semibold">{player.vitoriasPartida ?? player.vitorias ?? 0}</td>}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#fca5a5]">{player.derrotasPartida ?? player.derrotas ?? 0}</td>}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">{player.empatesPartida ?? player.empates ?? 0}</td>}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.mwp)}</td>}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.omwp)}</td>}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.gwp)}</td>}
+                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.ogwp)}</td>}
                         <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] relative">
                           {isFinished ? (
                             <DeckViewButton
@@ -529,7 +532,7 @@ export function StandingsTable({
                     className={`border rounded-xl p-[0.7rem] ${mobileBorderClass} ${player.dropped ? "opacity-65" : ""}`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-[0.45rem]">
-                      {isTop3 ? (
+                      {isTop3 && !isRegistrationOpen ? (
                         <span className={`inline-flex items-center justify-center w-[1.6rem] h-[1.6rem] rounded-full text-[0.72rem] font-extrabold leading-none flex-shrink-0 ${RANK_BADGE[posicao]}`}>
                           {posicao}
                         </span>
@@ -540,30 +543,45 @@ export function StandingsTable({
                         {getPlayerName(player)}
                         {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                       </span>
-                      <span className={`font-bold text-[0.82rem] ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>
-                        {pontos} pts
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-[0.35rem] mb-[0.4rem] text-[0.82rem]">
-                      <span className="font-semibold text-[#86efac]">{vitorias}V</span>
-                      <span className="text-[#beafd7] font-normal">–</span>
-                      <span className="font-semibold text-[#fca5a5]">{derrotas}D</span>
-                      <span className="text-[#beafd7] font-normal">–</span>
-                      <span className="font-semibold text-[#f5edff]">{empates}E</span>
-                      {!isFinished && (
-                        <span className={`ml-auto text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${isCheckedIn(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
-                          {isCheckedIn(player) ? "✓ Check-in" : "Sem check-in"}
+                      {!isRegistrationOpen && (
+                        <span className={`font-bold text-[0.82rem] ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>
+                          {pontos} pts
                         </span>
                       )}
                     </div>
 
-                    <div className="flex gap-3 flex-wrap text-[0.77rem] text-[#beafd7] [font-variant-numeric:tabular-nums]">
-                      <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">MWP</span> {formatPct(player.mwp)}</span>
-                      <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">OMW%</span> {formatPct(player.omwp)}</span>
-                      <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">GW%</span> {formatPct(player.gwp)}</span>
-                      <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">OGW%</span> {formatPct(player.ogwp)}</span>
-                    </div>
+                    {isRegistrationOpen ? (
+                      <div className="flex items-center gap-3 text-[0.82rem]">
+                        <span className={`text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${getDeckStatus(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
+                          {getDeckStatus(player) ? "✓ Deck" : "Sem deck"}
+                        </span>
+                        <span className={`text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${isCheckedIn(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
+                          {isCheckedIn(player) ? "✓ Check-in" : "Sem check-in"}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-[0.35rem] mb-[0.4rem] text-[0.82rem]">
+                          <span className="font-semibold text-[#86efac]">{vitorias}V</span>
+                          <span className="text-[#beafd7] font-normal">–</span>
+                          <span className="font-semibold text-[#fca5a5]">{derrotas}D</span>
+                          <span className="text-[#beafd7] font-normal">–</span>
+                          <span className="font-semibold text-[#f5edff]">{empates}E</span>
+                          {!isFinished && (
+                            <span className={`ml-auto text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${isCheckedIn(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
+                              {isCheckedIn(player) ? "✓ Check-in" : "Sem check-in"}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex gap-3 flex-wrap text-[0.77rem] text-[#beafd7] [font-variant-numeric:tabular-nums]">
+                          <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">MWP</span> {formatPct(player.mwp)}</span>
+                          <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">OMW%</span> {formatPct(player.omwp)}</span>
+                          <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">GW%</span> {formatPct(player.gwp)}</span>
+                          <span><span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] text-[rgba(199,149,255,0.6)] mr-[0.15rem]">OGW%</span> {formatPct(player.ogwp)}</span>
+                        </div>
+                      </>
+                    )}
 
                     {isFinished && (
                       <div className="mt-2 pt-2 border-t border-[rgba(217,180,255,0.2)]">
