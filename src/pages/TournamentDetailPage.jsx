@@ -126,16 +126,40 @@ export function TournamentDetailPage() {
         )}
       </div>
 
-      <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
-        <iframe
-          src={`https://player.twitch.tv/?channel=tiagofuguete&parent=${window.location.hostname}`}
-          height="450"
-          width="100%"
-          allowFullScreen
-          title="Twitch - tiagofuguete"
-          className="block border-none w-full max-[768px]:h-[220px]"
-        />
-      </div>
+      {torneio?.linkLive && (() => {
+        const url = torneio.linkLive;
+        const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/);
+        const twitchMatch = url.match(/(?:twitch\.tv\/)([\w]+)/);
+        if (ytMatch) {
+          return (
+            <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
+              <iframe
+                src={`https://www.youtube.com/embed/${ytMatch[1]}`}
+                height="450"
+                width="100%"
+                allowFullScreen
+                title="Live"
+                className="block border-none w-full max-[768px]:h-[220px]"
+              />
+            </div>
+          );
+        }
+        if (twitchMatch) {
+          return (
+            <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
+              <iframe
+                src={`https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${window.location.hostname}`}
+                height="450"
+                width="100%"
+                allowFullScreen
+                title="Live"
+                className="block border-none w-full max-[768px]:h-[220px]"
+              />
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {(error || successMsg) && (
         <div
@@ -257,16 +281,15 @@ export function TournamentDetailPage() {
               onContestResult={handleContestResult}
               actionLoading={actionLoading}
             />
-            {(!isRegistrationOpen || isFinished) && (
-              <StandingsTable
-                standings={standings}
-                isFinished={isFinished}
-                token={token}
-                isOwner={isOwner}
-                torneioNome={torneio?.nome}
-                rodadaAtual={torneio?.rodadaAtual ?? 0}
-              />
-            )}
+            <StandingsTable
+              standings={standings}
+              isFinished={isFinished}
+              isRegistrationOpen={isRegistrationOpen}
+              token={token}
+              isOwner={isOwner}
+              torneioNome={torneio?.nome}
+              rodadaAtual={torneio?.rodadaAtual ?? 0}
+            />
           </div>
         </div>
       )}
