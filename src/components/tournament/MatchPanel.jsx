@@ -29,6 +29,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         "Jogador 2";
 
     const isBye = !myMatch.jogador2Id && !myMatch.jogador2;
+    const isContested = Boolean(myMatch.contestado);
     const isReported = myMatch.status === "finalizada" || myMatch.resultado || myMatch.reportado;
     const hasLaterRound = Number(torneio?.rodadaAtual || 0) > Number(myMatch?.rodada || 0);
 
@@ -87,8 +88,8 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                             <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
                         </div>
-                        <div className={isReported ? "font-['Bebas_Neue',sans-serif] text-[2.1rem] text-white [text-shadow:0_0_14px_rgba(199,149,255,0.45)] max-[900px]:text-[1.4rem]" : "font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)] max-[900px]:text-[1.4rem]"}>
-                            {isReported
+                        <div className={isReported && !isContested ? "font-['Bebas_Neue',sans-serif] text-[2.1rem] text-white [text-shadow:0_0_14px_rgba(199,149,255,0.45)] max-[900px]:text-[1.4rem]" : "font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)] max-[900px]:text-[1.4rem]"}>
+                            {isReported && !isContested
                                 ? `${myMatch.vitoriasJogador1 ?? "?"} - ${myMatch.vitoriasJogador2 ?? "?"}`
                                 : "VS"}
                         </div>
@@ -98,7 +99,20 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                         </div>
                     </div>
 
-                    {isReported ? (
+                    {isContested ? (
+                        <div className="mt-[-0.2rem] mb-[0.8rem] flex flex-col items-center gap-3">
+                            <div className="flex items-center gap-2 px-4 py-3 rounded-[0.7rem] border border-[rgba(251,191,36,0.4)] bg-[rgba(251,191,36,0.08)]">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <p className="m-0 text-[0.85rem] font-semibold text-[#fde68a]">
+                                    Resultado contestado — aguardando revisão do administrador
+                                </p>
+                            </div>
+                        </div>
+                    ) : isReported ? (
                         <div className="mt-[-0.2rem] mb-[0.8rem] flex flex-col items-center gap-3">
                             <p className="m-0 text-center text-[0.82rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">
                                 Resultado registrado

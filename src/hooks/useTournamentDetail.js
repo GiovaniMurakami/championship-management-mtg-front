@@ -181,6 +181,8 @@ export function useTournamentDetail() {
                 setTorneio((prev) =>
                     prev ? { ...prev, totalInscritos: (prev.totalInscritos || 0) + 1 } : prev
                 );
+                // Reload full tournament to pick up any updated totalRodadas from the backend
+                loadTournament();
             },
             onCheckinRealizado: (msg) => {
                 const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
