@@ -16,6 +16,11 @@ const LigaDetailPage = lazy(() => import("../pages/LigaDetailPage").then(m => ({
 const LigaCreatePage = lazy(() => import("../pages/LigaCreatePage").then(m => ({ default: m.LigaCreatePage })));
 const EsqueciSenhaPage = lazy(() => import("../pages/EsqueciSenhaPage").then(m => ({ default: m.EsqueciSenhaPage })));
 const ResetSenhaPage = lazy(() => import("../pages/ResetSenhaPage").then(m => ({ default: m.ResetSenhaPage })));
+const LandingPage = lazy(() => import("../pages/LandingPage").then(m => ({ default: m.LandingPage })));
+const LandingDecksPage = lazy(() => import("../pages/LandingDecksPage").then(m => ({ default: m.LandingDecksPage })));
+const LandingBlogPage = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
+const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
+const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -174,6 +179,11 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         />
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
+        <Route path="/landing-page" element={<LandingPage />} />
+        <Route path="/landing-page/decks" element={<LandingDecksPage />} />
+        <Route path="/landing-page/blog" element={<LandingBlogPage />} />
+        <Route path="/landing-page/sobre-mim" element={<LandingSobreMimPage />} />
+        <Route path="/landing-page/parceiros" element={<LandingParceirosPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

@@ -108,9 +108,9 @@ export function Navbar({
       className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.72)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)] max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:rounded-2xl max-nav:top-[0.7rem] max-nav:row-gap-[0.6rem]"
     >
       {/* Brand */}
-      <div className="font-['Bebas_Neue',sans-serif] text-[1.35rem] tracking-[0.05em] whitespace-nowrap">
-        <span className="text-[#c795ff]">TIAGO</span> FUGUETE
-      </div>
+      <NavLink to="/landing-page" className="shrink-0 opacity-80 hover:opacity-100 transition-opacity">
+        <img src="https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png" alt="Tiago Fuguete" className="h-7 object-contain" />
+      </NavLink>
 
       {/* Desktop nav */}
       <nav
