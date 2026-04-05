@@ -8,6 +8,8 @@ import {
     iniciarTorneio,
     registrarResultado,
     contestarResultado,
+    ajustarResultado,
+    gerarLinkIngresso,
     buscarTorneio,
     proximaRodada,
     dropJogador,
@@ -307,7 +309,21 @@ export function useTournamentDetail() {
             await loadPartidas();
             clearMessages();
         } catch (err) {
-            setError(err.message || "Erro ao escolher deck.");
+            const status = err?.response?.status || err?.status;
+            if (status === 400) {
+                const selectedDeck = decks.find((d) => String(d.id) === String(selectedDeckId));
+                const deckFormato = selectedDeck?.formato;
+                const torneioFormato = torneio?.formato;
+                if (deckFormato && torneioFormato && deckFormato.toLowerCase() !== torneioFormato.toLowerCase()) {
+                    setError(
+                        `O deck selecionado é de formato ${deckFormato.charAt(0).toUpperCase() + deckFormato.slice(1)}, mas o torneio é ${torneioFormato.charAt(0).toUpperCase() + torneioFormato.slice(1)}. Escolha um deck compatível.`
+                    );
+                } else {
+                    setError(err.message || "Deck inválido para este torneio.");
+                }
+            } else {
+                setError(err.message || "Erro ao escolher deck.");
+            }
             clearMessages();
         } finally {
             setActionLoading(false);
@@ -403,6 +419,7 @@ export function useTournamentDetail() {
                 id: partidaId,
                 ...(data?.partida || data),
                 status: "pendente",
+                contestado: true,
                 vitoriasJogador1: 0,
                 vitoriasJogador2: 0,
             });
@@ -417,6 +434,45 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+        }
+    };
+
+    const handleAdjustResult = async (partidaId, resultado) => {
+        if (!partidaId) return;
+        setActionLoading(true);
+        setError("");
+        try {
+            const data = await ajustarResultado(partidaId, resultado, token);
+            const updated = mergePartidaState({
+                id: partidaId,
+                ...(data?.partida || data),
+                status: "finalizada",
+                contestado: false,
+                ...resultado,
+            });
+            setSuccessMsg("Resultado ajustado com sucesso!");
+            await loadStandings();
+            if (!updated) {
+                await loadPartidas();
+            }
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao ajustar resultado.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleGerarLinkIngresso = async () => {
+        if (!torneioId) return null;
+        try {
+            const data = await gerarLinkIngresso(torneioId, token);
+            return data;
+        } catch (err) {
+            setError(err.message || "Erro ao gerar link de ingresso.");
+            clearMessages();
+            return null;
         }
     };
 
@@ -622,6 +678,8 @@ export function useTournamentDetail() {
         handleInscrever,
         handleReportResult,
         handleContestResult,
+        handleAdjustResult,
+        handleGerarLinkIngresso,
         handleStartTournament,
         handleNextRound,
         handleBulkDropPlayers,

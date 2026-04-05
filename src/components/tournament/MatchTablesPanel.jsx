@@ -56,9 +56,16 @@ function MatchCard({ partida, index, usuarioId, torneio, isOwner, onContestResul
         <article className={`rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
             <div className="flex items-center justify-between mb-[0.55rem]">
                 <span className="text-[0.72rem] font-bold text-[#7dd3fc] tracking-[0.04em] uppercase">Mesa {getMesa(partida, index)}</span>
-                <span className={`text-[0.68rem] font-bold tracking-[0.05em] uppercase px-2 py-[0.15rem] rounded-full ${isFinalizada ? "bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.35)] text-[#86efac]" : "bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] text-[#fde047]"}`}>
-                    {isFinalizada ? "Finalizada" : "Pendente"}
-                </span>
+                <div className="flex items-center gap-[0.4rem]">
+                    {partida.contestado && (
+                        <span className="text-[0.65rem] font-bold tracking-[0.05em] uppercase px-[0.55rem] py-[0.15rem] rounded-full bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#f87171]">
+                            Contestado
+                        </span>
+                    )}
+                    <span className={`text-[0.68rem] font-bold tracking-[0.05em] uppercase px-2 py-[0.15rem] rounded-full ${isFinalizada ? "bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.35)] text-[#86efac]" : "bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] text-[#fde047]"}`}>
+                        {isFinalizada ? "Finalizada" : "Pendente"}
+                    </span>
+                </div>
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem]">

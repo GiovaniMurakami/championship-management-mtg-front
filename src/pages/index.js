@@ -4,6 +4,7 @@ export { MyDecksPage } from "./MyDecksPage";
 export { TournamentPage } from "./TournamentPage";
 export { TournamentDetailPage } from "./TournamentDetailPage";
 export { TournamentCreatePage } from "./TournamentCreatePage";
+export { TournamentJoinPage } from "./TournamentJoinPage";
 export { LigaPage } from "./LigaPage";
 export { LigaDetailPage } from "./LigaDetailPage";
 export { LigaCreatePage } from "./LigaCreatePage";

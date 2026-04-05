@@ -29,6 +29,7 @@ const INITIAL_FORM = {
     linkBanner: "",
     somRodada: "",
     linkLive: "",
+    secreto: false,
 };
 
 const inputClass =
@@ -46,8 +47,8 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
     const bannerInputRef = useRef(null);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCreateForm((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setCreateForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     };
 
     const handleBannerFileChange = (e) => {
@@ -147,6 +148,22 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 disabled={isSubmitting}
                                 className={inputClass}
                             />
+                        </div>
+
+                        <div className="flex items-center gap-3 py-1">
+                            <input
+                                id="secreto"
+                                name="secreto"
+                                type="checkbox"
+                                checked={createForm.secreto}
+                                onChange={handleChange}
+                                disabled={isSubmitting}
+                                className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer"
+                            />
+                            <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
+                                Torneio Secreto
+                                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
+                            </label>
                         </div>
 
                         <div className="flex flex-col gap-2">

@@ -113,21 +113,27 @@ export function PlayerProfile({
                     ) : (
                         <>
                             <div className="flex flex-col gap-[0.4rem] max-h-[220px] overflow-y-auto pr-1">
-                                {decks.map((deck) => (
-                                    <button
-                                        key={deck.id}
-                                        type="button"
-                                        className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.9rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedDeckId === deck.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]"}`}
-                                        onClick={() => onDeckChange(deck.id)}
-                                        disabled={!canEditDeck || actionLoading}
-                                    >
-                                        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{deck.nome}</span>
-                                        <span className="flex items-center gap-2 flex-shrink-0">
-                                            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.04em] px-[0.45rem] py-[0.15rem] rounded-[0.4rem] bg-[rgba(199,149,255,0.15)] text-[#c795ff]">{deck.formato}</span>
-                                            <span className="text-[0.78rem] text-[#beafd7] whitespace-nowrap">{calcTotal(deck)} cartas</span>
-                                        </span>
-                                    </button>
-                                ))}
+                                {decks.map((deck) => {
+                                    const isCompatible = !torneio?.formato || !deck.formato || deck.formato.toLowerCase() === torneio.formato.toLowerCase();
+                                    return (
+                                        <button
+                                            key={deck.id}
+                                            type="button"
+                                            className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.9rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedDeckId === deck.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : isCompatible ? "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]" : "bg-[rgba(239,68,68,0.04)] border-[rgba(239,68,68,0.2)] opacity-60 hover:opacity-80"}`}
+                                            onClick={() => onDeckChange(deck.id)}
+                                            disabled={!canEditDeck || actionLoading}
+                                        >
+                                            <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{deck.nome}</span>
+                                            <span className="flex items-center gap-2 flex-shrink-0">
+                                                {!isCompatible && (
+                                                    <span className="text-[0.65rem] font-bold uppercase tracking-[0.04em] px-[0.4rem] py-[0.12rem] rounded-[0.4rem] bg-[rgba(239,68,68,0.15)] text-[#f87171]">Incompatível</span>
+                                                )}
+                                                <span className="text-[0.7rem] font-semibold uppercase tracking-[0.04em] px-[0.45rem] py-[0.15rem] rounded-[0.4rem] bg-[rgba(199,149,255,0.15)] text-[#c795ff]">{deck.formato}</span>
+                                                <span className="text-[0.78rem] text-[#beafd7] whitespace-nowrap">{calcTotal(deck)} cartas</span>
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                             <button
                                 className="inline-flex items-center justify-center mt-2 w-full px-4 py-[0.55rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(255,255,255,0.1)] hover:not-disabled:border-[rgba(199,149,255,0.5)]"
