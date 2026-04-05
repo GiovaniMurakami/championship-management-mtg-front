@@ -41,6 +41,8 @@ export function TournamentDetailPage() {
     handleInscrever,
     handleReportResult,
     handleContestResult,
+    handleAdjustResult,
+    handleGerarLinkIngresso,
     handleStartTournament,
     handleNextRound,
     handleBulkDropPlayers,
@@ -182,6 +184,8 @@ export function TournamentDetailPage() {
                   })}
                   onDropPlayer={handleDropPlayer}
                   onEditResult={handleReportResult}
+                  onAdjustResult={handleAdjustResult}
+                  onGerarLinkIngresso={handleGerarLinkIngresso}
                   actionLoading={actionLoading}
                   adminActionKey={adminActionKey}
                   droppingPlayerId={droppingPlayerId}
@@ -220,6 +224,8 @@ export function TournamentDetailPage() {
                   })}
                   onDropPlayer={handleDropPlayer}
                   onEditResult={handleReportResult}
+                  onAdjustResult={handleAdjustResult}
+                  onGerarLinkIngresso={handleGerarLinkIngresso}
                   actionLoading={actionLoading}
                   adminActionKey={adminActionKey}
                   droppingPlayerId={droppingPlayerId}

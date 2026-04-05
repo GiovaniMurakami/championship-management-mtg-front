@@ -44,6 +44,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         linkBanner: "",
         somRodada: "",
         linkLive: "",
+        secreto: false,
     });
     const [bannerFile, setBannerFile] = useState(null);
     const [bannerPreview, setBannerPreview] = useState(null);
@@ -72,6 +73,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                     linkBanner: torneio.linkBanner || "",
                     somRodada: torneio.somRodada || "",
                     linkLive: torneio.linkLive || "",
+                    secreto: torneio.secreto ?? false,
                 });
             });
         }
@@ -80,8 +82,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     if (!isOpen) return null;
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     };
 
     const handleBannerFileChange = (e) => {
@@ -170,6 +172,21 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="edit-nome" className="text-[#e0e0e0] font-medium text-[0.9rem]">Nome do Torneio</label>
                             <input id="edit-nome" name="nome" type="text" value={form.nome} onChange={handleChange} required disabled={loading} className={inputClass} />
+                        </div>
+                        <div className="flex items-center gap-3 py-1">
+                            <input
+                                id="edit-secreto"
+                                name="secreto"
+                                type="checkbox"
+                                checked={form.secreto}
+                                onChange={handleChange}
+                                disabled={isDisabled}
+                                className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer"
+                            />
+                            <label htmlFor="edit-secreto" className="text-[#e0e0e0] font-medium text-[0.9rem] cursor-pointer select-none">
+                                Torneio Secreto
+                                <span className="block text-[0.75rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
+                            </label>
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="edit-horario" className="text-[#e0e0e0] font-medium text-[0.9rem]">Data e Hora</label>

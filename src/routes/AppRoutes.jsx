@@ -10,6 +10,7 @@ const MyDecksPage = lazy(() => import("../pages/MyDecksPage").then(m => ({ defau
 const TournamentPage = lazy(() => import("../pages/TournamentPage").then(m => ({ default: m.TournamentPage })));
 const TournamentDetailPage = lazy(() => import("../pages/TournamentDetailPage").then(m => ({ default: m.TournamentDetailPage })));
 const TournamentCreatePage = lazy(() => import("../pages/TournamentCreatePage").then(m => ({ default: m.TournamentCreatePage })));
+const TournamentJoinPage = lazy(() => import("../pages/TournamentJoinPage").then(m => ({ default: m.TournamentJoinPage })));
 const LigaPage = lazy(() => import("../pages/LigaPage").then(m => ({ default: m.LigaPage })));
 const LigaDetailPage = lazy(() => import("../pages/LigaDetailPage").then(m => ({ default: m.LigaDetailPage })));
 const LigaCreatePage = lazy(() => import("../pages/LigaCreatePage").then(m => ({ default: m.LigaCreatePage })));
@@ -128,6 +129,14 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
           element={
             <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
               <TournamentDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/torneio/ingressar/:token"
+          element={
+            <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
+              <TournamentJoinPage />
             </ProtectedRoute>
           }
         />

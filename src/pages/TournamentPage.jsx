@@ -266,6 +266,20 @@ export function TournamentPage() {
                       Ver Torneio
                     </button>
 
+                    {isAdmin && (
+                      <button
+                        className="px-4 py-2 border border-[rgba(167,79,255,0.5)] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(167,79,255,0.08)] text-[#c795ff] transition-all duration-300 hover:bg-[rgba(167,79,255,0.22)] hover:text-white hover:-translate-y-px active:translate-y-0 max-[768px]:w-full flex items-center justify-center gap-[0.4rem]"
+                        type="button"
+                        onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        Copiar
+                      </button>
+                    )}
+
                     {torneio.status === "inscricoes_abertas" && (
                       <button
                         className={`px-4 py-2 border rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] transition-all duration-300 hover:-translate-y-px active:translate-y-0 max-[768px]:w-full disabled:opacity-80 disabled:cursor-not-allowed ${inscrito

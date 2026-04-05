@@ -96,6 +96,21 @@ export const contestarResultado = (partidaId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const ajustarResultado = (partidaId, payload, token) =>
+  httpClient.put(`/torneio/partida/${partidaId}/ajustar`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const gerarLinkIngresso = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/gerar-link-ingresso`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const ingressarComToken = (tokenIngresso, authToken) =>
+  httpClient.post(`/torneio/ingressar/${tokenIngresso}`, {}, {
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+
 export const proximaRodada = (torneioId, token) =>
   httpClient.post(`/torneio/${torneioId}/proxima-rodada`, {}, {
     headers: { Authorization: `Bearer ${token}` },
