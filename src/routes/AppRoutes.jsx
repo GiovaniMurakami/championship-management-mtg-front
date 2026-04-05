@@ -28,7 +28,8 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<Home onOpenAuth={auth.openAuth} isAuthenticated={auth.isAuthenticated} />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/torneio" element={<Home onOpenAuth={auth.openAuth} isAuthenticated={auth.isAuthenticated} />} />
         <Route
           path="/decks"
           element={
@@ -179,11 +180,15 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         />
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
-        <Route path="/landing-page" element={<LandingPage />} />
-        <Route path="/landing-page/decks" element={<LandingDecksPage />} />
-        <Route path="/landing-page/blog" element={<LandingBlogPage />} />
-        <Route path="/landing-page/sobre-mim" element={<LandingSobreMimPage />} />
-        <Route path="/landing-page/parceiros" element={<LandingParceirosPage />} />
+        <Route path="/decks" element={<LandingDecksPage />} />
+        <Route path="/blog" element={<LandingBlogPage />} />
+        <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
+        <Route path="/parceiros" element={<LandingParceirosPage />} />
+        <Route path="/landing-page" element={<Navigate to="/" replace />} />
+        <Route path="/landing-page/decks" element={<Navigate to="/decks" replace />} />
+        <Route path="/landing-page/blog" element={<Navigate to="/blog" replace />} />
+        <Route path="/landing-page/sobre-mim" element={<Navigate to="/sobre-mim" replace />} />
+        <Route path="/landing-page/parceiros" element={<Navigate to="/parceiros" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

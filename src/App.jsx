@@ -3,7 +3,7 @@ import { Navbar, AuthModal, CardPreviewModal, EditProfileModal, Footer } from ".
 import { useAuth, useCardPreview, useCardSearch, useDeckBuilder } from "./hooks";
 import { AppRoutes } from "./routes";
 
-const BARE_ROUTES = ["/landing-page", "/landing-page/decks", "/landing-page/blog", "/landing-page/sobre-mim", "/landing-page/parceiros"];
+const BARE_ROUTES = ["/", "/decks", "/blog", "/sobre-mim", "/parceiros"];
 
 function AppContent() {
   const auth = useAuth();

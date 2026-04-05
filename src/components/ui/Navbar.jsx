@@ -108,16 +108,13 @@ export function Navbar({
       className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.72)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)] max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:rounded-2xl max-nav:top-[0.7rem] max-nav:row-gap-[0.6rem]"
     >
       {/* Brand */}
-      <NavLink to="/landing-page" className="shrink-0 opacity-80 hover:opacity-100 transition-opacity">
+      <NavLink to="/" className="shrink-0 opacity-80 hover:opacity-100 transition-opacity">
         <img src="https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png" alt="Tiago Fuguete" className="h-7 object-contain" />
       </NavLink>
 
       {/* Desktop nav */}
-      <nav
-        className="flex items-center gap-4 max-nav:hidden"
-        aria-label="Navegação principal"
-      >
-        <NavLink to="/" end className={desktopLinkClass} onClick={close}>
+      <nav className="flex items-center gap-4 max-nav:hidden" aria-label="Navegação principal">
+        <NavLink to="/torneio" end className={desktopLinkClass} onClick={close}>
           Home
         </NavLink>
 
@@ -230,114 +227,116 @@ export function Navbar({
       </button>
 
       {/* Mobile panel */}
-      {menuOpen && (
-        <div
-          className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)] animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] max-nav:col-span-full"
-          role="dialog"
-          aria-label="Menu de navegação"
-        >
-          <nav className="flex flex-col gap-[0.2rem]">
-            <NavLink to="/" end className={mobileLinkClass} onClick={close}>
-              <IconHome />
-              <span>Home</span>
-            </NavLink>
-
-            {isAuthenticated ? (
-              <NavLink to="/torneios" className={mobileLinkClass} onClick={close}>
-                <IconTrophy />
-                <span>Torneios</span>
+      {
+        menuOpen && (
+          <div
+            className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)] animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] max-nav:col-span-full"
+            role="dialog"
+            aria-label="Menu de navegação"
+          >
+            <nav className="flex flex-col gap-[0.2rem]">
+              <NavLink to="/torneio" end className={mobileLinkClass} onClick={close}>
+                <IconHome />
+                <span>Home</span>
               </NavLink>
-            ) : (
-              <button
-                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                type="button"
-                onClick={() => { onOpenAuth("login"); close(); }}
-              >
-                <IconTrophy />
-                <span>Torneios</span>
-              </button>
-            )}
 
-            {isAuthenticated ? (
-              <NavLink to="/meus-decks" className={mobileLinkClass} onClick={close}>
-                <IconDeck />
-                <span>Meus Decks</span>
-              </NavLink>
-            ) : (
-              <button
-                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                type="button"
-                onClick={() => { onOpenAuth("login"); close(); }}
-              >
-                <IconDeck />
-                <span>Decks</span>
-              </button>
-            )}
-
-            {isAuthenticated ? (
-              <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
-                <IconLiga />
-                <span>Ligas</span>
-              </NavLink>
-            ) : (
-              <button
-                className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                type="button"
-                onClick={() => { onOpenAuth("login"); close(); }}
-              >
-                <IconLiga />
-                <span>Ligas</span>
-              </button>
-            )}
-          </nav>
-
-          <div className="h-px bg-[rgba(217,180,255,0.2)] my-3" />
-
-          <div className="flex flex-col gap-2">
-            {usuario ? (
-              <>
+              {isAuthenticated ? (
+                <NavLink to="/torneios" className={mobileLinkClass} onClick={close}>
+                  <IconTrophy />
+                  <span>Torneios</span>
+                </NavLink>
+              ) : (
                 <button
-                  className="flex items-center gap-3 px-[0.75rem] py-[0.6rem] rounded-[0.65rem] border border-[rgba(217,180,255,0.2)] bg-[rgba(167,79,255,0.1)] cursor-pointer w-full text-left text-[#f5edff] transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
-                  type="button"
-                  onClick={() => { onOpenEditProfile(); close(); }}
-                >
-                  <NavAvatar nome={usuario.nome} />
-                  <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
-                    <span className="text-[0.9rem] font-semibold text-[#f5edff] whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
-                    <span className="text-[0.74rem] text-[#beafd7]">Editar perfil</span>
-                  </div>
-                  <IconEdit />
-                </button>
-                <button
-                  className="flex items-center justify-center gap-2 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-[rgba(255,255,255,0.03)] text-[#f5edff]"
-                  type="button"
-                  onClick={() => { onLogout(); close(); }}
-                >
-                  <IconLogout />
-                  Sair
-                </button>
-              </>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:text-[#f5edff] hover:bg-[rgba(167,79,255,0.08)] min-h-[44px]"
-                  type="button"
-                  onClick={() => { onOpenAuth("register"); close(); }}
-                >
-                  Cadastro
-                </button>
-                <button
-                  className="border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white transition-all duration-200 hover:shadow-[0_4px_16px_rgba(142,57,237,0.4)] min-h-[44px]"
+                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
                   type="button"
                   onClick={() => { onOpenAuth("login"); close(); }}
                 >
-                  Entrar
+                  <IconTrophy />
+                  <span>Torneios</span>
                 </button>
-              </div>
-            )}
+              )}
+
+              {isAuthenticated ? (
+                <NavLink to="/meus-decks" className={mobileLinkClass} onClick={close}>
+                  <IconDeck />
+                  <span>Meus Decks</span>
+                </NavLink>
+              ) : (
+                <button
+                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
+                  type="button"
+                  onClick={() => { onOpenAuth("login"); close(); }}
+                >
+                  <IconDeck />
+                  <span>Decks</span>
+                </button>
+              )}
+
+              {isAuthenticated ? (
+                <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
+                  <IconLiga />
+                  <span>Ligas</span>
+                </NavLink>
+              ) : (
+                <button
+                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
+                  type="button"
+                  onClick={() => { onOpenAuth("login"); close(); }}
+                >
+                  <IconLiga />
+                  <span>Ligas</span>
+                </button>
+              )}
+            </nav>
+
+            <div className="h-px bg-[rgba(217,180,255,0.2)] my-3" />
+
+            <div className="flex flex-col gap-2">
+              {usuario ? (
+                <>
+                  <button
+                    className="flex items-center gap-3 px-[0.75rem] py-[0.6rem] rounded-[0.65rem] border border-[rgba(217,180,255,0.2)] bg-[rgba(167,79,255,0.1)] cursor-pointer w-full text-left text-[#f5edff] transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
+                    type="button"
+                    onClick={() => { onOpenEditProfile(); close(); }}
+                  >
+                    <NavAvatar nome={usuario.nome} />
+                    <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
+                      <span className="text-[0.9rem] font-semibold text-[#f5edff] whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
+                      <span className="text-[0.74rem] text-[#beafd7]">Editar perfil</span>
+                    </div>
+                    <IconEdit />
+                  </button>
+                  <button
+                    className="flex items-center justify-center gap-2 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-[rgba(255,255,255,0.03)] text-[#f5edff]"
+                    type="button"
+                    onClick={() => { onLogout(); close(); }}
+                  >
+                    <IconLogout />
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:text-[#f5edff] hover:bg-[rgba(167,79,255,0.08)] min-h-[44px]"
+                    type="button"
+                    onClick={() => { onOpenAuth("register"); close(); }}
+                  >
+                    Cadastro
+                  </button>
+                  <button
+                    className="border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white transition-all duration-200 hover:shadow-[0_4px_16px_rgba(142,57,237,0.4)] min-h-[44px]"
+                    type="button"
+                    onClick={() => { onOpenAuth("login"); close(); }}
+                  >
+                    Entrar
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
     </header>
   );
 }

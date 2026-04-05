@@ -4,12 +4,12 @@ import { Link, useLocation } from "react-router-dom";
 const LOGO = "https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png";
 
 const NAV_LINKS = [
-    { label: "Home", href: "/landing-page" },
-    { label: "Torneios", href: "/" },
-    { label: "Decks", href: "/landing-page/decks" },
-    { label: "Blog", href: "/landing-page/blog" },
-    { label: "Sobre mim", href: "/landing-page/sobre-mim" },
-    { label: "Parceiros", href: "/landing-page/parceiros" },
+    { label: "Home", href: "/" },
+    { label: "Torneios", href: "/torneio" },
+    { label: "Decks", href: "/decks" },
+    { label: "Blog", href: "/blog" },
+    { label: "Sobre mim", href: "/sobre-mim" },
+    { label: "Parceiros", href: "/parceiros" },
 ];
 
 const IconStar = () => (
@@ -26,7 +26,7 @@ export function LandingHeader() {
     const close = () => setMenuOpen(false);
 
     const linkClass = (href) => {
-        const isActive = href === "/landing-page"
+        const isActive = href === "/"
             ? pathname === href
             : pathname === href || pathname.startsWith(href + "/");
         return `no-underline font-semibold text-[0.9rem] cursor-pointer transition-colors duration-200 ${isActive
@@ -36,7 +36,7 @@ export function LandingHeader() {
     };
 
     const mobileLinkClass = (href) => {
-        const isActive = href === "/landing-page"
+        const isActive = href === "/"
             ? pathname === href
             : pathname === href || pathname.startsWith(href + "/");
         return `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
