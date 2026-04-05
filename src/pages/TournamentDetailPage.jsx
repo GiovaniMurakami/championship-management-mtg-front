@@ -257,13 +257,16 @@ export function TournamentDetailPage() {
               onContestResult={handleContestResult}
               actionLoading={actionLoading}
             />
-            <StandingsTable
-              standings={standings}
-              isFinished={isFinished}
-              token={token}
-              isOwner={isOwner}
-              torneioNome={torneio?.nome}
-            />
+            {(!isRegistrationOpen || isFinished) && (
+              <StandingsTable
+                standings={standings}
+                isFinished={isFinished}
+                token={token}
+                isOwner={isOwner}
+                torneioNome={torneio?.nome}
+                rodadaAtual={torneio?.rodadaAtual ?? 0}
+              />
+            )}
           </div>
         </div>
       )}
