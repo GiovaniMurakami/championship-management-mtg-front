@@ -151,7 +151,7 @@ export function useAuth() {
         senha: registerForm.senha,
       });
       saveAuth(authData);
-      setAuthMessage("Conta criada com sucesso.");
+      setAuthMessage("Conta criada com sucesso! Um e-mail de boas-vindas foi enviado para você.");
       setShowAuthModal(false);
       setRegisterForm({ nome: "", email: "", senha: "" });
     } catch (error) {

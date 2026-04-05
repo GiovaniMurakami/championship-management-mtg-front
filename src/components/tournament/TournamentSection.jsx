@@ -67,24 +67,44 @@ export function TournamentSection() {
         {loading
           ? [1, 2, 3].map((i) => <SkeletonBannerCard key={i} />)
           : items.map((item) => {
-              const formato = item.formato || "—";
-              const cor = getFormatColor(formato);
-              const data = item.horario ? formatDate(item.horario) : "—";
-              const premio = item.premio || null;
-              const status = item.status;
+            const formato = item.formato || "—";
+            const cor = getFormatColor(formato);
+            const data = item.horario ? formatDate(item.horario) : "—";
+            const premio = item.premio || null;
+            const status = item.status;
+            const banner = item.bannerUrl || null;
 
-              return (
-                <article
-                  key={item.id}
-                  className="relative border border-[rgba(217,180,255,0.18)] rounded-[1.1rem] px-5 pt-5 pb-[1.1rem] bg-[linear-gradient(160deg,rgba(22,12,46,0.98),rgba(14,8,30,0.98))] shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer card-hover-glow"
-                  style={{ "--format-color": cor, "--glow-color": cor }}
-                  onClick={() => navigate(`/torneios/${item.id}`)}
-                >
-                  {/* Accent bar */}
+            return (
+              <article
+                key={item.id}
+                className="relative border border-[rgba(217,180,255,0.18)] rounded-[1.1rem] bg-[linear-gradient(160deg,rgba(22,12,46,0.98),rgba(14,8,30,0.98))] shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer card-hover-glow"
+                style={{ "--format-color": cor, "--glow-color": cor }}
+                onClick={() => navigate(`/torneios/${item.id}`)}
+              >
+                {/* Banner image */}
+                {banner ? (
+                  <div className="relative w-full h-[160px] overflow-hidden">
+                    <img
+                      src={banner}
+                      alt={`Banner de ${item.nome}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(14,8,30,0.92)]" />
+                    {/* Accent bar over banner */}
+                    <div
+                      className="absolute top-0 left-0 right-0 h-[3px]"
+                      style={{ background: `linear-gradient(90deg, transparent, ${cor}, transparent)`, opacity: 0.9 }}
+                    />
+                  </div>
+                ) : (
+                  /* Accent bar (no banner) */
                   <div
                     className="absolute top-0 left-0 right-0 h-[3px]"
                     style={{ background: `linear-gradient(90deg, transparent, ${cor}, transparent)`, opacity: 0.9 }}
                   />
+                )}
+
+                <div className={`px-5 pb-[1.1rem] ${banner ? "pt-3" : "pt-5"}`}>
                   {/* Subtle corner glow */}
                   <div
                     className="absolute top-0 left-0 w-[120px] h-[120px] pointer-events-none opacity-[0.06]"
@@ -132,9 +152,10 @@ export function TournamentSection() {
                       <strong className="text-[#efe6ff] text-[0.85rem] font-semibold">{premio}</strong>
                     </div>
                   )}
-                </article>
-              );
-            })}
+                </div>
+              </article>
+            );
+          })}
       </div>
     </section>
   );

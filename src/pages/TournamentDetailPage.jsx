@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTournamentDetail } from "../hooks/useTournamentDetail";
 import {
@@ -23,10 +23,12 @@ export function TournamentDetailPage() {
     loading,
     actionLoading,
     droppingPlayerId,
+    adminActionKey,
     error,
     successMsg,
     isOwner,
     isAdmin,
+    canManageTournament,
     pendingCheckinPlayers,
     currentPlayer,
     myMatch,
@@ -38,7 +40,12 @@ export function TournamentDetailPage() {
     handleCheckin,
     handleInscrever,
     handleReportResult,
+    handleContestResult,
+    handleAdjustResult,
+    handleGerarLinkIngresso,
+    handleStartTournament,
     handleNextRound,
+    handleBulkDropPlayers,
     handleDropPlayer,
     handleEditTorneio,
     handleDeleteTorneio,
@@ -47,7 +54,40 @@ export function TournamentDetailPage() {
   } = useTournamentDetail();
 
   const isFinished = torneio?.status === "finalizado";
-  const canManage = (isOwner || isAdmin) && torneio?.status === "inscricoes_abertas";
+  const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
+  const canManage = (isOwner || isAdmin) && isRegistrationOpen;
+
+  useEffect(() => {
+    if (!torneio) return;
+    const title = torneio.nome || torneio.torneioNome || "Tiago Fuguete";
+    const image = torneio.bannerUrl || "";
+
+    document.title = title;
+
+    const setMeta = (selector, attr, value) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        const [attrName] = selector.match(/\[([^\]]+)=/)?.[1]?.split("=") ?? [];
+        if (attrName) el.setAttribute(attrName, value);
+        document.head.appendChild(el);
+      }
+      el.setAttribute(attr, value);
+    };
+
+    setMeta('meta[property="og:title"]', "content", title);
+    setMeta('meta[property="og:image"]', "content", image);
+    setMeta('meta[name="twitter:title"]', "content", title);
+    setMeta('meta[name="twitter:image"]', "content", image);
+
+    return () => {
+      document.title = "Tiago Fuguete";
+      setMeta('meta[property="og:title"]', "content", "Tiago Fuguete");
+      setMeta('meta[property="og:image"]', "content", "");
+      setMeta('meta[name="twitter:title"]', "content", "Tiago Fuguete");
+      setMeta('meta[name="twitter:image"]', "content", "");
+    };
+  }, [torneio]);
 
   const handleEditSubmit = async (payload) => {
     await handleEditTorneio(payload);
@@ -100,8 +140,8 @@ export function TournamentDetailPage() {
       {(error || successMsg) && (
         <div
           className={`px-4 py-3 rounded-[0.7rem] mb-5 text-[0.9rem] font-medium animate-[slide-up_300ms_ease-out] ${error
-              ? "bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#fca5a5]"
-              : "bg-[rgba(34,197,94,0.15)] border border-[rgba(34,197,94,0.4)] text-[#86efac]"
+            ? "bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#fca5a5]"
+            : "bg-[rgba(34,197,94,0.15)] border border-[rgba(34,197,94,0.4)] text-[#86efac]"
             }`}
         >
           {error || successMsg}
@@ -122,31 +162,79 @@ export function TournamentDetailPage() {
         <div className={`grid gap-6 items-start ${isFinished ? "grid-cols-1" : "grid-cols-2 max-[900px]:grid-cols-1"}`}>
           {!isFinished && (
             <div className="grid gap-6">
-              <MatchPanel
-                myMatch={myMatch}
-                usuario={usuario}
-                onReportResult={handleReportResult}
-                actionLoading={actionLoading}
-                torneio={torneio}
-              />
-
-              {isOwner && (
+              {canManageTournament && isRegistrationOpen && (
                 <OwnerControlPanel
                   torneio={torneio}
                   standings={standings}
                   usuarioId={usuario?.id}
                   pendingCheckinPlayers={pendingCheckinPlayers}
                   partidas={partidas}
+                  canManage={canManageTournament}
+                  onStartTournament={handleStartTournament}
                   onNextRound={handleNextRound}
+                  onDropPlayersWithoutDeck={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-decks",
+                    successMessage: "Jogadores sem deck dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem deck.",
+                  })}
+                  onDropPlayersWithoutCheckin={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-checkin",
+                    successMessage: "Jogadores sem check-in dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem check-in.",
+                  })}
                   onDropPlayer={handleDropPlayer}
                   onEditResult={handleReportResult}
+                  onAdjustResult={handleAdjustResult}
+                  onGerarLinkIngresso={handleGerarLinkIngresso}
                   actionLoading={actionLoading}
+                  adminActionKey={adminActionKey}
+                  droppingPlayerId={droppingPlayerId}
+                />
+              )}
+
+              <MatchPanel
+                myMatch={myMatch}
+                usuario={usuario}
+                onReportResult={handleReportResult}
+                onContestResult={handleContestResult}
+                actionLoading={actionLoading}
+                torneio={torneio}
+                isOwner={isOwner}
+              />
+
+              {canManageTournament && !isRegistrationOpen && (
+                <OwnerControlPanel
+                  torneio={torneio}
+                  standings={standings}
+                  usuarioId={usuario?.id}
+                  pendingCheckinPlayers={pendingCheckinPlayers}
+                  partidas={partidas}
+                  canManage={canManageTournament}
+                  onStartTournament={handleStartTournament}
+                  onNextRound={handleNextRound}
+                  onDropPlayersWithoutDeck={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-decks",
+                    successMessage: "Jogadores sem deck dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem deck.",
+                  })}
+                  onDropPlayersWithoutCheckin={(playerIds) => handleBulkDropPlayers(playerIds, {
+                    actionKey: "drop-missing-checkin",
+                    successMessage: "Jogadores sem check-in dropados com sucesso!",
+                    errorMessage: "Erro ao dropar jogadores sem check-in.",
+                  })}
+                  onDropPlayer={handleDropPlayer}
+                  onEditResult={handleReportResult}
+                  onAdjustResult={handleAdjustResult}
+                  onGerarLinkIngresso={handleGerarLinkIngresso}
+                  actionLoading={actionLoading}
+                  adminActionKey={adminActionKey}
                   droppingPlayerId={droppingPlayerId}
                 />
               )}
 
               <PlayerProfile
                 torneio={torneio}
+                usuario={usuario}
                 usuarioNome={usuario?.nome}
                 currentPlayer={currentPlayer}
                 decks={decks}
@@ -165,14 +253,20 @@ export function TournamentDetailPage() {
               torneio={torneio}
               partidas={partidas}
               usuarioId={usuario?.id}
-            />
-            <StandingsTable
-              standings={standings}
-              isFinished={isFinished}
-              token={token}
               isOwner={isOwner}
-              torneioNome={torneio?.nome}
+              onContestResult={handleContestResult}
+              actionLoading={actionLoading}
             />
+            {(!isRegistrationOpen || isFinished) && (
+              <StandingsTable
+                standings={standings}
+                isFinished={isFinished}
+                token={token}
+                isOwner={isOwner}
+                torneioNome={torneio?.nome}
+                rodadaAtual={torneio?.rodadaAtual ?? 0}
+              />
+            )}
           </div>
         </div>
       )}
@@ -185,6 +279,7 @@ export function TournamentDetailPage() {
         onClose={() => setShowEditModal(false)}
         onSubmit={handleEditSubmit}
         loading={actionLoading}
+        token={token}
       />
 
       {showDeleteConfirm && (

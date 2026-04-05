@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { listarTorneios, inscreverTorneio, iniciarTorneio } from "../services/backendApi";
+import { listarTorneios, inscreverTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { SkeletonTorneioCard } from "../components";
@@ -16,6 +16,7 @@ export function TournamentPage() {
   const [torneios, setTorneios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [inscricoesLocais, setInscricoesLocais] = useState({});
+  const [inscricaoErro, setInscricaoErro] = useState("");
   const [abaAtiva, setAbaAtiva] = useState("disponiveis");
   const channelsRef = useRef({});
   const navigate = useNavigate();
@@ -90,21 +91,17 @@ export function TournamentPage() {
   }, [torneios, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
 
   const handleInscrever = async (torneioId) => {
+    if (!usuario?.nickMTGO) {
+      setInscricaoErro("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever. Acesse seu perfil pelo menu superior.");
+      setTimeout(() => setInscricaoErro(""), 6000);
+      return;
+    }
     try {
       await inscreverTorneio(torneioId, token);
       setInscricoesLocais((prev) => ({ ...prev, [torneioId]: true }));
       loadTorneios();
     } catch (error) {
       console.error("Erro ao inscrever:", error);
-    }
-  };
-
-  const handleIniciar = async (torneioId) => {
-    try {
-      await iniciarTorneio(torneioId, token);
-      loadTorneios();
-    } catch (error) {
-      console.error("Erro ao iniciar torneio:", error);
     }
   };
 
@@ -134,6 +131,12 @@ export function TournamentPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
+      {inscricaoErro && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl border border-[rgba(252,88,119,0.4)] bg-[rgba(30,15,45,0.95)] backdrop-blur-md text-[#ffa8b8] text-[0.9rem] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.4)] max-w-[90vw] text-center flex items-center gap-3">
+          <span>{inscricaoErro}</span>
+          <button type="button" onClick={() => setInscricaoErro("")} className="ml-1 text-[#ffa8b8] hover:text-white bg-transparent border-none cursor-pointer text-lg leading-none">×</button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6 max-[768px]:mb-5">
         <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">
@@ -159,11 +162,10 @@ export function TournamentPage() {
           <button
             key={key}
             type="button"
-            className={`flex items-center gap-2 px-5 py-[0.65rem] bg-transparent border-none border-b-2 -mb-[2px] text-[0.95rem] font-medium cursor-pointer transition-colors duration-200 ${
-              abaAtiva === key
-                ? "text-white border-b-[#4f46e5] border-b-2"
-                : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
-            }`}
+            className={`flex items-center gap-2 px-5 py-[0.65rem] bg-transparent border-none border-b-2 -mb-[2px] text-[0.95rem] font-medium cursor-pointer transition-colors duration-200 ${abaAtiva === key
+              ? "text-white border-b-[#4f46e5] border-b-2"
+              : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
+              }`}
             onClick={() => setAbaAtiva(key)}
           >
             {label}
@@ -197,6 +199,18 @@ export function TournamentPage() {
                   key={torneio.id}
                   className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1.1rem] shadow-[0_6px_28px_rgba(0,0,0,0.35)] border border-[rgba(217,180,255,0.2)] transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_14px_44px_rgba(0,0,0,0.45)] hover:border-[rgba(167,79,255,0.3)]"
                 >
+                  {/* Banner image */}
+                  {torneio.bannerUrl && (
+                    <div className="relative w-full h-[220px] overflow-hidden rounded-t-[1.1rem]">
+                      <img
+                        src={torneio.bannerUrl}
+                        alt={`Banner de ${torneio.nome}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(16,10,32,0.9)]" />
+                    </div>
+                  )}
+
                   {/* Card header */}
                   <div className="flex items-center justify-between px-5 py-[0.9rem] pb-3 border-b border-[rgba(217,180,255,0.2)] bg-white/[0.02]">
                     <span className="font-['Bebas_Neue',sans-serif] text-[1.1rem] tracking-[0.12em] text-[#c795ff]">
@@ -252,26 +266,30 @@ export function TournamentPage() {
                       Ver Torneio
                     </button>
 
+                    {isAdmin && (
+                      <button
+                        className="px-4 py-2 border border-[rgba(167,79,255,0.5)] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(167,79,255,0.08)] text-[#c795ff] transition-all duration-300 hover:bg-[rgba(167,79,255,0.22)] hover:text-white hover:-translate-y-px active:translate-y-0 max-[768px]:w-full flex items-center justify-center gap-[0.4rem]"
+                        type="button"
+                        onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        Copiar
+                      </button>
+                    )}
+
                     {torneio.status === "inscricoes_abertas" && (
                       <button
-                        className={`px-4 py-2 border rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] transition-all duration-300 hover:-translate-y-px active:translate-y-0 max-[768px]:w-full disabled:opacity-80 disabled:cursor-not-allowed ${
-                          inscrito
-                            ? "bg-[rgba(148,163,184,0.16)] text-[#cbd5e1] border-[#94a3b8] cursor-default hover:translate-y-0"
-                            : "bg-[rgba(34,197,94,0.1)] text-[#22c55e] border-[#22c55e] hover:bg-[#22c55e] hover:text-white"
-                        }`}
+                        className={`px-4 py-2 border rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] transition-all duration-300 hover:-translate-y-px active:translate-y-0 max-[768px]:w-full disabled:opacity-80 disabled:cursor-not-allowed ${inscrito
+                          ? "bg-[rgba(148,163,184,0.16)] text-[#cbd5e1] border-[#94a3b8] cursor-default hover:translate-y-0"
+                          : "bg-[rgba(34,197,94,0.1)] text-[#22c55e] border-[#22c55e] hover:bg-[#22c55e] hover:text-white"
+                          }`}
                         onClick={() => !inscrito && handleInscrever(torneio.id)}
                         disabled={inscrito}
                       >
                         {inscrito ? "✓ Inscrito" : "Inscrever-se"}
-                      </button>
-                    )}
-
-                    {isOwner(torneio) && torneio.status === "inscricoes_abertas" && (
-                      <button
-                        className="px-4 py-2 border border-[#fbbf24] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(251,191,36,0.1)] text-[#fbbf24] transition-all duration-300 hover:bg-[#fbbf24] hover:text-white hover:-translate-y-px active:translate-y-0 max-[768px]:w-full"
-                        onClick={() => handleIniciar(torneio.id)}
-                      >
-                        Iniciar Torneio
                       </button>
                     )}
                   </div>

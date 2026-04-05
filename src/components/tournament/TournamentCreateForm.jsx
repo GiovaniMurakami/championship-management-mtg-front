@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { criarTorneio } from "../../services/backendApi";
+import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 
 const TOURNAMENT_FORMATS = [
     { value: "standard", label: "Standard" },
@@ -25,32 +26,41 @@ const INITIAL_FORM = {
     maxJogadores: "",
     maxRodadas: "",
     corteTop: "",
-    bannerUrl: "",
     linkBanner: "",
     somRodada: "",
     linkLive: "",
+    secreto: false,
 };
 
 const inputClass =
     "px-4 py-3 border-2 border-[#333] rounded-lg bg-white/[0.05] text-white text-base transition-all duration-300 focus:outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] focus:bg-white/[0.1] placeholder:text-[#888] [color-scheme:dark]";
 
-export function TournamentCreateForm({ token, onTournamentCreated }) {
-    const [createForm, setCreateForm] = useState(INITIAL_FORM);
+export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
+    const [createForm, setCreateForm] = useState(() => initialValues ?? INITIAL_FORM);
     const [bannerFile, setBannerFile] = useState(null);
-    const [bannerPreview, setBannerPreview] = useState(null);
+    const [bannerPreview, setBannerPreview] = useState(initialValues?.linkBanner ?? null);
     const [uploadingBanner, setUploadingBanner] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [bannerError, setBannerError] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const bannerInputRef = useRef(null);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCreateForm((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setCreateForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     };
 
     const handleBannerFileChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setBannerError("");
+        const validationError = validateBannerImageFile(file);
+        if (validationError) {
+            setBannerError(validationError.userMessage);
+            if (bannerInputRef.current) bannerInputRef.current.value = "";
+            return;
+        }
         setBannerFile(file);
         const reader = new FileReader();
         reader.onloadend = () => setBannerPreview(reader.result);
@@ -60,6 +70,8 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
     const removeBanner = () => {
         setBannerFile(null);
         setBannerPreview(null);
+        setBannerError("");
+        setUploadProgress(0);
         if (bannerInputRef.current) bannerInputRef.current.value = "";
     };
 
@@ -67,19 +79,22 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
         e.preventDefault();
         setLoading(true);
         setError("");
+        setBannerError("");
 
         try {
-            let bannerUrl = createForm.bannerUrl;
+            let bannerUrl;
 
             if (bannerFile) {
                 setUploadingBanner(true);
-                // Upload pendente — endpoint de presigned URL a implementar
+                setUploadProgress(0);
+
+                bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
                 setUploadingBanner(false);
             }
 
             const payload = {
                 ...createForm,
-                bannerUrl,
+                ...(bannerUrl !== undefined ? { bannerUrl } : {}),
                 maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
                 maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
                 corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
@@ -90,7 +105,11 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
             removeBanner();
             onTournamentCreated?.();
         } catch (err) {
-            setError("Erro ao criar torneio. Tente novamente.");
+            if (err?.code) {
+                setBannerError(err.userMessage || err.message);
+            } else {
+                setError(err.message || "Erro ao criar torneio. Tente novamente.");
+            }
             console.error("Erro ao criar torneio:", err);
         } finally {
             setLoading(false);
@@ -129,6 +148,22 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                                 disabled={isSubmitting}
                                 className={inputClass}
                             />
+                        </div>
+
+                        <div className="flex items-center gap-3 py-1">
+                            <input
+                                id="secreto"
+                                name="secreto"
+                                type="checkbox"
+                                checked={createForm.secreto}
+                                onChange={handleChange}
+                                disabled={isSubmitting}
+                                className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer"
+                            />
+                            <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
+                                Torneio Secreto
+                                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
+                            </label>
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -211,7 +246,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
 
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="maxRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                                    Máx. Rodadas <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
+                                    Limite de Rodadas <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
                                 </label>
                                 <input
                                     id="maxRodadas"
@@ -222,8 +257,12 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                                     value={createForm.maxRodadas}
                                     onChange={handleChange}
                                     disabled={isSubmitting}
+                                    aria-describedby="maxRodadas-help"
                                     className={inputClass}
                                 />
+                                <small id="maxRodadas-help" className="text-[#a3a3a3] text-[0.8rem]">
+                                    O sistema calcula as rodadas automaticamente pelo numero de jogadores com check-in. Este campo apenas define o teto e impede ultrapassar esse valor.
+                                </small>
                             </div>
                         </div>
 
@@ -295,16 +334,29 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                             <input
                                 ref={bannerInputRef}
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
                                 className="hidden"
                                 onChange={handleBannerFileChange}
                                 disabled={isSubmitting}
                             />
 
-                            {bannerFile && (
-                                <small className="text-[#fbbf24] text-[0.8rem]">
-                                    Upload será realizado ao criar o torneio (endpoint de presigned URL pendente).
-                                </small>
+                            {bannerError && (
+                                <small className="text-[#fca5a5] text-[0.8rem]">{bannerError}</small>
+                            )}
+
+                            {uploadingBanner && (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex justify-between text-[0.78rem] text-[#a5b4fc]">
+                                        <span>Enviando banner…</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-[width] duration-200"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -323,7 +375,7 @@ export function TournamentCreateForm({ token, onTournamentCreated }) {
                                 className={inputClass}
                             />
                             <small className="text-[#a3a3a3] text-[0.8rem]">
-                                URL para onde o banner redireciona ao ser clicado.
+                                URL para onde o banner redireciona ao ser clicado (não é a imagem).
                             </small>
                         </div>
                     </div>

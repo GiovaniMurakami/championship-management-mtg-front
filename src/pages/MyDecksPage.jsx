@@ -8,12 +8,12 @@ import { SkeletonCard } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 
 const FORMAT_META = {
-  standard:  { label: "Standard",  color: "#93c5fd", bg: "rgba(59,130,246,0.18)",  border: "rgba(59,130,246,0.45)" },
-  modern:    { label: "Modern",    color: "#fdba74", bg: "rgba(234,88,12,0.18)",   border: "rgba(234,88,12,0.45)" },
-  pioneer:   { label: "Pioneer",   color: "#6ee7b7", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.45)" },
-  legacy:    { label: "Legacy",    color: "#c4b5fd", bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.45)" },
+  standard: { label: "Standard", color: "#93c5fd", bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.45)" },
+  modern: { label: "Modern", color: "#fdba74", bg: "rgba(234,88,12,0.18)", border: "rgba(234,88,12,0.45)" },
+  pioneer: { label: "Pioneer", color: "#6ee7b7", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.45)" },
+  legacy: { label: "Legacy", color: "#c4b5fd", bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.45)" },
   commander: { label: "Commander", color: "#fcd34d", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
-  pauper:    { label: "Pauper",    color: "#cbd5e1", bg: "rgba(148,163,184,0.18)",border: "rgba(148,163,184,0.45)" },
+  pauper: { label: "Pauper", color: "#cbd5e1", bg: "rgba(148,163,184,0.18)", border: "rgba(148,163,184,0.45)" },
 };
 
 function calcularTotalCartas(cartas) {
@@ -56,27 +56,25 @@ export function MyDecksPage({ token }) {
   const myDecks = decks.filter(isOwner);
 
   useEffect(() => {
+    if (decks.length === 0) return;
+
     const fetchDeckImages = async () => {
-      const images = {};
-      for (const deck of decks) {
-        if (deck.maindeck?.length > 0) {
-          const primeiraCartaNome = deck.maindeck[0].nome;
-          try {
-            const carta = await buscarCartaPorNome(primeiraCartaNome);
-            if (carta?.imagem) {
-              images[deck.id] = carta.imagem;
+      const entries = await Promise.all(
+        decks
+          .filter((deck) => deck.maindeck?.length > 0)
+          .map(async (deck) => {
+            try {
+              const carta = await buscarCartaPorNome(deck.maindeck[0].nome);
+              return carta?.imagem ? [deck.id, carta.imagem] : null;
+            } catch {
+              return null;
             }
-          } catch {
-            // Ignora erros na busca individual
-          }
-        }
-      }
-      setDeckImages(images);
+          })
+      );
+      setDeckImages(Object.fromEntries(entries.filter(Boolean)));
     };
 
-    if (decks.length > 0) {
-      fetchDeckImages();
-    }
+    fetchDeckImages();
   }, [decks]);
 
   const handleOpenDeleteModal = (deck) => {

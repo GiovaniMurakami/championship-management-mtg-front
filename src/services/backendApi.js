@@ -7,6 +7,12 @@ export const loginUsuario = (payload) =>
 export const cadastrarUsuario = (payload) =>
   httpClient.post("/usuario/cadastrar", payload);
 
+export const solicitarResetSenha = (email) =>
+  httpClient.post("/usuario/reset-senha/solicitar", { email });
+
+export const confirmarResetSenha = (token, novaSenha) =>
+  httpClient.post("/usuario/reset-senha/confirmar", { token, novaSenha });
+
 export const refreshToken = (refreshTokenValue) =>
   httpClient.post("/usuario/refresh-token", { refreshToken: refreshTokenValue });
 
@@ -85,6 +91,26 @@ export const registrarResultado = (partidaId, payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const contestarResultado = (partidaId, token) =>
+  httpClient.post(`/torneio/partida/${partidaId}/contestar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const ajustarResultado = (partidaId, payload, token) =>
+  httpClient.put(`/torneio/partida/${partidaId}/ajustar`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const gerarLinkIngresso = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/gerar-link-ingresso`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const ingressarComToken = (tokenIngresso, authToken) =>
+  httpClient.post(`/torneio/ingressar/${tokenIngresso}`, {}, {
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+
 export const proximaRodada = (torneioId, token) =>
   httpClient.post(`/torneio/${torneioId}/proxima-rodada`, {}, {
     headers: { Authorization: `Bearer ${token}` },
@@ -149,4 +175,46 @@ export const deletarLiga = (ligaId, token) =>
 export const getRankingLiga = (ligaId, token) =>
   httpClient.get(`/liga/${ligaId}/ranking`, {
     headers: { Authorization: `Bearer ${token}` },
+  });
+
+// Imagens
+export const obterPresignedUrl = (payload, token) =>
+  httpClient.post("/imagem/upload-url", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+/**
+ * Faz PUT direto para o S3 via presigned URL.
+ * onProgress(percent: number) é chamado durante o envio.
+ * Retorna uma Promise que resolve quando o upload conclui.
+ */
+export const uploadParaS3 = (uploadUrl, file, onProgress) =>
+  new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.withCredentials = false;
+    xhr.setRequestHeader("Content-Type", file.type);
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        const expired = xhr.status === 400 || xhr.status === 403;
+        reject(
+          Object.assign(new Error(`S3 upload falhou: ${xhr.status}`), {
+            code: expired ? "s3-upload-expired" : "s3-upload-failed",
+            s3Status: xhr.status,
+            status: xhr.status,
+          }),
+        );
+      }
+    };
+    xhr.onerror = () => reject(Object.assign(new Error("Erro de CORS ao enviar para o S3"), { code: "s3-upload-cors" }));
+    xhr.send(file);
   });

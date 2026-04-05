@@ -24,6 +24,7 @@ export function DeckBuilderPage({
   onUpdateCardQuantity,
   onCardMouseEnter,
   onCardMouseLeave,
+  onPreviewDismiss,
   deckLoading,
   deckMessage,
   cardLimitMessage,
@@ -116,6 +117,12 @@ export function DeckBuilderPage({
     }
   }, [isEditMode, deck, onDeckFormChange, onSetMainDeck, onSetSideboard]);
 
+  useEffect(() => {
+    return () => {
+      onPreviewDismiss?.();
+    };
+  }, [onPreviewDismiss]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -148,6 +155,7 @@ export function DeckBuilderPage({
         onUpdateCardQuantity={onUpdateCardQuantity}
         onCardMouseEnter={onCardMouseEnter}
         onCardMouseLeave={onCardMouseLeave}
+        onPreviewDismiss={onPreviewDismiss}
         deckLoading={deckLoading}
         deckMessage={deckMessage}
         cardLimitMessage={cardLimitMessage}
@@ -164,22 +172,20 @@ export function DeckBuilderPage({
         <div className="flex gap-[0.4rem] mb-[0.85rem]">
           <button
             type="button"
-            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
-              analysisTab === "mao"
+            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${analysisTab === "mao"
                 ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
                 : "border-[rgba(217,180,255,0.2)] bg-transparent text-[#beafd7] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff]"
-            }`}
+              }`}
             onClick={() => setAnalysisTab("mao")}
           >
             🎴 Mão Inicial
           </button>
           <button
             type="button"
-            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
-              analysisTab === "stats"
+            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${analysisTab === "stats"
                 ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
                 : "border-[rgba(217,180,255,0.2)] bg-transparent text-[#beafd7] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff]"
-            }`}
+              }`}
             onClick={() => setAnalysisTab("stats")}
           >
             📊 Estatísticas

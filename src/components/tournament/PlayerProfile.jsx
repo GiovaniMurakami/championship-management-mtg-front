@@ -1,5 +1,34 @@
+import { useEffect, useState } from "react";
+import { shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
+
+const ROUND_DURATION = 50 * 60;
+
+function useIsRoundTimerOver(torneioId, rodadaAtual, isOngoing) {
+    const [isOver, setIsOver] = useState(false);
+
+    useEffect(() => {
+        if (!isOngoing || !torneioId || !rodadaAtual) {
+            setIsOver(false);
+            return;
+        }
+        const key = `rt_start_${torneioId}_r${rodadaAtual}`;
+        const check = () => {
+            const startTime = Number(localStorage.getItem(key) || 0);
+            if (!startTime) { setIsOver(false); return; }
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            setIsOver(elapsed >= ROUND_DURATION);
+        };
+        check();
+        const interval = setInterval(check, 10000);
+        return () => clearInterval(interval);
+    }, [torneioId, rodadaAtual, isOngoing]);
+
+    return isOver;
+}
+
 export function PlayerProfile({
     torneio,
+    usuario,
     usuarioNome,
     currentPlayer,
     decks,
@@ -13,6 +42,9 @@ export function PlayerProfile({
     const canEditDeck = torneio?.status === "inscricoes_abertas";
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
+    const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
+
+    const isTimerOver = useIsRoundTimerOver(torneio?.id, torneio?.rodadaAtual, isOngoing);
 
     const isCheckedIn =
         currentPlayer?.checkIn || currentPlayer?.checkin || currentPlayer?.checkedIn || currentPlayer?.presenca || false;
@@ -23,7 +55,7 @@ export function PlayerProfile({
         || currentPlayer?.nextRoundCheckin
         || false;
 
-    const checkinDone = isOngoing ? isCheckedInNextRound : isCheckedIn;
+    const checkinDone = isOngoing && requiresNextRoundCheckin ? isCheckedInNextRound : isCheckedIn;
 
     const isDeckConfirmed =
         currentPlayer?.deckConfirmado || currentPlayer?.deckNome || currentPlayer?.deck?.nome || false;
@@ -47,17 +79,37 @@ export function PlayerProfile({
         || "";
 
     if (!currentPlayer) {
+        const isFull = torneio?.maxJogadores != null && (torneio?.totalInscritos ?? 0) >= torneio.maxJogadores;
+        const missingNick = !usuario?.nickMTGO;
+        const isOpen = torneio?.status === "inscricoes_abertas";
+
         return (
             <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
                 <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Sua Participação</h2>
                 {displayName && <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Jogador: <strong className="text-[#c795ff]">{displayName}</strong></p>}
-                <p className="text-[#beafd7] text-[0.9rem] m-0">Você ainda não está inscrito neste torneio.</p>
+
+                {torneio?.maxJogadores != null && (
+                    <p className="text-[0.82rem] text-[#beafd7] mt-[0.3rem] mb-1">
+                        Vagas: <strong className={isFull ? "text-[#f87171]" : "text-[#4ade80]"}>{torneio.totalInscritos ?? 0} / {torneio.maxJogadores}</strong>
+                        {isFull && <span className="ml-2 text-[#f87171]">— Torneio lotado</span>}
+                    </p>
+                )}
+
+                <p className="text-[#beafd7] text-[0.9rem] m-0 mt-2">Você ainda não está inscrito neste torneio.</p>
+
+                {missingNick && isOpen && (
+                    <div className="mt-3 px-3 py-[0.6rem] rounded-[0.6rem] bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] text-[#fbbf24] text-[0.82rem]">
+                        ⚠ Configure seu <strong>nick do MTGO</strong> no perfil (menu superior → seu nome) para poder se inscrever.
+                    </div>
+                )}
+
                 <button
-                    className="inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+                    className="mt-3 inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
                     onClick={onInscrever}
-                    disabled={actionLoading}
+                    disabled={actionLoading || missingNick || isFull || !isOpen}
+                    title={missingNick ? "Configure seu nick do MTGO no perfil para se inscrever" : isFull ? "Torneio lotado" : undefined}
                 >
-                    {actionLoading ? "Inscrevendo..." : "Inscrever-se"}
+                    {actionLoading ? "Inscrevendo..." : isFull ? "Torneio lotado" : "Inscrever-se"}
                 </button>
             </section>
         );
@@ -89,21 +141,27 @@ export function PlayerProfile({
                     ) : (
                         <>
                             <div className="flex flex-col gap-[0.4rem] max-h-[220px] overflow-y-auto pr-1">
-                                {decks.map((deck) => (
-                                    <button
-                                        key={deck.id}
-                                        type="button"
-                                        className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.9rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedDeckId === deck.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]"}`}
-                                        onClick={() => onDeckChange(deck.id)}
-                                        disabled={!canEditDeck || actionLoading}
-                                    >
-                                        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{deck.nome}</span>
-                                        <span className="flex items-center gap-2 flex-shrink-0">
-                                            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.04em] px-[0.45rem] py-[0.15rem] rounded-[0.4rem] bg-[rgba(199,149,255,0.15)] text-[#c795ff]">{deck.formato}</span>
-                                            <span className="text-[0.78rem] text-[#beafd7] whitespace-nowrap">{calcTotal(deck)} cartas</span>
-                                        </span>
-                                    </button>
-                                ))}
+                                {decks.map((deck) => {
+                                    const isCompatible = !torneio?.formato || !deck.formato || deck.formato.toLowerCase() === torneio.formato.toLowerCase();
+                                    return (
+                                        <button
+                                            key={deck.id}
+                                            type="button"
+                                            className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.9rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedDeckId === deck.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : isCompatible ? "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]" : "bg-[rgba(239,68,68,0.04)] border-[rgba(239,68,68,0.2)] opacity-60 hover:opacity-80"}`}
+                                            onClick={() => onDeckChange(deck.id)}
+                                            disabled={!canEditDeck || actionLoading}
+                                        >
+                                            <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{deck.nome}</span>
+                                            <span className="flex items-center gap-2 flex-shrink-0">
+                                                {!isCompatible && (
+                                                    <span className="text-[0.65rem] font-bold uppercase tracking-[0.04em] px-[0.4rem] py-[0.12rem] rounded-[0.4rem] bg-[rgba(239,68,68,0.15)] text-[#f87171]">Incompatível</span>
+                                                )}
+                                                <span className="text-[0.7rem] font-semibold uppercase tracking-[0.04em] px-[0.45rem] py-[0.15rem] rounded-[0.4rem] bg-[rgba(199,149,255,0.15)] text-[#c795ff]">{deck.formato}</span>
+                                                <span className="text-[0.78rem] text-[#beafd7] whitespace-nowrap">{calcTotal(deck)} cartas</span>
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                             <button
                                 className="inline-flex items-center justify-center mt-2 w-full px-4 py-[0.55rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(255,255,255,0.1)] hover:not-disabled:border-[rgba(199,149,255,0.5)]"
@@ -122,28 +180,37 @@ export function PlayerProfile({
                     )}
                 </div>
 
-                <div className="grid gap-[0.35rem]">
-                    <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Check-in</label>
-                    <div className="flex gap-2 items-center">
-                        <button
-                            className={`inline-flex items-center justify-center px-4 py-[0.55rem] border rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${checkinDone ? "bg-[rgba(34,197,94,0.2)] border-[rgba(34,197,94,0.5)] text-[#86efac]" : "bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"}`}
-                            disabled={actionLoading || checkinDone || isFinished}
-                            onClick={onCheckin}
-                        >
-                            {isFinished
-                                ? "Torneio finalizado"
-                                : checkinDone
-                                    ? isOngoing
-                                        ? "✓ Check-in da próxima rodada feito"
-                                        : "✓ Check-in feito"
-                                    : actionLoading
-                                        ? "Aguarde..."
-                                        : isOngoing
-                                            ? "Fazer check-in da próxima rodada"
-                                            : "Fazer check-in"}
-                        </button>
+                {(!isOngoing || requiresNextRoundCheckin) && (
+                    <div className="grid gap-[0.35rem]">
+                        <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Check-in</label>
+                        <div className="flex flex-col gap-[0.35rem]">
+                            <button
+                                className={`inline-flex items-center justify-center px-4 py-[0.55rem] border rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${checkinDone ? "bg-[rgba(34,197,94,0.2)] border-[rgba(34,197,94,0.5)] text-[#86efac]" : "bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"}`}
+                                disabled={actionLoading || checkinDone || isFinished || (isOngoing && requiresNextRoundCheckin && !isTimerOver)}
+                                onClick={onCheckin}
+                            >
+                                {isFinished
+                                    ? "Torneio finalizado"
+                                    : checkinDone
+                                        ? isOngoing
+                                            ? "✓ Check-in da próxima rodada feito"
+                                            : "✓ Check-in feito"
+                                        : actionLoading
+                                            ? "Aguarde..."
+                                            : isOngoing && requiresNextRoundCheckin && !isTimerOver
+                                                ? "Aguardando fim do tempo..."
+                                                : isOngoing
+                                                    ? "Fazer check-in da próxima rodada"
+                                                    : "Fazer check-in"}
+                            </button>
+                            {isOngoing && requiresNextRoundCheckin && !checkinDone && !isTimerOver && (
+                                <p className="text-[0.75rem] text-[#beafd7] m-0">
+                                    Check-in disponível quando o relógio da rodada terminar.
+                                </p>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </section>
     );

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
 
@@ -31,7 +31,7 @@ function isUserMatch(partida, usuarioId) {
     );
 }
 
-function MatchCard({ partida, index, usuarioId }) {
+function MatchCard({ partida, index, usuarioId, torneio, isOwner }) {
     const isFinalizada = partida.status === "finalizada";
     const isBye = !partida.jogador2Id && !partida.jogador2;
     const isMe = isUserMatch(partida, usuarioId);
@@ -47,9 +47,16 @@ function MatchCard({ partida, index, usuarioId }) {
         <article className={`rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
             <div className="flex items-center justify-between mb-[0.55rem]">
                 <span className="text-[0.72rem] font-bold text-[#7dd3fc] tracking-[0.04em] uppercase">Mesa {getMesa(partida, index)}</span>
-                <span className={`text-[0.68rem] font-bold tracking-[0.05em] uppercase px-2 py-[0.15rem] rounded-full ${isFinalizada ? "bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.35)] text-[#86efac]" : "bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] text-[#fde047]"}`}>
-                    {isFinalizada ? "Finalizada" : "Pendente"}
-                </span>
+                <div className="flex items-center gap-[0.4rem]">
+                    {partida.contestado && (
+                        <span className="text-[0.65rem] font-bold tracking-[0.05em] uppercase px-[0.55rem] py-[0.15rem] rounded-full bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#f87171]">
+                            Contestado
+                        </span>
+                    )}
+                    <span className={`text-[0.68rem] font-bold tracking-[0.05em] uppercase px-2 py-[0.15rem] rounded-full ${isFinalizada ? "bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.35)] text-[#86efac]" : "bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] text-[#fde047]"}`}>
+                        {isFinalizada ? "Finalizada" : "Pendente"}
+                    </span>
+                </div>
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem]">
@@ -67,15 +74,14 @@ function MatchCard({ partida, index, usuarioId }) {
                     <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.nome}</span>
                 </div>
             </div>
+
         </article>
     );
 }
 
-export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
+export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner }) {
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
-
-    if (!isOngoing && !isFinished) return null;
 
     const rodadaAtual = Number(torneio?.rodadaAtual || 0);
 
@@ -90,13 +96,15 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
         ? roundNumbers[roundNumbers.length - 1] ?? 1
         : rodadaAtual || 1;
 
-    const [selectedRound, setSelectedRound] = useState(defaultRound);
+    const [selectedRoundOverride, setSelectedRoundOverride] = useState(null);
 
-    useEffect(() => {
-        if (isOngoing) setSelectedRound(rodadaAtual || 1);
-        else if (isFinished && roundNumbers.length > 0)
-            setSelectedRound(roundNumbers[roundNumbers.length - 1]);
-    }, [isOngoing, isFinished, rodadaAtual, roundNumbers]);
+    const selectedRound = useMemo(() => {
+        const normalizedOverride = Number(selectedRoundOverride);
+        if (Number.isFinite(normalizedOverride) && roundNumbers.includes(normalizedOverride)) {
+            return normalizedOverride;
+        }
+        return defaultRound;
+    }, [defaultRound, roundNumbers, selectedRoundOverride]);
 
     const partidasRodada = useMemo(() =>
         (partidas || []).filter((p) => {
@@ -113,6 +121,35 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
     const allDone = total > 0 && finalizadas === total;
 
     const showRoundPicker = roundNumbers.length > 1;
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showPendingOnly, setShowPendingOnly] = useState(false);
+
+    const filteredAndSortedPartidas = useMemo(() => {
+        let result = partidasRodada;
+        if (showPendingOnly) {
+            result = result.filter(p => p.status !== "finalizada");
+        }
+        if (searchQuery.trim()) {
+            const q = searchQuery.trim().toLowerCase();
+            result = result.filter(p => {
+                const n1 = (p.jogador1Nome || p.jogador1?.nome || p.jogador1?.username || "").toLowerCase();
+                const n2 = (p.jogador2Nome || p.jogador2?.nome || p.jogador2?.username || "").toLowerCase();
+                const mesa = String(getMesa(p, 0));
+                return n1.includes(q) || n2.includes(q) || mesa.includes(q);
+            });
+        }
+        if (usuarioId && !searchQuery.trim()) {
+            const myIdx = result.findIndex(p => isUserMatch(p, usuarioId));
+            if (myIdx > 0) {
+                const mine = result[myIdx];
+                result = [mine, ...result.slice(0, myIdx), ...result.slice(myIdx + 1)];
+            }
+        }
+        return result;
+    }, [partidasRodada, showPendingOnly, searchQuery, usuarioId]);
+
+    if (!isOngoing && !isFinished) return null;
 
     return (
         <section className="border border-[rgba(56,189,248,0.3)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(7,37,49,0.6),rgba(8,20,34,0.9))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-[480px]:p-4 max-[480px]:rounded-xl">
@@ -136,7 +173,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
                                 role="tab"
                                 aria-selected={Number(selectedRound) === r}
                                 className={`border rounded-full px-[0.6rem] py-[0.25rem] min-w-[2.2rem] text-[0.75rem] font-bold cursor-pointer transition-all duration-150 flex-shrink-0 ${Number(selectedRound) === r ? "bg-[rgba(56,189,248,0.22)] border-[rgba(56,189,248,0.7)] text-white" : "border-[rgba(125,211,252,0.3)] bg-[rgba(125,211,252,0.06)] text-[#93c5fd] hover:bg-[rgba(125,211,252,0.16)] hover:border-[rgba(125,211,252,0.5)] hover:text-[#bae6fd]"}`}
-                                onClick={() => setSelectedRound(r)}
+                                onClick={() => setSelectedRoundOverride(r)}
                             >
                                 R{r}
                             </button>
@@ -146,7 +183,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
             </div>
 
             {total > 0 && (
-                <div className="flex items-center gap-[0.65rem] mb-4">
+                <div className="flex items-center gap-[0.65rem] mb-3">
                     <div className="flex-1 h-1 bg-[rgba(255,255,255,0.08)] rounded-full overflow-hidden">
                         <div
                             className={`h-full rounded-full transition-[width] duration-[0.4s] ease-in-out ${allDone ? "bg-[#4ade80]" : "bg-[#38bdf8]"}`}
@@ -159,6 +196,51 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
                 </div>
             )}
 
+            {total > 3 && (
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <div className="relative flex-1 min-w-[170px] max-w-[360px]">
+                        <svg className="absolute left-[0.6rem] top-1/2 -translate-y-1/2 text-[rgba(186,230,253,0.4)] pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                        <input
+                            type="search"
+                            placeholder="Buscar jogador ou mesa…"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-[0.6rem] pl-[1.8rem] pr-3 py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
+                        />
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setShowPendingOnly(p => !p)}
+                        className={`inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-[0.6rem] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-[#beafd7] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"}`}
+                    >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                        </svg>
+                        Só pendentes
+                    </button>
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border border-[rgba(217,180,255,0.2)] rounded-[0.6rem] text-[0.8rem] text-[#beafd7] cursor-pointer hover:text-[#f5edff] hover:bg-[rgba(255,255,255,0.05)] transition-all duration-150 flex-shrink-0"
+                        >
+                            ✕ Limpar
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {(searchQuery || showPendingOnly) && total > 0 && (
+                <p className="text-[0.77rem] text-[rgba(186,230,253,0.55)] mb-2 m-0">
+                    {filteredAndSortedPartidas.length === 0
+                        ? "Nenhuma mesa encontrada para os filtros aplicados."
+                        : `${filteredAndSortedPartidas.length} de ${total} mesa${total !== 1 ? "s" : ""}`}
+                </p>
+            )}
+
             {total === 0 ? (
                 <p className="text-[#beafd7] text-[0.9rem] m-0">
                     {isFinished
@@ -166,13 +248,15 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId }) {
                         : "Ainda não há mesas para a rodada atual."}
                 </p>
             ) : (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-[0.65rem] max-[900px]:grid-cols-1">
-                    {partidasRodada.map((partida, index) => (
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[0.65rem]">
+                    {filteredAndSortedPartidas.map((partida, index) => (
                         <MatchCard
                             key={partida.id || `${partida.rodada}-${index}`}
                             partida={partida}
                             index={index}
                             usuarioId={usuarioId}
+                            torneio={torneio}
+                            isOwner={isOwner}
                         />
                     ))}
                 </div>
