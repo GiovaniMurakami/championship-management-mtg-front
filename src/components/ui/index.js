@@ -1,4 +1,3 @@
-export { HealthCheckBanner } from "./HealthCheckBanner";
 export { Hero } from "./Hero";
 export { Navbar } from "./Navbar";
 export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail } from "./Skeleton";
