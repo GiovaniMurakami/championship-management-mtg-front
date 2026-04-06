@@ -1,3 +1,5 @@
+import { Skeleton } from "../ui/Skeleton";
+
 const STATUS_CONFIG = {
   inscricoes_abertas: {
     label: "Inscrições Abertas",
@@ -79,26 +81,42 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
   const status = torneio?.status || "—";
   const statusConfig = STATUS_CONFIG[status] || DEFAULT_STATUS;
 
+  if (loading) {
+    return (
+      <div className={`mb-8 max-[480px]:mb-5 ${className}`}>
+        <Skeleton width="110px" height="1.5rem" radius="999px" className="mb-3" />
+        <Skeleton width="52%" height="clamp(2rem,4vw,3rem)" radius="0.4rem" className="mb-5" />
+        <div className="flex gap-2 flex-wrap">
+          <Skeleton width="132px" height="2rem" radius="0.75rem" />
+          <Skeleton width="148px" height="2rem" radius="0.75rem" />
+          <Skeleton width="124px" height="2rem" radius="0.75rem" />
+        </div>
+      </div>
+    );
+  }
+
+  const statusCfg = STATUS_CONFIG[torneio?.status] || DEFAULT_STATUS;
+
   return (
     <div className={`mb-8 max-[480px]:mb-5 ${className}`}>
       {/* Status badge */}
       {!loading && torneio && (
         <div className="flex items-center gap-2 mb-3">
           <span
-            className={`inline-flex items-center gap-[0.4rem] px-3 py-[0.22rem] rounded-full text-[0.75rem] font-semibold uppercase tracking-[0.06em] ${statusConfig.badge}`}
+            className={`inline-flex items-center gap-[0.4rem] px-3 py-[0.22rem] rounded-full text-[0.75rem] font-semibold uppercase tracking-[0.06em] ${statusCfg.badge}`}
           >
             <span
               className="w-[6px] h-[6px] rounded-full flex-shrink-0"
-              style={{ backgroundColor: statusConfig.dot, boxShadow: `0 0 6px ${statusConfig.dot}` }}
+              style={{ backgroundColor: statusCfg.dot, boxShadow: `0 0 6px ${statusCfg.dot}` }}
             />
-            {statusConfig.label}
+            {statusCfg.label}
           </span>
         </div>
       )}
 
       {/* Title */}
       <h1 className="font-['Bebas_Neue',sans-serif] text-[clamp(2rem,4vw,3rem)] tracking-[0.04em] m-0 mb-5 text-white [text-shadow:0_2px_16px_rgba(167,79,255,0.25)] leading-[1.0]">
-        {loading ? "Carregando..." : torneio?.nome || torneio?.torneioNome || "Torneio"}
+        {torneio?.nome || torneio?.torneioNome || "Torneio"}
       </h1>
 
       {/* Stat chips */}

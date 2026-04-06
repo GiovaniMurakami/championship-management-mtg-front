@@ -64,23 +64,84 @@ export function SkeletonBannerCard() {
 
 export function SkeletonTournamentDetail() {
   return (
-    <div className="flex flex-col gap-6">
-      <Skeleton width="200px" height="1rem" radius="0.4rem" />
-      <div className="flex flex-col gap-3">
-        <Skeleton width="60%" height="2rem" />
-        <div className="flex gap-3">
-          <Skeleton width="80px" height="1.6rem" radius="999px" />
-          <Skeleton width="100px" height="1.6rem" radius="999px" />
-          <Skeleton width="90px" height="1.6rem" radius="999px" />
+    <div className="flex flex-col gap-6 animate-[fade-in_300ms_ease-out]">
+      {/* Header */}
+      <div className="mb-2">
+        <Skeleton width="110px" height="1.5rem" radius="999px" className="mb-3" />
+        <Skeleton width="52%" height="2.8rem" radius="0.4rem" className="mb-5" />
+        <div className="flex gap-2 flex-wrap">
+          <Skeleton width="132px" height="2rem" radius="0.75rem" />
+          <Skeleton width="148px" height="2rem" radius="0.75rem" />
+          <Skeleton width="124px" height="2rem" radius="0.75rem" />
+          <Skeleton width="116px" height="2rem" radius="0.75rem" />
         </div>
       </div>
-      <div className="grid grid-cols-[1fr_340px] gap-6 max-[900px]:grid-cols-1">
-        <div className="flex flex-col gap-5">
-          <Skeleton width="100%" height="200px" radius="0.75rem" />
-          <Skeleton width="100%" height="160px" radius="0.75rem" />
+
+      {/* Round timer bar */}
+      <Skeleton width="100%" height="64px" radius="0.9rem" />
+
+      {/* Two-column main layout */}
+      <div className="grid grid-cols-2 gap-6 max-[900px]:grid-cols-1">
+        {/* Left: match + profile */}
+        <div className="flex flex-col gap-6">
+          {/* MatchPanel */}
+          <div className="border border-[rgba(217,180,255,0.18)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.55),rgba(15,10,29,0.8))] flex flex-col gap-4">
+            <Skeleton width="140px" height="1.15rem" radius="0.4rem" />
+            <div className="border border-[rgba(255,255,255,0.07)] rounded-xl p-4 flex flex-col gap-3">
+              <div className="flex justify-between gap-3">
+                <Skeleton width="42%" height="1rem" />
+                <Skeleton width="42%" height="1rem" />
+              </div>
+              <Skeleton width="100%" height="2rem" radius="0.5rem" />
+              <div className="flex gap-2">
+                <Skeleton width="50%" height="2.4rem" radius="0.7rem" />
+                <Skeleton width="50%" height="2.4rem" radius="0.7rem" />
+              </div>
+            </div>
+          </div>
+
+          {/* PlayerProfile */}
+          <div className="border border-[rgba(217,180,255,0.18)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.55),rgba(15,10,29,0.8))] flex flex-col gap-4">
+            <Skeleton width="120px" height="1.15rem" radius="0.4rem" />
+            <Skeleton width="68%" height="0.9rem" />
+            <Skeleton width="52%" height="0.9rem" />
+            <Skeleton width="100%" height="2.4rem" radius="0.7rem" />
+          </div>
         </div>
-        <div className="flex flex-col">
-          <Skeleton width="100%" height="300px" radius="0.75rem" />
+
+        {/* Right: tables + standings */}
+        <div className="flex flex-col gap-6">
+          {/* MatchTablesPanel */}
+          <div className="border border-[rgba(217,180,255,0.18)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.55),rgba(15,10,29,0.8))] flex flex-col gap-3">
+            <Skeleton width="110px" height="1.15rem" radius="0.4rem" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} width="100%" height="2.2rem" radius="0.5rem" />
+            ))}
+          </div>
+
+          {/* StandingsTable */}
+          <div className="border border-[rgba(217,180,255,0.18)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.55),rgba(15,10,29,0.8))] flex flex-col gap-3">
+            <Skeleton width="100px" height="1.15rem" radius="0.4rem" />
+            {/* Table header row */}
+            <div className="flex gap-3">
+              <Skeleton width="28px" height="0.8rem" radius="0.3rem" />
+              <Skeleton width="28%" height="0.8rem" radius="0.3rem" />
+              <Skeleton width="10%" height="0.8rem" radius="0.3rem" />
+              <Skeleton width="8%" height="0.8rem" radius="0.3rem" />
+              <Skeleton width="8%" height="0.8rem" radius="0.3rem" />
+              <Skeleton width="12%" height="0.8rem" radius="0.3rem" />
+            </div>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex gap-3 items-center">
+                <Skeleton width="24px" height="1.5rem" radius="999px" />
+                <Skeleton width={`${32 + (i % 3) * 8}%`} height="0.9rem" radius="0.3rem" />
+                <Skeleton width="8%" height="0.9rem" radius="0.3rem" />
+                <Skeleton width="6%" height="0.9rem" radius="0.3rem" />
+                <Skeleton width="6%" height="0.9rem" radius="0.3rem" />
+                <Skeleton width="11%" height="0.9rem" radius="0.3rem" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
