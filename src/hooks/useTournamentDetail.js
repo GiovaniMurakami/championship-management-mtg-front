@@ -52,12 +52,8 @@ export function useTournamentDetail() {
     const { decks } = useMyDecks(token, usuario?.id);
     const guard = useActionGuard(800);
     const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
-    const isCheckedForNextRound = (player) =>
-        Boolean(
-            player?.checkInProximaRodada
-            || player?.checkinProximaRodada
-            || player?.nextRoundCheckin,
-        );
+    const isCheckedForNextRound = (player, rodadaAtual) =>
+        Number(player?.checkinRodada) >= Number(rodadaAtual);
 
     const showToast = useCallback((msg, type = "info") => {
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -220,16 +216,11 @@ export function useTournamentDetail() {
             },
             onCheckinRealizado: (msg) => {
                 const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
+                const checkinRodada = msg.data.checkinRodada ?? 0;
                 setStandings((prev) =>
                     prev.map((p) =>
                         p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
-                            ? {
-                                ...p,
-                                checkin: true,
-                                checkIn: true,
-                                checkInProximaRodada: true,
-                                checkinProximaRodada: true,
-                            }
+                            ? { ...p, checkinRodada }
                             : p
                     )
                 );
@@ -354,8 +345,9 @@ export function useTournamentDetail() {
 
     const pendingCheckinPlayers = useMemo(() => {
         if (!shouldRequestNextRoundCheckin(torneio)) return [];
+        const rodadaAtual = torneio?.rodadaAtual ?? 0;
 
-        return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player));
+        return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player, rodadaAtual));
     }, [standings, torneio]);
 
     const requiresNextRoundCheckin = useMemo(

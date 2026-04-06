@@ -47,13 +47,10 @@ export function PlayerProfile({
     const isTimerOver = useIsRoundTimerOver(torneio?.id, torneio?.rodadaAtual, isOngoing);
 
     const isCheckedIn =
-        currentPlayer?.checkIn || currentPlayer?.checkin || currentPlayer?.checkedIn || currentPlayer?.presenca || false;
+        (currentPlayer?.checkinRodada ?? -1) >= 0;
 
     const isCheckedInNextRound =
-        currentPlayer?.checkInProximaRodada
-        || currentPlayer?.checkinProximaRodada
-        || currentPlayer?.nextRoundCheckin
-        || false;
+        Number(currentPlayer?.checkinRodada ?? -1) >= Number(torneio?.rodadaAtual ?? 0);
 
     const checkinDone = isOngoing && requiresNextRoundCheckin ? isCheckedInNextRound : isCheckedIn;
 

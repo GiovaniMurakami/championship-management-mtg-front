@@ -4,7 +4,7 @@ import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../u
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
 const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
-const hasInitialCheckin = (player) => Boolean(player?.checkIn || player?.checkin || player?.checkedIn || player?.presenca);
+const hasInitialCheckin = (player) => (player?.checkinRodada ?? -1) >= 0;
 
 function ScoreSelect({ value, onChange }) {
   return (
@@ -426,7 +426,7 @@ export function OwnerControlPanel({
               const normalizedId = normalizeId(playerId);
               const isMe = normalizeId(playerId) === normalizeId(usuarioId);
               const checkinOk =
-                player?.checkInProximaRodada || player?.checkinProximaRodada || player?.nextRoundCheckin;
+                Number(player?.checkinRodada ?? -1) >= Number(torneio?.rodadaAtual ?? 0);
 
               return (
                 <div

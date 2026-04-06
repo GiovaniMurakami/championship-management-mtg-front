@@ -61,8 +61,8 @@ describe("OwnerControlPanel", () => {
                 donoId: "owner-1",
             },
             standings: [
-                { id: "1", nome: "Ana", pontos: 6, checkInProximaRodada: true },
-                { id: "2", nome: "Beto", pontos: 3, checkInProximaRodada: false },
+                { id: "1", nome: "Ana", pontos: 6, checkinRodada: 2 },
+                { id: "2", nome: "Beto", pontos: 3, checkinRodada: -1 },
             ],
             pendingCheckinPlayers: [{ id: "2", nome: "Beto" }],
         });

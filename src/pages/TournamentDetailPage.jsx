@@ -179,7 +179,7 @@ export function TournamentDetailPage() {
 
       <TournamentHeader torneio={torneio} loading={loading} className="mt-6" />
 
-      {!loading && checkinRodadaAberto && currentPlayer && !currentPlayer?.checkInProximaRodada && !currentPlayer?.checkinProximaRodada && (
+      {!loading && checkinRodadaAberto && currentPlayer && (currentPlayer?.checkinRodada ?? -1) < (torneio?.rodadaAtual ?? 0) && (
         <div className="flex items-center justify-between gap-3 px-4 py-3 mb-4 rounded-[0.75rem] border border-[rgba(251,191,36,0.45)] bg-[rgba(251,191,36,0.09)] animate-[slide-up_300ms_ease-out]">
           <div className="flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" aria-hidden="true" className="shrink-0">

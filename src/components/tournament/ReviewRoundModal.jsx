@@ -30,8 +30,8 @@ function MatchStatusRow({ partida }) {
 
   return (
     <div className={`flex items-center gap-3 px-[0.85rem] py-[0.6rem] rounded-lg border text-[0.85rem] ${isFinalizada
-        ? "border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.04)]"
-        : "border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.04)]"
+      ? "border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.04)]"
+      : "border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.04)]"
       }`}>
       <span className="text-[0.75rem] text-[rgba(200,180,230,0.55)] min-w-[48px] flex-shrink-0">
         Mesa {mesa}
@@ -50,8 +50,8 @@ function MatchStatusRow({ partida }) {
         </span>
       </div>
       <span className={`text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 ${isFinalizada
-          ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80]"
-          : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24]"
+        ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80]"
+        : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24]"
         }`}>
         {isFinalizada ? "Finalizada" : "Pendente"}
       </span>
@@ -59,7 +59,7 @@ function MatchStatusRow({ partida }) {
   );
 }
 
-function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionLoading, requiresNextRoundCheckin }) {
+function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionLoading, requiresNextRoundCheckin, rodadaAtual }) {
   const getPlayerName = (p) =>
     p?.usuario?.nome || p?.nome || p?.username || p?.userName || "Jogador";
   const getPlayerId = (p) =>
@@ -68,10 +68,7 @@ function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionL
   const playerId = getPlayerId(player);
   const normalizedId = normalizeId(playerId);
   const isMe = normalizeId(playerId) === normalizeId(usuarioId);
-  const checkinOk =
-    player?.checkInProximaRodada ||
-    player?.checkinProximaRodada ||
-    player?.nextRoundCheckin;
+  const checkinOk = Number(player?.checkinRodada ?? -1) >= Number(rodadaAtual ?? 0);
 
   return (
     <div className="flex items-center justify-between gap-3 px-[0.85rem] py-[0.65rem] rounded-lg border border-[rgba(145,71,255,0.15)] bg-[rgba(145,71,255,0.05)]">
@@ -81,8 +78,8 @@ function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionL
         </span>
         {requiresNextRoundCheckin ? (
           <span className={`text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 border ${checkinOk
-              ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80] border-[rgba(34,197,94,0.25)]"
-              : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24] border-[rgba(251,191,36,0.2)]"
+            ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80] border-[rgba(34,197,94,0.25)]"
+            : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24] border-[rgba(251,191,36,0.2)]"
             }`}>
             {checkinOk ? "✓ check-in" : "⏳ aguardando"}
           </span>
@@ -164,15 +161,15 @@ export function ReviewRoundModal({
             </h2>
             <div className="flex items-center gap-[0.4rem] text-[0.78rem]">
               <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "mesas"
-                  ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
-                  : "text-[rgba(200,180,230,0.6)] border-transparent"
+                ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                : "text-[rgba(200,180,230,0.6)] border-transparent"
                 }`}>
                 1. Mesas
               </span>
               <span className="text-[rgba(200,180,230,0.3)] text-[0.75rem]">→</span>
               <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "jogadores"
-                  ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
-                  : "text-[rgba(200,180,230,0.45)] border-transparent"
+                ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                : "text-[rgba(200,180,230,0.45)] border-transparent"
                 }`}>
                 2. Jogadores
               </span>
@@ -267,6 +264,7 @@ export function ReviewRoundModal({
                         droppingPlayerId={droppingPlayerId}
                         actionLoading={actionLoading}
                         requiresNextRoundCheckin={requiresNextRoundCheckin}
+                        rodadaAtual={rodadaAtual}
                       />
                     );
                   })
