@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
 
 const LOGO = "https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png";
 
@@ -22,6 +23,14 @@ export function LandingHeader() {
     const [menuOpen, setMenuOpen] = useState(false);
     const headerRef = useRef(null);
     const { pathname } = useLocation();
+    const navigate = useNavigate();
+
+    const transitionTo = (href) => (e) => {
+        e.preventDefault();
+        close();
+        if (!document.startViewTransition) { navigate(href); return; }
+        document.startViewTransition(() => flushSync(() => navigate(href)));
+    };
 
     const close = () => setMenuOpen(false);
 
@@ -52,16 +61,16 @@ export function LandingHeader() {
             style={{ position: "fixed" }}
         >
             {/* Logo */}
-            <Link to="/landing-page" className="shrink-0" onClick={close}>
-                <img src={LOGO} alt="Tiago Fuguete" className="h-7 object-contain" />
-            </Link>
+            <a href="/" onClick={transitionTo("/")} className="shrink-0 cursor-pointer">
+                <img src={LOGO} alt="Tiago Fuguete" className="h-7 object-contain" style={{ viewTransitionName: "brand-logo" }} />
+            </a>
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-5" aria-label="Navegação principal">
                 {NAV_LINKS.map((l) => (
-                    <Link key={l.label} to={l.href} className={linkClass(l.href)} onClick={close}>
+                    <a key={l.label} href={l.href} className={linkClass(l.href)} onClick={transitionTo(l.href)}>
                         {l.label}
-                    </Link>
+                    </a>
                 ))}
             </nav>
 
@@ -98,9 +107,9 @@ export function LandingHeader() {
                 >
                     <nav className="flex flex-col gap-[0.2rem]">
                         {NAV_LINKS.map((l) => (
-                            <Link key={l.label} to={l.href} className={mobileLinkClass(l.href)} onClick={close}>
+                            <a key={l.label} href={l.href} className={mobileLinkClass(l.href)} onClick={transitionTo(l.href)}>
                                 {l.label}
-                            </Link>
+                            </a>
                         ))}
                     </nav>
                     <div className="mt-3 pt-3 border-t border-[rgba(217,180,255,0.12)]">
