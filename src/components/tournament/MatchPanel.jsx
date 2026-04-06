@@ -30,6 +30,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         myMatch.jogador2?.username ||
         "Jogador 2";
 
+    const player1Nick = myMatch.jogador1NickMTGO || myMatch.jogador1?.nickMTGO || null;
+    const player2Nick = myMatch.jogador2NickMTGO || myMatch.jogador2?.nickMTGO || null;
+
     const isBye = !myMatch.jogador2Id && !myMatch.jogador2;
     const isContested = Boolean(myMatch.contestado);
     const isReported = myMatch.status === "finalizada" || myMatch.resultado || myMatch.reportado;
@@ -47,11 +50,13 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         && (isPlayer1 || isPlayer2 || isOwner);
 
     const myName = isPlayer1 ? player1Name : player2Name;
+    const myNick = isPlayer1 ? player1Nick : player2Nick;
     const opponentName = isPlayer1
         ? isBye
             ? "BYE"
             : player2Name
         : player1Name;
+    const opponentNick = isPlayer1 ? player2Nick : player1Nick;
 
     const handleSubmit = () => {
         const resultado = {
@@ -79,6 +84,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                     <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(142,57,237,0.4)] rounded-[0.85rem] bg-[rgba(142,57,237,0.08)]">
                         <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
                         <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
+                        {myNick && (
+                            <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{myNick}</span>
+                        )}
                     </div>
                     <div className="font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)]">BYE</div>
                     <p className="text-[#beafd7] mt-3">Você recebeu bye nesta rodada.</p>
@@ -94,6 +102,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                         <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(142,57,237,0.4)] rounded-[0.85rem] bg-[rgba(142,57,237,0.08)]">
                             <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
+                            {myNick && (
+                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{myNick}</span>
+                            )}
                         </div>
                         <div className={isReported && !isContested ? "font-['Bebas_Neue',sans-serif] text-[2.1rem] text-white [text-shadow:0_0_14px_rgba(199,149,255,0.45)] max-[900px]:text-[1.4rem]" : "font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)] max-[900px]:text-[1.4rem]"}>
                             {isReported && !isContested
@@ -103,6 +114,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                         <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(239,68,68,0.3)] rounded-[0.85rem] bg-[rgba(239,68,68,0.05)]">
                             <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Oponente</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{opponentName}</span>
+                            {opponentNick && (
+                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{opponentNick}</span>
+                            )}
                         </div>
                     </div>
 

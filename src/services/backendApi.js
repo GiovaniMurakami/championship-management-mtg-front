@@ -106,8 +106,8 @@ export const gerarLinkIngresso = (torneioId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const ingressarComToken = (tokenIngresso, authToken) =>
-  httpClient.post(`/torneio/ingressar/${tokenIngresso}`, {}, {
+export const ingressarComToken = (tokenIngresso, authToken, deckId) =>
+  httpClient.post(`/torneio/ingressar/${tokenIngresso}`, deckId ? { deckId } : {}, {
     headers: { Authorization: `Bearer ${authToken}` },
   });
 

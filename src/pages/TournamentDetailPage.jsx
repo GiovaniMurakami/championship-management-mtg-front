@@ -215,6 +215,7 @@ export function TournamentDetailPage() {
           torneioId={torneio.id}
           rodadaAtual={torneio.rodadaAtual}
           status={torneio.status}
+          rodadaIniciadaEm={torneio.rodadaIniciadaEm}
         />
       )}
 
@@ -371,10 +372,10 @@ export function TournamentDetailPage() {
       {realtimeToast && (
         <div
           className={`fixed bottom-6 right-6 z-[200] max-w-[340px] flex items-start gap-3 px-4 py-3 rounded-[0.8rem] shadow-[0_8px_24px_rgba(0,0,0,0.5)] border animate-[slide-up_300ms_ease-out] ${realtimeToast.type === "success"
-              ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.45)] text-[#86efac]"
-              : realtimeToast.type === "warning"
-                ? "bg-[rgba(251,191,36,0.13)] border-[rgba(251,191,36,0.45)] text-[#fde68a]"
-                : "bg-[rgba(56,189,248,0.12)] border-[rgba(56,189,248,0.4)] text-[#7dd3fc]"
+            ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.45)] text-[#86efac]"
+            : realtimeToast.type === "warning"
+              ? "bg-[rgba(251,191,36,0.13)] border-[rgba(251,191,36,0.45)] text-[#fde68a]"
+              : "bg-[rgba(56,189,248,0.12)] border-[rgba(56,189,248,0.4)] text-[#7dd3fc]"
             }`}
         >
           <span className="text-[0.88rem] font-semibold leading-snug flex-1">{realtimeToast.msg}</span>

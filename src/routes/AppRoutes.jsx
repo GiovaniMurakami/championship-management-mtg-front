@@ -140,11 +140,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         />
         <Route
           path="/torneio/ingressar/:token"
-          element={
-            <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
-              <TournamentJoinPage />
-            </ProtectedRoute>
-          }
+          element={<TournamentJoinPage />}
         />
         <Route
           path="/ligas"

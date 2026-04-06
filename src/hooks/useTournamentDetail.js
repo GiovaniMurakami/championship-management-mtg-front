@@ -127,10 +127,16 @@ export function useTournamentDetail() {
             if (data.partidas || data.rodadaAtualPartidas) {
                 setPartidas(data.partidas || data.rodadaAtualPartidas || []);
             }
-            // Merge tournament-level data if present
-            if (data.nome || data.torneioNome) {
-                setTorneio((prev) => prev ? { ...prev, ...data } : data);
-            }
+            // Merge tournament-level fields returned alongside standings
+            setTorneio((prev) => {
+                const patch = {};
+                if (data.nome || data.torneioNome) Object.assign(patch, data);
+                if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
+                if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
+                if (data.status !== undefined) patch.status = data.status;
+                if (!Object.keys(patch).length) return prev;
+                return prev ? { ...prev, ...patch } : patch;
+            });
         } catch (err) {
             console.error("Erro ao carregar standings:", err);
         }
