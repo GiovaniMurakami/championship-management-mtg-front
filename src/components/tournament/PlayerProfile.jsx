@@ -1,30 +1,4 @@
-import { useEffect, useState } from "react";
-import { shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
-
-const ROUND_DURATION = 50 * 60;
-
-function useIsRoundTimerOver(torneioId, rodadaAtual, isOngoing) {
-    const [isOver, setIsOver] = useState(false);
-
-    useEffect(() => {
-        if (!isOngoing || !torneioId || !rodadaAtual) {
-            setIsOver(false);
-            return;
-        }
-        const key = `rt_start_${torneioId}_r${rodadaAtual}`;
-        const check = () => {
-            const startTime = Number(localStorage.getItem(key) || 0);
-            if (!startTime) { setIsOver(false); return; }
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            setIsOver(elapsed >= ROUND_DURATION);
-        };
-        check();
-        const interval = setInterval(check, 10000);
-        return () => clearInterval(interval);
-    }, [torneioId, rodadaAtual, isOngoing]);
-
-    return isOver;
-}
+import { useState } from "react";
 
 export function PlayerProfile({
     torneio,
@@ -42,17 +16,8 @@ export function PlayerProfile({
     const canEditDeck = torneio?.status === "inscricoes_abertas";
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
-    const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
 
-    const isTimerOver = useIsRoundTimerOver(torneio?.id, torneio?.rodadaAtual, isOngoing);
-
-    const isCheckedIn =
-        (currentPlayer?.checkinRodada ?? -1) >= 0;
-
-    const isCheckedInNextRound =
-        Number(currentPlayer?.checkinRodada ?? -1) >= Number(torneio?.rodadaAtual ?? 0);
-
-    const checkinDone = isOngoing && requiresNextRoundCheckin ? isCheckedInNextRound : isCheckedIn;
+    const isCheckedIn = (currentPlayer?.checkinRodada ?? -1) >= 0;
 
     const isDeckConfirmed =
         currentPlayer?.deckConfirmado || currentPlayer?.deckNome || currentPlayer?.deck?.nome || false;
@@ -177,34 +142,23 @@ export function PlayerProfile({
                     )}
                 </div>
 
-                {(!isOngoing || requiresNextRoundCheckin) && (
+                {!isOngoing && (
                     <div className="grid gap-[0.35rem]">
                         <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Check-in</label>
                         <div className="flex flex-col gap-[0.35rem]">
                             <button
-                                className={`inline-flex items-center justify-center px-4 py-[0.55rem] border rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${checkinDone ? "bg-[rgba(34,197,94,0.2)] border-[rgba(34,197,94,0.5)] text-[#86efac]" : "bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"}`}
-                                disabled={actionLoading || checkinDone || isFinished || (isOngoing && requiresNextRoundCheckin && !isTimerOver)}
+                                className={`inline-flex items-center justify-center px-4 py-[0.55rem] border rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${isCheckedIn ? "bg-[rgba(34,197,94,0.2)] border-[rgba(34,197,94,0.5)] text-[#86efac]" : "bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"}`}
+                                disabled={actionLoading || isCheckedIn || isFinished}
                                 onClick={onCheckin}
                             >
                                 {isFinished
                                     ? "Torneio finalizado"
-                                    : checkinDone
-                                        ? isOngoing
-                                            ? "✓ Check-in da próxima rodada feito"
-                                            : "✓ Check-in feito"
+                                    : isCheckedIn
+                                        ? "✓ Check-in feito"
                                         : actionLoading
                                             ? "Aguarde..."
-                                            : isOngoing && requiresNextRoundCheckin && !isTimerOver
-                                                ? "Aguardando fim do tempo..."
-                                                : isOngoing
-                                                    ? "Fazer check-in da próxima rodada"
-                                                    : "Fazer check-in"}
+                                            : "Fazer check-in"}
                             </button>
-                            {isOngoing && requiresNextRoundCheckin && !checkinDone && !isTimerOver && (
-                                <p className="text-[0.75rem] text-[#beafd7] m-0">
-                                    Check-in disponível quando o relógio da rodada terminar.
-                                </p>
-                            )}
                         </div>
                     </div>
                 )}

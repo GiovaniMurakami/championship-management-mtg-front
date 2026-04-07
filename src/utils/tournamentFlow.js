@@ -60,7 +60,7 @@ export function shouldRequestNextRoundCheckin(torneio) {
         return false;
     }
 
-    return !isSwissLastRound(torneio);
+    return true;
 }
 
 export function getTournamentNextAction(torneio) {
@@ -72,15 +72,13 @@ export function getTournamentNextAction(torneio) {
         return NEXT_ROUND_ACTION.ADVANCE_TOP_CUT;
     }
 
-    if (shouldRequestNextRoundCheckin(torneio)) {
-        return NEXT_ROUND_ACTION.NEXT_SWISS_ROUND;
+    if (isSwissLastRound(torneio)) {
+        return hasTopCut(torneio)
+            ? NEXT_ROUND_ACTION.START_TOP_CUT
+            : NEXT_ROUND_ACTION.FINISH_TOURNAMENT;
     }
 
-    if (hasTopCut(torneio)) {
-        return NEXT_ROUND_ACTION.START_TOP_CUT;
-    }
-
-    return NEXT_ROUND_ACTION.FINISH_TOURNAMENT;
+    return NEXT_ROUND_ACTION.NEXT_SWISS_ROUND;
 }
 
 export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
@@ -92,11 +90,11 @@ export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
             return {
                 action: nextAction,
                 cta: "Iniciar Próxima Rodada",
-                blockedCta: "Aguardando check-in",
+                blockedCta: "Iniciar Próxima Rodada",
                 status:
                     pendingCount > 0
-                        ? "Aguardando check-in para próxima rodada"
-                        : "Check-ins concluídos. Pronto para gerar a próxima rodada",
+                        ? `${pendingCount} jogador(es) ainda não confirmaram presença`
+                        : "Pronto para gerar a próxima rodada",
             };
         case NEXT_ROUND_ACTION.START_TOP_CUT:
             return {

@@ -119,7 +119,14 @@ export function useTournamentDetail() {
         if (!torneioId || !token) return;
         try {
             const data = await getStandings(torneioId, token);
-            setStandings(data.standings || data.participantes || data.players || []);
+            const rawStandings = data.standings || data.participantes || data.players || [];
+            // Normaliza o campo checkInRodada (backend) para checkinRodada (frontend)
+            const normalizedStandings = rawStandings.map((p) =>
+                "checkInRodada" in p && !("checkinRodada" in p)
+                    ? { ...p, checkinRodada: p.checkInRodada }
+                    : p
+            );
+            setStandings(normalizedStandings);
             if (data.partidas || data.rodadaAtualPartidas) {
                 setPartidas(data.partidas || data.rodadaAtualPartidas || []);
             }
@@ -216,7 +223,7 @@ export function useTournamentDetail() {
             },
             onCheckinRealizado: (msg) => {
                 const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
-                const checkinRodada = msg.data.checkinRodada ?? 0;
+                const checkinRodada = msg.data.checkinRodada ?? msg.data.checkInRodada ?? 0;
                 setStandings((prev) =>
                     prev.map((p) =>
                         p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId

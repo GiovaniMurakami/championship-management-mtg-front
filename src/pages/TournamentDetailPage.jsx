@@ -30,6 +30,7 @@ export function TournamentDetailPage() {
     isAdmin,
     canManageTournament,
     pendingCheckinPlayers,
+    requiresNextRoundCheckin,
     currentPlayer,
     myMatch,
     partidas,
@@ -60,6 +61,7 @@ export function TournamentDetailPage() {
 
   const isFinished = torneio?.status === "finalizado";
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
+  const isOngoing = torneio?.status === "em_andamento";
   const canManage = (isOwner || isAdmin) && isRegistrationOpen;
 
   useEffect(() => {
@@ -219,117 +221,132 @@ export function TournamentDetailPage() {
         />
       )}
 
-      {!loading && (
-        <div className={`grid gap-6 items-start ${isFinished ? "grid-cols-1" : "grid-cols-2 max-[900px]:grid-cols-1"}`}>
-          {!isFinished && (
-            <div className="grid gap-6">
-              {canManageTournament && isRegistrationOpen && (
-                <OwnerControlPanel
-                  torneio={torneio}
-                  standings={standings}
-                  usuarioId={usuario?.id}
-                  pendingCheckinPlayers={pendingCheckinPlayers}
-                  partidas={partidas}
-                  canManage={canManageTournament}
-                  onStartTournament={handleStartTournament}
-                  onNextRound={handleNextRound}
-                  onDropPlayersWithoutDeck={(playerIds) => handleBulkDropPlayers(playerIds, {
-                    actionKey: "drop-missing-decks",
-                    successMessage: "Jogadores sem deck dropados com sucesso!",
-                    errorMessage: "Erro ao dropar jogadores sem deck.",
-                  })}
-                  onDropPlayersWithoutCheckin={(playerIds) => handleBulkDropPlayers(playerIds, {
-                    actionKey: "drop-missing-checkin",
-                    successMessage: "Jogadores sem check-in dropados com sucesso!",
-                    errorMessage: "Erro ao dropar jogadores sem check-in.",
-                  })}
-                  onDropPlayer={handleDropPlayer}
-                  onEditResult={handleReportResult}
-                  onAdjustResult={handleAdjustResult}
-                  onGerarLinkIngresso={handleGerarLinkIngresso}
-                  actionLoading={actionLoading}
-                  adminActionKey={adminActionKey}
-                  droppingPlayerId={droppingPlayerId}
-                />
-              )}
+      {!loading && (() => {
+        const ownerControlPanelProps = {
+          torneio,
+          standings,
+          usuarioId: usuario?.id,
+          pendingCheckinPlayers,
+          partidas,
+          canManage: canManageTournament,
+          onStartTournament: handleStartTournament,
+          onNextRound: handleNextRound,
+          onDropPlayersWithoutDeck: (playerIds) => handleBulkDropPlayers(playerIds, {
+            actionKey: "drop-missing-decks",
+            successMessage: "Jogadores sem deck dropados com sucesso!",
+            errorMessage: "Erro ao dropar jogadores sem deck.",
+          }),
+          onDropPlayersWithoutCheckin: (playerIds) => handleBulkDropPlayers(playerIds, {
+            actionKey: "drop-missing-checkin",
+            successMessage: "Jogadores sem check-in dropados com sucesso!",
+            errorMessage: "Erro ao dropar jogadores sem check-in.",
+          }),
+          onDropPlayer: handleDropPlayer,
+          onEditResult: handleReportResult,
+          onAdjustResult: handleAdjustResult,
+          onGerarLinkIngresso: handleGerarLinkIngresso,
+          actionLoading,
+          adminActionKey,
+          droppingPlayerId,
+        };
 
-              <MatchPanel
-                myMatch={myMatch}
-                usuario={usuario}
-                onReportResult={handleReportResult}
-                onContestResult={handleContestResult}
-                actionLoading={actionLoading}
-                torneio={torneio}
-                isOwner={isOwner}
-              />
+        const matchPanel = (
+          <MatchPanel
+            myMatch={myMatch}
+            usuario={usuario}
+            onReportResult={handleReportResult}
+            onContestResult={handleContestResult}
+            actionLoading={actionLoading}
+            torneio={torneio}
+            isOwner={isOwner}
+            currentPlayer={currentPlayer}
+            onCheckin={handleCheckin}
+          />
+        );
 
-              {canManageTournament && !isRegistrationOpen && (
-                <OwnerControlPanel
-                  torneio={torneio}
-                  standings={standings}
-                  usuarioId={usuario?.id}
-                  pendingCheckinPlayers={pendingCheckinPlayers}
-                  partidas={partidas}
-                  canManage={canManageTournament}
-                  onStartTournament={handleStartTournament}
-                  onNextRound={handleNextRound}
-                  onDropPlayersWithoutDeck={(playerIds) => handleBulkDropPlayers(playerIds, {
-                    actionKey: "drop-missing-decks",
-                    successMessage: "Jogadores sem deck dropados com sucesso!",
-                    errorMessage: "Erro ao dropar jogadores sem deck.",
-                  })}
-                  onDropPlayersWithoutCheckin={(playerIds) => handleBulkDropPlayers(playerIds, {
-                    actionKey: "drop-missing-checkin",
-                    successMessage: "Jogadores sem check-in dropados com sucesso!",
-                    errorMessage: "Erro ao dropar jogadores sem check-in.",
-                  })}
-                  onDropPlayer={handleDropPlayer}
-                  onEditResult={handleReportResult}
-                  onAdjustResult={handleAdjustResult}
-                  onGerarLinkIngresso={handleGerarLinkIngresso}
-                  actionLoading={actionLoading}
-                  adminActionKey={adminActionKey}
-                  droppingPlayerId={droppingPlayerId}
-                />
-              )}
+        const playerProfile = (
+          <PlayerProfile
+            torneio={torneio}
+            usuario={usuario}
+            usuarioNome={usuario?.nome}
+            currentPlayer={currentPlayer}
+            decks={decks}
+            selectedDeckId={selectedDeckId}
+            onDeckChange={setSelectedDeckId}
+            onChooseDeck={handleChooseDeck}
+            onCheckin={handleCheckin}
+            onInscrever={handleInscrever}
+            actionLoading={actionLoading}
+          />
+        );
 
-              <PlayerProfile
-                torneio={torneio}
-                usuario={usuario}
-                usuarioNome={usuario?.nome}
-                currentPlayer={currentPlayer}
-                decks={decks}
-                selectedDeckId={selectedDeckId}
-                onDeckChange={setSelectedDeckId}
-                onChooseDeck={handleChooseDeck}
-                onCheckin={handleCheckin}
-                onInscrever={handleInscrever}
-                actionLoading={actionLoading}
-              />
+        const standingsTable = (compact) => (
+          <StandingsTable
+            standings={standings}
+            isFinished={isFinished}
+            isRegistrationOpen={isRegistrationOpen}
+            token={token}
+            isOwner={isOwner}
+            torneioNome={torneio?.nome}
+            rodadaAtual={torneio?.rodadaAtual ?? 0}
+            compact={compact}
+          />
+        );
+
+        const matchTablesPanel = (
+          <MatchTablesPanel
+            torneio={torneio}
+            partidas={partidas}
+            usuarioId={usuario?.id}
+            isOwner={isOwner}
+            onContestResult={handleContestResult}
+            actionLoading={actionLoading}
+          />
+        );
+
+        // ── Ongoing: standings compact sidebar on left, everything else on right ──
+        if (isOngoing) {
+          return (
+            <div className="grid grid-cols-[minmax(260px,300px)_1fr] gap-6 items-start max-[900px]:grid-cols-1">
+              {/* Left: sticky compact standings */}
+              <div className="sticky top-4 max-[900px]:static max-[900px]:order-last">
+                {standingsTable(true)}
+              </div>
+              {/* Right: player/admin actions + tables */}
+              <div className="grid gap-6">
+                {matchPanel}
+                {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
+                {playerProfile}
+                {matchTablesPanel}
+              </div>
             </div>
-          )}
+          );
+        }
 
-          <div className="grid gap-6">
-            <MatchTablesPanel
-              torneio={torneio}
-              partidas={partidas}
-              usuarioId={usuario?.id}
-              isOwner={isOwner}
-              onContestResult={handleContestResult}
-              actionLoading={actionLoading}
-            />
-            <StandingsTable
-              standings={standings}
-              isFinished={isFinished}
-              isRegistrationOpen={isRegistrationOpen}
-              token={token}
-              isOwner={isOwner}
-              torneioNome={torneio?.nome}
-              rodadaAtual={torneio?.rodadaAtual ?? 0}
-            />
+        // ── Finished: single column, full standings + tables ─────────────────────
+        if (isFinished) {
+          return (
+            <div className="grid gap-6">
+              {standingsTable(false)}
+              {matchTablesPanel}
+            </div>
+          );
+        }
+
+        // ── Registration: admin+player on left, registered players on right ──────
+        return (
+          <div className="grid grid-cols-2 gap-6 items-start max-[900px]:grid-cols-1">
+            <div className="grid gap-6">
+              {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
+              {matchPanel}
+              {playerProfile}
+            </div>
+            <div className="grid gap-6">
+              {standingsTable(false)}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {loading && <SkeletonTournamentDetail />}
 

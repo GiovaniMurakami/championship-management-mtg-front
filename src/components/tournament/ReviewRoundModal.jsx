@@ -133,7 +133,7 @@ export function ReviewRoundModal({
   const jogadoresAtivos = (standings || []).filter((p) => !p?.dropped);
   const pendentesCheckin = pendingCheckinPlayers || [];
   const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
-  const canAdvance = !requiresNextRoundCheckin || pendentesCheckin.length === 0;
+  const canAdvance = true;
   const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
 
   const handleNextRound = async () => {
@@ -233,11 +233,11 @@ export function ReviewRoundModal({
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
-                  {pendentesCheckin.length} jogador(es) sem check-in. Realize o drop ou aguarde o check-in.
+                  {pendentesCheckin.length} jogador(es) ainda não confirmaram presença (somente informativo — não impede o início da rodada).
                 </p>
               )}
 
-              {!requiresNextRoundCheckin && nextRoundLabels.status && (
+              {nextRoundLabels.status && (
                 <p className="flex items-center gap-2 text-[0.82rem] text-[#7dd3fc] bg-[rgba(56,189,248,0.08)] border border-[rgba(56,189,248,0.2)] rounded-lg px-3 py-2 m-0">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" />

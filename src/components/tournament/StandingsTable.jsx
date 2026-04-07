@@ -311,6 +311,7 @@ export function StandingsTable({
   isOwner = false,
   torneioNome = "",
   rodadaAtual = 0,
+  compact = false,
 }) {
   const [deckNameOverrides, setDeckNameOverrides] = useState({});
   const [showStory, setShowStory] = useState(false);
@@ -359,6 +360,90 @@ export function StandingsTable({
   const hasTop8Cut = standings.length > 8 && !search && !isRegistrationOpen;
   const colCount = isRegistrationOpen ? 4 : isFinished ? 11 : 12;
 
+  // ─── Compact sidebar mode ─────────────────────────────────────────────────
+  if (compact) {
+    return (
+      <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 flex-shrink-0">
+          <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#f5edff]">Standings</h2>
+          <span className="text-[0.72rem] font-semibold text-[#beafd7] bg-[rgba(167,79,255,0.12)] border border-[rgba(217,180,255,0.2)] rounded-full px-[0.55rem] py-[0.15rem] flex-shrink-0">
+            {standings.length} jogadores
+          </span>
+        </div>
+
+        {/* Search */}
+        <div className="relative px-4 pb-3 flex-shrink-0">
+          <input
+            className="w-full pl-3 pr-[1.85rem] py-[0.3rem] border border-[rgba(199,149,255,0.25)] rounded-full bg-[rgba(167,79,255,0.07)] text-[#f5edff] text-[0.78rem] font-['inherit'] outline-none transition-[border-color] duration-[250ms] placeholder:text-[#beafd7] focus:border-[rgba(199,149,255,0.5)]"
+            type="text"
+            placeholder="Buscar jogador…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Buscar jogador"
+          />
+          {search ? (
+            <button type="button" className="absolute right-[1.15rem] top-1/2 -translate-y-1/2 bg-transparent border-none text-[#beafd7] text-[1rem] leading-none cursor-pointer hover:text-[#f5edff]" onClick={() => setSearch("")} aria-label="Limpar busca">×</button>
+          ) : (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="absolute right-[1.35rem] top-1/2 -translate-y-1/2 text-[#beafd7] pointer-events-none">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          )}
+        </div>
+
+        {/* Column headers */}
+        <div className="grid grid-cols-[2rem_1fr_auto] gap-x-2 px-4 pb-[0.35rem] flex-shrink-0 border-b border-[rgba(255,255,255,0.06)]">
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#c795ff] text-center">#</span>
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#c795ff]">Jogador</span>
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#c795ff] text-right">Pts</span>
+        </div>
+
+        {/* Scrollable list */}
+        <div className="overflow-y-auto flex-1 min-h-0 max-h-[calc(100vh-320px)] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] pb-2">
+          {filtered.length === 0 ? (
+            <p className="text-[#beafd7] text-[0.82rem] m-0 px-4 pt-3">Nenhum jogador encontrado.</p>
+          ) : (
+            filtered.map((player, index) => {
+              const posicao = player.posicao ?? index + 1;
+              const pts = player.pontosMesa ?? player.pontos ?? 0;
+              const isTop3 = posicao <= 3 && !player.dropped;
+              const isTop8cut = hasTop8Cut && posicao === 8 && !player.dropped;
+              const rowAccent = isTop3
+                ? posicao === 1 ? "border-l-2 border-l-[rgba(255,215,0,0.5)]" : posicao === 2 ? "border-l-2 border-l-[rgba(192,192,192,0.45)]" : "border-l-2 border-l-[rgba(205,127,50,0.45)]"
+                : posicao <= 8 && !player.dropped ? "border-l-2 border-l-[rgba(167,79,255,0.3)]" : "";
+              return (
+                <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
+                  {isTop8cut && (
+                    <div className="px-4 py-[0.2rem] border-t border-b border-dashed border-[rgba(167,79,255,0.3)] bg-[rgba(167,79,255,0.04)]">
+                      <span className="block text-center text-[0.63rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">— Corte Top 8 —</span>
+                    </div>
+                  )}
+                  <div className={`grid grid-cols-[2rem_1fr_auto] gap-x-2 items-center px-4 py-[0.4rem] border-b border-[rgba(255,255,255,0.04)] transition-colors duration-150 hover:bg-[rgba(167,79,255,0.05)] ${rowAccent} ${player.dropped ? "opacity-50" : ""}`}>
+                    <span className="text-center flex-shrink-0">
+                      {isTop3 ? (
+                        <span className={`inline-flex items-center justify-center w-[1.4rem] h-[1.4rem] rounded-full text-[0.65rem] font-extrabold leading-none ${posicao === 1 ? "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800]" : posicao === 2 ? "bg-[linear-gradient(135deg,#d0d0d0,#888)] text-[#1e1e1e]" : "bg-[linear-gradient(135deg,#cd7f32,#8b4513)] text-[#fff8f0]"}`}>{posicao}</span>
+                      ) : (
+                        <span className="text-[0.75rem] text-[#beafd7] font-semibold">{posicao}</span>
+                      )}
+                    </span>
+                    <span className={`text-[0.82rem] font-semibold truncate min-w-0 ${player.dropped ? "line-through text-[#beafd7]" : "text-white"}`}>
+                      {getPlayerName(player)}
+                      {player.dropped && <span className="text-[0.62rem] font-bold text-[#f87171] ml-1 no-underline not-italic">DROP</span>}
+                    </span>
+                    <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-[#beafd7]"}`}>
+                      {isRegistrationOpen ? "—" : pts}
+                    </span>
+                  </div>
+                </Fragment>
+              );
+            })
+          )}
+        </div>
+      </section>
+    );
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   return (
     <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
       <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
@@ -366,19 +451,15 @@ export function StandingsTable({
         <div className="flex items-center gap-[0.6rem] flex-wrap">
           {standings.length > 5 && (
             <div className="relative flex items-center">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="absolute left-[0.55rem] text-[#beafd7] pointer-events-none flex-shrink-0">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
               <input
-                className="pl-[1.85rem] pr-[1.8rem] py-[0.28rem] border border-[rgba(199,149,255,0.3)] rounded-full bg-[rgba(167,79,255,0.08)] text-[#f5edff] text-[0.78rem] font-['inherit'] outline-none w-40 transition-[border-color,background,width] duration-[250ms] placeholder:text-[#beafd7] focus:border-[rgba(199,149,255,0.55)] focus:bg-[rgba(167,79,255,0.13)] focus:w-52"
+                className="pl-3 pr-[1.8rem] py-[0.28rem] border border-[rgba(199,149,255,0.3)] rounded-full bg-[rgba(167,79,255,0.08)] text-[#f5edff] text-[0.78rem] font-['inherit'] outline-none w-40 transition-[border-color,background,width] duration-[250ms] placeholder:text-[#beafd7] focus:border-[rgba(199,149,255,0.55)] focus:bg-[rgba(167,79,255,0.13)] focus:w-52"
                 type="text"
                 placeholder="Buscar jogador…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Buscar jogador"
               />
-              {search && (
+              {search ? (
                 <button
                   type="button"
                   className="absolute right-[0.4rem] bg-transparent border-none text-[#beafd7] text-[1rem] leading-none cursor-pointer px-[0.1rem] flex items-center hover:text-[#f5edff]"
@@ -387,6 +468,11 @@ export function StandingsTable({
                 >
                   ×
                 </button>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="absolute right-[0.55rem] text-[#beafd7] pointer-events-none flex-shrink-0">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               )}
             </div>
           )}
@@ -408,9 +494,9 @@ export function StandingsTable({
 
       {filtered.length > 0 && (
         <>
-          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] hidden max-[480px]:hidden [&]:block max-[480px]:[&]:hidden">
+          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] overflow-auto max-h-[62vh] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] hidden max-[480px]:hidden [&]:block max-[480px]:[&]:hidden">
             <table className="w-full border-collapse text-[0.88rem]">
-              <thead className="bg-[rgba(142,57,237,0.12)]">
+              <thead className="bg-[rgba(142,57,237,0.12)] sticky top-0 z-10 shadow-[0_1px_0_rgba(217,180,255,0.15)]">
                 <tr>
                   <th className="w-10 text-center px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">#</th>
                   <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Jogador</th>

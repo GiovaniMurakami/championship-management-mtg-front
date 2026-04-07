@@ -1,14 +1,39 @@
 import { useState } from "react";
-import { isEliminationPhase } from "../../utils/tournamentFlow";
+import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
-export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, actionLoading, torneio, isOwner }) {
+export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
 
     const eliminationPhase = isEliminationPhase(torneio);
+    const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
+
+    const checkinPending =
+        requiresNextRoundCheckin &&
+        Number(currentPlayer?.checkinRodada ?? -1) < Number(torneio?.rodadaAtual ?? 0);
     const isTie = winsPlayer1 === winsPlayer2;
     const totalWins = winsPlayer1 + winsPlayer2;
     const isInvalidScore = totalWins > 3;
+
+    if (checkinPending) {
+        return (
+            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite]">
+                <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
+                <div className="flex flex-col items-center gap-4 py-2">
+                    <p className="text-[#beafd7] text-[0.9rem] m-0 text-center">
+                        Confirme sua presença para visualizar a partida desta rodada.
+                    </p>
+                    <button
+                        className="inline-flex items-center justify-center px-6 py-[0.65rem] border rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                        disabled={actionLoading}
+                        onClick={onCheckin}
+                    >
+                        {actionLoading ? "Aguarde..." : "Confirmar presença"}
+                    </button>
+                </div>
+            </section>
+        );
+    }
 
     if (!myMatch) {
         return (

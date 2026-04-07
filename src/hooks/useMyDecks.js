@@ -8,7 +8,7 @@ export function useMyDecks(token, usuarioId) {
   const [message, setMessage] = useState("");
 
   const fetchDecks = useCallback(async () => {
-    if (!token) return;
+    if (!token || !usuarioId) return;
 
     setLoading(true);
     setMessage("");
