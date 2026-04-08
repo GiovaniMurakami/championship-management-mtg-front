@@ -7,7 +7,6 @@ const LOGO = "https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-log
 const NAV_LINKS = [
     { label: "Home", href: "/" },
     { label: "Torneios", href: "/torneio" },
-    { label: "Decks", href: "/decks" },
     { label: "Blog", href: "/blog" },
     { label: "Sobre mim", href: "/sobre-mim" },
     { label: "Parceiros", href: "/parceiros" },
