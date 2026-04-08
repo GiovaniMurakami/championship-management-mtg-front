@@ -6,7 +6,7 @@ function storageKey(torneioId, rodada) {
   return `rt_start_${torneioId}_r${rodada}`;
 }
 
-export function RoundTimer({ torneioId, rodadaAtual, status }) {
+export function RoundTimer({ torneioId, rodadaAtual, status, rodadaIniciadaEm }) {
   const [secondsLeft, setSecondsLeft] = useState(ROUND_DURATION);
   const intervalRef = useRef(null);
 
@@ -14,11 +14,18 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
     if (status !== "em_andamento" || !torneioId || !rodadaAtual) return;
 
     const key = storageKey(torneioId, rodadaAtual);
-    let startTime = Number(localStorage.getItem(key) || 0);
 
-    if (!startTime) {
-      startTime = Date.now();
+    let startTime;
+    if (rodadaIniciadaEm) {
+      // Authoritative server timestamp — sync localStorage so other components agree
+      startTime = new Date(rodadaIniciadaEm).getTime();
       localStorage.setItem(key, String(startTime));
+    } else {
+      startTime = Number(localStorage.getItem(key) || 0);
+      if (!startTime) {
+        startTime = Date.now();
+        localStorage.setItem(key, String(startTime));
+      }
     }
 
     const tick = () => {
@@ -30,7 +37,7 @@ export function RoundTimer({ torneioId, rodadaAtual, status }) {
     intervalRef.current = setInterval(tick, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [torneioId, rodadaAtual, status]);
+  }, [torneioId, rodadaAtual, status, rodadaIniciadaEm]);
 
   if (status !== "em_andamento") return null;
 

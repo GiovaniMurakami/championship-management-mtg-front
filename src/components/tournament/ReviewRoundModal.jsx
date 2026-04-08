@@ -30,8 +30,8 @@ function MatchStatusRow({ partida }) {
 
   return (
     <div className={`flex items-center gap-3 px-[0.85rem] py-[0.6rem] rounded-lg border text-[0.85rem] ${isFinalizada
-        ? "border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.04)]"
-        : "border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.04)]"
+      ? "border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.04)]"
+      : "border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.04)]"
       }`}>
       <span className="text-[0.75rem] text-[rgba(200,180,230,0.55)] min-w-[48px] flex-shrink-0">
         Mesa {mesa}
@@ -50,8 +50,8 @@ function MatchStatusRow({ partida }) {
         </span>
       </div>
       <span className={`text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 ${isFinalizada
-          ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80]"
-          : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24]"
+        ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80]"
+        : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24]"
         }`}>
         {isFinalizada ? "Finalizada" : "Pendente"}
       </span>
@@ -59,7 +59,7 @@ function MatchStatusRow({ partida }) {
   );
 }
 
-function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionLoading, requiresNextRoundCheckin }) {
+function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionLoading, requiresNextRoundCheckin, rodadaAtual }) {
   const getPlayerName = (p) =>
     p?.usuario?.nome || p?.nome || p?.username || p?.userName || "Jogador";
   const getPlayerId = (p) =>
@@ -68,10 +68,7 @@ function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionL
   const playerId = getPlayerId(player);
   const normalizedId = normalizeId(playerId);
   const isMe = normalizeId(playerId) === normalizeId(usuarioId);
-  const checkinOk =
-    player?.checkInProximaRodada ||
-    player?.checkinProximaRodada ||
-    player?.nextRoundCheckin;
+  const checkinOk = Number(player?.checkinRodada ?? -1) >= Number(rodadaAtual ?? 0);
 
   return (
     <div className="flex items-center justify-between gap-3 px-[0.85rem] py-[0.65rem] rounded-lg border border-[rgba(145,71,255,0.15)] bg-[rgba(145,71,255,0.05)]">
@@ -79,16 +76,12 @@ function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionL
         <span className="text-[#e8d5ff] text-[0.88rem] font-medium overflow-hidden text-ellipsis whitespace-nowrap">
           {getPlayerName(player)}{isMe ? " (Você)" : ""}
         </span>
-        {requiresNextRoundCheckin ? (
+        {requiresNextRoundCheckin && (
           <span className={`text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 border ${checkinOk
-              ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80] border-[rgba(34,197,94,0.25)]"
-              : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24] border-[rgba(251,191,36,0.2)]"
+            ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80] border-[rgba(34,197,94,0.25)]"
+            : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24] border-[rgba(251,191,36,0.2)]"
             }`}>
-            {checkinOk ? "✓ check-in" : "⏳ aguardando"}
-          </span>
-        ) : (
-          <span className="text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 border bg-[rgba(56,189,248,0.12)] text-[#7dd3fc] border-[rgba(56,189,248,0.25)]">
-            sem novo check-in
+            {checkinOk ? "✓ presença confirmada" : "⏳ sem presença"}
           </span>
         )}
       </div>
@@ -136,7 +129,7 @@ export function ReviewRoundModal({
   const jogadoresAtivos = (standings || []).filter((p) => !p?.dropped);
   const pendentesCheckin = pendingCheckinPlayers || [];
   const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
-  const canAdvance = !requiresNextRoundCheckin || pendentesCheckin.length === 0;
+  const canAdvance = true;
   const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
 
   const handleNextRound = async () => {
@@ -164,15 +157,15 @@ export function ReviewRoundModal({
             </h2>
             <div className="flex items-center gap-[0.4rem] text-[0.78rem]">
               <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "mesas"
-                  ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
-                  : "text-[rgba(200,180,230,0.6)] border-transparent"
+                ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                : "text-[rgba(200,180,230,0.6)] border-transparent"
                 }`}>
                 1. Mesas
               </span>
               <span className="text-[rgba(200,180,230,0.3)] text-[0.75rem]">→</span>
               <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "jogadores"
-                  ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
-                  : "text-[rgba(200,180,230,0.45)] border-transparent"
+                ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                : "text-[rgba(200,180,230,0.45)] border-transparent"
                 }`}>
                 2. Jogadores
               </span>
@@ -215,12 +208,12 @@ export function ReviewRoundModal({
 
               {!allDone && (
                 <p className="flex items-center gap-2 text-[0.82rem] text-[#fbbf24] bg-[rgba(251,191,36,0.08)] border border-[rgba(251,191,36,0.2)] rounded-lg px-3 py-2 m-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
-                  {pendentes.length} mesa{pendentes.length !== 1 ? "s" : ""} ainda não finalizada{pendentes.length !== 1 ? "s" : ""}. Você pode avançar mesmo assim.
+                  {pendentes.length} mesa{pendentes.length !== 1 ? "s" : ""} ainda não finalizada{pendentes.length !== 1 ? "s" : ""}. Resultados pendentes serão computados como derrota (0–2).
                 </p>
               )}
             </div>
@@ -236,11 +229,11 @@ export function ReviewRoundModal({
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
-                  {pendentesCheckin.length} jogador(es) sem check-in. Realize o drop ou aguarde o check-in.
+                  {pendentesCheckin.length} jogador(es) ainda não confirmaram presença (somente informativo — não impede o início da rodada).
                 </p>
               )}
 
-              {!requiresNextRoundCheckin && nextRoundLabels.status && (
+              {nextRoundLabels.status && (
                 <p className="flex items-center gap-2 text-[0.82rem] text-[#7dd3fc] bg-[rgba(56,189,248,0.08)] border border-[rgba(56,189,248,0.2)] rounded-lg px-3 py-2 m-0">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" />
@@ -267,6 +260,7 @@ export function ReviewRoundModal({
                         droppingPlayerId={droppingPlayerId}
                         actionLoading={actionLoading}
                         requiresNextRoundCheckin={requiresNextRoundCheckin}
+                        rodadaAtual={rodadaAtual}
                       />
                     );
                   })

@@ -34,7 +34,7 @@ const INITIAL_FORM = {
 };
 
 const inputClass =
-    "px-4 py-3 border-2 border-[#333] rounded-lg bg-white/[0.05] text-white text-base transition-all duration-300 focus:outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] focus:bg-white/[0.1] placeholder:text-[#888] [color-scheme:dark]";
+    "px-4 py-3 border-2 border-[#333] rounded-lg bg-white/[0.05] text-white text-base transition-all duration-300 focus:outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] focus:bg-white/[0.1] placeholder:text-[#888] [color-scheme:dark] [&_option]:bg-[#1a1129] [&_option]:text-white";
 
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
     const [createForm, setCreateForm] = useState(() => initialValues ?? INITIAL_FORM);

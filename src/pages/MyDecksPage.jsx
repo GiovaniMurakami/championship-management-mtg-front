@@ -50,7 +50,7 @@ export function MyDecksPage({ token }) {
 
   const isOwner = (deck) => {
     const deckUserId = deck.usuario?.id ?? deck.usuarioId;
-    return deckUserId === usuario?.id;
+    return String(deckUserId) === String(usuario?.id);
   };
 
   const myDecks = decks.filter(isOwner);

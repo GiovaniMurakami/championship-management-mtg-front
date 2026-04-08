@@ -292,3 +292,55 @@ body {
     linear-gradient(150deg, #06040e 0%, #0e0820 50%, #120930 100%);
   background-attachment: fixed;
 }
+
+/* ── View Transitions ─────────────────────────────────────────── */
+@keyframes vt-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vt-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-7px) scale(1.01);
+  }
+}
+
+::view-transition-old(root) {
+  animation: 240ms cubic-bezier(0.4, 0, 0.2, 1) both vt-slide-out;
+}
+
+::view-transition-new(root) {
+  animation: 340ms cubic-bezier(0.16, 1, 0.3, 1) both vt-slide-in;
+}
+
+/* Logo morph — browser interpolates position & size automatically */
+::view-transition-old(brand-logo),
+::view-transition-new(brand-logo) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: clip;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(brand-logo),
+  ::view-transition-new(brand-logo) {
+    animation: none;
+  }
+}

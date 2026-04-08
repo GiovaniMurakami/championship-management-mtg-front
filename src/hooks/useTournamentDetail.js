@@ -52,12 +52,8 @@ export function useTournamentDetail() {
     const { decks } = useMyDecks(token, usuario?.id);
     const guard = useActionGuard(800);
     const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
-    const isCheckedForNextRound = (player) =>
-        Boolean(
-            player?.checkInProximaRodada
-            || player?.checkinProximaRodada
-            || player?.nextRoundCheckin,
-        );
+    const isCheckedForNextRound = (player, rodadaAtual) =>
+        Number(player?.checkinRodada) >= Number(rodadaAtual);
 
     const showToast = useCallback((msg, type = "info") => {
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -123,14 +119,27 @@ export function useTournamentDetail() {
         if (!torneioId || !token) return;
         try {
             const data = await getStandings(torneioId, token);
-            setStandings(data.standings || data.participantes || data.players || []);
+            const rawStandings = data.standings || data.participantes || data.players || [];
+            // Normaliza o campo checkInRodada (backend) para checkinRodada (frontend)
+            const normalizedStandings = rawStandings.map((p) =>
+                "checkInRodada" in p && !("checkinRodada" in p)
+                    ? { ...p, checkinRodada: p.checkInRodada }
+                    : p
+            );
+            setStandings(normalizedStandings);
             if (data.partidas || data.rodadaAtualPartidas) {
                 setPartidas(data.partidas || data.rodadaAtualPartidas || []);
             }
-            // Merge tournament-level data if present
-            if (data.nome || data.torneioNome) {
-                setTorneio((prev) => prev ? { ...prev, ...data } : data);
-            }
+            // Merge tournament-level fields returned alongside standings
+            setTorneio((prev) => {
+                const patch = {};
+                if (data.nome || data.torneioNome) Object.assign(patch, data);
+                if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
+                if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
+                if (data.status !== undefined) patch.status = data.status;
+                if (!Object.keys(patch).length) return prev;
+                return prev ? { ...prev, ...patch } : patch;
+            });
         } catch (err) {
             console.error("Erro ao carregar standings:", err);
         }
@@ -214,16 +223,11 @@ export function useTournamentDetail() {
             },
             onCheckinRealizado: (msg) => {
                 const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
+                const checkinRodada = msg.data.checkinRodada ?? msg.data.checkInRodada ?? 0;
                 setStandings((prev) =>
                     prev.map((p) =>
                         p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
-                            ? {
-                                ...p,
-                                checkin: true,
-                                checkIn: true,
-                                checkInProximaRodada: true,
-                                checkinProximaRodada: true,
-                            }
+                            ? { ...p, checkinRodada }
                             : p
                     )
                 );
@@ -348,8 +352,9 @@ export function useTournamentDetail() {
 
     const pendingCheckinPlayers = useMemo(() => {
         if (!shouldRequestNextRoundCheckin(torneio)) return [];
+        const rodadaAtual = torneio?.rodadaAtual ?? 0;
 
-        return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player));
+        return (standings || []).filter((player) => !player?.dropped && !isCheckedForNextRound(player, rodadaAtual));
     }, [standings, torneio]);
 
     const requiresNextRoundCheckin = useMemo(

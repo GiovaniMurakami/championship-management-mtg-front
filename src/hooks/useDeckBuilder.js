@@ -223,29 +223,37 @@ export function useDeckBuilder() {
   };
 
   const resolveImportedCards = async (entries) => {
-    const resolved = await Promise.all(
-      entries.map(async (entry) => {
-        const card = await buscarCartaPorNome(entry.nome);
+    const CONCURRENCY = 6;
+    const results = new Array(entries.length).fill(null);
+    let index = 0;
 
-        if (!card) {
-          return null;
+    const worker = async () => {
+      while (index < entries.length) {
+        const i = index++;
+        const entry = entries[i];
+        try {
+          const card = await buscarCartaPorNome(entry.nome);
+          if (card) {
+            results[i] = {
+              nome: card.nome,
+              quantidade: entry.quantidade,
+              imagem: card.imagem || "",
+              isBasicLand: card.isBasicLand,
+              legalities: card.legalities || {},
+              colors: card.colors || card.colorIdentity || [],
+              cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
+              manaCost: card.manaCost || "",
+              typeLine: card.typeLine || "",
+            };
+          }
+        } catch {
+          // carta não encontrada — mantém null
         }
+      }
+    };
 
-        return {
-          nome: card.nome,
-          quantidade: entry.quantidade,
-          imagem: card.imagem || "",
-          isBasicLand: card.isBasicLand,
-          legalities: card.legalities || {},
-          colors: card.colors || card.colorIdentity || [],
-          cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
-          manaCost: card.manaCost || "",
-          typeLine: card.typeLine || "",
-        };
-      }),
-    );
-
-    return resolved.filter(Boolean);
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, entries.length) }, worker));
+    return results.filter(Boolean);
   };
 
   const importDeckFromTxt = async (file) => {
