@@ -199,17 +199,17 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner }) {
             {total > 3 && (
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <div className="relative flex-1 min-w-[170px] max-w-[360px]">
-                        <svg className="absolute left-[0.6rem] top-1/2 -translate-y-1/2 text-[rgba(186,230,253,0.4)] pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.35-4.35" />
-                        </svg>
                         <input
                             type="search"
                             placeholder="Buscar jogador ou mesa…"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-[0.6rem] pl-[1.8rem] pr-3 py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
+                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-[0.6rem] pl-3 pr-[1.8rem] py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
                         />
+                        <svg className="absolute right-[0.6rem] top-1/2 -translate-y-1/2 text-[rgba(186,230,253,0.4)] pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
                     </div>
                     <button
                         type="button"
@@ -248,7 +248,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner }) {
                         : "Ainda não há mesas para a rodada atual."}
                 </p>
             ) : (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[0.65rem]">
+                <div className={`grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[0.65rem] ${total > 8 ? "max-h-[560px] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(56,189,248,0.3)_transparent] pr-[2px]" : ""}`}>
                     {filteredAndSortedPartidas.map((partida, index) => (
                         <MatchCard
                             key={partida.id || `${partida.rodada}-${index}`}

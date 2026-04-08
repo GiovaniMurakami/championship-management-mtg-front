@@ -168,7 +168,7 @@ function downloadTop8Canvas(players, tournamentName) {
   link.click();
 }
 
-// ─── Animated GIF (480 × 854, 10 fps) ────────────────────────────────────────
+// ─── Animated video — canvas dimensions (scaled ×2.25 → 1080 × 1920 output) ──
 
 const GW = 480;
 const GH = 854;
@@ -314,106 +314,171 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
   ctx.restore();
 }
 
-async function generateAnimatedGif(players, tournamentName, onProgress, onDone) {
-  let gifenc;
-  try {
-    gifenc = await import("gifenc");
-  } catch {
-    alert("Erro ao carregar o encoder de GIF. Tente novamente.");
-    onDone?.();
-    return;
+// ─── Frame renderer (shared between export paths) ────────────────────────────
+
+function renderFrame(ctx, f, n, revealOrder, layout, tournamentName) {
+  const INTRO = 8, PER_P = 7, OUTRO = 22;
+  const titleAlpha = f < INTRO ? (f + 1) / INTRO : 1;
+  const revealOffset = f - INTRO;
+  const isOutro = f >= INTRO + n * PER_P;
+
+  let revealedCount = 0, newestSlide = 1, newestFlash = 0;
+  if (!isOutro && f >= INTRO) {
+    const playerIdx = Math.floor(revealOffset / PER_P);
+    revealedCount = Math.min(playerIdx + 1, n);
+    const frameInPlayer = revealOffset - (revealedCount - 1) * PER_P;
+    const t = (frameInPlayer + 1) / PER_P;
+    newestSlide = easeOutQuart(Math.min(t, 1));
+    newestFlash = Math.max(0, 1 - t * 2.5);
+  } else if (isOutro) {
+    revealedCount = n;
   }
-  const { GIFEncoder, quantize, applyPalette } = gifenc;
 
-  const DELAY = 100; // 10 fps
-  const INTRO = 8;
-  const PER_P = 7;
-  const OUTRO = 22;
+  const outroFrame = isOutro ? f - (INTRO + n * PER_P) : 0;
+  const glowAlpha = isOutro
+    ? Math.sin((outroFrame / OUTRO) * Math.PI * 3.5) * 0.5 + 0.5
+    : 0;
 
-  // Build reveal order: last place first → first place last
+  gifDrawBackground(ctx);
+  gifDrawHeader(ctx, tournamentName, titleAlpha, n);
+
+  for (let ri = 0; ri < revealedCount; ri++) {
+    const player = revealOrder[ri];
+    const pos = player._pos;
+    const isNewest = ri === revealedCount - 1 && !isOutro;
+    gifDrawCard(ctx, player, pos,
+      isNewest ? GW * (1 - newestSlide) : 0,
+      isNewest ? newestFlash : 0,
+      isOutro && pos === 1 ? glowAlpha : 0,
+      layout);
+  }
+}
+
+// ─── Animated MP4 (1080 × 1920, 10 fps) ──────────────────────────────────────
+
+async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) {
+  const FPS = 10;
+  const INTRO = 8, PER_P = 7, OUTRO = 22;
   const n = players.length;
+  const totalFrames = INTRO + n * PER_P + OUTRO;
+
   const revealOrder = players
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
-    .reverse(); // index 0 = last place, index n-1 = 1st place
-
-  const totalFrames = INTRO + n * PER_P + OUTRO;
+    .reverse();
 
   const layout = calcLayout(GH, 153, 5, n, 78);
 
+  // Render at 1080×1920 by scaling the GW/GH coordinate space ×2.25
+  const OUT_W = 1080, OUT_H = 1920;
+  const scale = OUT_W / GW; // 2.25
+
   const canvas = document.createElement("canvas");
-  canvas.width = GW;
-  canvas.height = GH;
-  // willReadFrequently: avoids browser warning for repeated getImageData calls
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-
-  const gif = GIFEncoder();
-
-  for (let f = 0; f < totalFrames; f++) {
-    const titleAlpha = f < INTRO ? (f + 1) / INTRO : 1;
-
-    const revealOffset = f - INTRO;
-    const isOutro = f >= INTRO + n * PER_P;
-
-    let revealedCount = 0;
-    let newestSlide = 1;
-    let newestFlash = 0;
-
-    if (!isOutro && f >= INTRO) {
-      const playerIdx = Math.floor(revealOffset / PER_P);
-      revealedCount = Math.min(playerIdx + 1, n);
-      const frameInPlayer = revealOffset - (revealedCount - 1) * PER_P;
-      const t = (frameInPlayer + 1) / PER_P;
-      newestSlide = easeOutQuart(Math.min(t, 1));
-      newestFlash = Math.max(0, 1 - t * 2.5);
-    } else if (isOutro) {
-      revealedCount = n;
-    }
-
-    const outroFrame = isOutro ? f - (INTRO + n * PER_P) : 0;
-    const glowAlpha = isOutro
-      ? Math.sin((outroFrame / OUTRO) * Math.PI * 3.5) * 0.5 + 0.5
-      : 0;
-
-    gifDrawBackground(ctx);
-    gifDrawHeader(ctx, tournamentName, titleAlpha, n);
-
-    for (let ri = 0; ri < revealedCount; ri++) {
-      const player = revealOrder[ri];
-      const pos = player._pos;
-      const isNewest = ri === revealedCount - 1 && !isOutro;
-
-      const xOffset = isNewest ? GW * (1 - newestSlide) : 0;
-      const flashAlpha = isNewest ? newestFlash : 0;
-      const playerGlow = isOutro && pos === 1 ? glowAlpha : 0;
-
-      gifDrawCard(ctx, player, pos, xOffset, flashAlpha, playerGlow, layout);
-    }
-
-    const imageData = ctx.getImageData(0, 0, GW, GH);
-    const palette = quantize(imageData.data, 256);
-    const index = applyPalette(imageData.data, palette);
-    gif.writeFrame(index, GW, GH, { palette, delay: DELAY, repeat: 0 });
-
-    onProgress?.(Math.round(((f + 1) / totalFrames) * 100));
-
-    if (f % 4 === 3) await new Promise((r) => setTimeout(r, 0));
-  }
-
-  gif.finish();
-  const bytes = gif.bytesView();
-  const blob = new Blob([bytes], { type: "image/gif" });
+  canvas.width = OUT_W;
+  canvas.height = OUT_H;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
 
   const slug = (tournamentName || "torneio")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .toLowerCase();
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase();
 
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `top${n}-${slug}-animado.gif`;
-  link.click();
-  URL.revokeObjectURL(link.href);
+  const hasWebCodecs = typeof VideoEncoder !== "undefined" && typeof VideoFrame !== "undefined";
+
+  // ── Path A: WebCodecs + mp4-muxer → true H.264 MP4 ──────────────────────
+  if (hasWebCodecs) {
+    let muxerMod;
+    try {
+      muxerMod = await import("mp4-muxer");
+    } catch {
+      alert("Erro ao carregar o encoder de MP4. Tente novamente.");
+      onDone?.();
+      return;
+    }
+    const { Muxer, ArrayBufferTarget } = muxerMod;
+
+    const target = new ArrayBufferTarget();
+    const muxer = new Muxer({
+      target,
+      video: { codec: "avc", width: OUT_W, height: OUT_H },
+      fastStart: "in-memory",
+    });
+
+    let encErr = null;
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+      error: (e) => { encErr = e; },
+    });
+
+    try {
+      encoder.configure({
+        codec: "avc1.4D0028", // H.264 Main Profile Level 4.0 (suporta até ~2MP, cobre 1080×1920)
+        width: OUT_W,
+        height: OUT_H,
+        bitrate: 4_000_000,
+        framerate: FPS,
+      });
+    } catch {
+      encoder.close();
+      alert("Este navegador não suporta a codificação H.264. Tente no Chrome ou Safari.");
+      onDone?.();
+      return;
+    }
+
+    for (let f = 0; f < totalFrames; f++) {
+      if (encErr) {
+        alert("Erro ao codificar: " + encErr.message);
+        encoder.close();
+        onDone?.();
+        return;
+      }
+      renderFrame(ctx, f, n, revealOrder, layout, tournamentName);
+      const timestamp = Math.round(f * (1_000_000 / FPS));
+      const duration = Math.round(1_000_000 / FPS);
+      const frame = new VideoFrame(canvas, { timestamp, duration });
+      encoder.encode(frame, { keyFrame: f % 30 === 0 });
+      frame.close();
+      onProgress?.(Math.round(((f + 1) / totalFrames) * 100));
+      if (f % 4 === 3) await new Promise((r) => setTimeout(r, 0));
+    }
+
+    await encoder.flush();
+    encoder.close();
+    muxer.finalize();
+
+    const blob = new Blob([target.buffer], { type: "video/mp4" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `top${n}-${slug}-animado.mp4`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+  // ── Path B: canvas.captureStream + MediaRecorder → WebM fallback ─────────
+  } else {
+    const FRAME_MS = 1000 / FPS;
+    const stream = canvas.captureStream(FPS);
+    const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9")
+      ? "video/webm; codecs=vp9"
+      : "video/webm";
+    const recorder = new MediaRecorder(stream, { mimeType });
+    const chunks = [];
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.start();
+
+    for (let f = 0; f < totalFrames; f++) {
+      renderFrame(ctx, f, n, revealOrder, layout, tournamentName);
+      onProgress?.(Math.round(((f + 1) / totalFrames) * 100));
+      await new Promise((r) => setTimeout(r, FRAME_MS));
+    }
+
+    recorder.stop();
+    await new Promise((r) => { recorder.onstop = r; });
+
+    const blob = new Blob(chunks, { type: mimeType });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `top${n}-${slug}-animado.webm`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
   onDone?.();
 }
@@ -440,15 +505,15 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
   const defaultN = topNOptions.includes(8) ? 8 : topNOptions[topNOptions.length - 1] ?? 1;
 
   const [topN, setTopN] = useState(defaultN);
-  const [gifProgress, setGifProgress] = useState(null); // null = idle
+  const [videoProgress, setVideoProgress] = useState(null); // null = idle
 
   const players = allPlayers.slice(0, topN);
 
-  const handleGif = async () => {
-    if (gifProgress !== null) return;
-    setGifProgress(0);
-    await generateAnimatedGif(players, torneioNome, setGifProgress, () =>
-      setGifProgress(null)
+  const handleMp4 = async () => {
+    if (videoProgress !== null) return;
+    setVideoProgress(0);
+    await generateAnimatedMp4(players, torneioNome, setVideoProgress, () =>
+      setVideoProgress(null)
     );
   };
 
@@ -481,7 +546,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
                     : "border-[rgba(199,149,255,0.25)] text-text-soft hover:bg-[rgba(167,79,255,0.12)] hover:border-[rgba(199,149,255,0.45)] hover:text-[#c4b5fd]",
                 ].join(" ")}
                 onClick={() => setTopN(n)}
-                disabled={gifProgress !== null}
+                disabled={videoProgress !== null}
               >
                 Top {n}
               </button>
@@ -494,37 +559,37 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
             <button
               className="inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color] duration-[160ms] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] disabled:cursor-not-allowed"
               onClick={() => downloadTop8Canvas(players, torneioNome)}
-              disabled={gifProgress !== null}
+              disabled={videoProgress !== null}
             >
               ↓ PNG
             </button>
 
-            {/* story-gif-btn */}
+            {/* story-video-btn */}
             <button
               className={[
                 "inline-flex items-center gap-[0.35rem] px-[0.9rem] py-[0.38rem] border border-[rgba(167,79,255,0.5)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color,opacity] duration-[160ms] whitespace-nowrap",
-                gifProgress !== null
+                videoProgress !== null
                   ? "opacity-75 cursor-not-allowed"
                   : "hover:bg-[rgba(167,79,255,0.25)] hover:border-[rgba(199,149,255,0.7)]",
               ].join(" ")}
-              onClick={handleGif}
-              disabled={gifProgress !== null}
-              title="Gerar GIF animado revelando do último ao primeiro"
+              onClick={handleMp4}
+              disabled={videoProgress !== null}
+              title="Gerar vídeo MP4 animado revelando do último ao primeiro"
             >
-              {gifProgress !== null ? (
+              {videoProgress !== null ? (
                 <>
-                  {/* story-gif-spinner: inline-block 11px border spinner, animate-spin at 0.7s */}
+                  {/* story-video-spinner: inline-block 11px border spinner, animate-spin at 0.7s */}
                   <span
-                    className="inline-block w-[11px] h-[11px] rounded-full border-2 border-[rgba(199,149,255,0.35)] border-t-[#c4b5fd] shrink-0 animate-[story-gif-spin_0.7s_linear_infinite]"
+                    className="inline-block w-[11px] h-[11px] rounded-full border-2 border-[rgba(199,149,255,0.35)] border-t-[#c4b5fd] shrink-0 animate-[story-video-spin_0.7s_linear_infinite]"
                   />
-                  {gifProgress}%
+                  {videoProgress}%
                 </>
               ) : (
                 <>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                     <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
-                  GIF
+                  MP4
                 </>
               )}
             </button>
@@ -540,20 +605,20 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
           </div>
         </div>
 
-        {/* story-gif-progress: w-full flex-col gap-[0.35rem] shrink-0 */}
-        {gifProgress !== null && (
+        {/* story-video-progress: w-full flex-col gap-[0.35rem] shrink-0 */}
+        {videoProgress !== null && (
           <div className="w-full flex flex-col gap-[0.35rem] shrink-0">
-            {/* story-gif-progress-track: w-full h-1 bg-white/[0.07] rounded-full overflow-hidden */}
+            {/* story-video-progress-track: w-full h-1 bg-white/[0.07] rounded-full overflow-hidden */}
             <div className="w-full h-1 bg-white/[0.07] rounded-full overflow-hidden">
-              {/* story-gif-progress-fill: h-full bg-gradient-to-r from-[#8e39ed] to-[#c795ff] rounded-full transition-[width] shadow glow min-w-1 */}
+              {/* story-video-progress-fill: h-full bg-gradient-to-r from-[#8e39ed] to-[#c795ff] rounded-full transition-[width] shadow glow min-w-1 */}
               <div
                 className="h-full bg-gradient-to-r from-[#8e39ed] to-[#c795ff] rounded-full transition-[width] duration-[120ms] shadow-[0_0_8px_rgba(199,149,255,0.5)] min-w-1"
-                style={{ width: `${gifProgress}%` }}
+                style={{ width: `${videoProgress}%` }}
               />
             </div>
-            {/* story-gif-progress-label: text-center 0.7rem text-soft whitespace-nowrap */}
+            {/* story-video-progress-label: text-center 0.7rem text-soft whitespace-nowrap */}
             <span className="text-center text-[0.7rem] text-text-soft whitespace-nowrap">
-              Gerando GIF… {gifProgress}% — revelando do #{topN} ao #1
+              Gerando MP4… {videoProgress}%
             </span>
           </div>
         )}

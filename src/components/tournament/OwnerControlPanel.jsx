@@ -4,19 +4,25 @@ import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../u
 
 const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
 const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
-const hasInitialCheckin = (player) => Boolean(player?.checkIn || player?.checkin || player?.checkedIn || player?.presenca);
+const hasInitialCheckin = (player) => (player?.checkinRodada ?? -1) >= 0;
 
-function ScoreSelect({ value, onChange }) {
+function ScoreStepper({ value, onChange }) {
   return (
-    <select
-      className="w-12 px-[0.3rem] py-[0.25rem] border border-[rgba(217,180,255,0.2)] rounded-[0.45rem] bg-[rgba(255,255,255,0.06)] text-[#f5edff] text-[0.9rem] font-['inherit'] text-center cursor-pointer"
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-    >
-      {[0, 1, 2].map((n) => (
-        <option key={n} value={n}>{n}</option>
-      ))}
-    </select>
+    <div className="flex items-center gap-[0.3rem]">
+      <button
+        type="button"
+        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-[0.45rem] bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
+        onClick={() => onChange(Math.max(0, value - 1))}
+        aria-label="Diminuir"
+      >−</button>
+      <span className="font-['Bebas_Neue',sans-serif] text-[1.8rem] text-white min-w-[1.6rem] text-center leading-none tabular-nums">{value}</span>
+      <button
+        type="button"
+        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-[0.45rem] bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
+        onClick={() => onChange(Math.min(2, value + 1))}
+        aria-label="Aumentar"
+      >+</button>
+    </div>
   );
 }
 
@@ -33,61 +39,68 @@ function MatchEditRow({ partida, onSave, saving }) {
   const isBye = nome2 === "BYE";
   const isFinalizada = partida.status === "finalizada";
 
+  if (editing && !isBye) {
+    return (
+      <div className="border border-[rgba(199,149,255,0.4)] bg-[rgba(167,79,255,0.06)] rounded-[0.65rem] px-4 py-3 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[0.75rem] font-bold text-[#c795ff]">Mesa {mesa}</span>
+          <button
+            type="button"
+            className="text-[#beafd7] text-[1rem] leading-none cursor-pointer bg-transparent border-none hover:text-[#f5edff] transition-colors"
+            onClick={() => { setV1(partida.vitoriasJogador1 ?? 0); setV2(partida.vitoriasJogador2 ?? 0); setEditing(false); }}
+            aria-label="Cancelar edição"
+          >✕</button>
+        </div>
+
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[0.72rem] font-semibold text-[#beafd7] uppercase tracking-[0.04em] text-center truncate w-full">{nome1}</span>
+            <ScoreStepper value={v1} onChange={setV1} />
+          </div>
+          <span className="text-[#beafd7] font-bold text-[1.1rem] pb-1">–</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[0.72rem] font-semibold text-[#beafd7] uppercase tracking-[0.04em] text-center truncate w-full">{nome2}</span>
+            <ScoreStepper value={v2} onChange={setV2} />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="inline-flex items-center justify-center w-full py-[0.45rem] text-[0.85rem] border border-[rgba(199,149,255,0.5)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:shadow-[0_6px_18px_rgba(167,79,255,0.4)]"
+          onClick={async () => {
+            await onSave(partida.id, { vitoriasJogador1: v1, vitoriasJogador2: v2 });
+            setEditing(false);
+          }}
+          disabled={saving}
+        >
+          {saving ? "Salvando..." : "Confirmar resultado"}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex items-center gap-[0.6rem] border rounded-[0.65rem] px-[0.65rem] py-2 flex-wrap ${editing ? "border-[rgba(199,149,255,0.4)] bg-[rgba(167,79,255,0.06)]" : "border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]"}`}>
+    <div className="flex items-center gap-[0.6rem] border rounded-[0.65rem] px-[0.65rem] py-2 flex-wrap border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
       <span className="text-[0.75rem] font-bold text-[#c795ff] whitespace-nowrap min-w-[52px]">Mesa {mesa}</span>
 
       <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
         <span className="text-[0.85rem] text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap min-w-[60px] max-w-[140px]">{nome1}</span>
-        {editing && !isBye ? (
-          <div className="flex items-center gap-[0.35rem]">
-            <ScoreSelect value={v1} onChange={setV1} />
-            <span className="text-[#beafd7] font-bold">–</span>
-            <ScoreSelect value={v2} onChange={setV2} />
-          </div>
-        ) : (
-          <span className={`inline-flex items-center justify-center min-w-[56px] px-[0.45rem] py-[0.12rem] rounded-full font-bold text-[0.78rem] tracking-[0.04em] ${isFinalizada ? "text-white border border-[rgba(199,149,255,0.5)] bg-[rgba(199,149,255,0.22)]" : "text-[#c4b5fd] border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.12)]"}`}>
-            {isFinalizada
-              ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
-              : "VS"}
-          </span>
-        )}
+        <span className={`inline-flex items-center justify-center min-w-[56px] px-[0.45rem] py-[0.12rem] rounded-full font-bold text-[0.78rem] tracking-[0.04em] ${isFinalizada ? "text-white border border-[rgba(199,149,255,0.5)] bg-[rgba(199,149,255,0.22)]" : "text-[#c4b5fd] border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.12)]"}`}>
+          {isFinalizada
+            ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
+            : "VS"}
+        </span>
         <span className="text-[0.85rem] text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap min-w-[60px] max-w-[140px]">{nome2}</span>
       </div>
 
       {!isBye && (
-        <div className="flex gap-[0.35rem] ml-auto">
-          {editing ? (
-            <>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(199,149,255,0.5)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={async () => {
-                  await onSave(partida.id, { vitoriasJogador1: v1, vitoriasJogador2: v2 });
-                  setEditing(false);
-                }}
-                disabled={saving}
-              >
-                {saving ? "..." : "Salvar"}
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#beafd7] bg-transparent hover:bg-[rgba(255,255,255,0.06)] hover:text-[#f5edff]"
-                onClick={() => { setV1(partida.vitoriasJogador1 ?? 0); setV2(partida.vitoriasJogador2 ?? 0); setEditing(false); }}
-              >
-                ✕
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(199,149,255,0.5)]"
-              onClick={() => setEditing(true)}
-            >
-              Editar
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(199,149,255,0.5)] ml-auto"
+          onClick={() => setEditing(true)}
+        >
+          Editar
+        </button>
       )}
     </div>
   );
@@ -338,7 +351,7 @@ export function OwnerControlPanel({
             <p className="mt-2 mb-3 text-[0.88rem] text-[#f6ebc4]">
               {isRegistrationOpen
                 ? `${jogadoresSemCheckin.length} jogador(es) inscrito(s) ainda não fizeram check-in inicial.`
-                : `${jogadoresSemCheckin.length} jogador(es) ainda não fizeram check-in para a próxima rodada.`}
+                : `${jogadoresSemCheckin.length} jogador(es) ainda não confirmaram presença nesta rodada.`}
             </p>
             <button
               type="button"
@@ -426,7 +439,7 @@ export function OwnerControlPanel({
               const normalizedId = normalizeId(playerId);
               const isMe = normalizeId(playerId) === normalizeId(usuarioId);
               const checkinOk =
-                player?.checkInProximaRodada || player?.checkinProximaRodada || player?.nextRoundCheckin;
+                Number(player?.checkinRodada ?? -1) >= Number(torneio?.rodadaAtual ?? 0);
 
               return (
                 <div
@@ -451,7 +464,7 @@ export function OwnerControlPanel({
                         <span>{player?.pontosMesa ?? player?.pontos ?? 0} pts</span>
                         {requiresNextRoundCheckin ? (
                           <span className={`text-[0.78rem] font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
-                            {checkinOk ? "✓ check-in" : "⏳ aguardando"}
+                            {checkinOk ? "✓ presença confirmada" : "⏳ sem presença"}
                           </span>
                         ) : (
                           <span className="text-[0.78rem] font-semibold text-[#93c5fd]">

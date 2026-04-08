@@ -32,7 +32,7 @@ function goToPlayersStep() {
 }
 
 describe("ReviewRoundModal", () => {
-    it("mantem check-in obrigatorio em rodadas intermediarias", () => {
+    it("exibe aviso informativo de presença pendente sem bloquear o botão", () => {
         render(
             <ReviewRoundModal
                 {...baseProps}
@@ -43,8 +43,8 @@ describe("ReviewRoundModal", () => {
 
         goToPlayersStep();
 
-        expect(screen.getByText(/1 jogador\(es\) sem check-in/i)).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Aguardando check-in/i })).toBeDisabled();
+        expect(screen.getAllByText(/1 jogador\(es\) ainda não confirmaram presença/i).length).toBeGreaterThan(0);
+        expect(screen.getByRole("button", { name: /Iniciar Próxima Rodada/i })).toBeEnabled();
     });
 
     it("na ultima rodada do suico para de exigir check-in e permite finalizar", () => {

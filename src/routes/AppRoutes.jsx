@@ -16,6 +16,10 @@ const LigaDetailPage = lazy(() => import("../pages/LigaDetailPage").then(m => ({
 const LigaCreatePage = lazy(() => import("../pages/LigaCreatePage").then(m => ({ default: m.LigaCreatePage })));
 const EsqueciSenhaPage = lazy(() => import("../pages/EsqueciSenhaPage").then(m => ({ default: m.EsqueciSenhaPage })));
 const ResetSenhaPage = lazy(() => import("../pages/ResetSenhaPage").then(m => ({ default: m.ResetSenhaPage })));
+const LandingPage = lazy(() => import("../pages/LandingPage").then(m => ({ default: m.LandingPage })));
+const LandingBlogPage = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
+const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
+const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -23,7 +27,8 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<Home onOpenAuth={auth.openAuth} isAuthenticated={auth.isAuthenticated} />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/torneio" element={<Home onOpenAuth={auth.openAuth} isAuthenticated={auth.isAuthenticated} />} />
         <Route
           path="/decks"
           element={
@@ -134,11 +139,7 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         />
         <Route
           path="/torneio/ingressar/:token"
-          element={
-            <ProtectedRoute isAuthenticated={auth.isAuthenticated} authInitialized={auth.authInitialized}>
-              <TournamentJoinPage />
-            </ProtectedRoute>
-          }
+          element={<TournamentJoinPage />}
         />
         <Route
           path="/ligas"
@@ -174,6 +175,13 @@ export function AppRoutes({ auth, cardPreview, cardSearch, deckBuilder }) {
         />
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
+        <Route path="/blog" element={<LandingBlogPage />} />
+        <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
+        <Route path="/parceiros" element={<LandingParceirosPage />} />
+        <Route path="/landing-page" element={<Navigate to="/" replace />} />
+        <Route path="/landing-page/blog" element={<Navigate to="/blog" replace />} />
+        <Route path="/landing-page/sobre-mim" element={<Navigate to="/sobre-mim" replace />} />
+        <Route path="/landing-page/parceiros" element={<Navigate to="/parceiros" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

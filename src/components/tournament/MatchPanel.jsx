@@ -1,14 +1,39 @@
 import { useState } from "react";
-import { isEliminationPhase } from "../../utils/tournamentFlow";
+import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
-export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, actionLoading, torneio, isOwner }) {
+export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
 
     const eliminationPhase = isEliminationPhase(torneio);
+    const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
+
+    const checkinPending =
+        requiresNextRoundCheckin &&
+        Number(currentPlayer?.checkinRodada ?? -1) < Number(torneio?.rodadaAtual ?? 0);
     const isTie = winsPlayer1 === winsPlayer2;
     const totalWins = winsPlayer1 + winsPlayer2;
     const isInvalidScore = totalWins > 3;
+
+    if (checkinPending) {
+        return (
+            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite]">
+                <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
+                <div className="flex flex-col items-center gap-4 py-2">
+                    <p className="text-[#beafd7] text-[0.9rem] m-0 text-center">
+                        Confirme sua presença para visualizar a partida desta rodada.
+                    </p>
+                    <button
+                        className="inline-flex items-center justify-center px-6 py-[0.65rem] border rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                        disabled={actionLoading}
+                        onClick={onCheckin}
+                    >
+                        {actionLoading ? "Aguarde..." : "Confirmar presença"}
+                    </button>
+                </div>
+            </section>
+        );
+    }
 
     if (!myMatch) {
         return (
@@ -30,6 +55,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         myMatch.jogador2?.username ||
         "Jogador 2";
 
+    const player1Nick = myMatch.jogador1NickMTGO || myMatch.jogador1?.nickMTGO || null;
+    const player2Nick = myMatch.jogador2NickMTGO || myMatch.jogador2?.nickMTGO || null;
+
     const isBye = !myMatch.jogador2Id && !myMatch.jogador2;
     const isContested = Boolean(myMatch.contestado);
     const isReported = myMatch.status === "finalizada" || myMatch.resultado || myMatch.reportado;
@@ -47,11 +75,13 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         && (isPlayer1 || isPlayer2 || isOwner);
 
     const myName = isPlayer1 ? player1Name : player2Name;
+    const myNick = isPlayer1 ? player1Nick : player2Nick;
     const opponentName = isPlayer1
         ? isBye
             ? "BYE"
             : player2Name
         : player1Name;
+    const opponentNick = isPlayer1 ? player2Nick : player1Nick;
 
     const handleSubmit = () => {
         const resultado = {
@@ -79,6 +109,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                     <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(142,57,237,0.4)] rounded-[0.85rem] bg-[rgba(142,57,237,0.08)]">
                         <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
                         <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
+                        {myNick && (
+                            <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{myNick}</span>
+                        )}
                     </div>
                     <div className="font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)]">BYE</div>
                     <p className="text-[#beafd7] mt-3">Você recebeu bye nesta rodada.</p>
@@ -94,6 +127,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                         <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(142,57,237,0.4)] rounded-[0.85rem] bg-[rgba(142,57,237,0.08)]">
                             <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
+                            {myNick && (
+                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{myNick}</span>
+                            )}
                         </div>
                         <div className={isReported && !isContested ? "font-['Bebas_Neue',sans-serif] text-[2.1rem] text-white [text-shadow:0_0_14px_rgba(199,149,255,0.45)] max-[900px]:text-[1.4rem]" : "font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)] max-[900px]:text-[1.4rem]"}>
                             {isReported && !isContested
@@ -103,6 +139,9 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                         <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(239,68,68,0.3)] rounded-[0.85rem] bg-[rgba(239,68,68,0.05)]">
                             <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Oponente</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{opponentName}</span>
+                            {opponentNick && (
+                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{opponentNick}</span>
+                            )}
                         </div>
                     </div>
 
@@ -191,6 +230,11 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                             >
                                 {actionLoading ? "Enviando..." : "Enviar Resultado"}
                             </button>
+                            {winsPlayer1 === 0 && winsPlayer2 === 0 && (
+                                <p className="mt-2 text-[0.82rem] text-[#beafd7] text-center opacity-75">
+                                    Selecione o número de vitórias de cada jogador.
+                                </p>
+                            )}
                             {isInvalidScore && (
                                 <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
                                     A soma das vitórias não pode ultrapassar 3.
