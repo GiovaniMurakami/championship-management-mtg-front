@@ -230,6 +230,11 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                             >
                                 {actionLoading ? "Enviando..." : "Enviar Resultado"}
                             </button>
+                            {winsPlayer1 === 0 && winsPlayer2 === 0 && (
+                                <p className="mt-2 text-[0.82rem] text-[#beafd7] text-center opacity-75">
+                                    Selecione o número de vitórias de cada jogador.
+                                </p>
+                            )}
                             {isInvalidScore && (
                                 <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
                                     A soma das vitórias não pode ultrapassar 3.

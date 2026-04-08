@@ -53,8 +53,6 @@ export function TournamentDetailPage() {
     realtimeToast,
     corteInfo,
     dismissCorteInfo,
-    checkinRodadaAberto,
-    dismissCheckinBanner,
     usuario,
     token,
   } = useTournamentDetail();
@@ -181,36 +179,6 @@ export function TournamentDetailPage() {
 
       <TournamentHeader torneio={torneio} loading={loading} className="mt-6" />
 
-      {!loading && checkinRodadaAberto && currentPlayer && (currentPlayer?.checkinRodada ?? -1) < (torneio?.rodadaAtual ?? 0) && (
-        <div className="flex items-center justify-between gap-3 px-4 py-3 mb-4 rounded-[0.75rem] border border-[rgba(251,191,36,0.45)] bg-[rgba(251,191,36,0.09)] animate-[slide-up_300ms_ease-out]">
-          <div className="flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <p className="m-0 text-[0.88rem] font-semibold text-[#fde68a]">
-              Faça o check-in para a próxima rodada!
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center px-3 py-[0.35rem] border border-[rgba(251,191,36,0.5)] rounded-[0.6rem] text-[0.82rem] font-semibold cursor-pointer text-[#fde68a] bg-[rgba(251,191,36,0.1)] hover:bg-[rgba(251,191,36,0.2)] transition-all duration-150 disabled:opacity-50"
-              onClick={handleCheckin}
-              disabled={actionLoading}
-            >
-              Check-in
-            </button>
-            <button
-              type="button"
-              className="text-[#fde68a] opacity-50 hover:opacity-100 cursor-pointer bg-transparent border-none text-lg leading-none"
-              onClick={dismissCheckinBanner}
-              aria-label="Fechar"
-            >✕</button>
-          </div>
-        </div>
-      )}
 
       {!loading && torneio && (
         <RoundTimer

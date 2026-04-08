@@ -45,14 +45,24 @@ const getTokenExpiry = (token) => {
 };
 
 const doRefresh = async () => {
-  const savedAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+  let savedAuth = {};
+  try {
+    savedAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+  } catch {
+    throw new Error("no_refresh_token");
+  }
   const currentRefreshToken = savedAuth.refreshToken;
-  if (!currentRefreshToken) throw new Error("no_refresh_token");
+  if (!currentRefreshToken || typeof currentRefreshToken !== "string") throw new Error("no_refresh_token");
   const data = await httpClient.post("/usuario/refresh-token", { refreshToken: currentRefreshToken });
-  const newToken = data.token;
-  const newRefreshToken = data.refreshToken;
-  const updatedAuth = { ...savedAuth, token: newToken, refreshToken: newRefreshToken };
-  window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuth));
+  const newToken = data?.token;
+  const newRefreshToken = data?.refreshToken;
+  if (!newToken || typeof newToken !== "string") throw new Error("invalid_refresh_response");
+  const updatedAuth = { ...savedAuth, token: newToken, refreshToken: newRefreshToken ?? currentRefreshToken };
+  try {
+    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuth));
+  } catch {
+    // localStorage cheio — ignora, token em memória ainda válido
+  }
   window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: newToken } }));
   return newToken;
 };

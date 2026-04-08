@@ -76,16 +76,12 @@ function PlayerCheckinRow({ player, usuarioId, onDrop, droppingPlayerId, actionL
         <span className="text-[#e8d5ff] text-[0.88rem] font-medium overflow-hidden text-ellipsis whitespace-nowrap">
           {getPlayerName(player)}{isMe ? " (Você)" : ""}
         </span>
-        {requiresNextRoundCheckin ? (
+        {requiresNextRoundCheckin && (
           <span className={`text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 border ${checkinOk
             ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80] border-[rgba(34,197,94,0.25)]"
             : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24] border-[rgba(251,191,36,0.2)]"
             }`}>
-            {checkinOk ? "✓ check-in" : "⏳ aguardando"}
-          </span>
-        ) : (
-          <span className="text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 border bg-[rgba(56,189,248,0.12)] text-[#7dd3fc] border-[rgba(56,189,248,0.25)]">
-            sem novo check-in
+            {checkinOk ? "✓ presença confirmada" : "⏳ sem presença"}
           </span>
         )}
       </div>
@@ -212,12 +208,12 @@ export function ReviewRoundModal({
 
               {!allDone && (
                 <p className="flex items-center gap-2 text-[0.82rem] text-[#fbbf24] bg-[rgba(251,191,36,0.08)] border border-[rgba(251,191,36,0.2)] rounded-lg px-3 py-2 m-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
-                  {pendentes.length} mesa{pendentes.length !== 1 ? "s" : ""} ainda não finalizada{pendentes.length !== 1 ? "s" : ""}. Você pode avançar mesmo assim.
+                  {pendentes.length} mesa{pendentes.length !== 1 ? "s" : ""} ainda não finalizada{pendentes.length !== 1 ? "s" : ""}. Resultados pendentes serão computados como derrota (0–2).
                 </p>
               )}
             </div>
