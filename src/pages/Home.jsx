@@ -8,12 +8,14 @@ export function Home({ onOpenAuth, isAuthenticated }) {
 
   useEffect(() => {
     if (searchParams.get("resetSenha") === "sucesso") {
-      setSuccessMsg("Senha redefinida com sucesso! Você já pode fazer login com a sua nova senha.");
       setSearchParams({}, { replace: true });
+      setSuccessMsg("Senha redefinida com sucesso! Você já pode fazer login com a sua nova senha.");
       const timer = setTimeout(() => setSuccessMsg(""), 8000);
       return () => clearTimeout(timer);
     }
-  }, [searchParams, setSearchParams]);
+    // Only run when the specific param changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get("resetSenha"), setSearchParams]);
 
   return (
     <main className="w-[min(1100px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12">

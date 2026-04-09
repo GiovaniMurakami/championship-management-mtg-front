@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
-
-const inputClass =
-  "border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.7rem] py-[0.65rem] w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.045] focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
+import { BaseModal } from "../ui/BaseModal";
+import { MODAL_INPUT_CLASS } from "../../styles/uiClasses";
 
 const btnPrimary =
   "border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4),0_0_12px_rgba(199,149,255,0.3)] hover:border-[rgba(199,149,255,0.9)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
@@ -24,21 +23,8 @@ export function AuthModal({
 }) {
   const navigate = useNavigate();
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-[60] grid place-items-center bg-[rgba(5,3,9,0.72)] backdrop-blur-sm animate-[fade-in_250ms_ease-out]"
-      role="presentation"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <section
-        className="w-[min(460px,calc(100vw-1.4rem))] border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-4 animate-[scale-focus_350ms_cubic-bezier(0.34,1.56,0.64,1)] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)]"
-        role="dialog"
-        aria-modal="true"
-      >
+    <BaseModal isOpen={isOpen} onClose={onClose}>
         {/* Tabs */}
         <div className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-4">
           <button
@@ -74,7 +60,7 @@ export function AuthModal({
                   onLoginFormChange((current) => ({ ...current, email: event.target.value }))
                 }
                 required
-                className={inputClass}
+                className={MODAL_INPUT_CLASS}
               />
             </label>
             <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
@@ -86,7 +72,7 @@ export function AuthModal({
                   onLoginFormChange((current) => ({ ...current, senha: event.target.value }))
                 }
                 required
-                className={inputClass}
+                className={MODAL_INPUT_CLASS}
               />
             </label>
             <button className={btnPrimary} disabled={isLoading || loginLockout} type="submit">
@@ -110,7 +96,7 @@ export function AuthModal({
                   onRegisterFormChange((current) => ({ ...current, nome: event.target.value }))
                 }
                 required
-                className={inputClass}
+                className={MODAL_INPUT_CLASS}
               />
             </label>
             <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
@@ -122,7 +108,7 @@ export function AuthModal({
                   onRegisterFormChange((current) => ({ ...current, email: event.target.value }))
                 }
                 required
-                className={inputClass}
+                className={MODAL_INPUT_CLASS}
               />
             </label>
             <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
@@ -134,7 +120,7 @@ export function AuthModal({
                   onRegisterFormChange((current) => ({ ...current, senha: event.target.value }))
                 }
                 required
-                className={inputClass}
+                className={MODAL_INPUT_CLASS}
               />
             </label>
             <button className={btnPrimary} disabled={isLoading} type="submit">
@@ -148,7 +134,6 @@ export function AuthModal({
             {message}
           </p>
         )}
-      </section>
-    </div>
+    </BaseModal>
   );
 }

@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-
-const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
+import { normalizeId } from "../../utils/normalizeId";
 
 function getPlayerName(partida, playerNumber, usuarioId) {
     const isMe =

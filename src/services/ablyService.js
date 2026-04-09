@@ -89,6 +89,5 @@ export const subscribeToTournament = (torneioId, callbacks) => {
 export const unsubscribeFromTournament = (channel) => {
     if (channel) {
         channel.unsubscribe();
-        channel.detach();
     }
 };

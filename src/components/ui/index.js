@@ -1,3 +1,4 @@
+export { BaseModal } from "./BaseModal";
 export { Footer } from "./Footer";
 export { Hero } from "./Hero";
 export { LandingHeader } from "./LandingHeader";

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { normalizeId } from "../utils/normalizeId";
 import { listarTorneios, inscreverTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
@@ -20,8 +21,6 @@ export function TournamentPage() {
   const [abaAtiva, setAbaAtiva] = useState("disponiveis");
   const channelsRef = useRef({});
   const navigate = useNavigate();
-
-  const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
 
   const loadTorneios = useCallback(async () => {
     if (!token) return;
@@ -109,8 +108,6 @@ export function TournamentPage() {
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
-
-  const isOwner = (torneio) => normalizeId(torneio.donoId) === normalizeId(usuario?.id);
 
   const isInscrito = (torneio) => {
     if (!usuario?.id) return false;

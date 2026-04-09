@@ -18,7 +18,7 @@ export function LigaPage() {
   const { token, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [ligas, setLigas] = useState([]);
-  const [total, setTotal] = useState(0);
+  // const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -30,7 +30,7 @@ export function LigaPage() {
       const data = await listarLigas(token);
       const list = data.ligas ?? (Array.isArray(data) ? data : []);
       setLigas(list);
-      setTotal(data.total ?? list.length);
+      // setTotal(data.total ?? list.length);
     } catch (err) {
       console.error("Erro ao carregar ligas:", err);
     } finally {

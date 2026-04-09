@@ -3,7 +3,7 @@ import { Navbar, AuthModal, CardPreviewModal, EditProfileModal, Footer } from ".
 import { useAuth, useCardPreview, useCardSearch, useDeckBuilder } from "./hooks";
 import { AppRoutes } from "./routes";
 
-const BARE_ROUTES = ["/", "/decks", "/blog", "/sobre-mim", "/parceiros"];
+const BARE_ROUTES = ["/", "/blog", "/sobre-mim", "/parceiros"];
 
 function AppContent() {
   const auth = useAuth();
@@ -26,7 +26,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen text-[#f5edff]">
+    <div className="min-h-screen flex flex-col text-[#f5edff]">
       {/* Global rate-limit toast */}
       {auth.rateLimitMsg && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl border border-[rgba(252,88,119,0.4)] bg-[rgba(30,15,45,0.95)] backdrop-blur-md text-[#ffa8b8] text-[0.9rem] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-[slide-up_300ms_ease-out]">
@@ -41,12 +41,14 @@ function AppContent() {
         onOpenEditProfile={auth.openEditProfileModal}
       />
 
-      <AppRoutes
-        auth={auth}
-        cardPreview={cardPreview}
-        cardSearch={cardSearch}
-        deckBuilder={deckBuilder}
-      />
+      <main className="flex-1">
+        <AppRoutes
+          auth={auth}
+          cardPreview={cardPreview}
+          cardSearch={cardSearch}
+          deckBuilder={deckBuilder}
+        />
+      </main>
 
       <CardPreviewModal card={cardPreview.previewCard} />
 
