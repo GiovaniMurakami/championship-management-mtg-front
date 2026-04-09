@@ -2,22 +2,8 @@ import { useState, useRef } from "react";
 import { criarTorneio } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
-
-const TOURNAMENT_FORMATS = [
-    { value: "standard", label: "Standard" },
-    { value: "modern", label: "Modern" },
-    { value: "pioneer", label: "Pioneer" },
-    { value: "pauper", label: "Pauper" },
-    { value: "commander", label: "Commander" },
-];
-
-const TOP_CUT_OPTIONS = [
-    { value: "", label: "Sem corte" },
-    { value: "2", label: "Top 2" },
-    { value: "4", label: "Top 4" },
-    { value: "8", label: "Top 8" },
-    { value: "16", label: "Top 16" },
-];
+import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
+import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 
 const INITIAL_FORM = {
     nome: "",
@@ -32,9 +18,6 @@ const INITIAL_FORM = {
     linkLive: "",
     secreto: false,
 };
-
-const inputClass =
-    "px-4 py-3 border-2 border-[#333] rounded-lg bg-white/[0.05] text-white text-base transition-all duration-300 focus:outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] focus:bg-white/[0.1] placeholder:text-[#888] [color-scheme:dark] [&_option]:bg-[#1a1129] [&_option]:text-white";
 
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
     const [createForm, setCreateForm] = useState(() => initialValues ?? INITIAL_FORM);
@@ -149,7 +132,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 onChange={handleChange}
                                 required
                                 disabled={isSubmitting}
-                                className={inputClass}
+                                className={TOURNAMENT_INPUT_CLASS}
                             />
                         </div>
 
@@ -181,7 +164,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 onChange={handleChange}
                                 required
                                 disabled={isSubmitting}
-                                className={inputClass}
+                                className={TOURNAMENT_INPUT_CLASS}
                             />
                         </div>
 
@@ -196,7 +179,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                     value={createForm.formato}
                                     onChange={handleChange}
                                     disabled={isSubmitting}
-                                    className={`${inputClass} w-full appearance-none pr-10`}
+                                    className={`${TOURNAMENT_INPUT_CLASS} w-full appearance-none pr-10`}
                                 >
                                     {TOURNAMENT_FORMATS.map((f) => (
                                         <option key={f.value} value={f.value}>{f.label}</option>
@@ -218,7 +201,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 value={createForm.premio}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
-                                className={inputClass}
+                                className={TOURNAMENT_INPUT_CLASS}
                             />
                         </div>
                     </div>
@@ -243,7 +226,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                     value={createForm.maxJogadores}
                                     onChange={handleChange}
                                     disabled={isSubmitting}
-                                    className={inputClass}
+                                    className={TOURNAMENT_INPUT_CLASS}
                                 />
                             </div>
 
@@ -261,7 +244,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                     onChange={handleChange}
                                     disabled={isSubmitting}
                                     aria-describedby="maxRodadas-help"
-                                    className={inputClass}
+                                    className={TOURNAMENT_INPUT_CLASS}
                                 />
                                 <small id="maxRodadas-help" className="text-[#a3a3a3] text-[0.8rem]">
                                     O sistema calcula as rodadas automaticamente pelo numero de jogadores com check-in. Este campo apenas define o teto e impede ultrapassar esse valor.
@@ -280,7 +263,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                     value={createForm.corteTop}
                                     onChange={handleChange}
                                     disabled={isSubmitting}
-                                    className={`${inputClass} w-full appearance-none pr-10`}
+                                    className={`${TOURNAMENT_INPUT_CLASS} w-full appearance-none pr-10`}
                                 >
                                     {TOP_CUT_OPTIONS.map((o) => (
                                         <option key={o.value} value={o.value}>{o.label}</option>
@@ -375,7 +358,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 value={createForm.linkBanner}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
-                                className={inputClass}
+                                className={TOURNAMENT_INPUT_CLASS}
                             />
                             <small className="text-[#a3a3a3] text-[0.8rem]">
                                 URL para onde o banner redireciona ao ser clicado (não é a imagem).
@@ -401,7 +384,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 value={createForm.somRodada}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
-                                className={inputClass}
+                                className={TOURNAMENT_INPUT_CLASS}
                             />
                             <small className="text-[#a3a3a3] text-[0.8rem]">
                                 URL de um arquivo de áudio (.mp3, .ogg) que toca ao iniciar cada rodada.
@@ -420,7 +403,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 value={createForm.linkLive}
                                 onChange={handleChange}
                                 disabled={isSubmitting}
-                                className={inputClass}
+                                className={TOURNAMENT_INPUT_CLASS}
                             />
                             <small className="text-[#a3a3a3] text-[0.8rem]">
                                 Link da transmissão ao vivo no YouTube para este torneio.

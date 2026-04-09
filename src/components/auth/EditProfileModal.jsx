@@ -1,5 +1,5 @@
-const inputClass =
-  "border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.7rem] py-[0.65rem] w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.045] focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
+import { BaseModal } from "../ui/BaseModal";
+import { MODAL_INPUT_CLASS } from "../../styles/uiClasses";
 
 export function EditProfileModal({
   isOpen,
@@ -10,21 +10,8 @@ export function EditProfileModal({
   onFormChange,
   onSubmit,
 }) {
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-[60] grid place-items-center bg-[rgba(5,3,9,0.72)] backdrop-blur-sm animate-[fade-in_250ms_ease-out]"
-      role="presentation"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <section
-        className="w-[min(460px,calc(100vw-1.4rem))] border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-4 animate-[scale-focus_350ms_cubic-bezier(0.34,1.56,0.64,1)] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)]"
-        role="dialog"
-        aria-modal="true"
-      >
+    <BaseModal isOpen={isOpen} onClose={onClose}>
         <h2 className="mb-6 text-center m-0">Editar Perfil</h2>
 
         <form className="grid gap-[0.85rem]" onSubmit={onSubmit}>
@@ -36,7 +23,7 @@ export function EditProfileModal({
               onChange={(event) =>
                 onFormChange((current) => ({ ...current, nome: event.target.value }))
               }
-              className={inputClass}
+              className={MODAL_INPUT_CLASS}
             />
           </label>
           <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
@@ -48,7 +35,7 @@ export function EditProfileModal({
               onChange={(event) =>
                 onFormChange((current) => ({ ...current, telefone: event.target.value }))
               }
-              className={inputClass}
+              className={MODAL_INPUT_CLASS}
             />
           </label>
           <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
@@ -60,7 +47,7 @@ export function EditProfileModal({
               onChange={(event) =>
                 onFormChange((current) => ({ ...current, nickMTGO: event.target.value }))
               }
-              className={inputClass}
+              className={MODAL_INPUT_CLASS}
             />
           </label>
           <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
@@ -72,7 +59,7 @@ export function EditProfileModal({
               onChange={(event) =>
                 onFormChange((current) => ({ ...current, nickArena: event.target.value }))
               }
-              className={inputClass}
+              className={MODAL_INPUT_CLASS}
             />
           </label>
           <div className="flex gap-4">
@@ -99,7 +86,6 @@ export function EditProfileModal({
             {message}
           </p>
         )}
-      </section>
-    </div>
+    </BaseModal>
   );
 }

@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
-
-const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
+import { normalizeId } from "../../utils/normalizeId";
 const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
 const hasInitialCheckin = (player) => (player?.checkinRodada ?? -1) >= 0;
 

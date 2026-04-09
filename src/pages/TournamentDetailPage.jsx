@@ -30,7 +30,6 @@ export function TournamentDetailPage() {
     isAdmin,
     canManageTournament,
     pendingCheckinPlayers,
-    requiresNextRoundCheckin,
     currentPlayer,
     myMatch,
     partidas,
