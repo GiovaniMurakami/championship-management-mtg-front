@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
-
-const normalizeId = (v) => (v === undefined || v === null ? "" : String(v));
+import { normalizeId } from "../../utils/normalizeId";
 
 const btnBase =
   "inline-flex items-center justify-center px-4 py-[0.55rem] border border-transparent rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed";

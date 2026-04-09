@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { normalizeId } from "../utils/normalizeId";
 import {
     getStandings,
     escolherDeckTorneio,
@@ -35,6 +36,8 @@ export function useTournamentDetail() {
     const { id: torneioId } = useParams();
 
     const [torneio, setTorneio] = useState(null);
+    const somRodadaRef = useRef(null);
+    somRodadaRef.current = torneio?.somRodada ?? null;
     const [standings, setStandings] = useState([]);
     const [partidas, setPartidas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -51,7 +54,6 @@ export function useTournamentDetail() {
 
     const { decks } = useMyDecks(token, usuario?.id);
     const guard = useActionGuard(800);
-    const normalizeId = (value) => (value === undefined || value === null ? "" : String(value));
     const isCheckedForNextRound = (player, rodadaAtual) =>
         Number(player?.checkinRodada) >= Number(rodadaAtual);
 
@@ -169,7 +171,7 @@ export function useTournamentDetail() {
                 loadTournament();
                 loadStandings();
                 loadPartidas();
-                const somUrl = data.somRodada || torneio?.somRodada;
+                const somUrl = data.somRodada || somRodadaRef.current;
                 if (somUrl) {
                     try {
                         const audio = new Audio(somUrl);
@@ -323,7 +325,7 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, torneio?.somRodada]);
+    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
     const dismissCheckinBanner = useCallback(() => setCheckinRodadaAberto(false), []);
