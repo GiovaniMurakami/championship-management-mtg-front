@@ -230,7 +230,7 @@ export function LigaDetailPage() {
 
           {/* Ranking tab */}
           {abaAtiva === "ranking" && (
-            <LigaRankingSection ranking={ranking} loading={rankingLoading} />
+            <LigaRankingSection ranking={ranking} loading={rankingLoading} usuarioLogado={usuario} />
           )}
         </>
       ) : (
