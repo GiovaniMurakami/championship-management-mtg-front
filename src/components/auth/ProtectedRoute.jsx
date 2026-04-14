@@ -1,7 +1,10 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../ui/Spinner";
 
-export function ProtectedRoute({ isAuthenticated, authInitialized, requireAdmin = false, isAdmin = false, children }) {
+export function ProtectedRoute({ requireAdmin = false, children }) {
+  const { isAuthenticated, authInitialized, isAdmin } = useAuth();
+
   if (!authInitialized) return (
     <div className="min-h-screen flex items-center justify-center">
       <Spinner size={44} text="Verificando sessão..." />

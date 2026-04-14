@@ -18,6 +18,7 @@ const TYPE_LABELS = {
   Artifact: "Artefatos", Land: "Terrenos", Other: "Outros",
 };
 const TYPE_ORDER = ["Creature", "Planeswalker", "Battle", "Instant", "Sorcery", "Enchantment", "Artifact", "Land", "Other"];
+const CURVE_BUCKETS = ["0", "1", "2", "3", "4", "5", "6", "7+"];
 
 function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }) {
   const [deck, setDeck] = useState(null);
@@ -82,12 +83,10 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
       .finally(() => setLoading(false));
   }, [deckId, token]);
 
-  const maindeck = deck?.maindeck || [];
-  const sideboard = deck?.sideboard || [];
+  const maindeck = useMemo(() => deck?.maindeck || [], [deck]);
+  const sideboard = useMemo(() => deck?.sideboard || [], [deck]);
   const totalMain = maindeck.reduce((s, c) => s + (c.quantidade || 1), 0);
   const totalSide = sideboard.reduce((s, c) => s + (c.quantidade || 1), 0);
-
-  const CURVE_BUCKETS = ["0", "1", "2", "3", "4", "5", "6", "7+"];
 
   const manaCurve = useMemo(() => {
     const counts = Object.fromEntries(CURVE_BUCKETS.map((b) => [b, 0]));
@@ -502,7 +501,6 @@ export function StandingsTable({
   token,
   isOwner = false,
   torneioNome = "",
-  rodadaAtual = 0,
   compact = false,
 }) {
   const [deckNameOverrides, setDeckNameOverrides] = useState({});

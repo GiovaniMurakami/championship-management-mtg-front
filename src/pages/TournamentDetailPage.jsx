@@ -12,6 +12,7 @@ import {
   TournamentEditModal,
 } from "../components/tournament";
 import { SkeletonTournamentDetail } from "../components";
+import { PageShell } from "../components/ui/PageShell";
 
 export function TournamentDetailPage() {
   const navigate = useNavigate();
@@ -104,7 +105,7 @@ export function TournamentDetailPage() {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-8 pt-[7.5rem] pb-12 animate-[fade-in_400ms_ease-out] max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
+    <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <button
           className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
@@ -410,6 +411,6 @@ export function TournamentDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

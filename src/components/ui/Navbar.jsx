@@ -118,7 +118,22 @@ export function Navbar({
     >
       {/* Brand */}
       <a href="/" onClick={transitionTo("/")} className="shrink-0 opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-        <img src="https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png" alt="Tiago Fuguete" className="h-7 object-contain" style={{ viewTransitionName: "brand-logo" }} />
+        <img
+          src="https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png"
+          alt="Tiago Fuguete"
+          className="h-7 object-contain"
+          style={{ viewTransitionName: "brand-logo" }}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+            e.currentTarget.nextElementSibling.style.display = "inline";
+          }}
+        />
+        <span
+          className="hidden font-['Bebas_Neue',sans-serif] text-[1.3rem] tracking-[0.12em] text-[#c795ff]"
+          style={{ viewTransitionName: "brand-logo" }}
+        >
+          MTG Champion
+        </span>
       </a>
 
       {/* Desktop nav */}

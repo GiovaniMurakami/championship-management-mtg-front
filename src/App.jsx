@@ -1,81 +1,80 @@
 import { BrowserRouter, useLocation } from "react-router-dom";
-import { Navbar, AuthModal, CardPreviewModal, EditProfileModal, Footer } from "./components";
-import { useAuth, useCardPreview, useCardSearch, useDeckBuilder } from "./hooks";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastProvider, useToast } from "./context/ToastContext";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
+import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
 import { AppRoutes } from "./routes";
+import { useEffect } from "react";
 
 const BARE_ROUTES = ["/", "/blog", "/sobre-mim", "/parceiros"];
 
-function AppContent() {
-  const auth = useAuth();
-  const cardPreview = useCardPreview();
-  const cardSearch = useCardSearch();
-  const deckBuilder = useDeckBuilder();
-  const { pathname } = useLocation();
+/** Conecta eventos de rate-limit do interceptor ao ToastProvider. */
+function RateLimitBridge() {
+  const { addToast } = useToast();
+  useEffect(() => {
+    const handle = (e) => addToast(e.detail.message, { type: "error", duration: 8000 });
+    window.addEventListener("auth:rateLimited", handle);
+    return () => window.removeEventListener("auth:rateLimited", handle);
+  }, [addToast]);
+  return null;
+}
 
+function AppContent() {
+  const {
+    usuario, openAuth, clearAuth, isAuthenticated, openEditProfileModal,
+    showAuthModal, closeAuth, authTab, setAuthTab, authLoading, authMessage,
+    loginForm, setLoginForm, registerForm, setRegisterForm, handleLogin,
+    handleRegister, loginLockout, showEditProfileModal, closeEditProfileModal,
+    editProfileForm, setEditProfileForm, handleUpdateProfile,
+  } = useAuth();
+
+  const { pathname } = useLocation();
   const isBare = BARE_ROUTES.includes(pathname);
 
-  if (isBare) {
-    return (
-      <AppRoutes
-        auth={auth}
-        cardPreview={cardPreview}
-        cardSearch={cardSearch}
-        deckBuilder={deckBuilder}
-      />
-    );
-  }
+  if (isBare) return <AppRoutes />;
 
   return (
-    <div className="min-h-screen flex flex-col text-[#f5edff]">
-      {/* Global rate-limit toast */}
-      {auth.rateLimitMsg && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl border border-[rgba(252,88,119,0.4)] bg-[rgba(30,15,45,0.95)] backdrop-blur-md text-[#ffa8b8] text-[0.9rem] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-[slide-up_300ms_ease-out]">
-          {auth.rateLimitMsg}
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col text-text-main">
+      <RateLimitBridge />
+
       <Navbar
-        usuario={auth.usuario}
-        onOpenAuth={auth.openAuth}
-        onLogout={auth.clearAuth}
-        isAuthenticated={auth.isAuthenticated}
-        onOpenEditProfile={auth.openEditProfileModal}
+        usuario={usuario}
+        onOpenAuth={openAuth}
+        onLogout={clearAuth}
+        isAuthenticated={isAuthenticated}
+        onOpenEditProfile={openEditProfileModal}
       />
 
       <main className="flex-1">
-        <AppRoutes
-          auth={auth}
-          cardPreview={cardPreview}
-          cardSearch={cardSearch}
-          deckBuilder={deckBuilder}
-        />
+        <ErrorBoundary>
+          <AppRoutes />
+        </ErrorBoundary>
       </main>
 
-      <CardPreviewModal card={cardPreview.previewCard} />
-
       <AuthModal
-        isOpen={auth.showAuthModal}
-        onClose={auth.closeAuth}
-        activeTab={auth.authTab}
-        onTabChange={auth.setAuthTab}
-        isLoading={auth.authLoading}
-        message={auth.authMessage}
-        loginForm={auth.loginForm}
-        onLoginFormChange={auth.setLoginForm}
-        registerForm={auth.registerForm}
-        onRegisterFormChange={auth.setRegisterForm}
-        onLoginSubmit={auth.handleLogin}
-        onRegisterSubmit={auth.handleRegister}
-        loginLockout={auth.loginLockout}
+        isOpen={showAuthModal}
+        onClose={closeAuth}
+        activeTab={authTab}
+        onTabChange={setAuthTab}
+        isLoading={authLoading}
+        message={authMessage}
+        loginForm={loginForm}
+        onLoginFormChange={setLoginForm}
+        registerForm={registerForm}
+        onRegisterFormChange={setRegisterForm}
+        onLoginSubmit={handleLogin}
+        onRegisterSubmit={handleRegister}
+        loginLockout={loginLockout}
       />
 
       <EditProfileModal
-        isOpen={auth.showEditProfileModal}
-        onClose={auth.closeEditProfileModal}
-        isLoading={auth.authLoading}
-        message={auth.authMessage}
-        form={auth.editProfileForm}
-        onFormChange={auth.setEditProfileForm}
-        onSubmit={auth.handleUpdateProfile}
+        isOpen={showEditProfileModal}
+        onClose={closeEditProfileModal}
+        isLoading={authLoading}
+        message={authMessage}
+        form={editProfileForm}
+        onFormChange={setEditProfileForm}
+        onSubmit={handleUpdateProfile}
       />
 
       <Footer />
@@ -86,7 +85,11 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

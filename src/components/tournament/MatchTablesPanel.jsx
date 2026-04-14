@@ -30,7 +30,7 @@ function isUserMatch(partida, usuarioId) {
     );
 }
 
-function MatchCard({ partida, index, usuarioId, torneio, isOwner }) {
+function MatchCard({ partida, index, usuarioId }) {
     const isFinalizada = partida.status === "finalizada";
     const isBye = !partida.jogador2Id && !partida.jogador2;
     const isMe = isUserMatch(partida, usuarioId);

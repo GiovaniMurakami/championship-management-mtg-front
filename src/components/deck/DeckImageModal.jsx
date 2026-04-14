@@ -579,14 +579,17 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
 
   // build canvas preview whenever stage, layout or ratio changes
   useEffect(() => {
-    const listReady = stage === "imgs" || stage === "done";
-    const visualReady = stage === "done";
-    const canBuild = layout === "lista" ? listReady : visualReady;
-    if (!canBuild) { setPreviewUrl(null); return; }
-    const canvas = layout === "lista"
-      ? buildListCanvas(deck, cardDataMap, ownerName)
-      : buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
-    setPreviewUrl(canvas.toDataURL("image/jpeg", 0.92));
+    const build = async () => {
+      const listReady = stage === "imgs" || stage === "done";
+      const visualReady = stage === "done";
+      const canBuild = layout === "lista" ? listReady : visualReady;
+      if (!canBuild) { setPreviewUrl(null); return; }
+      const canvas = layout === "lista"
+        ? buildListCanvas(deck, cardDataMap, ownerName)
+        : buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
+      setPreviewUrl(canvas.toDataURL("image/jpeg", 0.92));
+    };
+    build();
   }, [stage, layout, ratio, deck, cardDataMap, ownerName]);
 
   // load card metadata + images
