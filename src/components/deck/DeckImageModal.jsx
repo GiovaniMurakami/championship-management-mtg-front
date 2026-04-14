@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { buscarCartaPorNome } from "../../services/scryfallApi";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ function drawCmcBars(ctx, deck, cardDataMap, bxStart, topY, bw, barH) {
   ctx.textAlign = "left";
 }
 
-// ── VISUAL canvas (landscape 1280px, card images) ─────────────────────────────
+// ── VISUAL canvas (landscape 1280px, pile-based accumulation) ─────────────────
 
 function drawCardOnCanvas(ctx, img, x, y, w, h, borderRgba) {
   if (img) {
@@ -176,36 +176,78 @@ function drawCardOnCanvas(ctx, img, x, y, w, h, borderRgba) {
   ctx.lineWidth = 1; rr(ctx, x, y, w, h, 5); ctx.stroke();
 }
 
-function buildVisualCanvas(deck, cardDataMap, ownerName) {
-  const SVS = 22;
-  const CGX = 10, CGY = 12;
-  const HEADER_H = 88, STATS_H = 38, FOOTER_H = 44, PAD_TOP = 12;
-  const CANVAS_W = 1280;
-  const SIDE_W = 224;
-  const MAIN_X = 16;
-  const MAIN_W = CANVAS_W - SIDE_W - MAIN_X - 14;
+function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") {
+  const MAX_PILE = 4;
+  const HEADER_H = 80;
+  const STATS_H = 32;
+  const FOOTER_H = 40;
+  const PAD = 16;
+  const PILE_GAP_X = 10;
+  const PILE_GAP_Y = 16;
 
-  const allMainCards = [...(deck.maindeck || [])]
-    .sort((a, b) => (cardDataMap[a.nome]?.cmc ?? 0) - (cardDataMap[b.nome]?.cmc ?? 0) || a.nome.localeCompare(b.nome))
-    .map(card => ({ ...card, img: cardDataMap[card.nome]?.img }));
+  const is169 = ratio === "16x9";
+  const CANVAS_W = is169 ? 1280 : 1080;
+  const SIDE_W = is169 ? 188 : 0;
+  const MAIN_X = PAD;
+  const MAIN_W = CANVAS_W - SIDE_W - MAIN_X - PAD;
 
-  const perRow = Math.min(allMainCards.length, 5);
-  const CW = perRow > 0 ? Math.floor((MAIN_W - (perRow - 1) * CGX) / perRow) : 180;
-  const CH = Math.round(CW * (128 / 92));
-  const SV = Math.round(CH * 0.22);
-  const nRows = Math.ceil(allMainCards.length / perRow);
-  const globalMaxQ = allMainCards.length > 0
-    ? Math.min(Math.max(...allMainCards.map(c => c.quantidade || 1)), 4) : 1;
-  const mainH = nRows * (CH + (globalMaxQ - 1) * SV + CGY);
-
-  const SCW = 86, SCH = 120;
+  // sideboard slots → piles
   const sideCards = deck.sideboard || [];
-  const sideCol1 = sideCards.filter((_, i) => i % 2 === 0);
-  const sideCol2 = sideCards.filter((_, i) => i % 2 === 1);
-  const colH = col => col.reduce((s, c) => s + SCH + (Math.min(c.quantidade || 1, 4) - 1) * SVS + CGY, 0);
-  const sideH = Math.max(colH(sideCol1), colH(sideCol2));
-  const CARDS_H = Math.max(mainH, sideH);
-  const CANVAS_H = HEADER_H + STATS_H + PAD_TOP + CARDS_H + FOOTER_H;
+  const sideSlots = [];
+  for (const card of sideCards)
+    for (let i = 0; i < Math.min(card.quantidade || 1, MAX_PILE); i++)
+      sideSlots.push({ nome: card.nome, img: cardDataMap[card.nome]?.img });
+  const sidePiles = [];
+  for (let i = 0; i < sideSlots.length; i += MAX_PILE) sidePiles.push(sideSlots.slice(i, i + MAX_PILE));
+
+  // maindeck sorted slots → piles
+  const sorted = [...(deck.maindeck || [])].sort((a, b) =>
+    (cardDataMap[a.nome]?.cmc ?? 0) - (cardDataMap[b.nome]?.cmc ?? 0) || a.nome.localeCompare(b.nome)
+  );
+  const allSlots = [];
+  for (const card of sorted)
+    for (let i = 0; i < Math.min(card.quantidade || 1, MAX_PILE); i++)
+      allSlots.push({ nome: card.nome, img: cardDataMap[card.nome]?.img, typeLine: cardDataMap[card.nome]?.typeLine });
+  const piles = [];
+  for (let i = 0; i < allSlots.length; i += MAX_PILE) piles.push(allSlots.slice(i, i + MAX_PILE));
+  const totalPiles = Math.max(piles.length, 1);
+
+  // ── layout ──────────────────────────────────────────────────────────────────
+  let CARD_W, CARD_H, STACK_OFFSET, PILE_H, pilesPerRow, nRows, CANVAS_H;
+  let SC9W = 0, SC9H = 0, SC9VS = 0, SIDE916_H = 0;
+
+  if (is169) {
+    // fixed 1280×720, fit cards into available height
+    CANVAS_H = 720;
+    const AVAIL_H = CANVAS_H - HEADER_H - STATS_H - FOOTER_H - PAD;
+    for (let t = 1; t <= 12; t++) {
+      PILE_H = Math.floor((AVAIL_H - (t - 1) * PILE_GAP_Y) / t);
+      STACK_OFFSET = Math.max(14, Math.round(PILE_H * 0.115));
+      CARD_H = PILE_H - (MAX_PILE - 1) * STACK_OFFSET;
+      if (CARD_H < 55) continue;
+      CARD_W = Math.round(CARD_H / 1.4);
+      pilesPerRow = Math.max(1, Math.floor((MAIN_W + PILE_GAP_X) / (CARD_W + PILE_GAP_X)));
+      nRows = Math.ceil(totalPiles / pilesPerRow);
+      if (nRows <= t) break;
+    }
+    PILE_H = CARD_H + (MAX_PILE - 1) * STACK_OFFSET;
+  } else {
+    // 9:16 — dynamic canvas height, target ~3 rows with maximum card size
+    pilesPerRow = Math.min(7, Math.max(3, Math.ceil(totalPiles / 3)));
+    CARD_W = Math.floor((MAIN_W - (pilesPerRow - 1) * PILE_GAP_X) / pilesPerRow);
+    CARD_H = Math.round(CARD_W * 1.4);
+    STACK_OFFSET = Math.max(14, Math.round(CARD_H * 0.12));
+    PILE_H = CARD_H + (MAX_PILE - 1) * STACK_OFFSET;
+    nRows = Math.ceil(totalPiles / pilesPerRow);
+    // sideboard cards proportional to main (74%)
+    SC9W = Math.round(CARD_W * 0.74);
+    SC9H = Math.round(CARD_H * 0.74);
+    SC9VS = Math.max(12, Math.round(SC9H * 0.18));
+    const SC9_MAX_PILE_H = SC9H + (MAX_PILE - 1) * SC9VS;
+    SIDE916_H = sideCards.length > 0 ? SC9_MAX_PILE_H + 50 : 0; // pile + label + padding
+    const mainH = nRows * PILE_H + (nRows - 1) * PILE_GAP_Y;
+    CANVAS_H = HEADER_H + STATS_H + PAD + mainH + SIDE916_H + FOOTER_H + PAD;
+  }
 
   const canvas = document.createElement("canvas");
   canvas.width = CANVAS_W; canvas.height = CANVAS_H;
@@ -214,24 +256,21 @@ function buildVisualCanvas(deck, cardDataMap, ownerName) {
   drawBg(ctx, CANVAS_W, CANVAS_H);
   drawTopAccent(ctx, CANVAS_W);
 
-  // header — deck name
-  ctx.font = "bold 36px Arial, sans-serif"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "left";
+  // header
+  ctx.font = "bold 30px Arial, sans-serif"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "left";
   let dName = deck.nome || "Deck";
-  while (ctx.measureText(dName).width > CANVAS_W - 420 && dName.length > 1) dName = dName.slice(0, -1);
+  while (ctx.measureText(dName).width > CANVAS_W - (is169 ? 350 : 260) && dName.length > 1) dName = dName.slice(0, -1);
   if (dName !== deck.nome) dName += "…";
-  ctx.fillText(dName, MAIN_X + 4, 44);
-
+  ctx.fillText(dName, MAIN_X + 4, 36);
   const fc = FMT_COLOR[deck.formato] || "#beafd7";
   const fl = deck.formato ? deck.formato.charAt(0).toUpperCase() + deck.formato.slice(1) : "";
-  ctx.font = "15px Arial, sans-serif"; ctx.fillStyle = fc;
-  ctx.fillText(fl, MAIN_X + 4, 64);
+  ctx.font = "14px Arial, sans-serif"; ctx.fillStyle = fc;
+  ctx.fillText(fl, MAIN_X + 4, 56);
   ctx.fillStyle = "#9d74e8";
-  ctx.fillText(`  ·  por ${ownerName || "—"}`, MAIN_X + 4 + ctx.measureText(fl).width, 64);
+  ctx.fillText(`  ·  por ${ownerName || "—"}`, MAIN_X + 4 + ctx.measureText(fl).width, 56);
 
-  // CMC histogram top-right
-  drawCmcBars(ctx, deck, cardDataMap, CANVAS_W - 210, 16, 20, 44);
+  drawCmcBars(ctx, deck, cardDataMap, CANVAS_W - 206, 12, 19, 44);
 
-  // type stats bar
   const typeCnt = {};
   for (const c of deck.maindeck || []) {
     const tg = getTypeGroup(cardDataMap[c.nome]?.typeLine);
@@ -239,63 +278,84 @@ function buildVisualCanvas(deck, cardDataMap, ownerName) {
   }
   drawTypeBadges(ctx, CANVAS_W, HEADER_H, STATS_H, typeCnt);
 
-  // vertical divider
-  const DX = CANVAS_W - SIDE_W - 6;
-  const dvg = ctx.createLinearGradient(DX, HEADER_H, DX, CANVAS_H - FOOTER_H);
-  dvg.addColorStop(0, "rgba(167,79,255,0)"); dvg.addColorStop(0.1, "rgba(167,79,255,0.35)");
-  dvg.addColorStop(0.9, "rgba(167,79,255,0.35)"); dvg.addColorStop(1, "rgba(167,79,255,0)");
-  ctx.strokeStyle = dvg; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(DX, HEADER_H); ctx.lineTo(DX, CANVAS_H - FOOTER_H); ctx.stroke();
-
-  // main cards (5-col grid, sorted by CMC)
-  let cY = HEADER_H + STATS_H + PAD_TOP;
-  for (let ri = 0; ri < nRows; ri++) {
-    const rowCards = allMainCards.slice(ri * perRow, (ri + 1) * perRow);
-    const rowMaxQ = Math.min(Math.max(...rowCards.map(c => c.quantidade || 1)), 4);
-    for (let ci = 0; ci < rowCards.length; ci++) {
-      const card = rowCards[ci];
-      const qty = card.quantidade || 1;
-      const sq = Math.min(qty, 4);
-      const cx = MAIN_X + ci * (CW + CGX);
-      const gCol = GROUP_COLOR[getTypeGroup(cardDataMap[card.nome]?.typeLine)] || "#e9d5ff";
-      for (let s = sq - 1; s >= 0; s--) drawCardOnCanvas(ctx, card.img, cx, cY + s * SV, CW, CH, `${gCol}38`);
-      if (qty > 1) {
-        const br = Math.round(CW * 0.09);
-        const bdx = cx + CW - br - 2, bdy = cY + CH + (sq - 1) * SV - br - 2;
-        ctx.fillStyle = "rgba(0,0,0,0.88)";
-        ctx.beginPath(); ctx.arc(bdx + br, bdy + br, br, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "rgba(252,211,77,0.3)"; ctx.lineWidth = 1; ctx.stroke();
-        ctx.fillStyle = "#fcd34d"; ctx.font = `bold ${Math.round(CW * 0.09)}px Arial, sans-serif`;
-        ctx.textAlign = "center"; ctx.fillText(`×${qty}`, bdx + br, bdy + br + Math.round(CW * 0.035));
-        ctx.textAlign = "left";
-      }
-    }
-    cY += CH + (rowMaxQ - 1) * SV + CGY;
+  // vertical divider (16:9 only)
+  if (is169 && SIDE_W > 0) {
+    const DX = CANVAS_W - SIDE_W - 6;
+    const dvg = ctx.createLinearGradient(DX, HEADER_H, DX, CANVAS_H - FOOTER_H);
+    dvg.addColorStop(0, "rgba(167,79,255,0)"); dvg.addColorStop(0.1, "rgba(167,79,255,0.35)");
+    dvg.addColorStop(0.9, "rgba(167,79,255,0.35)"); dvg.addColorStop(1, "rgba(167,79,255,0)");
+    ctx.strokeStyle = dvg; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(DX, HEADER_H); ctx.lineTo(DX, CANVAS_H - FOOTER_H); ctx.stroke();
   }
 
-  // sideboard
-  const SIDE_START_X = CANVAS_W - SIDE_W + 10;
-  const SC1X = SIDE_START_X, SC2X = SIDE_START_X + SCW + 8;
-  let sy1 = HEADER_H + STATS_H + PAD_TOP, sy2 = sy1;
-  ctx.save();
-  ctx.translate(CANVAS_W - 10, HEADER_H + STATS_H + PAD_TOP + 80);
-  ctx.rotate(Math.PI / 2);
-  ctx.font = "bold 12px Arial, sans-serif"; ctx.fillStyle = "#3d2470"; ctx.textAlign = "center";
-  ctx.fillText("SIDEBOARD", 0, 0); ctx.restore();
-  for (let si = 0; si < sideCards.length; si++) {
-    const card = sideCards[si]; const qty = card.quantidade || 1; const sq = Math.min(qty, 4);
-    const isC2 = si % 2 === 1; const cx = isC2 ? SC2X : SC1X; const cy = isC2 ? sy2 : sy1;
-    for (let s = sq - 1; s >= 0; s--)
-      drawCardOnCanvas(ctx, cardDataMap[card.nome]?.img, cx, cy + s * SVS, SCW, SCH, "rgba(167,79,255,0.35)");
-    if (qty > 1) {
-      const bdx = cx + SCW - 10, bdy = cy + SCH + (sq - 1) * SVS - 10;
-      ctx.fillStyle = "rgba(0,0,0,0.88)";
-      ctx.beginPath(); ctx.arc(bdx + 7, bdy + 7, 8, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#fcd34d"; ctx.font = "bold 8px Arial, sans-serif";
-      ctx.textAlign = "center"; ctx.fillText(`×${qty}`, bdx + 7, bdy + 10); ctx.textAlign = "left";
+  // main piles
+  const startY = HEADER_H + STATS_H + PAD;
+  for (let row = 0; row < nRows; row++) {
+    const rowPiles = piles.slice(row * pilesPerRow, (row + 1) * pilesPerRow);
+    const rowY = startY + row * (PILE_H + PILE_GAP_Y);
+    for (let pi = 0; pi < rowPiles.length; pi++) {
+      const pile = rowPiles[pi];
+      const pileX = MAIN_X + pi * (CARD_W + PILE_GAP_X);
+      for (let s = 0; s < pile.length; s++) {
+        const gColor = GROUP_COLOR[getTypeGroup(pile[s].typeLine)] || "#e9d5ff";
+        drawCardOnCanvas(ctx, pile[s].img, pileX, rowY + s * STACK_OFFSET, CARD_W, CARD_H, `${gColor}40`);
+      }
     }
-    const slotH = SCH + (sq - 1) * SVS + CGY;
-    if (isC2) sy2 += slotH; else sy1 += slotH;
+  }
+
+  // sideboard — 16:9: right column; 9:16: bottom section
+  if (sideCards.length > 0) {
+    if (is169) {
+      const SVS = 18, SCW = 76, SCH = 106;
+      const sidePileH = p => SCH + (p.length - 1) * SVS + 8;
+      const SX1 = CANVAS_W - SIDE_W + 8, SX2 = SX1 + SCW + 6;
+      let sy1 = startY, sy2 = startY;
+      ctx.save();
+      ctx.translate(CANVAS_W - 8, sy1 + 60); ctx.rotate(Math.PI / 2);
+      ctx.font = "bold 11px Arial, sans-serif"; ctx.fillStyle = "#3d2470"; ctx.textAlign = "center";
+      ctx.fillText("SIDEBOARD", 0, 0); ctx.restore();
+      for (let pi = 0; pi < sidePiles.length; pi++) {
+        const pile = sidePiles[pi]; const isC2 = pi % 2 === 1;
+        const cx = isC2 ? SX2 : SX1; const cy = isC2 ? sy2 : sy1;
+        for (let s = 0; s < pile.length; s++)
+          drawCardOnCanvas(ctx, pile[s].img, cx, cy + s * SVS, SCW, SCH, "rgba(167,79,255,0.35)");
+        if (pile.length > 1) {
+          const bdx = cx + SCW - 9, bdy = cy + SCH + (pile.length - 1) * SVS - 9;
+          ctx.fillStyle = "rgba(0,0,0,0.88)";
+          ctx.beginPath(); ctx.arc(bdx + 7, bdy + 7, 7, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 7px Arial, sans-serif";
+          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + 7, bdy + 10); ctx.textAlign = "left";
+        }
+        const ph = sidePileH(pile);
+        if (isC2) sy2 += ph; else sy1 += ph;
+      }
+    } else {
+      // 9:16: horizontal row of side piles at the bottom
+      const sideY = CANVAS_H - FOOTER_H - SIDE916_H + 14;
+      const dg = ctx.createLinearGradient(PAD, sideY - 14, CANVAS_W - PAD, sideY - 14);
+      dg.addColorStop(0, "rgba(167,79,255,0)"); dg.addColorStop(0.15, "rgba(167,79,255,0.35)");
+      dg.addColorStop(0.85, "rgba(167,79,255,0.35)"); dg.addColorStop(1, "rgba(167,79,255,0)");
+      ctx.strokeStyle = dg; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(PAD, sideY - 14); ctx.lineTo(CANVAS_W - PAD, sideY - 14); ctx.stroke();
+      ctx.font = "bold 13px Arial, sans-serif"; ctx.fillStyle = "#6b4a9e"; ctx.textAlign = "left";
+      ctx.fillText("SIDEBOARD", PAD, sideY);
+      const pilesY = sideY + 18;
+      const SC9GAP = 10;
+      for (let pi = 0; pi < sidePiles.length; pi++) {
+        const pile = sidePiles[pi];
+        const pileX = PAD + pi * (SC9W + SC9GAP);
+        for (let s = 0; s < pile.length; s++)
+          drawCardOnCanvas(ctx, pile[s].img, pileX, pilesY + s * SC9VS, SC9W, SC9H, "rgba(167,79,255,0.35)");
+        if (pile.length > 1) {
+          const br = 8;
+          const bdx = pileX + SC9W - br - 2, bdy = pilesY + SC9H + (pile.length - 1) * SC9VS - br - 2;
+          ctx.fillStyle = "rgba(0,0,0,0.88)";
+          ctx.beginPath(); ctx.arc(bdx + br, bdy + br, br, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 8px Arial, sans-serif";
+          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + br, bdy + br + 3); ctx.textAlign = "left";
+        }
+      }
+    }
   }
 
   drawFooter(ctx, CANVAS_W, CANVAS_H, FOOTER_H);
@@ -505,218 +565,7 @@ function buildListCanvas(deck, cardDataMap, ownerName) {
   return canvas;
 }
 
-// ── HTML preview – visual mode ────────────────────────────────────────────────
-
-function CardStack({ card, imgUrl }) {
-  const qty = card.quantidade || 1;
-  return (
-    <div className="dip-card-stack" style={{ "--qty": qty }}>
-      {Array.from({ length: Math.min(qty, 4) }).map((_, i) => (
-        <div key={i} className="dip-card-item" style={{ "--i": i }}>
-          {imgUrl ? (
-            <img className="w-full h-full object-cover block" src={imgUrl} alt={card.nome} loading="lazy" />
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center p-1 border border-[rgba(167,79,255,0.3)]"
-              style={{ background: "linear-gradient(160deg, #2d1a5e, #1a0a35)" }}
-            >
-              <span className="text-[0.55rem] text-[#c4b5fd] text-center leading-[1.3] break-words">{card.nome}</span>
-            </div>
-          )}
-        </div>
-      ))}
-      {qty > 1 && (
-        <span className="absolute bottom-[-2px] right-[-2px] bg-[rgba(0,0,0,0.88)] text-[#fcd34d] text-[0.6rem] font-bold rounded-full px-[5px] py-[1px] border border-[rgba(252,211,77,0.3)] z-20">
-          ×{qty}
-        </span>
-      )}
-    </div>
-  );
-}
-
-// ── HTML preview – list mode ──────────────────────────────────────────────────
-
-function ListCardRow({ card, group }) {
-  const qty = card.quantidade || 1;
-  const col = GROUP_COLOR[group] || "#e9d5ff";
-  return (
-    <div className="flex items-center gap-[0.5rem] py-[3px] group">
-      <span
-        className="flex-shrink-0 w-[26px] text-center text-[0.65rem] font-bold rounded-[4px] py-[2px] leading-[1.6] border"
-        style={{ color: col, background: `${col}1a`, borderColor: `${col}44` }}
-      >
-        {qty}
-      </span>
-      <span className="text-[0.85rem] text-[#f0ecff] truncate leading-[1.3] group-hover:text-white transition-colors">
-        {card.nome}
-      </span>
-    </div>
-  );
-}
-
-function ListGroupBlock({ g, cards }) {
-  const col = GROUP_COLOR[g] || "#e9d5ff";
-  const count = cards.reduce((s, c) => s + (c.quantidade || 1), 0);
-  return (
-    <div className="flex flex-col gap-[2px]">
-      <div
-        className="flex items-center gap-[0.4rem] mb-[0.3rem] pb-[0.25rem]"
-        style={{ borderBottom: `1px solid ${col}22` }}
-      >
-        <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: col }} />
-        <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em]" style={{ color: col }}>
-          {g}
-        </span>
-        <span className="text-[0.63rem]" style={{ color: `${col}88` }}>· {count}</span>
-      </div>
-      {cards.map(c => <ListCardRow key={c.nome} card={c} group={g} />)}
-    </div>
-  );
-}
-
-function ListPreview({ deck, cardDataMap }) {
-  const grouped = {};
-  for (const g of GROUP_ORDER) grouped[g] = [];
-  for (const c of deck.maindeck || []) {
-    const g = getTypeGroup(cardDataMap[c.nome]?.typeLine);
-    grouped[g].push(c);
-  }
-
-  const col1Keys = ["Creature", "Planeswalker"].filter(g => grouped[g].length > 0);
-  const col2Keys = ["Instant", "Sorcery", "Enchantment", "Artifact", "Other"].filter(g => grouped[g].length > 0);
-  const landCards = grouped["Land"] || [];
-  const sideCards = deck.sideboard || [];
-  const mainCount = (deck.maindeck || []).reduce((s, c) => s + (c.quantidade || 1), 0);
-  const sideCount = sideCards.reduce((s, c) => s + (c.quantidade || 1), 0);
-
-  // mini mana curve for the preview header
-  const cmcBuckets = Array.from({ length: 8 }, (_, i) =>
-    (deck.maindeck || []).reduce((s, c) => {
-      const v = Math.min(Math.floor(cardDataMap[c.nome]?.cmc ?? 0), 7);
-      return v === i ? s + (c.quantidade || 1) : s;
-    }, 0)
-  );
-  const cmcMax = Math.max(...cmcBuckets, 1);
-
-  return (
-    <div className="flex flex-col min-h-0 w-full">
-      {/* preview header */}
-      <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-3 border-b border-[rgba(167,79,255,0.15)]">
-        <div className="min-w-0">
-          <h2 className="m-0 text-[1.1rem] font-extrabold text-[#e9d5ff] leading-[1.2] truncate">{deck.nome}</h2>
-          <div className="flex items-center gap-1 mt-[0.3rem] text-[0.78rem]">
-            <span style={{ color: FMT_COLOR[deck.formato] || "#beafd7" }}>
-              {deck.formato ? deck.formato.charAt(0).toUpperCase() + deck.formato.slice(1) : ""}
-            </span>
-            <span className="text-[#4b2d8a]">·</span>
-            <span className="text-[#9d74e8] truncate">por {deck.ownerName || "—"}</span>
-          </div>
-          <p className="m-0 mt-1 text-[0.72rem] text-[rgba(167,79,255,0.5)]">
-            {mainCount} cartas{sideCount > 0 ? ` · ${sideCount} side` : ""}
-          </p>
-        </div>
-        {/* mini curve */}
-        <div className="flex items-end gap-[3px] h-[52px] flex-shrink-0">
-          {cmcBuckets.map((cnt, i) => {
-            const pct = cnt > 0 ? Math.max(10, Math.round((cnt / cmcMax) * 100)) : 0;
-            return (
-              <div key={i} className="flex flex-col items-center gap-[2px] w-[18px]">
-                {cnt > 0 && <span className="text-[0.52rem] font-bold text-[#c4b5fd] leading-none">{cnt}</span>}
-                <div className="flex-1 w-full bg-[rgba(100,60,180,0.12)] rounded-[2px] flex items-end min-h-[4px]">
-                  <div
-                    className="w-full rounded-[2px]"
-                    style={{ height: `${pct}%`, background: "linear-gradient(to top, #7c3aed, #c084fc)" }}
-                  />
-                </div>
-                <span className="text-[0.5rem] text-[#5a3d8a] leading-none">{i === 7 ? "7+" : i}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* type badges */}
-      <div className="flex flex-wrap items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] border-b border-[rgba(167,79,255,0.1)] bg-black/[0.15]">
-        {GROUP_ORDER.filter(g => grouped[g]?.length > 0 || (g === "Land" && landCards.length > 0)).map(g => {
-          const col = GROUP_COLOR[g];
-          const cnt = g === "Land"
-            ? landCards.reduce((s, c) => s + (c.quantidade || 1), 0)
-            : grouped[g].reduce((s, c) => s + (c.quantidade || 1), 0);
-          if (cnt === 0) return null;
-          return (
-            <span
-              key={g}
-              className="text-[0.68rem] font-bold px-[0.5rem] py-[0.15rem] rounded-full"
-              style={{ color: col, background: `${col}1a`, border: `0.8px solid ${col}55` }}
-            >
-              {g} {cnt}
-            </span>
-          );
-        })}
-      </div>
-
-      {/* card list */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0">
-        {/* two columns */}
-        {(col1Keys.length > 0 || col2Keys.length > 0) && (
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <div className="flex flex-col gap-4">
-              {col1Keys.map(g => <ListGroupBlock key={g} g={g} cards={grouped[g]} />)}
-            </div>
-            <div className="flex flex-col gap-4">
-              {col2Keys.map(g => <ListGroupBlock key={g} g={g} cards={grouped[g]} />)}
-            </div>
-          </div>
-        )}
-
-        {/* lands */}
-        {landCards.length > 0 && (
-          <div className="border-t border-[rgba(167,79,255,0.1)] pt-3">
-            <div
-              className="flex items-center gap-[0.4rem] mb-[0.4rem] pb-[0.25rem]"
-              style={{ borderBottom: `1px solid ${GROUP_COLOR["Land"]}22` }}
-            >
-              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: GROUP_COLOR["Land"] }} />
-              <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em]" style={{ color: GROUP_COLOR["Land"] }}>
-                Land
-              </span>
-              <span className="text-[0.63rem]" style={{ color: `${GROUP_COLOR["Land"]}88` }}>
-                · {landCards.reduce((s, c) => s + (c.quantidade || 1), 0)}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6">
-              {landCards.map(c => <ListCardRow key={c.nome} card={c} group="Land" />)}
-            </div>
-          </div>
-        )}
-
-        {/* sideboard */}
-        {sideCards.length > 0 && (
-          <div className="border-t border-[rgba(167,79,255,0.1)] pt-3">
-            <div className="flex items-center gap-[0.4rem] mb-[0.4rem] pb-[0.25rem] border-b border-[rgba(167,79,255,0.15)]">
-              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0 bg-[#a78bfa]" />
-              <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#a78bfa]">Sideboard</span>
-              <span className="text-[0.63rem] text-[#a78bfa88]">· {sideCount}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6">
-              {sideCards.map(c => <ListCardRow key={c.nome} card={c} group={getTypeGroup(cardDataMap[c.nome]?.typeLine)} />)}
-            </div>
-          </div>
-        )}
-
-        {/* footer branding */}
-        <div className="flex items-center justify-between pt-3 border-t border-[rgba(167,79,255,0.1)] mt-2">
-          <span className="text-[0.75rem] font-bold" style={{
-            background: "linear-gradient(90deg,#a855f7,#7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
-          }}>
-            FUGUETE
-          </span>
-          <span className="text-[0.68rem] text-[#3d2470]">{new Date().toLocaleDateString("pt-BR")}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
+// (HTML preview components removed — preview is now canvas → toDataURL → <img>)
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -725,6 +574,20 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState("meta"); // "meta" | "imgs" | "done"
   const [layout, setLayout] = useState("lista"); // "lista" | "visual"
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [ratio, setRatio] = useState("16x9"); // "16x9" | "9x16" — visual mode only
+
+  // build canvas preview whenever stage, layout or ratio changes
+  useEffect(() => {
+    const listReady = stage === "imgs" || stage === "done";
+    const visualReady = stage === "done";
+    const canBuild = layout === "lista" ? listReady : visualReady;
+    if (!canBuild) { setPreviewUrl(null); return; }
+    const canvas = layout === "lista"
+      ? buildListCanvas(deck, cardDataMap, ownerName)
+      : buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
+    setPreviewUrl(canvas.toDataURL("image/jpeg", 0.92));
+  }, [stage, layout, ratio, deck, cardDataMap, ownerName]);
 
   // load card metadata + images
   useEffect(() => {
@@ -779,7 +642,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   const handleDownload = () => {
     const canvas = layout === "lista"
       ? buildListCanvas(deck, cardDataMap, ownerName)
-      : buildVisualCanvas(deck, cardDataMap, ownerName);
+      : buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
     const safeName = (deck.nome || "deck")
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase();
     const a = document.createElement("a");
@@ -788,12 +651,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
     a.click();
   };
 
-  const mainGroups = GROUP_ORDER.filter(g =>
-    (deck.maindeck || []).some(c => getTypeGroup(cardDataMap[c.nome]?.typeLine) === g)
-  );
-
   const loadingDone = stage === "done";
-  const metaDone = stage === "imgs" || stage === "done";
 
   return (
     <div
@@ -831,6 +689,29 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               </button>
             ))}
           </div>
+
+          {/* ratio toggle — visual mode only */}
+          {layout === "visual" && (
+            <div className="flex items-center gap-[2px] bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.15)] rounded-lg p-[3px] flex-shrink-0">
+              {[
+                { key: "16x9", label: "16:9" },
+                { key: "9x16", label: "9:16" },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setRatio(key)}
+                  className={`px-[0.65rem] py-[0.3rem] rounded-[0.4rem] text-[0.75rem] font-semibold transition-all duration-150 ${
+                    ratio === key
+                      ? "bg-[rgba(79,70,229,0.4)] text-white border border-[rgba(99,102,241,0.5)]"
+                      : "text-[#888] hover:text-[#c0bfff] border border-transparent"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* download button */}
@@ -876,115 +757,32 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
         )}
 
         {/* ── preview panel ── */}
-        {metaDone && (
-          <div
-            className="rounded-[0.85rem] border border-[rgba(199,149,255,0.2)] overflow-hidden"
-            style={{ background: "linear-gradient(160deg, #09050f, #0f0618)", minHeight: "60vh" }}
-          >
-            {layout === "lista" ? (
-              /* List preview */
-              <ListPreview deck={{ ...deck, ownerName }} cardDataMap={cardDataMap} />
-            ) : loadingDone ? (
-              /* Visual preview — same as before */
-              <div className="flex gap-4 p-4 overflow-x-auto max-sm:flex-col">
-                {/* left sidebar */}
-                <div className="flex-shrink-0 w-[170px] flex flex-col gap-2 max-sm:w-full">
-                  <h2 className="text-[1.05rem] font-extrabold text-[#e9d5ff] m-0 leading-[1.2] break-words">{deck.nome}</h2>
-                  <p className="text-[0.78rem] text-[#9d74e8] m-0">por {ownerName || "—"}</p>
-                  <div className="flex items-center gap-[0.35rem] text-[0.75rem] text-[#6b4a9e]">
-                    <span>{(deck.maindeck || []).reduce((s, c) => s + (c.quantidade || 1), 0)} main</span>
-                    <span className="text-[#4b2d8a]">·</span>
-                    <span>{(deck.sideboard || []).reduce((s, c) => s + (c.quantidade || 1), 0)} side</span>
+        <div
+          className="rounded-[0.85rem] border border-[rgba(199,149,255,0.2)] overflow-hidden"
+          style={{ background: "#09050f", minHeight: "40vh" }}
+        >
+          {previewUrl ? (
+            <div className="flex items-center justify-center p-2">
+              <img src={previewUrl} alt="Preview" className="max-h-[82vh] max-w-full block" style={{ width: "auto", height: "auto" }} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 gap-4 min-h-[40vh]">
+              {!loadingDone && layout === "visual" ? (
+                <>
+                  <div className="w-[200px] h-[5px] rounded-full bg-[rgba(167,79,255,0.15)] overflow-hidden">
+                    <div className="h-full rounded-full transition-[width] duration-200"
+                      style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }} />
                   </div>
-                  <div className="mt-2">
-                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.07em] text-[#6b4a9e] m-0 mb-2">Curva de Mana</p>
-                    <div className="flex items-end gap-[3px] h-[80px]">
-                      {Array.from({ length: 8 }, (_, i) => {
-                        const cnt = (deck.maindeck || []).reduce((s, c) => {
-                          const v = Math.min(Math.floor(cardDataMap[c.nome]?.cmc ?? 0), 7);
-                          return v === i ? s + (c.quantidade || 1) : s;
-                        }, 0);
-                        const max = Math.max(...Array.from({ length: 8 }, (__, j) =>
-                          (deck.maindeck || []).reduce((s, c) => {
-                            const v = Math.min(Math.floor(cardDataMap[c.nome]?.cmc ?? 0), 7);
-                            return v === j ? s + (c.quantidade || 1) : s;
-                          }, 0)
-                        ), 1);
-                        const pct = cnt > 0 ? Math.max(8, Math.round((cnt / max) * 100)) : 0;
-                        return (
-                          <div key={i} className="flex flex-col items-center gap-[2px] flex-1">
-                            {cnt > 0 && <span className="text-[0.6rem] font-bold text-[#c4b5fd] leading-none">{cnt}</span>}
-                            <div className="flex-1 w-full bg-[rgba(100,60,180,0.12)] rounded-[3px] flex items-end min-h-[8px]">
-                              <div className="w-full rounded-[3px] transition-[height] duration-[400ms]"
-                                style={{ height: `${pct}%`, background: "linear-gradient(to top, #7c3aed, #c084fc)" }} />
-                            </div>
-                            <span className="text-[0.58rem] text-[#5a3d8a] leading-none">{i === 7 ? "7+" : i}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* main area */}
-                <div className="flex-1 flex flex-col gap-[0.65rem] overflow-y-auto max-h-[calc(100vh-140px)] min-w-0 max-sm:max-h-[500px]">
-                  {mainGroups.map(g => {
-                    const cards = (deck.maindeck || []).filter(c => getTypeGroup(cardDataMap[c.nome]?.typeLine) === g);
-                    if (!cards.length) return null;
-                    return (
-                      <div key={g} className="flex flex-col gap-[0.4rem]">
-                        <div
-                          className="flex items-center gap-[0.4rem] py-[0.2rem] px-[0.5rem] rounded-[4px] w-fit"
-                          style={{ background: `color-mix(in srgb, ${GROUP_COLOR[g]} 12%, transparent)` }}
-                        >
-                          <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: GROUP_COLOR[g] }} />
-                          <span className="text-[0.7rem] font-bold uppercase tracking-[0.06em]" style={{ color: GROUP_COLOR[g] }}>
-                            {g}
-                          </span>
-                          <span className="text-[0.65rem]" style={{ color: `color-mix(in srgb, ${GROUP_COLOR[g]} 60%, #888)` }}>
-                            {cards.reduce((s, c) => s + (c.quantidade || 1), 0)}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-[0.4rem] items-start">
-                          {cards.map(c => <CardStack key={c.nome} card={c} imgUrl={cardDataMap[c.nome]?.imagem} />)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* sideboard */}
-                {(deck.sideboard || []).length > 0 && (
-                  <div className="flex-shrink-0 w-[220px] flex flex-col gap-[0.4rem] border-l border-[rgba(167,79,255,0.2)] pl-3 overflow-y-auto max-h-[calc(100vh-140px)] max-sm:w-full max-sm:border-l-0 max-sm:border-t max-sm:pl-0 max-sm:pt-3 max-sm:max-h-[500px]">
-                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#4b2d8a] m-0">Side</p>
-                    <div className="flex flex-wrap gap-[0.4rem] content-start justify-start">
-                      {(deck.sideboard || []).map(c => <CardStack key={c.nome} card={c} imgUrl={cardDataMap[c.nome]?.imagem} />)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* visual mode still loading images */
-              <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-[200px] h-[5px] rounded-full bg-[rgba(167,79,255,0.15)] overflow-hidden">
-                  <div className="h-full rounded-full transition-[width] duration-200"
-                    style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }} />
-                </div>
-                <p className="text-[0.8rem] text-[#beafd7] m-0">Carregando imagens… {progress}%</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* before metadata: full loading state */}
-        {!metaDone && (
-          <div
-            className="rounded-[0.85rem] border border-[rgba(199,149,255,0.1)] flex flex-col items-center justify-center py-16 gap-4"
-            style={{ background: "linear-gradient(160deg, #09050f, #0f0618)", minHeight: "40vh" }}
-          >
-            <p className="text-[0.82rem] text-[#6b4a9e] m-0">Preparando preview…</p>
-          </div>
-        )}
+                  <p className="text-[0.8rem] text-[#beafd7] m-0">
+                    {stage === "meta" ? `Buscando dados… ${progress}%` : `Carregando imagens… ${progress}%`}
+                  </p>
+                </>
+              ) : (
+                <p className="text-[0.82rem] text-[#6b4a9e] m-0">Preparando preview…</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
