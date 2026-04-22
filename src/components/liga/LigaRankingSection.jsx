@@ -146,6 +146,50 @@ function MedalBadge({ pos }) {
   );
 }
 
+function CartaRow({ carta, idx, onCardHover, onCardLeave }) {
+  const pos = carta.posicao ?? idx + 1;
+  const nome = carta.nome || carta.name || "—";
+  const copias = carta.totalCopias ?? "—";
+  const totalDecks = carta.totalDecks ?? "—";
+
+  return (
+    <li
+      key={carta.id ?? carta.nome ?? idx}
+      className="flex items-center gap-3 px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150"
+    >
+      <MedalBadge pos={pos} />
+
+      <button
+        type="button"
+        className="flex-1 min-w-0 text-left group bg-transparent border-none p-0 cursor-default"
+        onMouseEnter={(e) => onCardHover(nome, e)}
+        onMouseLeave={onCardLeave}
+        onFocus={(e) => onCardHover(nome, e)}
+        onBlur={onCardLeave}
+      >
+        <span className="font-semibold text-[0.92rem] text-[#f5edff] group-hover:text-[#c4b5fd] transition-colors duration-150 underline decoration-dotted decoration-[rgba(199,149,255,0.4)] underline-offset-[3px] overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
+          {nome}
+        </span>
+      </button>
+
+      <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="text-right hidden min-[520px]:block">
+          <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
+            Cópias
+          </p>
+          <p className="m-0 text-[0.88rem] font-semibold text-[#c795ff]">{copias}</p>
+        </div>
+        <div className="text-right">
+          <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
+            Decks
+          </p>
+          <p className="m-0 text-[0.88rem] font-semibold text-[#7dd3fc]">{totalDecks}</p>
+        </div>
+      </div>
+    </li>
+  );
+}
+
 function VDEBadges({ vitorias, derrotas, empates }) {
   return (
     <div className="flex items-center gap-[0.3rem]">
@@ -610,49 +654,15 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
             hint="passe o mouse para ver a carta"
           />
           <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
-            {cartas.map((c, idx) => {
-              const pos = c.posicao ?? idx + 1;
-              const nome = c.nome || c.name || "—";
-              const copias = c.totalCopias ?? "—";
-              const totalDecks = c.totalDecks ?? "—";
-
-              return (
-                <li
-                  key={c.id ?? c.nome ?? idx}
-                  className="flex items-center gap-3 px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150"
-                >
-                  <MedalBadge pos={pos} />
-
-                  <button
-                    type="button"
-                    className="flex-1 min-w-0 text-left group bg-transparent border-none p-0 cursor-default"
-                    onMouseEnter={(e) => handleCardHover(nome, e)}
-                    onMouseLeave={handleCardLeave}
-                    onFocus={(e) => handleCardHover(nome, e)}
-                    onBlur={handleCardLeave}
-                  >
-                    <span className="font-semibold text-[0.92rem] text-[#f5edff] group-hover:text-[#c4b5fd] transition-colors duration-150 underline decoration-dotted decoration-[rgba(199,149,255,0.4)] underline-offset-[3px] overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
-                      {nome}
-                    </span>
-                  </button>
-
-                  <div className="flex items-center gap-4 flex-shrink-0">
-                    <div className="text-right hidden min-[520px]:block">
-                      <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
-                        Cópias
-                      </p>
-                      <p className="m-0 text-[0.88rem] font-semibold text-[#c795ff]">{copias}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
-                        Decks
-                      </p>
-                      <p className="m-0 text-[0.88rem] font-semibold text-[#7dd3fc]">{totalDecks}</p>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
+            {cartas.map((c, idx) => (
+              <CartaRow
+                key={c.id ?? c.nome ?? idx}
+                carta={c}
+                idx={idx}
+                onCardHover={handleCardHover}
+                onCardLeave={handleCardLeave}
+              />
+            ))}
           </ul>
         </div>
       )}
