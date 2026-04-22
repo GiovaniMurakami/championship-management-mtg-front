@@ -17,6 +17,7 @@ const INITIAL_FORM = {
     somRodada: "",
     linkLive: "",
     secreto: false,
+    exibirNomeJogador: "nome",
 };
 
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
@@ -150,6 +151,26 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                                 Torneio Secreto
                                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
                             </label>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                                Exibir Nome do Jogador Como
+                            </label>
+                            <div className="relative">
+                                <select
+                                    name="exibirNomeJogador"
+                                    value={createForm.exibirNomeJogador}
+                                    onChange={handleChange}
+                                    disabled={isSubmitting}
+                                    className={`${TOURNAMENT_INPUT_CLASS} w-full appearance-none pr-10`}
+                                >
+                                    <option value="nome">Nome completo</option>
+                                    <option value="nickMOL">Nick MOL</option>
+                                    <option value="nickArena">Nick Arena</option>
+                                </select>
+                                <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] text-[1.1rem] pointer-events-none" aria-hidden="true">▾</span>
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-2">

@@ -2,17 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { listarLigas, deletarLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { PageShell } from "../components/ui/PageShell";
+import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 
-const ligaStatusBadge = {
-  inscricoes_abertas: "bg-[rgba(34,197,94,0.15)] text-[#4ade80] border border-[rgba(34,197,94,0.35)]",
-  em_andamento: "bg-[rgba(251,191,36,0.15)] text-[#fbbf24] border border-[rgba(251,191,36,0.35)]",
-  finalizado: "bg-[rgba(148,163,184,0.1)] text-[#94a3b8] border border-[rgba(148,163,184,0.25)]",
-};
-const ligaStatusLabel = {
-  inscricoes_abertas: "Inscrições Abertas",
-  em_andamento: "Em Andamento",
-  finalizado: "Finalizado",
-};
 
 export function LigaPage() {
   const { token, isAdmin } = useAuth();
@@ -56,7 +48,7 @@ export function LigaPage() {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
+    <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6">
         <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">
           Ligas
@@ -93,8 +85,8 @@ export function LigaPage() {
                     {liga.nome}
                   </h3>
                   {liga.status && (
-                    <span className={`inline-block px-[0.55rem] py-[0.18rem] rounded-full text-[0.68rem] font-semibold uppercase tracking-[0.04em] flex-shrink-0 mt-[0.25rem] ${ligaStatusBadge[liga.status] ?? ""}`}>
-                      {ligaStatusLabel[liga.status] ?? liga.status}
+                    <span className={`inline-block px-[0.55rem] py-[0.18rem] rounded-full text-[0.68rem] font-semibold uppercase tracking-[0.04em] flex-shrink-0 mt-[0.25rem] ${STATUS_BADGE_CLASS[liga.status] ?? ""}`}>
+                      {STATUS_LABEL[liga.status] ?? liga.status}
                     </span>
                   )}
                 </div>
@@ -178,6 +170,6 @@ export function LigaPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

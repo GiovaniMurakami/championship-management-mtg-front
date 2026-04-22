@@ -1,137 +1,107 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
+import { CardPreviewModal } from "../components/deck/CardPreviewModal";
+import { useAuth } from "../context/AuthContext";
+import { useDeckBuilder } from "../hooks/useDeckBuilder";
+import { useCardSearch } from "../hooks/useCardSearch";
+import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarCartaPorNome } from "../services/scryfallApi";
 
-export function DeckBuilderPage({
-  isEditMode = false,
-  deckForm,
-  onDeckFormChange,
-  onSetMainDeck,
-  onSetSideboard,
-  mainSearch,
-  onMainSearchChange,
-  sideSearch,
-  onSideSearchChange,
-  mainSuggestions,
-  sideSuggestions,
-  mainDeck,
-  sideboard,
-  totalMain,
-  totalSide,
-  onAddCard,
-  onRemoveCard,
-  onUpdateCardQuantity,
-  onCardMouseEnter,
-  onCardMouseLeave,
-  onPreviewDismiss,
-  deckLoading,
-  deckMessage,
-  cardLimitMessage,
-  illegalCardMessage,
-  importLoading,
-  importMessage,
-  onImportDeck,
-  onSubmit,
-}) {
+export function DeckBuilderPage({ isEditMode = false }) {
+  const { token } = useAuth();
   const { id } = useParams();
   const location = useLocation();
   const deck = location.state?.deck;
   const readOnly = location.state?.readOnly || false;
   const [analysisTab, setAnalysisTab] = useState("mao");
 
-  // Carregar dados e cartas do deck para editar, ou limpar se em modo criação
+  const {
+    deckForm, setDeckForm, mainDeck, setMainDeck, sideboard, setSideboard,
+    deckLoading, deckMessage, cardLimitMessage, illegalCardMessage,
+    importLoading, importMessage, totalMain, totalSide,
+    addCardToDeck, updateCardQuantity, removeCard, handleCreateDeck, importDeckFromTxt,
+  } = useDeckBuilder();
+
+  const {
+    mainSearch, setMainSearch, sideSearch, setSideSearch,
+    mainSuggestions, sideSuggestions,
+  } = useCardSearch();
+
+  const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
+
+  // Carregar dados do deck para editar, ou limpar em modo criação
   useEffect(() => {
     if (!isEditMode && !deck) {
-      // Modo criação - garantir que está limpo
-      onDeckFormChange({ nome: "", formato: "" });
-      if (onSetMainDeck && onSetSideboard) {
-        onSetMainDeck([]);
-        onSetSideboard([]);
-      }
+      setDeckForm({ nome: "", formato: "" });
+      setMainDeck([]);
+      setSideboard([]);
     } else if (isEditMode && deck) {
-      onDeckFormChange({
-        nome: deck.nome,
-        formato: deck.formato,
-      });
+      setDeckForm({ nome: deck.nome, formato: deck.formato });
 
-      // Carregar cartas do deck existente
-      if (onSetMainDeck && onSetSideboard) {
-        const loadDeckCards = async () => {
-          try {
-            // Agrupa entradas pelo nome (caso o backend retorne uma por cópia)
-            const groupByName = (entries) => {
-              const map = new Map();
-              for (const entry of entries) {
-                const nome = entry.nome;
-                if (map.has(nome)) {
-                  map.get(nome).quantidade += entry.quantidade || 1;
-                } else {
-                  map.set(nome, { nome, quantidade: entry.quantidade || 1 });
-                }
+      const loadDeckCards = async () => {
+        try {
+          const groupByName = (entries) => {
+            const map = new Map();
+            for (const entry of entries) {
+              const nome = entry.nome;
+              if (map.has(nome)) {
+                map.get(nome).quantidade += entry.quantidade || 1;
+              } else {
+                map.set(nome, { nome, quantidade: entry.quantidade || 1 });
               }
-              return Array.from(map.values());
-            };
+            }
+            return Array.from(map.values());
+          };
 
-            const toCardEntry = (cartaScryfall, quantidade) => ({
-              nome: cartaScryfall.nome,
-              quantidade,
-              imagem: cartaScryfall.imagem || "",
-              isBasicLand: cartaScryfall.isBasicLand,
-              legalities: cartaScryfall.legalities || {},
-              colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
-              cmc: Number.isFinite(cartaScryfall.cmc)
-                ? cartaScryfall.cmc
-                : Number(cartaScryfall.cmc) || 0,
-              manaCost: cartaScryfall.manaCost || "",
-              typeLine: cartaScryfall.typeLine || "",
-            });
+          const toCardEntry = (cartaScryfall, quantidade) => ({
+            nome: cartaScryfall.nome,
+            quantidade,
+            imagem: cartaScryfall.imagem || "",
+            isBasicLand: cartaScryfall.isBasicLand,
+            legalities: cartaScryfall.legalities || {},
+            colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
+            cmc: Number.isFinite(cartaScryfall.cmc) ? cartaScryfall.cmc : Number(cartaScryfall.cmc) || 0,
+            manaCost: cartaScryfall.manaCost || "",
+            typeLine: cartaScryfall.typeLine || "",
+          });
 
-            const mainEntries = groupByName(deck.maindeck || []);
-            const sideEntries = groupByName(deck.sideboard || []);
+          const mainEntries = groupByName(deck.maindeck || []);
+          const sideEntries = groupByName(deck.sideboard || []);
 
-            const [resolvedMain, resolvedSide] = await Promise.all([
-              Promise.all(
-                mainEntries.map(async (entry) => {
-                  const carta = await buscarCartaPorNome(entry.nome);
-                  return carta ? toCardEntry(carta, entry.quantidade) : null;
-                }),
-              ),
-              Promise.all(
-                sideEntries.map(async (entry) => {
-                  const carta = await buscarCartaPorNome(entry.nome);
-                  return carta ? toCardEntry(carta, entry.quantidade) : null;
-                }),
-              ),
-            ]);
+          const [resolvedMain, resolvedSide] = await Promise.all([
+            Promise.all(mainEntries.map(async (entry) => {
+              const carta = await buscarCartaPorNome(entry.nome);
+              return carta ? toCardEntry(carta, entry.quantidade) : null;
+            })),
+            Promise.all(sideEntries.map(async (entry) => {
+              const carta = await buscarCartaPorNome(entry.nome);
+              return carta ? toCardEntry(carta, entry.quantidade) : null;
+            })),
+          ]);
 
-            onSetMainDeck(resolvedMain.filter(Boolean));
-            onSetSideboard(resolvedSide.filter(Boolean));
-          } catch (error) {
-            console.error("Erro ao carregar cartas do deck:", error);
-          }
-        };
+          setMainDeck(resolvedMain.filter(Boolean));
+          setSideboard(resolvedSide.filter(Boolean));
+        } catch (error) {
+          console.error("Erro ao carregar cartas do deck:", error);
+        }
+      };
 
-        loadDeckCards();
-      }
+      loadDeckCards();
     }
-  }, [isEditMode, deck, onDeckFormChange, onSetMainDeck, onSetSideboard]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode]);
 
   useEffect(() => {
-    return () => {
-      onPreviewDismiss?.();
-    };
-  }, [onPreviewDismiss]);
+    return () => closeCardPreview();
+  }, [closeCardPreview]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
     if (isEditMode && id) {
-      // Passar deckId e deck original como parâmetro ao atualizar
-      onSubmit(event, undefined, id, deck);
+      handleCreateDeck(event, token, id, deck);
     } else {
-      // Modo criação normal
-      onSubmit(event);
+      handleCreateDeck(event, token);
     }
   };
 
@@ -139,30 +109,30 @@ export function DeckBuilderPage({
     <main className="w-[min(1100px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12">
       <DeckBuilder
         deckForm={deckForm}
-        onDeckFormChange={onDeckFormChange}
+        onDeckFormChange={setDeckForm}
         mainSearch={mainSearch}
-        onMainSearchChange={onMainSearchChange}
+        onMainSearchChange={setMainSearch}
         sideSearch={sideSearch}
-        onSideSearchChange={onSideSearchChange}
+        onSideSearchChange={setSideSearch}
         mainSuggestions={mainSuggestions}
         sideSuggestions={sideSuggestions}
         mainDeck={mainDeck}
         sideboard={sideboard}
         totalMain={totalMain}
         totalSide={totalSide}
-        onAddCard={onAddCard}
-        onRemoveCard={onRemoveCard}
-        onUpdateCardQuantity={onUpdateCardQuantity}
-        onCardMouseEnter={onCardMouseEnter}
-        onCardMouseLeave={onCardMouseLeave}
-        onPreviewDismiss={onPreviewDismiss}
+        onAddCard={addCardToDeck}
+        onRemoveCard={removeCard}
+        onUpdateCardQuantity={updateCardQuantity}
+        onCardMouseEnter={openCardPreview}
+        onCardMouseLeave={closeCardPreview}
+        onPreviewDismiss={closeCardPreview}
         deckLoading={deckLoading}
         deckMessage={deckMessage}
         cardLimitMessage={cardLimitMessage}
         illegalCardMessage={illegalCardMessage}
         importLoading={importLoading}
         importMessage={importMessage}
-        onImportDeck={onImportDeck}
+        onImportDeck={importDeckFromTxt}
         onSubmit={readOnly ? null : handleSubmit}
         isEditMode={isEditMode}
         readOnly={readOnly}
@@ -170,32 +140,31 @@ export function DeckBuilderPage({
 
       <div className="flex flex-col gap-0 mt-6 w-full">
         <div className="flex gap-[0.4rem] mb-[0.85rem]">
-          <button
-            type="button"
-            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${analysisTab === "mao"
-                ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
-                : "border-[rgba(217,180,255,0.2)] bg-transparent text-[#beafd7] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff]"
+          {[
+            { key: "mao", label: "🎴 Mão Inicial" },
+            { key: "stats", label: "📊 Estatísticas" },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
+                analysisTab === key
+                  ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
+                  : "border-line bg-transparent text-text-soft hover:border-[rgba(199,149,255,0.4)] hover:text-text-main"
               }`}
-            onClick={() => setAnalysisTab("mao")}
-          >
-            🎴 Mão Inicial
-          </button>
-          <button
-            type="button"
-            className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${analysisTab === "stats"
-                ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
-                : "border-[rgba(217,180,255,0.2)] bg-transparent text-[#beafd7] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff]"
-              }`}
-            onClick={() => setAnalysisTab("stats")}
-          >
-            📊 Estatísticas
-          </button>
+              onClick={() => setAnalysisTab(key)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         {analysisTab === "mao"
           ? <HandSimulator mainDeck={mainDeck} />
           : <DeckStats mainDeck={mainDeck} />
         }
       </div>
+
+      <CardPreviewModal card={previewCard} />
     </main>
   );
 }

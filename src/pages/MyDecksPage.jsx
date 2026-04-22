@@ -6,6 +6,8 @@ import { buscarCartaPorNome } from "../services/scryfallApi";
 import { deletarDeck } from "../services/backendApi";
 import { SkeletonCard } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
+import { PageShell } from "../components/ui/PageShell";
+import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 
 const FORMAT_META = {
   standard: { label: "Standard", color: "#93c5fd", bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.45)" },
@@ -37,12 +39,11 @@ function FormatBadge({ formato }) {
   );
 }
 
-export function MyDecksPage({ token }) {
-  const { usuario } = useAuth();
+export function MyDecksPage() {
+  const { usuario, token } = useAuth();
   const { decks, loading, message, fetchDecks } = useMyDecks(token, usuario?.id);
   const [deckImages, setDeckImages] = useState({});
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, deck: null });
-  const [confirmName, setConfirmName] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [imageModal, setImageModal] = useState(null);
@@ -57,7 +58,6 @@ export function MyDecksPage({ token }) {
 
   useEffect(() => {
     if (decks.length === 0) return;
-
     const fetchDeckImages = async () => {
       const entries = await Promise.all(
         decks
@@ -73,37 +73,31 @@ export function MyDecksPage({ token }) {
       );
       setDeckImages(Object.fromEntries(entries.filter(Boolean)));
     };
-
     fetchDeckImages();
   }, [decks]);
 
   const handleOpenDeleteModal = (deck) => {
     setDeleteModal({ isOpen: true, deck });
-    setConfirmName("");
     setDeleteError("");
   };
 
   const handleCloseDeleteModal = () => {
     setDeleteModal({ isOpen: false, deck: null });
-    setConfirmName("");
     setDeleteError("");
     setDeleteLoading(false);
   };
 
-  const handleDeleteDeck = async () => {
+  const handleDeleteDeck = async (confirmName, onSuccess) => {
     if (!deleteModal.deck) return;
-
     if (confirmName !== deleteModal.deck.nome) {
       setDeleteError("O nome do deck não corresponde. Digite exatamente como está escrito.");
       return;
     }
-
     setDeleteLoading(true);
     setDeleteError("");
-
     try {
       await deletarDeck(deleteModal.deck.id, token);
-      handleCloseDeleteModal();
+      onSuccess?.();
       await fetchDecks();
     } catch (error) {
       setDeleteError(error.message || "Erro ao excluir o deck. Tente novamente.");
@@ -113,7 +107,7 @@ export function MyDecksPage({ token }) {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 pt-[7.5rem] pb-12 max-sm:px-3 max-sm:pt-[6.5rem] max-sm:pb-8">
+    <PageShell>
       <div className="flex justify-between items-center mb-8 max-sm:flex-col max-sm:gap-4 max-sm:items-stretch max-sm:text-center">
         <div>
           <h1 className="font-display text-[2.2rem] tracking-[0.04em] mb-[0.2rem] mt-0 text-text-main">Meus Decks</h1>
@@ -274,54 +268,15 @@ export function MyDecksPage({ token }) {
         />
       )}
 
-      {deleteModal.isOpen && (
-        <div
-          className="fixed inset-0 z-[60] grid place-items-center bg-[rgba(5,3,9,0.72)] backdrop-blur-sm"
-          onClick={(e) => e.target === e.currentTarget && handleCloseDeleteModal()}
-        >
-          <div className="w-[min(500px,calc(100vw-1.4rem))] border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-4">
-            <h2 className="font-display text-[1.8rem] mt-0 mb-4">Confirmar Exclusão</h2>
-            <p className="mb-4 text-text-soft">
-              Você está prestes a excluir o deck{" "}
-              <strong className="text-[#c795ff]">{deleteModal.deck?.nome}</strong>. Esta ação é{" "}
-              <strong className="text-[#c795ff]">irreversível</strong>.
-            </p>
-            <p className="mb-4 text-[0.9rem] opacity-80">
-              Para confirmar, digite o nome exato do deck:
-            </p>
-            <input
-              type="text"
-              value={confirmName}
-              onChange={(e) => setConfirmName(e.target.value)}
-              placeholder={`Digite: ${deleteModal.deck?.nome}`}
-              className="w-full mb-2 text-[0.95rem] p-3"
-              disabled={deleteLoading}
-              autoFocus
-            />
-            {deleteError && (
-              <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] text-[0.9rem]">{deleteError}</p>
-            )}
-            <div className="flex gap-3 mt-6">
-              <button
-                className="flex-1 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-text-soft transition-all duration-[220ms] hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.05]"
-                type="button"
-                onClick={handleCloseDeleteModal}
-                disabled={deleteLoading}
-              >
-                Cancelar
-              </button>
-              <button
-                className="flex-1 border border-[rgba(252,88,119,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#fc5877] to-[#d1486a] text-white shadow-[0_4px_12px_rgba(252,88,119,0.25)] transition-all duration-[220ms] enabled:hover:-translate-y-0.5 enabled:hover:shadow-[0_8px_24px_rgba(252,88,119,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
-                type="button"
-                onClick={handleDeleteDeck}
-                disabled={deleteLoading || !confirmName}
-              >
-                {deleteLoading ? "Excluindo..." : "Excluir deck"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleCloseDeleteModal}
+        itemName={deleteModal.deck?.nome ?? ""}
+        onConfirm={handleDeleteDeck}
+        loading={deleteLoading}
+        error={deleteError}
+        title="Excluir deck"
+      />
+    </PageShell>
   );
 }

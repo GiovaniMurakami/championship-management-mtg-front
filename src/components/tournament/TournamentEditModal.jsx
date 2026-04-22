@@ -29,6 +29,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         somRodada: "",
         linkLive: "",
         secreto: false,
+        exibirNomeJogador: "nome",
     });
     const [bannerFile, setBannerFile] = useState(null);
     const [bannerPreview, setBannerPreview] = useState(null);
@@ -58,6 +59,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                     somRodada: torneio.somRodada || "",
                     linkLive: torneio.linkLive || "",
                     secreto: torneio.secreto ?? false,
+                    exibirNomeJogador: torneio.exibirNomeJogador || "nome",
                 });
             });
         }
@@ -173,6 +175,26 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                                 Torneio Secreto
                                 <span className="block text-[0.75rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
                             </label>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="edit-exibirNomeJogador" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                                Exibir Nome do Jogador Como
+                            </label>
+                            <div className="relative">
+                                <select
+                                    id="edit-exibirNomeJogador"
+                                    name="exibirNomeJogador"
+                                    value={form.exibirNomeJogador}
+                                    onChange={handleChange}
+                                    disabled={isDisabled}
+                                    className={`${TOURNAMENT_INPUT_CLASS} w-full appearance-none pr-10`}
+                                >
+                                    <option value="nome">Nome completo</option>
+                                    <option value="nickMOL">Nick MOL</option>
+                                    <option value="nickArena">Nick Arena</option>
+                                </select>
+                                <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] pointer-events-none" aria-hidden="true">▾</span>
+                            </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="edit-horario" className="text-[#e0e0e0] font-medium text-[0.9rem]">Data e Hora</label>

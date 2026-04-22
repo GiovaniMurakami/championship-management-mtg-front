@@ -78,9 +78,6 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
     return new Date(dateString).toLocaleString("pt-BR");
   };
 
-  const status = torneio?.status || "—";
-  const statusConfig = STATUS_CONFIG[status] || DEFAULT_STATUS;
-
   if (loading) {
     return (
       <div className={`mb-8 max-[480px]:mb-5 ${className}`}>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
-export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
+export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
 
@@ -73,6 +73,18 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         && !isBye
         && !hasLaterRound
         && (isPlayer1 || isPlayer2 || isOwner);
+
+    const confirmadoPor = myMatch.confirmadoPor || [];
+    const myUserId = usuario?.id;
+    const jaConfirmou = myUserId && confirmadoPor.some((id) => String(id) === String(myUserId));
+    const canConfirm =
+        torneio?.status === "em_andamento"
+        && isReported
+        && !isBye
+        && !isContested
+        && !hasLaterRound
+        && (isPlayer1 || isPlayer2)
+        && !jaConfirmou;
 
     const myName = isPlayer1 ? player1Name : player2Name;
     const myNick = isPlayer1 ? player1Nick : player2Nick;
@@ -163,6 +175,29 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                             <p className="m-0 text-center text-[0.82rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">
                                 Resultado registrado
                             </p>
+
+                            {/* Indicador de quem confirmou */}
+                            {confirmadoPor.length > 0 && (
+                                <div className="flex items-center gap-2 text-[0.78rem] text-[#beafd7]">
+                                    <span className="text-[#4ade80]">✓</span>
+                                    <span>
+                                        {confirmadoPor.length === 1 ? "1 jogador confirmou" : `${confirmadoPor.length} jogadores confirmaram`}
+                                        {jaConfirmou && " (incluindo você)"}
+                                    </span>
+                                </div>
+                            )}
+
+                            {canConfirm && (
+                                <button
+                                    type="button"
+                                    className="inline-flex min-h-11 items-center justify-center px-4 py-2 border border-[rgba(34,197,94,0.45)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#86efac] bg-[rgba(34,197,94,0.08)] hover:bg-[rgba(34,197,94,0.16)] hover:border-[rgba(34,197,94,0.7)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => onConfirmResult?.(myMatch.id)}
+                                    disabled={actionLoading}
+                                >
+                                    {actionLoading ? "Confirmando..." : "Confirmar Resultado"}
+                                </button>
+                            )}
+
                             {canContest && (
                                 <button
                                     type="button"

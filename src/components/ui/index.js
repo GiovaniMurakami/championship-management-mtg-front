@@ -1,8 +1,12 @@
 export { BaseModal } from "./BaseModal";
+export { DeleteConfirmModal } from "./DeleteConfirmModal";
+export { ErrorBoundary } from "./ErrorBoundary";
 export { Footer } from "./Footer";
 export { Hero } from "./Hero";
 export { LandingHeader } from "./LandingHeader";
 export { Navbar } from "./Navbar";
+export { PageShell } from "./PageShell";
 export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail } from "./Skeleton";
 export { Spinner } from "./Spinner";
 export { SponsorSection } from "./SponsorSection";
+export { Tabs } from "./Tabs";
