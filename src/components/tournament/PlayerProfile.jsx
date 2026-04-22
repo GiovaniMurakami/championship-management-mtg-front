@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export function PlayerProfile({
     torneio,
     usuario,
@@ -9,7 +11,11 @@ export function PlayerProfile({
     onChooseDeck,
     onCheckin,
     onInscrever,
+    onInscreverTarde,
     actionLoading,
+    times,
+    selectedTimeId,
+    onTimeChange,
 }) {
     const canEditDeck = torneio?.status === "inscricoes_abertas";
     const isOngoing = torneio?.status === "em_andamento";
@@ -30,6 +36,17 @@ export function PlayerProfile({
     const calcTotal = (deck) =>
         deck.maindeck?.reduce((sum, c) => sum + (c.quantidade || 1), 0) || 0;
 
+    const [deckSort, setDeckSort] = useState("recente");
+
+    const sortedDecks = [...decks].sort((a, b) => {
+        if (deckSort === "recente") {
+            const da = new Date(a.updatedAt || a.criadoEm || a.dataCriacao || 0);
+            const db = new Date(b.updatedAt || b.criadoEm || b.dataCriacao || 0);
+            return db - da;
+        }
+        return a.nome.localeCompare(b.nome, "pt-BR");
+    });
+
     const selectedDeck = decks.find((d) => d.id === selectedDeckId);
     const displayName =
         currentPlayer?.nome
@@ -42,6 +59,8 @@ export function PlayerProfile({
         const isFull = torneio?.maxJogadores != null && (torneio?.totalInscritos ?? 0) >= torneio.maxJogadores;
         const missingNick = !usuario?.nickMTGO;
         const isOpen = torneio?.status === "inscricoes_abertas";
+        const isOngoingNow = torneio?.status === "em_andamento";
+        const canLateJoin = isOngoingNow && !isFull && onInscreverTarde;
 
         return (
             <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
@@ -57,20 +76,38 @@ export function PlayerProfile({
 
                 <p className="text-[#beafd7] text-[0.9rem] m-0 mt-2">Você ainda não está inscrito neste torneio.</p>
 
-                {missingNick && isOpen && (
+                {missingNick && (isOpen || canLateJoin) && (
                     <div className="mt-3 px-3 py-[0.6rem] rounded-[0.6rem] bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] text-[#fbbf24] text-[0.82rem]">
                         ⚠ Configure seu <strong>nick do MTGO</strong> no perfil (menu superior → seu nome) para poder se inscrever.
                     </div>
                 )}
 
-                <button
-                    className="mt-3 inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
-                    onClick={onInscrever}
-                    disabled={actionLoading || missingNick || isFull || !isOpen}
-                    title={missingNick ? "Configure seu nick do MTGO no perfil para se inscrever" : isFull ? "Torneio lotado" : undefined}
-                >
-                    {actionLoading ? "Inscrevendo..." : isFull ? "Torneio lotado" : "Inscrever-se"}
-                </button>
+                {isOpen && (
+                    <button
+                        className="mt-3 inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+                        onClick={onInscrever}
+                        disabled={actionLoading || missingNick || isFull}
+                        title={missingNick ? "Configure seu nick do MTGO no perfil para se inscrever" : isFull ? "Torneio lotado" : undefined}
+                    >
+                        {actionLoading ? "Inscrevendo..." : isFull ? "Torneio lotado" : "Inscrever-se"}
+                    </button>
+                )}
+
+                {canLateJoin && (
+                    <div className="mt-3 flex flex-col gap-3">
+                        <div className="px-3 py-[0.6rem] rounded-[0.6rem] bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#fca5a5] text-[0.82rem]">
+                            ⚠ <strong>Inscrição tardia:</strong> você receberá um <strong>bye de punição</strong> na rodada atual, pois o torneio já está em andamento.
+                        </div>
+                        <button
+                            className="inline-flex items-center justify-center px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.2)]"
+                            onClick={onInscreverTarde}
+                            disabled={actionLoading || missingNick}
+                            title={missingNick ? "Configure seu nick do MTGO no perfil para se inscrever" : undefined}
+                        >
+                            {actionLoading ? "Inscrevendo..." : "Inscrição Tardia (receber bye)"}
+                        </button>
+                    </div>
+                )}
             </section>
         );
     }
@@ -81,6 +118,37 @@ export function PlayerProfile({
             {displayName && <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Jogador: <strong className="text-[#c795ff]">{displayName}</strong></p>}
 
             <div className="grid gap-4">
+                {/* Seleção de time (apenas quando liga for do tipo 'times') */}
+                {times && times.length > 0 && (
+                    <div className="grid gap-[0.35rem]">
+                        <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Time</label>
+                        {currentPlayer?.timeId ? (
+                            <p className="text-[0.8rem] text-[#7ef2a3] mt-[0.25rem]">
+                                ✓ Time: <strong className="text-[#7ef2a3]">
+                                    {times.find((t) => String(t.id) === String(currentPlayer.timeId))?.nome || "Time selecionado"}
+                                </strong>
+                            </p>
+                        ) : (
+                            <div className="flex flex-col gap-[0.35rem] max-h-[150px] overflow-y-auto pr-1">
+                                {times.map((time) => (
+                                    <button
+                                        key={time.id}
+                                        type="button"
+                                        className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.9rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedTimeId === time.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]"}`}
+                                        onClick={() => onTimeChange?.(time.id)}
+                                        disabled={actionLoading}
+                                    >
+                                        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{time.nome}</span>
+                                        <span className="text-[0.7rem] text-[#beafd7] flex-shrink-0">
+                                            {time.totalMembros ?? time.membros?.length ?? 0} membros
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="grid gap-[0.35rem]">
                     <label className="text-[#beafd7] text-[0.85rem] font-semibold mb-[0.35rem] block">Deck</label>
 
@@ -100,8 +168,19 @@ export function PlayerProfile({
                         <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Você não tem decks cadastrados. <a href="/decks" className="text-[#c795ff] underline">Criar deck</a></p>
                     ) : (
                         <>
+                            <div className="flex items-center gap-2 mb-[0.35rem]">
+                                <span className="text-[0.72rem] text-[#beafd7]">Ordenar:</span>
+                                <select
+                                    className="text-[0.72rem] bg-[rgba(255,255,255,0.05)] border border-[rgba(217,180,255,0.2)] rounded-[0.4rem] text-[#f5edff] px-[0.4rem] py-[0.15rem] outline-none cursor-pointer"
+                                    value={deckSort}
+                                    onChange={(e) => setDeckSort(e.target.value)}
+                                >
+                                    <option value="recente">Mais recentes</option>
+                                    <option value="nome">Nome (A-Z)</option>
+                                </select>
+                            </div>
                             <div className="flex flex-col gap-[0.4rem] max-h-[220px] overflow-y-auto pr-1">
-                                {decks.map((deck) => {
+                                {sortedDecks.map((deck) => {
                                     const isCompatible = !torneio?.formato || !deck.formato || deck.formato.toLowerCase() === torneio.formato.toLowerCase();
                                     return (
                                         <button

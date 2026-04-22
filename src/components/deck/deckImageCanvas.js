@@ -81,6 +81,22 @@ function drawTopAccent(ctx, w) {
   ctx.fillRect(0, 0, w, 5);
 }
 
+function drawWatermark(ctx, canvasW, canvasH) {
+  ctx.save();
+  ctx.globalAlpha = 0.045;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold ${Math.round(canvasW * 0.075)}px Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.translate(canvasW / 2, canvasH / 2);
+  ctx.rotate(-Math.PI / 6);
+  const step = Math.round(canvasW * 0.38);
+  for (let dy = -canvasH; dy <= canvasH; dy += step)
+    for (let dx = -canvasW; dx <= canvasW; dx += step)
+      ctx.fillText("FUGUETE", dx, dy);
+  ctx.restore();
+}
+
 function drawFooter(ctx, canvasW, canvasH, footerH) {
   const fy = canvasH - footerH;
   ctx.fillStyle = "rgba(0,0,0,0.55)";
@@ -355,6 +371,7 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
     }
   }
 
+  drawWatermark(ctx, CANVAS_W, CANVAS_H);
   drawFooter(ctx, CANVAS_W, CANVAS_H, FOOTER_H);
   return canvas;
 }
@@ -557,6 +574,7 @@ export function buildListCanvas(deck, cardDataMap, ownerName) {
     }
   }
 
+  drawWatermark(ctx, CANVAS_W, CANVAS_H);
   drawFooter(ctx, CANVAS_W, CANVAS_H, FOOTER_H);
   return canvas;
 }

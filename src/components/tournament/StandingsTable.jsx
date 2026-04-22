@@ -116,7 +116,7 @@ export function StandingsTable({
                       <span className="block text-center text-[0.63rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">— Corte Top 8 —</span>
                     </div>
                   )}
-                  <div className={`grid grid-cols-[2rem_1fr_auto] gap-x-2 items-center px-4 py-[0.4rem] border-b border-[rgba(255,255,255,0.04)] transition-colors duration-150 hover:bg-[rgba(167,79,255,0.05)] ${rowAccent} ${player.dropped ? "opacity-50" : ""}`}>
+                  <div className={`grid grid-cols-[2rem_1fr_auto] gap-x-2 items-center px-4 py-[0.4rem] border-b border-[rgba(255,255,255,0.04)] transition-colors duration-150 hover:bg-[rgba(167,79,255,0.05)] ${rowAccent}`}>
                     <span className="text-center flex-shrink-0">
                       {isTop3 ? (
                         <span className={`inline-flex items-center justify-center w-[1.4rem] h-[1.4rem] rounded-full text-[0.65rem] font-extrabold leading-none ${posicao === 1 ? "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800]" : posicao === 2 ? "bg-[linear-gradient(135deg,#d0d0d0,#888)] text-[#1e1e1e]" : "bg-[linear-gradient(135deg,#cd7f32,#8b4513)] text-[#fff8f0]"}`}>{posicao}</span>
@@ -124,9 +124,16 @@ export function StandingsTable({
                         <span className="text-[0.75rem] text-[#beafd7] font-semibold">{posicao}</span>
                       )}
                     </span>
-                    <span className={`text-[0.82rem] font-semibold truncate min-w-0 ${player.dropped ? "line-through text-[#beafd7]" : "text-white"}`}>
-                      {getPlayerName(player)}
-                      {player.dropped && <span className="text-[0.62rem] font-bold text-[#f87171] ml-1 no-underline not-italic">DROP</span>}
+                    <span className="flex items-center gap-[0.35rem] text-[0.82rem] font-semibold truncate min-w-0 text-white">
+                      {player.time?.imagemUrl && (
+                        <img
+                          src={player.time.imagemUrl}
+                          alt={player.time.nome}
+                          className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
+                        />
+                      )}
+                      <span className="truncate">{getPlayerName(player)}</span>
+                      {player.dropped && <span className="text-[0.62rem] font-bold text-[#f87171] ml-1">DROP</span>}
                     </span>
                     <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-[#beafd7]"}`}>
                       {isRegistrationOpen ? "—" : pts}
@@ -226,7 +233,7 @@ export function StandingsTable({
                   return (
                     <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
                       <tr
-                        className={`transition-[background] duration-150 hover:bg-[rgba(167,79,255,0.06)] ${player.dropped ? "opacity-50" : ""} ${rowBorderClass}`}
+                        className={`transition-[background] duration-150 hover:bg-[rgba(167,79,255,0.06)] ${rowBorderClass}`}
                       >
                         <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] text-center font-bold text-[#c795ff]">
                           {isTop3 ? (
@@ -236,8 +243,17 @@ export function StandingsTable({
                           )}
                         </td>
                         <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] font-semibold">
-                          <span className={player.dropped ? "line-through" : ""}>{getPlayerName(player)}</span>
-                          {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
+                          <span className="inline-flex items-center gap-[0.35rem]">
+                            {player.time?.imagemUrl && (
+                              <img
+                                src={player.time.imagemUrl}
+                                alt={player.time.nome}
+                                className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
+                              />
+                            )}
+                            <span>{getPlayerName(player)}</span>
+                            {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
+                          </span>
                         </td>
                         {!isRegistrationOpen && (
                           <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">
@@ -323,7 +339,7 @@ export function StandingsTable({
               return (
                 <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
                   <article
-                    className={`border rounded-xl p-[0.7rem] ${mobileBorderClass} ${player.dropped ? "opacity-65" : ""}`}
+                    className={`border rounded-xl p-[0.7rem] ${mobileBorderClass}`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-[0.45rem]">
                       {isTop3 && !isRegistrationOpen ? (
@@ -333,8 +349,15 @@ export function StandingsTable({
                       ) : (
                         <span className={`font-bold flex-shrink-0 ${mobileRankColor}`}>#{posicao}</span>
                       )}
-                      <span className={`font-semibold text-white break-words ${player.dropped ? "line-through" : ""}`}>
-                        {getPlayerName(player)}
+                      <span className="inline-flex items-center gap-[0.35rem] font-semibold text-white break-words flex-wrap">
+                        {player.time?.imagemUrl && (
+                          <img
+                            src={player.time.imagemUrl}
+                            alt={player.time.nome}
+                            className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
+                          />
+                        )}
+                        <span>{getPlayerName(player)}</span>
                         {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                       </span>
                       {!isRegistrationOpen && (

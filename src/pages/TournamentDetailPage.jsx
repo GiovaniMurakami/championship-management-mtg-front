@@ -42,6 +42,7 @@ export function TournamentDetailPage() {
     handleInscrever,
     handleReportResult,
     handleContestResult,
+    handleConfirmResult,
     handleAdjustResult,
     handleGerarLinkIngresso,
     handleStartTournament,
@@ -50,6 +51,11 @@ export function TournamentDetailPage() {
     handleDropPlayer,
     handleEditTorneio,
     handleDeleteTorneio,
+    handleInscreverTarde,
+    times,
+    selectedTimeId,
+    setSelectedTimeId,
+    loadPartidas,
     realtimeToast,
     corteInfo,
     dismissCorteInfo,
@@ -224,6 +230,7 @@ export function TournamentDetailPage() {
             usuario={usuario}
             onReportResult={handleReportResult}
             onContestResult={handleContestResult}
+            onConfirmResult={handleConfirmResult}
             actionLoading={actionLoading}
             torneio={torneio}
             isOwner={isOwner}
@@ -244,7 +251,11 @@ export function TournamentDetailPage() {
             onChooseDeck={handleChooseDeck}
             onCheckin={handleCheckin}
             onInscrever={handleInscrever}
+            onInscreverTarde={handleInscreverTarde}
             actionLoading={actionLoading}
+            times={times}
+            selectedTimeId={selectedTimeId}
+            onTimeChange={setSelectedTimeId}
           />
         );
 
@@ -267,8 +278,8 @@ export function TournamentDetailPage() {
             partidas={partidas}
             usuarioId={usuario?.id}
             isOwner={isOwner}
-            onContestResult={handleContestResult}
-            actionLoading={actionLoading}
+            token={token}
+            onPartidasUpdate={loadPartidas}
           />
         );
 

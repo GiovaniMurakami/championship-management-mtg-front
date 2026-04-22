@@ -155,8 +155,9 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               <button
                 className="inline-flex items-center gap-[0.3rem] px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold cursor-pointer transition-[background,border-color] duration-150 hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)]"
                 onClick={handleDownload}
+                title={`Salvar imagem do deck como PNG (${layout === "lista" ? "lista de cartas" : `visual ${ratio}`})`}
               >
-                ↓ Baixar PNG
+                ↓ Salvar imagem
               </button>
             )}
             {/* early-available indicator for list when images are still loading */}

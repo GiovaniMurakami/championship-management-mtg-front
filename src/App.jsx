@@ -6,7 +6,7 @@ import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 
-const BARE_ROUTES = ["/", "/blog", "/sobre-mim", "/parceiros"];
+const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
 
 /** Conecta eventos de rate-limit do interceptor ao ToastProvider. */
 function RateLimitBridge() {

@@ -46,6 +46,15 @@ const IconLiga = () => (
   </svg>
 );
 
+const IconTime = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
 const IconEdit = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -183,6 +192,20 @@ export function Navbar({
             Ligas
           </button>
         )}
+
+        {isAuthenticated ? (
+          <NavLink to="/times" className={desktopLinkClass} onClick={close}>
+            Times
+          </NavLink>
+        ) : (
+          <button
+            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
+            type="button"
+            onClick={() => { onOpenAuth("login"); close(); }}
+          >
+            Times
+          </button>
+        )}
       </nav>
 
       {/* Desktop auth */}
@@ -309,6 +332,22 @@ export function Navbar({
                 >
                   <IconLiga />
                   <span>Ligas</span>
+                </button>
+              )}
+
+              {isAuthenticated ? (
+                <NavLink to="/times" className={mobileLinkClass} onClick={close}>
+                  <IconTime />
+                  <span>Times</span>
+                </NavLink>
+              ) : (
+                <button
+                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
+                  type="button"
+                  onClick={() => { onOpenAuth("login"); close(); }}
+                >
+                  <IconTime />
+                  <span>Times</span>
                 </button>
               )}
             </nav>

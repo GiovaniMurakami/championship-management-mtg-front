@@ -11,7 +11,7 @@ export function LigaCreatePage({ editMode = false }) {
   const { token } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ nome: "", descricao: "" });
+  const [form, setForm] = useState({ nome: "", descricao: "", tipo: "individual" });
   const [torneiosDisponiveis, setTorneiosDisponiveis] = useState([]);
   const [torneiosSelecionados, setTorneiosSelecionados] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export function LigaCreatePage({ editMode = false }) {
       setTorneiosDisponiveis(torneiosData.torneios || []);
       if (ligaData) {
         const liga = ligaData.liga || ligaData;
-        setForm({ nome: liga.nome || "", descricao: liga.descricao || "" });
+        setForm({ nome: liga.nome || "", descricao: liga.descricao || "", tipo: liga.tipo || "individual" });
         const ids = (liga.torneios || []).map((t) => t.id ?? t);
         setTorneiosSelecionados(ids.map(String));
       }
@@ -142,6 +142,35 @@ export function LigaCreatePage({ editMode = false }) {
                   disabled={loading}
                   className={`${TOURNAMENT_INPUT_CLASS} resize-y min-h-[80px]`}
                 />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Tipo de Liga</label>
+                <div className="flex gap-3">
+                  {[
+                    { value: "individual", label: "Individual" },
+                    { value: "times", label: "Times" },
+                  ].map(({ value, label }) => (
+                    <label
+                      key={value}
+                      className={`flex items-center gap-2 flex-1 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
+                        form.tipo === value
+                          ? "border-[rgba(79,70,229,0.6)] bg-[rgba(79,70,229,0.12)]"
+                          : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="tipo"
+                        value={value}
+                        checked={form.tipo === value}
+                        onChange={handleChange}
+                        disabled={loading}
+                        className="accent-[#4f46e5]"
+                      />
+                      <span className="text-[#f5edff] text-[0.9rem] font-medium">{label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
 

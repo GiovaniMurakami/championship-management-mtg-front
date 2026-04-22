@@ -360,7 +360,9 @@ function DeckRow({ deck }) {
   const nome = deck.nome || "—";
   const usos = deck.totalUsos ?? 0;
   const wins = deck.vitorias ?? 0;
+  const losses = deck.derrotas ?? 0;
   const winRate = usos > 0 ? Math.round((wins / usos) * 100) : null;
+  const lossRate = usos > 0 ? Math.round((losses / usos) * 100) : null;
   const wr = winRateStyle(winRate);
 
   return (
@@ -382,9 +384,13 @@ function DeckRow({ deck }) {
         </div>
         <div className="text-right hidden min-[560px]:block">
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
-            Vitórias
+            V/D
           </p>
-          <p className="m-0 text-[0.88rem] font-semibold text-[#22c55e]">{wins}</p>
+          <p className="m-0 text-[0.88rem] font-semibold">
+            <span className="text-[#22c55e]">{wins}</span>
+            <span className="text-[rgba(190,175,215,0.4)] mx-[0.2rem]">/</span>
+            <span className="text-[#ef4444]">{losses}</span>
+          </p>
         </div>
         {winRate !== null && (
           <div className="text-right">
@@ -393,6 +399,16 @@ function DeckRow({ deck }) {
             </p>
             <p className="m-0 text-[0.88rem] font-semibold" style={{ color: wr.color }}>
               {winRate}%
+            </p>
+          </div>
+        )}
+        {lossRate !== null && (
+          <div className="text-right hidden min-[680px]:block">
+            <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
+              Loss%
+            </p>
+            <p className="m-0 text-[0.88rem] font-semibold text-[#ef4444]">
+              {lossRate}%
             </p>
           </div>
         )}
@@ -465,8 +481,12 @@ function SectionInfo({ count, label, hint }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 10;
+
 export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const [subAba, setSubAba] = useState("jogadores");
+  const [jogadoresPage, setJogadoresPage] = useState(1);
+  const [decksPage, setDecksPage] = useState(1);
   const [cardPreview, setCardPreview] = useState({
     visible: false,
     imageUrl: null,
@@ -533,7 +553,17 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const activeTab = tabs.find((t) => t.key === subAba) ? subAba : tabs[0]?.key ?? "jogadores";
 
   const top3 = jogadores.slice(0, Math.min(3, jogadores.length));
-  const resto = jogadores.slice(3);
+  const restoAll = jogadores.slice(3);
+  const restoTotal = restoAll.length;
+  const restoPages = Math.ceil(restoTotal / PAGE_SIZE);
+  const restoClamped = Math.min(jogadoresPage, restoPages || 1);
+  const resto = restoAll.slice((restoClamped - 1) * PAGE_SIZE, restoClamped * PAGE_SIZE);
+
+  const decksAll = decks;
+  const decksTotal = decksAll.length;
+  const decksPages = Math.ceil(decksTotal / PAGE_SIZE);
+  const decksClamped = Math.min(decksPage, decksPages || 1);
+  const decksPage_ = decksAll.slice((decksClamped - 1) * PAGE_SIZE, decksClamped * PAGE_SIZE);
   const userId = usuarioLogado?.id;
 
   const cardClass =
@@ -598,11 +628,11 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
           )}
 
           {/* Rest of ranking */}
-          {resto.length > 0 && (
+          {restoAll.length > 0 && (
             <div className={cardClass}>
               <SectionInfo
-                count={resto.length}
-                label={`jogador${resto.length !== 1 ? "es" : ""} restante${resto.length !== 1 ? "s" : ""}`}
+                count={restoTotal}
+                label={`jogador${restoTotal !== 1 ? "es" : ""} restante${restoTotal !== 1 ? "s" : ""}`}
                 hint="ordenado por pontos"
               />
               <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
@@ -610,11 +640,34 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                   <PlayerRow
                     key={j.jogador?.id ?? idx}
                     jogador={j}
-                    idx={idx + 3}
+                    idx={(restoClamped - 1) * PAGE_SIZE + idx + 3}
                     isLogado={Boolean(userId && j.jogador?.id === userId)}
                   />
                 ))}
               </ul>
+              {restoPages > 1 && (
+                <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
+                  <button
+                    type="button"
+                    className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                    onClick={() => setJogadoresPage((p) => Math.max(1, p - 1))}
+                    disabled={restoClamped <= 1}
+                  >
+                    ←
+                  </button>
+                  <span className="text-[0.8rem] text-[#beafd7]">
+                    {restoClamped} / {restoPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                    onClick={() => setJogadoresPage((p) => Math.min(restoPages, p + 1))}
+                    disabled={restoClamped >= restoPages}
+                  >
+                    →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -633,15 +686,38 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {activeTab === "decks" && (
         <div className={cardClass}>
           <SectionInfo
-            count={decks.length}
-            label={`arquétipo${decks.length !== 1 ? "s" : ""}`}
+            count={decksTotal}
+            label={`arquétipo${decksTotal !== 1 ? "s" : ""}`}
             hint="ordenado por usos"
           />
           <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
-            {decks.map((d, idx) => (
+            {decksPage_.map((d, idx) => (
               <DeckRow key={d.nome ?? idx} deck={d} />
             ))}
           </ul>
+          {decksPages > 1 && (
+            <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
+              <button
+                type="button"
+                className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                onClick={() => setDecksPage((p) => Math.max(1, p - 1))}
+                disabled={decksClamped <= 1}
+              >
+                ←
+              </button>
+              <span className="text-[0.8rem] text-[#beafd7]">
+                {decksClamped} / {decksPages}
+              </span>
+              <button
+                type="button"
+                className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                onClick={() => setDecksPage((p) => Math.min(decksPages, p + 1))}
+                disabled={decksClamped >= decksPages}
+              >
+                →
+              </button>
+            </div>
+          )}
         </div>
       )}
 

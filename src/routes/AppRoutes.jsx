@@ -22,6 +22,9 @@ const LandingBlogPage     = lazy(() => import("../pages/LandingBlogPage").then(m
 const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
 const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
+const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
+const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
+const TimeCreatePage      = lazy(() => import("../pages/TimeCreatePage").then(m => ({ default: m.TimeCreatePage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -31,8 +34,8 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/torneio" element={<Home onOpenAuth={openAuth} isAuthenticated={isAuthenticated} />} />
+        <Route path="/" element={<Home onOpenAuth={openAuth} isAuthenticated={isAuthenticated} />} />
+        <Route path="/torneio" element={<Navigate to="/" replace />} />
 
         <Route path="/decks" element={
           <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
@@ -54,6 +57,19 @@ export function AppRoutes() {
           <ProtectedRoute><TournamentDetailPage /></ProtectedRoute>
         } />
         <Route path="/torneio/ingressar/:token" element={<TournamentJoinPage />} />
+
+        <Route path="/times" element={
+          <ProtectedRoute><TimePage /></ProtectedRoute>
+        } />
+        <Route path="/times/criar" element={
+          <ProtectedRoute><TimeCreatePage editMode={false} /></ProtectedRoute>
+        } />
+        <Route path="/times/:id" element={
+          <ProtectedRoute><TimeDetailPage /></ProtectedRoute>
+        } />
+        <Route path="/times/:id/editar" element={
+          <ProtectedRoute><TimeCreatePage editMode={true} /></ProtectedRoute>
+        } />
 
         <Route path="/ligas" element={
           <ProtectedRoute><LigaPage /></ProtectedRoute>
