@@ -2,16 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { PageShell } from "../components/ui/PageShell";
+import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
-const inputClass =
-  "px-4 py-3 border-2 border-[#333] rounded-lg bg-white/[0.05] text-white text-base transition-all duration-300 focus:outline-none focus:border-[#4f46e5] focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] focus:bg-white/[0.1] placeholder:text-[#888]";
 
 export function LigaCreatePage({ editMode = false }) {
   const { id: ligaId } = useParams();
   const { token } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ nome: "", descricao: "" });
+  const [form, setForm] = useState({ nome: "", descricao: "", tipo: "individual" });
   const [torneiosDisponiveis, setTorneiosDisponiveis] = useState([]);
   const [torneiosSelecionados, setTorneiosSelecionados] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export function LigaCreatePage({ editMode = false }) {
       setTorneiosDisponiveis(torneiosData.torneios || []);
       if (ligaData) {
         const liga = ligaData.liga || ligaData;
-        setForm({ nome: liga.nome || "", descricao: liga.descricao || "" });
+        setForm({ nome: liga.nome || "", descricao: liga.descricao || "", tipo: liga.tipo || "individual" });
         const ids = (liga.torneios || []).map((t) => t.id ?? t);
         setTorneiosSelecionados(ids.map(String));
       }
@@ -81,17 +81,17 @@ export function LigaCreatePage({ editMode = false }) {
 
   if (loadingData) {
     return (
-      <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4">
+      <PageShell>
         <div className="animate-pulse max-w-[600px] mx-auto">
           <div className="h-8 w-48 bg-white/[0.06] rounded mb-8" />
           <div className="h-[400px] bg-white/[0.03] rounded-xl" />
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
+    <PageShell>
       <button
         className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
         type="button"
@@ -125,7 +125,7 @@ export function LigaCreatePage({ editMode = false }) {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className={inputClass}
+                  className={TOURNAMENT_INPUT_CLASS}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -140,8 +140,37 @@ export function LigaCreatePage({ editMode = false }) {
                   onChange={handleChange}
                   rows={3}
                   disabled={loading}
-                  className={`${inputClass} resize-y min-h-[80px]`}
+                  className={`${TOURNAMENT_INPUT_CLASS} resize-y min-h-[80px]`}
                 />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Tipo de Liga</label>
+                <div className="flex gap-3">
+                  {[
+                    { value: "individual", label: "Individual" },
+                    { value: "times", label: "Times" },
+                  ].map(({ value, label }) => (
+                    <label
+                      key={value}
+                      className={`flex items-center gap-2 flex-1 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
+                        form.tipo === value
+                          ? "border-[rgba(79,70,229,0.6)] bg-[rgba(79,70,229,0.12)]"
+                          : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="tipo"
+                        value={value}
+                        checked={form.tipo === value}
+                        onChange={handleChange}
+                        disabled={loading}
+                        className="accent-[#4f46e5]"
+                      />
+                      <span className="text-[#f5edff] text-[0.9rem] font-medium">{label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -206,6 +235,6 @@ export function LigaCreatePage({ editMode = false }) {
           </form>
         </div>
       </section>
-    </div>
+    </PageShell>
   );
 }

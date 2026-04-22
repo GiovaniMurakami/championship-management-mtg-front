@@ -10,3 +10,7 @@ export { LigaDetailPage } from "./LigaDetailPage";
 export { LigaCreatePage } from "./LigaCreatePage";
 export { EsqueciSenhaPage } from "./EsqueciSenhaPage";
 export { ResetSenhaPage } from "./ResetSenhaPage";
+export { TimePage } from "./TimePage";
+export { TimeDetailPage } from "./TimeDetailPage";
+export { TimeCreatePage } from "./TimeCreatePage";
+export { NotFoundPage } from "./NotFoundPage";

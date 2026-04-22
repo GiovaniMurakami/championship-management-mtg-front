@@ -6,15 +6,18 @@ import {
     escolherDeckTorneio,
     checkinTorneio,
     inscreverTorneio,
+    inscreverTardio,
     iniciarTorneio,
     registrarResultado,
     contestarResultado,
+    confirmarResultadoPartida,
     ajustarResultado,
     gerarLinkIngresso,
     buscarTorneio,
     proximaRodada,
     dropJogador,
     listarPartidasTorneio,
+    listarTimes,
     atualizarTorneio,
     deletarTorneio,
 } from "../services/backendApi";
@@ -45,6 +48,8 @@ export function useTournamentDetail() {
     const [droppingPlayerId, setDroppingPlayerId] = useState("");
     const [adminActionKey, setAdminActionKey] = useState("");
     const [selectedDeckId, setSelectedDeckId] = useState("");
+    const [selectedTimeId, setSelectedTimeId] = useState("");
+    const [times, setTimes] = useState([]);
     const [error, setError] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
     const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
@@ -96,6 +101,14 @@ export function useTournamentDetail() {
             const data = await buscarTorneio(torneioId, token);
             setTorneio(data);
             setPartidas(data.partidas || data.rodadaAtualPartidas || []);
+            if (data?.liga?.tipo === "times") {
+                try {
+                    const timesData = await listarTimes(token);
+                    setTimes(timesData.times || timesData || []);
+                } catch {
+                    // silently fail; times are optional
+                }
+            }
         } catch (err) {
             setError("Erro ao carregar dados do torneio.");
             console.error(err);
@@ -476,7 +489,8 @@ export function useTournamentDetail() {
         setActionLoading(true);
         setError("");
         try {
-            await inscreverTorneio(torneioId, token);
+            const payload = selectedTimeId ? { timeId: selectedTimeId } : {};
+            await inscreverTorneio(torneioId, token, payload);
             setSuccessMsg("Inscrição realizada com sucesso!");
             await loadTournament();
             await loadStandings();
@@ -493,6 +507,30 @@ export function useTournamentDetail() {
                 await loadTournament();
                 await loadStandings();
             }
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleInscreverTarde = async () => {
+        if (!torneioId) return;
+        if (!usuario?.nickMTGO) {
+            setError("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever.");
+            clearMessages();
+            return;
+        }
+        setActionLoading(true);
+        setError("");
+        try {
+            const payload = selectedTimeId ? { timeId: selectedTimeId } : {};
+            await inscreverTardio(torneioId, token, payload);
+            setSuccessMsg("Inscrição tardia realizada! Você recebeu um bye nesta rodada.");
+            await loadTournament();
+            await loadStandings();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao realizar inscrição tardia.");
             clearMessages();
         } finally {
             setActionLoading(false);
@@ -547,6 +585,27 @@ export function useTournamentDetail() {
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao contestar resultado.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleConfirmResult = async (partidaId) => {
+        if (!partidaId) return;
+        setActionLoading(true);
+        setError("");
+        try {
+            const data = await confirmarResultadoPartida(partidaId, token);
+            const updated = mergePartidaState({
+                id: partidaId,
+                ...(data?.partida || data),
+            });
+            setSuccessMsg("Resultado confirmado!");
+            if (!updated) await loadPartidas();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao confirmar resultado.");
             clearMessages();
         } finally {
             setActionLoading(false);
@@ -792,8 +851,13 @@ export function useTournamentDetail() {
         handleChooseDeck: guard(handleChooseDeck),
         handleCheckin: guard(handleCheckin),
         handleInscrever: guard(handleInscrever),
+        handleInscreverTarde: guard(handleInscreverTarde),
+        times,
+        selectedTimeId,
+        setSelectedTimeId,
         handleReportResult: guard(handleReportResult),
         handleContestResult: guard(handleContestResult),
+        handleConfirmResult: guard(handleConfirmResult),
         handleAdjustResult: guard(handleAdjustResult),
         handleGerarLinkIngresso,
         handleStartTournament: guard(handleStartTournament),
@@ -802,6 +866,7 @@ export function useTournamentDetail() {
         handleDropPlayer: guard(handleDropPlayer),
         handleEditTorneio: guard(handleEditTorneio),
         handleDeleteTorneio: guard(handleDeleteTorneio),
+        loadPartidas,
         realtimeToast,
         corteInfo,
         dismissCorteInfo,

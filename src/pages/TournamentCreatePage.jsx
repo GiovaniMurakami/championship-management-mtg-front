@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { TournamentCreateForm } from "../components";
+import { PageShell } from "../components/ui/PageShell";
 
 function addOneWeek(dateStr) {
   if (!dateStr) return "";
@@ -37,7 +38,7 @@ export function TournamentCreatePage() {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 pt-[7.5rem] pb-12 max-[768px]:px-4 max-[768px]:pt-[6.5rem]">
+    <PageShell>
       <button
         className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
         type="button"
@@ -57,6 +58,6 @@ export function TournamentCreatePage() {
       )}
 
       <TournamentCreateForm token={token} onTournamentCreated={handleTournamentCreated} initialValues={initialValues} />
-    </div>
+    </PageShell>
   );
 }

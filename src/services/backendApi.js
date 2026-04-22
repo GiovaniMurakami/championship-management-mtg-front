@@ -66,8 +66,8 @@ export const buscarTorneio = (torneioId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const inscreverTorneio = (torneioId, token) =>
-  httpClient.post(`/torneio/${torneioId}/inscrever`, {}, {
+export const inscreverTorneio = (torneioId, token, payload = {}) =>
+  httpClient.post(`/torneio/${torneioId}/inscrever`, payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -179,6 +179,87 @@ export const deletarLiga = (ligaId, token) =>
 
 export const getRankingLiga = (ligaId, token) =>
   httpClient.get(`/liga/${ligaId}/ranking`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// Times
+export const criarTime = (payload, token) =>
+  httpClient.post("/time/criar", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const listarTimes = (token) =>
+  httpClient.get("/time/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarTime = (timeId, token) =>
+  httpClient.get(`/time/${timeId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const atualizarTime = (timeId, payload, token) =>
+  httpClient.put(`/time/${timeId}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deletarTime = (timeId, token) =>
+  httpClient.delete(`/time/${timeId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const entrarNoTime = (timeId, token) =>
+  httpClient.post(`/time/${timeId}/entrar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const sairDoTime = (timeId, token) =>
+  httpClient.post(`/time/${timeId}/sair`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const gerarConviteTime = (timeId, token) =>
+  httpClient.post(`/time/${timeId}/gerar-convite`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const entrarPorConvite = (conviteToken, token) =>
+  httpClient.post("/time/entrar-por-convite", { conviteToken }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const solicitarEntradaTime = (timeId, token) =>
+  httpClient.post(`/time/${timeId}/solicitar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const aprovarSolicitacao = (timeId, usuarioId, token) =>
+  httpClient.post(`/time/${timeId}/aprovar/${usuarioId}`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const rejeitarSolicitacao = (timeId, usuarioId, token) =>
+  httpClient.post(`/time/${timeId}/rejeitar/${usuarioId}`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getRankingTimesLiga = (ligaId, token) =>
+  httpClient.get(`/liga/${ligaId}/ranking-times`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const confirmarResultadoPartida = (partidaId, token) =>
+  httpClient.post(`/torneio/partida/${partidaId}/confirmar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const editarMesaPartida = (partidaId, mesa, token) =>
+  httpClient.patch(`/torneio/partida/${partidaId}/mesa`, { mesa }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const inscreverTardio = (torneioId, token, payload = {}) =>
+  httpClient.post(`/torneio/${torneioId}/inscrever-tarde`, payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

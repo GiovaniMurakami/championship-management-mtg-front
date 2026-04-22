@@ -37,11 +37,18 @@ export function TournamentSection() {
 
   useEffect(() => {
     if (!token) return;
-    setLoading(true);
-    listarTorneios(token)
-      .then((data) => setTorneios(data.torneios || []))
-      .catch((error) => console.error("Erro ao carregar torneios:", error))
-      .finally(() => setLoading(false));
+    const load = async () => {
+      setLoading(true);
+      try {
+        const data = await listarTorneios(token);
+        setTorneios(data.torneios || []);
+      } catch (error) {
+        console.error("Erro ao carregar torneios:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [token]);
 
   const formatDate = (dateString) =>
