@@ -34,7 +34,9 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<Home onOpenAuth={openAuth} isAuthenticated={isAuthenticated} />} />
+        <Route path="/" element={
+          <ProtectedRoute><TournamentPage /></ProtectedRoute>
+        } />
         <Route path="/torneio" element={<Navigate to="/" replace />} />
 
         <Route path="/decks" element={

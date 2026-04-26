@@ -9,6 +9,32 @@ import { SkeletonTorneioCard } from "../components";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
+import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { SponsorSection } from "../components/ui/SponsorSection";
+
+function PlatformStats() {
+  return (
+    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-[rgba(217,180,255,0.1)] bg-white/[0.02]">
+      {[
+        { value: "50+", label: "Torneios realizados" },
+        { value: "200+", label: "Jogadores ativos" },
+        { value: "6", label: "Formatos suportados" },
+      ].map((stat, i, arr) => (
+        <div key={stat.label} className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#c795ff] leading-none">
+              {stat.value}
+            </span>
+            <span className="text-[#beafd7] text-[0.7rem]">{stat.label}</span>
+          </div>
+          {i < arr.length - 1 && (
+            <div className="w-px h-7 bg-[rgba(217,180,255,0.15)]" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function TournamentPage() {
   const { token, usuario, isAdmin } = useAuth();
@@ -122,6 +148,9 @@ export function TournamentPage() {
 
   return (
     <PageShell>
+      <SponsorSection />
+      <PlatformStats />
+
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6 max-[768px]:mb-5">
         <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">
@@ -146,7 +175,7 @@ export function TournamentPage() {
       {/* List */}
       <section className="mt-6">
         {loading ? (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5 mb-8">
+          <div className="grid grid-cols-1 min-[700px]:grid-cols-2 gap-5 mb-8">
             {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
           </div>
         ) : torneiosExibidos.length === 0 ? (
@@ -156,7 +185,7 @@ export function TournamentPage() {
               : "Nenhum torneio anterior encontrado."}
           </p>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5 mb-8 max-[768px]:grid-cols-1">
+          <div className="grid grid-cols-1 min-[700px]:grid-cols-2 gap-5 mb-8">
             {torneiosExibidos.map((torneio) => {
               const inscrito = isInscrito(torneio);
               return (

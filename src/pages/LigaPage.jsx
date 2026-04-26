@@ -5,12 +5,14 @@ import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 
+const LIMITE = 20;
 
 export function LigaPage() {
   const { token, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [ligas, setLigas] = useState([]);
-  // const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -19,16 +21,17 @@ export function LigaPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const data = await listarLigas(token);
+      const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };
+      const data = await listarLigas(token, params);
       const list = data.ligas ?? (Array.isArray(data) ? data : []);
       setLigas(list);
-      // setTotal(data.total ?? list.length);
+      setTotal(data.total ?? list.length);
     } catch (err) {
       console.error("Erro ao carregar ligas:", err);
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, pagina]);
 
   useEffect(() => {
     loadLigas();
@@ -46,6 +49,8 @@ export function LigaPage() {
       setConfirmDeleteId(null);
     }
   };
+
+  const totalPaginas = Math.ceil(total / LIMITE) || 1;
 
   return (
     <PageShell>
@@ -67,11 +72,16 @@ export function LigaPage() {
       {loading ? (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-[1.1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] h-[180px] animate-pulse" />
+            <div
+              key={i}
+              className="rounded-[1.1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] h-[180px] animate-pulse"
+            />
           ))}
         </div>
       ) : ligas.length === 0 ? (
-        <p className="text-center text-[#888] py-12 text-base">Nenhuma liga encontrada.</p>
+        <p className="text-center text-[#888] py-12 text-base">
+          Nenhuma liga encontrada.
+        </p>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5 max-[768px]:grid-cols-1">
           {ligas.map((liga) => (
@@ -84,11 +94,20 @@ export function LigaPage() {
                   <h3 className="text-[#f5edff] m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.03em] leading-[1.1]">
                     {liga.nome}
                   </h3>
-                  {liga.status && (
-                    <span className={`inline-block px-[0.55rem] py-[0.18rem] rounded-full text-[0.68rem] font-semibold uppercase tracking-[0.04em] flex-shrink-0 mt-[0.25rem] ${STATUS_BADGE_CLASS[liga.status] ?? ""}`}>
-                      {STATUS_LABEL[liga.status] ?? liga.status}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0 mt-[0.25rem]">
+                    {liga.tipo && (
+                      <span className="inline-block px-[0.5rem] py-[0.15rem] rounded-full text-[0.67rem] font-semibold uppercase tracking-[0.04em] bg-[rgba(167,79,255,0.12)] text-[#c795ff] border border-[rgba(167,79,255,0.25)]">
+                        {liga.tipo}
+                      </span>
+                    )}
+                    {liga.status && (
+                      <span
+                        className={`inline-block px-[0.55rem] py-[0.18rem] rounded-full text-[0.68rem] font-semibold uppercase tracking-[0.04em] ${STATUS_BADGE_CLASS[liga.status] ?? ""}`}
+                      >
+                        {STATUS_LABEL[liga.status] ?? liga.status}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {liga.descricao && (
                   <p className="text-[#beafd7] text-[0.875rem] m-0 mb-3 leading-relaxed line-clamp-2">
@@ -97,7 +116,15 @@ export function LigaPage() {
                 )}
                 <div className="flex items-center gap-3 flex-wrap text-[#beafd7] text-[0.8rem]">
                   <span className="flex items-center gap-[0.35rem]">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="rgba(167,79,255,0.7)"
+                      strokeWidth="2.5"
+                      aria-hidden="true"
+                    >
                       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
                       <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
                       <path d="M4 22h16" />
@@ -141,15 +168,44 @@ export function LigaPage() {
         </div>
       )}
 
+      {/* Paginação */}
+      {!loading && totalPaginas > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-8">
+          <button
+            onClick={() => setPagina((p) => Math.max(1, p - 1))}
+            disabled={pagina === 1}
+            className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+          >
+            ←
+          </button>
+          <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center">
+            {pagina} / {totalPaginas}
+          </span>
+          <button
+            onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+            disabled={pagina === totalPaginas}
+            className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+          >
+            →
+          </button>
+        </div>
+      )}
+
       {confirmDeleteId && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-[fade-in_200ms_ease-out]"
-          onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteId(null); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmDeleteId(null);
+          }}
         >
           <div className="bg-[#110a22] border border-[rgba(239,68,68,0.3)] rounded-2xl w-full max-w-[420px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out]">
             <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-3">Excluir liga</h3>
             <p className="text-[#beafd7] text-[0.9rem] m-0 mb-6">
-              Tem certeza que deseja excluir <strong className="text-white">{ligas.find((l) => l.id === confirmDeleteId)?.nome}</strong>? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir{" "}
+              <strong className="text-white">
+                {ligas.find((l) => l.id === confirmDeleteId)?.nome}
+              </strong>
+              ? Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3 justify-end">
               <button
