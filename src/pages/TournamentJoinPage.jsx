@@ -207,7 +207,7 @@ export function TournamentJoinPage() {
                                     <div className="text-center">
                                         <p className="text-[0.82rem] text-[#beafd7] mb-4">
                                             Você não tem decks cadastrados.{" "}
-                                            <a href="/decks" className="text-[#c795ff] underline">Criar deck</a>
+                                            <a href="/decks/criar" className="text-[#c795ff] underline">Criar deck</a>
                                         </p>
                                         <button
                                             type="button"

@@ -133,7 +133,6 @@ export function StandingsTable({
                         />
                       )}
                       <span className="truncate">{getPlayerName(player)}</span>
-                      {player.dropped && <span className="text-[0.62rem] font-bold text-[#f87171] ml-1">DROP</span>}
                     </span>
                     <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-[#beafd7]"}`}>
                       {isRegistrationOpen ? "—" : pts}
@@ -252,7 +251,6 @@ export function StandingsTable({
                               />
                             )}
                             <span>{getPlayerName(player)}</span>
-                            {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                           </span>
                         </td>
                         {!isRegistrationOpen && (
@@ -358,7 +356,6 @@ export function StandingsTable({
                           />
                         )}
                         <span>{getPlayerName(player)}</span>
-                        {player.dropped && <span className="text-[0.65rem] font-bold text-[#f87171] tracking-[0.05em]"> DROP</span>}
                       </span>
                       {!isRegistrationOpen && (
                         <span className={`font-bold text-[0.82rem] ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>

@@ -27,10 +27,10 @@ export const cadastrarDeck = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarDecks = (token, usuarioId) =>
+export const listarDecks = (token, params) =>
   httpClient.get("/deck/listar", {
     headers: { Authorization: `Bearer ${token}` },
-    params: usuarioId ? { usuarioId } : undefined,
+    params,
   });
 
 // Usuário
@@ -56,9 +56,10 @@ export const criarTorneio = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarTorneios = (token) =>
+export const listarTorneios = (token, params) =>
   httpClient.get("/torneio/listar", {
     headers: { Authorization: `Bearer ${token}` },
+    params,
   });
 
 export const buscarTorneio = (torneioId, token) =>
@@ -157,9 +158,10 @@ export const criarLiga = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarLigas = (token) =>
+export const listarLigas = (token, params) =>
   httpClient.get("/liga/listar", {
     headers: { Authorization: `Bearer ${token}` },
+    params,
   });
 
 export const buscarLiga = (ligaId, token) =>
@@ -188,9 +190,10 @@ export const criarTime = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarTimes = (token) =>
+export const listarTimes = (token, params) =>
   httpClient.get("/time/listar", {
     headers: { Authorization: `Bearer ${token}` },
+    params,
   });
 
 export const buscarTime = (timeId, token) =>
