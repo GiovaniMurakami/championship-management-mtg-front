@@ -162,7 +162,7 @@ export function Navbar({
         )}
 
         {isAuthenticated ? (
-          <NavLink to="/meus-decks" className={desktopLinkClass} onClick={close}>
+          <NavLink to="/decks" className={desktopLinkClass} onClick={close}>
             Decks
           </NavLink>
         ) : (
@@ -295,7 +295,7 @@ export function Navbar({
               )}
 
               {isAuthenticated ? (
-                <NavLink to="/meus-decks" className={mobileLinkClass} onClick={close}>
+                <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
                   <IconDeck />
                   <span>Meus Decks</span>
                 </NavLink>

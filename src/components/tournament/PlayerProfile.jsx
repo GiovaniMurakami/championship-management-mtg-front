@@ -165,7 +165,7 @@ export function PlayerProfile({
                     )}
 
                     {decks.length === 0 ? (
-                        <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Você não tem decks cadastrados. <a href="/decks" className="text-[#c795ff] underline">Criar deck</a></p>
+                        <p className="text-[0.8rem] text-[#beafd7] mt-[0.25rem]">Você não tem decks cadastrados. <a href="/decks/criar" className="text-[#c795ff] underline">Criar deck</a></p>
                     ) : (
                         <>
                             <div className="flex items-center gap-2 mb-[0.35rem]">

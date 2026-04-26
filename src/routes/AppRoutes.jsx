@@ -40,10 +40,10 @@ export function AppRoutes() {
         <Route path="/torneio" element={<Navigate to="/" replace />} />
 
         <Route path="/decks" element={
-          <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
-        } />
-        <Route path="/meus-decks" element={
           <ProtectedRoute><MyDecksPage /></ProtectedRoute>
+        } />
+        <Route path="/decks/criar" element={
+          <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
         } />
         <Route path="/editar-deck/:id" element={
           <ProtectedRoute><DeckBuilderPage isEditMode={true} /></ProtectedRoute>
