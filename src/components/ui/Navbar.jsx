@@ -147,10 +147,6 @@ export function Navbar({
 
       {/* Desktop nav */}
       <nav className="flex items-center gap-4 max-nav:hidden" aria-label="Navegação principal">
-        <NavLink to="/torneio" end className={desktopLinkClass} onClick={close}>
-          Home
-        </NavLink>
-
         {isAuthenticated ? (
           <NavLink to="/torneios" className={desktopLinkClass} onClick={close}>
             Torneios
@@ -166,7 +162,7 @@ export function Navbar({
         )}
 
         {isAuthenticated ? (
-          <NavLink to="/meus-decks" className={desktopLinkClass} onClick={close}>
+          <NavLink to="/decks" className={desktopLinkClass} onClick={close}>
             Decks
           </NavLink>
         ) : (
@@ -282,11 +278,6 @@ export function Navbar({
             aria-label="Menu de navegação"
           >
             <nav className="flex flex-col gap-[0.2rem]">
-              <NavLink to="/torneio" end className={mobileLinkClass} onClick={close}>
-                <IconHome />
-                <span>Home</span>
-              </NavLink>
-
               {isAuthenticated ? (
                 <NavLink to="/torneios" className={mobileLinkClass} onClick={close}>
                   <IconTrophy />
@@ -304,7 +295,7 @@ export function Navbar({
               )}
 
               {isAuthenticated ? (
-                <NavLink to="/meus-decks" className={mobileLinkClass} onClick={close}>
+                <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
                   <IconDeck />
                   <span>Meus Decks</span>
                 </NavLink>

@@ -79,7 +79,7 @@ export function TimeCreatePage({ editMode = false }) {
         navigate("/times");
       }
     } catch (err) {
-      setError(err?.userMessage || (editMode ? "Erro ao atualizar time." : "Erro ao criar time."));
+      setError(err?.message || err?.userMessage || (editMode ? "Erro ao atualizar time." : "Erro ao criar time."));
       console.error(err);
     } finally {
       setLoading(false);

@@ -14,7 +14,7 @@ export function useMyDecks(token, usuarioId) {
     setMessage("");
 
     try {
-      const data = await listarDecks(token, usuarioId);
+      const data = await listarDecks(token, usuarioId ? { usuarioId } : undefined);
       const list = data.decks ?? (Array.isArray(data) ? data : []);
       setDecks(list);
       setTotal(data.total ?? list.length);
