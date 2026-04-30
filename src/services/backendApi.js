@@ -56,11 +56,30 @@ export const criarTorneio = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarTorneios = (token, params) =>
-  httpClient.get("/torneio/listar", {
+const buildTorneioListQuery = (params) => {
+  if (!params) return "";
+
+  if (params instanceof URLSearchParams) {
+    return params.toString();
+  }
+
+  const queryParams = new URLSearchParams();
+  if (params.dataInicio) queryParams.set("dataInicio", params.dataInicio);
+  if (params.dataFim) queryParams.set("dataFim", params.dataFim);
+  if (params.status) queryParams.set("status", params.status);
+  if (params.nome) queryParams.set("nome", params.nome);
+  if (params.limite) queryParams.set("limite", String(params.limite));
+  if (params.offset) queryParams.set("offset", String(params.offset));
+  return queryParams.toString();
+};
+
+export const listarTorneios = (token, params) => {
+  const query = buildTorneioListQuery(params);
+
+  return httpClient.get(`/torneio/listar${query ? `?${query}` : ""}`, {
     headers: { Authorization: `Bearer ${token}` },
-    params,
   });
+};
 
 export const buscarTorneio = (torneioId, token) =>
   httpClient.get(`/torneio/${torneioId}`, {

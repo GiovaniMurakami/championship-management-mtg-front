@@ -148,7 +148,7 @@ export function Navbar({
       {/* Desktop nav */}
       <nav className="flex items-center gap-4 max-nav:hidden" aria-label="Navegação principal">
         {isAuthenticated ? (
-          <NavLink to="/torneios" className={desktopLinkClass} onClick={close}>
+          <NavLink to="/" className={desktopLinkClass} onClick={close}>
             Torneios
           </NavLink>
         ) : (
@@ -279,7 +279,7 @@ export function Navbar({
           >
             <nav className="flex flex-col gap-[0.2rem]">
               {isAuthenticated ? (
-                <NavLink to="/torneios" className={mobileLinkClass} onClick={close}>
+                <NavLink to="/" className={mobileLinkClass} onClick={close}>
                   <IconTrophy />
                   <span>Torneios</span>
                 </NavLink>
