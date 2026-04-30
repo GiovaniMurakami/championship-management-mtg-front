@@ -11,6 +11,6 @@ export function ProtectedRoute({ requireAdmin = false, children }) {
     </div>
   );
   if (!isAuthenticated) return <Navigate to="/" replace />;
-  if (requireAdmin && !isAdmin) return <Navigate to="/torneios" replace />;
+  if (requireAdmin && !isAdmin) return <Navigate to="/" replace />;
   return children;
 }

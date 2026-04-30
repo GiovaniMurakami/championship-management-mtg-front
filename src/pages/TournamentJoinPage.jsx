@@ -65,7 +65,7 @@ export function TournamentJoinPage() {
         if (torneioId) {
             navigate(`/torneios/${torneioId}`);
         } else {
-            navigate("/torneios");
+            navigate("/");
         }
     };
 
@@ -212,7 +212,7 @@ export function TournamentJoinPage() {
                                         <button
                                             type="button"
                                             className="inline-flex items-center justify-center px-5 py-[0.65rem] border border-[rgba(217,180,255,0.3)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#beafd7] bg-transparent hover:bg-white/[0.06] hover:text-white"
-                                            onClick={() => navigate("/torneios")}
+                                            onClick={() => navigate("/")}
                                         >
                                             Voltar para torneios
                                         </button>
@@ -270,7 +270,7 @@ export function TournamentJoinPage() {
                                 <button
                                     type="button"
                                     className="inline-flex items-center justify-center px-5 py-[0.65rem] border border-[rgba(217,180,255,0.3)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#beafd7] bg-transparent hover:bg-white/[0.06] hover:text-white"
-                                    onClick={() => navigate("/torneios")}
+                                    onClick={() => navigate("/")}
                                 >
                                     Ver torneios
                                 </button>

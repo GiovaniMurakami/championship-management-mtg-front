@@ -1,9 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { ProtectedRoute } from "../components";
 import { Spinner } from "../components/ui/Spinner";
-import { Home } from "../pages/Home";
 
 // Rotas lazy-loaded — cada rota gera um chunk separado pelo Vite
 const DeckBuilderPage     = lazy(() => import("../pages/DeckBuilderPage").then(m => ({ default: m.DeckBuilderPage })));
@@ -29,8 +27,6 @@ const TimeCreatePage      = lazy(() => import("../pages/TimeCreatePage").then(m 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
 export function AppRoutes() {
-  const { isAuthenticated, openAuth } = useAuth();
-
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
@@ -49,9 +45,7 @@ export function AppRoutes() {
           <ProtectedRoute><DeckBuilderPage isEditMode={true} /></ProtectedRoute>
         } />
 
-        <Route path="/torneios" element={
-          <ProtectedRoute><TournamentPage /></ProtectedRoute>
-        } />
+        <Route path="/torneios" element={<Navigate to="/" replace />} />
         <Route path="/torneios/criar" element={
           <ProtectedRoute requireAdmin><TournamentCreatePage /></ProtectedRoute>
         } />
