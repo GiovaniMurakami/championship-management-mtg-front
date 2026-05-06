@@ -23,6 +23,9 @@ function getInitials(nome) {
   return nome.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
+const getTotalMembros = (time) =>
+  time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? null;
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-3">
@@ -109,8 +112,8 @@ export function LigaRankingTimesSection({ ranking, loading }) {
                 <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd] block">
                   {nome}
                 </span>
-                {time.totalMembros != null && (
-                  <span className="text-[0.72rem] text-[rgba(190,175,215,0.45)]">{time.totalMembros} membros</span>
+                {getTotalMembros(time) != null && (
+                  <span className="text-[0.72rem] text-[rgba(190,175,215,0.45)]">{getTotalMembros(time)} membros</span>
                 )}
               </div>
 
