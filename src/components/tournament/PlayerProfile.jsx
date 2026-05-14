@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+const getTotalMembros = (time) =>
+    time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? 0;
+
 export function PlayerProfile({
     torneio,
     usuario,
@@ -140,7 +143,7 @@ export function PlayerProfile({
                                     >
                                         <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{time.nome}</span>
                                         <span className="text-[0.7rem] text-[#beafd7] flex-shrink-0">
-                                            {time.totalMembros ?? time.membros?.length ?? 0} membros
+                                            {getTotalMembros(time)} membros
                                         </span>
                                     </button>
                                 ))}

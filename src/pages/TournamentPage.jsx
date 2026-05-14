@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { normalizeId } from "../utils/normalizeId";
 import { listarTorneios, inscreverTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { SkeletonTorneioCard } from "../components";
+import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
@@ -42,7 +43,9 @@ export function TournamentPage() {
   const [torneios, setTorneios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [inscricoesLocais, setInscricoesLocais] = useState({});
-  const [abaAtiva, setAbaAtiva] = useState("disponiveis");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialAba = searchParams.get("aba") === "anteriores" ? "anteriores" : "disponiveis";
+  const [abaAtiva, setAbaAtiva] = useState(initialAba);
   const channelsRef = useRef({});
   const navigate = useNavigate();
 
@@ -62,6 +65,15 @@ export function TournamentPage() {
   useEffect(() => {
     loadTorneios();
   }, [loadTorneios]);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (abaAtiva === "anteriores") nextParams.set("aba", "anteriores");
+    else nextParams.delete("aba");
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [abaAtiva, searchParams, setSearchParams]);
 
   const handleRodadaIniciada = useCallback(() => {
     loadTorneios();
@@ -179,11 +191,19 @@ export function TournamentPage() {
             {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
           </div>
         ) : torneiosExibidos.length === 0 ? (
-          <p className="text-center text-[#888] py-12 text-base">
-            {abaAtiva === "disponiveis"
-              ? "Nenhum torneio disponível no momento."
-              : "Nenhum torneio anterior encontrado."}
-          </p>
+          <EmptyState
+            title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio anterior encontrado"}
+            description={abaAtiva === "disponiveis" ? "Quando houver torneios abertos ou em andamento, eles aparecerão aqui." : "Torneios finalizados ficarão disponíveis nesta aba."}
+            action={isAdmin && abaAtiva === "disponiveis" && (
+              <button
+                type="button"
+                onClick={() => navigate("/torneios/criar")}
+                className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] font-semibold hover:bg-[#4f46e5] hover:text-white transition-colors"
+              >
+                Criar torneio
+              </button>
+            )}
+          />
         ) : (
           <div className="grid grid-cols-1 min-[700px]:grid-cols-2 gap-5 mb-8">
             {torneiosExibidos.map((torneio) => {
@@ -199,6 +219,8 @@ export function TournamentPage() {
                       <img
                         src={torneio.bannerUrl}
                         alt={`Banner de ${torneio.nome}`}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(16,10,32,0.9)]" />

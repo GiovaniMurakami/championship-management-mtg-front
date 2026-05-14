@@ -1,28 +1,60 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
+import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
+const buildTorneiosParams = ({ dataInicio, dataFim }) => {
+  const params = new URLSearchParams();
+  if (dataInicio) params.set("dataInicio", dataInicio);
+  if (dataFim) params.set("dataFim", dataFim);
+  return params;
+};
 
 export function LigaCreatePage({ editMode = false }) {
   const { id: ligaId } = useParams();
   const { token } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [form, setForm] = useState({ nome: "", descricao: "", tipo: "individual" });
+  const [filtrosTorneio, setFiltrosTorneio] = useState({
+    dataInicio: searchParams.get("dataInicio") || "",
+    dataFim: searchParams.get("dataFim") || "",
+  });
+  const filtrosIniciaisRef = useRef(filtrosTorneio);
   const [torneiosDisponiveis, setTorneiosDisponiveis] = useState([]);
   const [torneiosSelecionados, setTorneiosSelecionados] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(editMode);
+  const [loadingTorneios, setLoadingTorneios] = useState(false);
   const [error, setError] = useState("");
+  const [filterError, setFilterError] = useState("");
+
+  const carregarTorneios = useCallback(async (params) => {
+    if (!token) return;
+    setLoadingTorneios(true);
+    try {
+      const torneiosData = await listarTorneios(token, params);
+      setTorneiosDisponiveis(torneiosData.torneios || []);
+    } catch (err) {
+      console.error("Erro ao carregar torneios:", err);
+      setError("Erro ao carregar torneios.");
+    } finally {
+      setLoadingTorneios(false);
+    }
+  }, [token]);
 
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
+      const torneiosParams = buildTorneiosParams(filtrosIniciaisRef.current);
       const [torneiosData, ligaData] = await Promise.all([
-        listarTorneios(token),
+        listarTorneios(token, torneiosParams),
         editMode && ligaId ? buscarLiga(ligaId, token) : Promise.resolve(null),
       ]);
       setTorneiosDisponiveis(torneiosData.torneios || []);
@@ -49,10 +81,72 @@ export function LigaCreatePage({ editMode = false }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFiltroChange = (e) => {
+    const { name, value } = e.target;
+    setFiltrosTorneio((prev) => ({ ...prev, [name]: value }));
+    setFilterError("");
+  };
+
+  const handleFiltrarTorneios = async () => {
+    const { dataInicio, dataFim } = filtrosTorneio;
+    setFilterError("");
+    setError("");
+
+    if (dataInicio && dataFim && dataInicio > dataFim) {
+      setFilterError("A data inicial não pode ser maior que a data final.");
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    if (dataInicio) nextParams.set("dataInicio", dataInicio);
+    else nextParams.delete("dataInicio");
+    if (dataFim) nextParams.set("dataFim", dataFim);
+    else nextParams.delete("dataFim");
+    setSearchParams(nextParams, { replace: true });
+    await carregarTorneios(buildTorneiosParams(filtrosTorneio));
+  };
+
+  const handleLimparFiltrosTorneio = async () => {
+    setFiltrosTorneio({ dataInicio: "", dataFim: "" });
+    setFilterError("");
+    setError("");
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("dataInicio");
+    nextParams.delete("dataFim");
+    setSearchParams(nextParams, { replace: true });
+    await carregarTorneios();
+  };
+
   const toggleTorneio = (id) => {
     const strId = String(id);
     setTorneiosSelecionados((prev) =>
       prev.includes(strId) ? prev.filter((t) => t !== strId) : [...prev, strId]
+    );
+  };
+
+  const handleAdicionarTodosFiltrados = () => {
+    const idsFiltrados = torneiosDisponiveis.map((torneio) => String(torneio.id));
+    const next = Array.from(new Set([...torneiosSelecionados, ...idsFiltrados]));
+    const adicionados = next.length - torneiosSelecionados.length;
+    setTorneiosSelecionados(next);
+    addToast(
+      adicionados > 0
+        ? `${adicionados} torneio(s) filtrado(s) adicionados.`
+        : "Todos os torneios filtrados já estavam selecionados.",
+      { type: adicionados > 0 ? "success" : "info" },
+    );
+  };
+
+  const handleRemoverTodosFiltrados = () => {
+    const idsFiltrados = new Set(torneiosDisponiveis.map((torneio) => String(torneio.id)));
+    const next = torneiosSelecionados.filter((id) => !idsFiltrados.has(id));
+    const removidos = torneiosSelecionados.length - next.length;
+    setTorneiosSelecionados(next);
+    addToast(
+      removidos > 0
+        ? `${removidos} torneio(s) filtrado(s) removidos.`
+        : "Nenhum torneio filtrado estava selecionado.",
+      { type: removidos > 0 ? "success" : "info" },
     );
   };
 
@@ -70,9 +164,11 @@ export function LigaCreatePage({ editMode = false }) {
       } else {
         await criarLiga(payload, token);
       }
+      addToast(editMode ? "Liga atualizada com sucesso." : "Liga criada com sucesso.", { type: "success" });
       navigate("/ligas");
     } catch (err) {
       setError(editMode ? "Erro ao atualizar liga." : "Erro ao criar liga.");
+      addToast(editMode ? "Erro ao atualizar liga." : "Erro ao criar liga.", { type: "error" });
       console.error(err);
     } finally {
       setLoading(false);
@@ -179,8 +275,91 @@ export function LigaCreatePage({ editMode = false }) {
               <h3 className="text-[0.78rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 mb-1 pb-2 border-b border-[rgba(79,70,229,0.18)]">
                 Torneios <span className="text-[#beafd7] text-[0.75rem] normal-case tracking-normal font-normal">(opcional)</span>
               </h3>
-              {torneiosDisponiveis.length === 0 ? (
-                <p className="text-[#888] text-[0.875rem] m-0">Nenhum torneio disponível.</p>
+              <div className="grid grid-cols-1 min-[560px]:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="torneio-data-inicio" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                    Data inicial
+                  </label>
+                  <input
+                    id="torneio-data-inicio"
+                    name="dataInicio"
+                    type="date"
+                    value={filtrosTorneio.dataInicio}
+                    onChange={handleFiltroChange}
+                    disabled={loading || loadingTorneios}
+                    className={TOURNAMENT_INPUT_CLASS}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="torneio-data-fim" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                    Data final
+                  </label>
+                  <input
+                    id="torneio-data-fim"
+                    name="dataFim"
+                    type="date"
+                    value={filtrosTorneio.dataFim}
+                    onChange={handleFiltroChange}
+                    disabled={loading || loadingTorneios}
+                    className={TOURNAMENT_INPUT_CLASS}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleFiltrarTorneios}
+                  disabled={loading || loadingTorneios}
+                  className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loadingTorneios ? "Filtrando..." : "Filtrar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLimparFiltrosTorneio}
+                  disabled={loading || loadingTorneios}
+                  className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.18)] bg-white/[0.03] text-[#beafd7] cursor-pointer font-semibold transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.06] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Limpar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAdicionarTodosFiltrados}
+                  disabled={loading || loadingTorneios || torneiosDisponiveis.length === 0}
+                  className="px-4 py-2 rounded-lg border border-[rgba(34,197,94,0.45)] bg-[rgba(34,197,94,0.1)] text-[#86efac] cursor-pointer font-semibold transition-all duration-200 hover:bg-[rgba(34,197,94,0.18)] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Adicionar todos
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoverTodosFiltrados}
+                  disabled={loading || loadingTorneios || torneiosDisponiveis.length === 0}
+                  className="px-4 py-2 rounded-lg border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.07)] text-[#fca5a5] cursor-pointer font-semibold transition-all duration-200 hover:bg-[rgba(239,68,68,0.16)] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Remover filtrados
+                </button>
+              </div>
+              {filterError && (
+                <div className="bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-2 rounded-[6px] text-[0.85rem]">
+                  {filterError}
+                </div>
+              )}
+              {loadingTorneios ? (
+                <p className="text-[#888] text-[0.875rem] m-0">Carregando torneios...</p>
+              ) : torneiosDisponiveis.length === 0 ? (
+                <EmptyState
+                  title="Nenhum torneio disponível"
+                  description="Ajuste o período ou limpe os filtros para buscar outros torneios."
+                  action={
+                    <button
+                      type="button"
+                      onClick={handleLimparFiltrosTorneio}
+                      className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
+                    >
+                      Limpar filtros
+                    </button>
+                  }
+                />
               ) : (
                 <div className="flex flex-col gap-2 max-h-[280px] overflow-y-auto pr-1">
                   {torneiosDisponiveis.map((torneio) => {
@@ -199,7 +378,7 @@ export function LigaCreatePage({ editMode = false }) {
                           className="w-4 h-4 accent-[#4f46e5] cursor-pointer"
                           checked={selected}
                           onChange={() => toggleTorneio(torneio.id)}
-                          disabled={loading}
+                          disabled={loading || loadingTorneios}
                         />
                         <div className="flex-1 min-w-0">
                           <span className="block text-[#f5edff] text-[0.88rem] font-medium truncate">{torneio.nome}</span>
@@ -212,7 +391,7 @@ export function LigaCreatePage({ editMode = false }) {
               )}
               {torneiosSelecionados.length > 0 && (
                 <p className="text-[#a5b4fc] text-[0.8rem] m-0">
-                  {torneiosSelecionados.length} torneio(s) selecionado(s)
+                  {torneiosDisponiveis.length} filtrado(s), {torneiosSelecionados.length} selecionado(s)
                 </p>
               )}
             </div>

@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
-import { buscarCartaPorNome } from "../services/scryfallApi";
+import { buscarCartasPorNome } from "../services/scryfallApi";
 
 export function DeckBuilderPage({ isEditMode = false }) {
   const { token } = useAuth();
@@ -69,16 +69,17 @@ export function DeckBuilderPage({ isEditMode = false }) {
           const mainEntries = groupByName(deck.maindeck || []);
           const sideEntries = groupByName(deck.sideboard || []);
 
-          const [resolvedMain, resolvedSide] = await Promise.all([
-            Promise.all(mainEntries.map(async (entry) => {
-              const carta = await buscarCartaPorNome(entry.nome);
-              return carta ? toCardEntry(carta, entry.quantidade) : null;
-            })),
-            Promise.all(sideEntries.map(async (entry) => {
-              const carta = await buscarCartaPorNome(entry.nome);
-              return carta ? toCardEntry(carta, entry.quantidade) : null;
-            })),
+          const [resolvedMainCards, resolvedSideCards] = await Promise.all([
+            buscarCartasPorNome(mainEntries.map((entry) => entry.nome)),
+            buscarCartasPorNome(sideEntries.map((entry) => entry.nome)),
           ]);
+
+          const resolvedMain = resolvedMainCards.map((carta, index) =>
+            carta ? toCardEntry(carta, mainEntries[index].quantidade) : null,
+          );
+          const resolvedSide = resolvedSideCards.map((carta, index) =>
+            carta ? toCardEntry(carta, sideEntries[index].quantidade) : null,
+          );
 
           setMainDeck(resolvedMain.filter(Boolean));
           setSideboard(resolvedSide.filter(Boolean));

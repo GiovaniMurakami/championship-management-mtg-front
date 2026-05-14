@@ -34,7 +34,7 @@ export function TournamentCreatePage() {
     : undefined;
 
   const handleTournamentCreated = () => {
-    navigate("/torneios");
+    navigate("/");
   };
 
   return (
@@ -42,7 +42,7 @@ export function TournamentCreatePage() {
       <button
         className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
         type="button"
-        onClick={() => navigate("/torneios")}
+        onClick={() => navigate("/")}
       >
         ← Voltar para torneios
       </button>

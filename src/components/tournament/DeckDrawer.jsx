@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
-import { buscarCartaPorNome } from "../../services/scryfallApi";
+import { buscarCartasPorNome } from "../../services/scryfallApi";
 
 export const RANK_BADGE = {
   1: "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]",
@@ -49,26 +49,14 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
     setLoading(true);
 
     const resolveCards = async (entries) => {
-      const CONCURRENCY = 6;
-      const results = new Array(entries.length).fill(null);
-      let idx = 0;
-      const worker = async () => {
-        while (idx < entries.length) {
-          const i = idx++;
-          const entry = entries[i];
-          try {
-            const card = await buscarCartaPorNome(entry.nome);
-            results[i] = card
-              ? { nome: card.nome, quantidade: entry.quantidade || 1, imagem: card.imagem || "", cmc: card.cmc, typeLine: card.typeLine || "", colors: card.colors || [], manaCost: card.manaCost || "", isBasicLand: card.isBasicLand }
-              : { nome: entry.nome, quantidade: entry.quantidade || 1, imagem: "", cmc: 0, typeLine: "", colors: [] };
-          } catch {
-            results[i] = { nome: entry.nome, quantidade: entry.quantidade || 1, imagem: "", cmc: 0, typeLine: "", colors: [] };
-          }
-        }
-      };
-      const workers = Math.min(CONCURRENCY, entries.length);
-      if (workers > 0) await Promise.all(Array.from({ length: workers }, worker));
-      return results.filter(Boolean);
+      const cards = await buscarCartasPorNome(entries.map((entry) => entry.nome));
+
+      return cards.map((card, index) => {
+        const entry = entries[index];
+        return card
+          ? { nome: card.nome, quantidade: entry.quantidade || 1, imagem: card.imagem || "", cmc: card.cmc, typeLine: card.typeLine || "", colors: card.colors || [], manaCost: card.manaCost || "", isBasicLand: card.isBasicLand }
+          : { nome: entry.nome, quantidade: entry.quantidade || 1, imagem: "", cmc: 0, typeLine: "", colors: [] };
+      });
     };
 
     buscarDeck(deckId, token)

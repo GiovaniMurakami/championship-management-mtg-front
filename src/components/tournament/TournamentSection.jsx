@@ -94,6 +94,8 @@ export function TournamentSection() {
                     <img
                       src={banner}
                       alt={`Banner de ${item.nome}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(14,8,30,0.92)]" />

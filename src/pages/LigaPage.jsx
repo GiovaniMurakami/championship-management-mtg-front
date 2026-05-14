@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { listarLigas, deletarLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
+import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 
@@ -9,10 +11,12 @@ const LIMITE = 20;
 
 export function LigaPage() {
   const { token, isAdmin } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [ligas, setLigas] = useState([]);
   const [total, setTotal] = useState(0);
-  const [pagina, setPagina] = useState(1);
+  const [pagina, setPagina] = useState(Math.max(1, Number(searchParams.get("pagina") || 1)));
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -28,22 +32,34 @@ export function LigaPage() {
       setTotal(data.total ?? list.length);
     } catch (err) {
       console.error("Erro ao carregar ligas:", err);
+      addToast("Erro ao carregar ligas.", { type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [token, pagina]);
+  }, [token, pagina, addToast]);
 
   useEffect(() => {
     loadLigas();
   }, [loadLigas]);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (pagina > 1) nextParams.set("pagina", String(pagina));
+    else nextParams.delete("pagina");
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [pagina, searchParams, setSearchParams]);
 
   const handleDelete = async (ligaId) => {
     setDeletingId(ligaId);
     try {
       await deletarLiga(ligaId, token);
       setLigas((prev) => prev.filter((l) => l.id !== ligaId));
+      addToast("Liga excluída com sucesso.", { type: "success" });
     } catch (err) {
       console.error("Erro ao excluir liga:", err);
+      addToast("Erro ao excluir liga.", { type: "error" });
     } finally {
       setDeletingId(null);
       setConfirmDeleteId(null);
@@ -79,9 +95,19 @@ export function LigaPage() {
           ))}
         </div>
       ) : ligas.length === 0 ? (
-        <p className="text-center text-[#888] py-12 text-base">
-          Nenhuma liga encontrada.
-        </p>
+        <EmptyState
+          title="Nenhuma liga encontrada"
+          description="As ligas criadas ficarão disponíveis nesta tela."
+          action={isAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate("/ligas/criar")}
+              className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] font-semibold hover:bg-[#4f46e5] hover:text-white transition-colors"
+            >
+              Criar liga
+            </button>
+          )}
+        />
       ) : (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5 max-[768px]:grid-cols-1">
           {ligas.map((liga) => (
