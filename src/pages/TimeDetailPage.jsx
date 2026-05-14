@@ -21,6 +21,9 @@ const AVATAR_PALETTES = [
   "from-[#be185d] to-[#9d174d]",
 ];
 
+const getTotalMembros = (time) =>
+  time?.totalMembros ?? time?.membroIds?.length ?? time?.membros?.length ?? 0;
+
 export function TimeDetailPage() {
   const { id: timeId } = useParams();
   const { token, usuario, isAdmin } = useAuth();
@@ -55,8 +58,10 @@ export function TimeDetailPage() {
   useEffect(() => { loadTime(); }, [loadTime]);
 
   const membros = time?.membros || [];
+  const totalMembros = getTotalMembros(time);
   const solicitacoes = time?.solicitacoesPendentes || [];
-  const isMember = membros.some((m) => String(m.id ?? m.usuarioId) === String(usuario?.id));
+  const isMember = time?.membroIds?.some((id) => String(id) === String(usuario?.id))
+    || membros.some((m) => String(m.id ?? m.usuarioId) === String(usuario?.id));
   const isOwner = time && String(time.donoId) === String(usuario?.id);
   const canManage = isOwner || isAdmin;
   const jaSolicitou = solicitacoes.some((s) => String(s.id) === String(usuario?.id));
@@ -222,7 +227,7 @@ export function TimeDetailPage() {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            {membros.length} membro{membros.length !== 1 ? "s" : ""}
+            {totalMembros} membro{totalMembros !== 1 ? "s" : ""}
           </span>
         </div>
       </div>
@@ -344,7 +349,7 @@ export function TimeDetailPage() {
       <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden">
         <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-[rgba(217,180,255,0.1)] bg-white/[0.015]">
           <span className="text-[0.78rem] text-[#beafd7]">
-            <span className="font-semibold text-[#f5edff]">{membros.length}</span> membro{membros.length !== 1 ? "s" : ""}
+            <span className="font-semibold text-[#f5edff]">{totalMembros}</span> membro{totalMembros !== 1 ? "s" : ""}
           </span>
         </div>
         {membros.length === 0 ? (

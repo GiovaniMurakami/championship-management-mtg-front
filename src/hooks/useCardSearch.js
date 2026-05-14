@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { buscarCartasMTG } from "../services/scryfallApi";
 import { SEARCH_DEBOUNCE_MS } from "../constants/auth";
+import { useDebouncedValue } from "./useDebouncedValue";
 
 export function useCardSearch() {
   const [mainSearch, setMainSearch] = useState("");
@@ -9,47 +10,62 @@ export function useCardSearch() {
   const [sideSuggestions, setSideSuggestions] = useState([]);
   const [searchError, setSearchError] = useState("");
 
-  // Debounce search para maindeck
-  useEffect(() => {
-    const timeout = setTimeout(async () => {
-      if (mainSearch.trim().length < 2) {
-        setMainSuggestions([]);
-        return;
-      }
+  const debouncedMainSearch = useDebouncedValue(mainSearch, SEARCH_DEBOUNCE_MS);
+  const debouncedSideSearch = useDebouncedValue(sideSearch, SEARCH_DEBOUNCE_MS);
 
+  useEffect(() => {
+    const query = debouncedMainSearch.trim();
+    const controller = new AbortController();
+
+    if (query.length < 2) {
+      setMainSuggestions([]);
+      return () => controller.abort();
+    }
+
+    const loadCards = async () => {
       try {
         setSearchError("");
-        const cards = await buscarCartasMTG(mainSearch);
+        const cards = await buscarCartasMTG(query, { signal: controller.signal });
         setMainSuggestions(cards);
-      } catch {
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          return;
+        }
         setMainSuggestions([]);
         setSearchError("Erro ao buscar cartas. Tente novamente.");
       }
-    }, SEARCH_DEBOUNCE_MS);
+    };
 
-    return () => clearTimeout(timeout);
-  }, [mainSearch]);
+    loadCards();
+    return () => controller.abort();
+  }, [debouncedMainSearch]);
 
-  // Debounce search para sideboard
   useEffect(() => {
-    const timeout = setTimeout(async () => {
-      if (sideSearch.trim().length < 2) {
-        setSideSuggestions([]);
-        return;
-      }
+    const query = debouncedSideSearch.trim();
+    const controller = new AbortController();
 
+    if (query.length < 2) {
+      setSideSuggestions([]);
+      return () => controller.abort();
+    }
+
+    const loadCards = async () => {
       try {
         setSearchError("");
-        const cards = await buscarCartasMTG(sideSearch);
+        const cards = await buscarCartasMTG(query, { signal: controller.signal });
         setSideSuggestions(cards);
-      } catch {
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          return;
+        }
         setSideSuggestions([]);
         setSearchError("Erro ao buscar cartas. Tente novamente.");
       }
-    }, SEARCH_DEBOUNCE_MS);
+    };
 
-    return () => clearTimeout(timeout);
-  }, [sideSearch]);
+    loadCards();
+    return () => controller.abort();
+  }, [debouncedSideSearch]);
 
   return {
     mainSearch,

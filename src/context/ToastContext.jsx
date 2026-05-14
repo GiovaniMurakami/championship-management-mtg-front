@@ -42,6 +42,7 @@ export function ToastProvider({ children }) {
                 className="ml-1 bg-transparent border-none cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
                 style={{ color: c.text }}
                 onClick={() => removeToast(toast.id)}
+                aria-label="Fechar notificação"
               >
                 ×
               </button>

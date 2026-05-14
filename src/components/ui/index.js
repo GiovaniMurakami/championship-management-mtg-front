@@ -1,5 +1,6 @@
 export { BaseModal } from "./BaseModal";
 export { DeleteConfirmModal } from "./DeleteConfirmModal";
+export { EmptyState } from "./EmptyState";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { Footer } from "./Footer";
 export { Hero } from "./Hero";

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { listarDecks, deletarDeck } from "../services/backendApi";
-import { buscarCartaPorNome } from "../services/scryfallApi";
+import { buscarCartasPorNome } from "../services/scryfallApi";
 import { SkeletonCard } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
@@ -92,17 +92,13 @@ export function MyDecksPage() {
   useEffect(() => {
     if (decks.length === 0) return;
     const fetchImages = async () => {
-      const entries = await Promise.all(
-        decks
-          .filter((d) => d.maindeck?.length > 0)
-          .map(async (d) => {
-            try {
-              const carta = await buscarCartaPorNome(d.maindeck[0].nome);
-              return carta?.imagem ? [d.id, carta.imagem] : null;
-            } catch {
-              return null;
-            }
-          })
+      const decksWithCards = decks.filter((d) => d.maindeck?.length > 0);
+      const cards = await buscarCartasPorNome(
+        decksWithCards.map((deck) => deck.maindeck[0].nome),
+      );
+
+      const entries = cards.map((carta, index) =>
+        carta?.imagem ? [decksWithCards[index].id, carta.imagem] : null,
       );
       setDeckImages(Object.fromEntries(entries.filter(Boolean)));
     };

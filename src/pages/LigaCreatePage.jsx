@@ -1,18 +1,32 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
+import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
+const buildTorneiosParams = ({ dataInicio, dataFim }) => {
+  const params = new URLSearchParams();
+  if (dataInicio) params.set("dataInicio", dataInicio);
+  if (dataFim) params.set("dataFim", dataFim);
+  return params;
+};
 
 export function LigaCreatePage({ editMode = false }) {
   const { id: ligaId } = useParams();
   const { token } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [form, setForm] = useState({ nome: "", descricao: "", tipo: "individual" });
-  const [filtrosTorneio, setFiltrosTorneio] = useState({ dataInicio: "", dataFim: "" });
+  const [filtrosTorneio, setFiltrosTorneio] = useState({
+    dataInicio: searchParams.get("dataInicio") || "",
+    dataFim: searchParams.get("dataFim") || "",
+  });
+  const filtrosIniciaisRef = useRef(filtrosTorneio);
   const [torneiosDisponiveis, setTorneiosDisponiveis] = useState([]);
   const [torneiosSelecionados, setTorneiosSelecionados] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,8 +52,9 @@ export function LigaCreatePage({ editMode = false }) {
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
+      const torneiosParams = buildTorneiosParams(filtrosIniciaisRef.current);
       const [torneiosData, ligaData] = await Promise.all([
-        listarTorneios(token),
+        listarTorneios(token, torneiosParams),
         editMode && ligaId ? buscarLiga(ligaId, token) : Promise.resolve(null),
       ]);
       setTorneiosDisponiveis(torneiosData.torneios || []);
@@ -72,13 +87,6 @@ export function LigaCreatePage({ editMode = false }) {
     setFilterError("");
   };
 
-  const buildTorneiosParams = ({ dataInicio, dataFim }) => {
-    const params = new URLSearchParams();
-    if (dataInicio) params.set("dataInicio", dataInicio);
-    if (dataFim) params.set("dataFim", dataFim);
-    return params;
-  };
-
   const handleFiltrarTorneios = async () => {
     const { dataInicio, dataFim } = filtrosTorneio;
     setFilterError("");
@@ -89,6 +97,12 @@ export function LigaCreatePage({ editMode = false }) {
       return;
     }
 
+    const nextParams = new URLSearchParams(searchParams);
+    if (dataInicio) nextParams.set("dataInicio", dataInicio);
+    else nextParams.delete("dataInicio");
+    if (dataFim) nextParams.set("dataFim", dataFim);
+    else nextParams.delete("dataFim");
+    setSearchParams(nextParams, { replace: true });
     await carregarTorneios(buildTorneiosParams(filtrosTorneio));
   };
 
@@ -96,6 +110,10 @@ export function LigaCreatePage({ editMode = false }) {
     setFiltrosTorneio({ dataInicio: "", dataFim: "" });
     setFilterError("");
     setError("");
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("dataInicio");
+    nextParams.delete("dataFim");
+    setSearchParams(nextParams, { replace: true });
     await carregarTorneios();
   };
 
@@ -108,7 +126,28 @@ export function LigaCreatePage({ editMode = false }) {
 
   const handleAdicionarTodosFiltrados = () => {
     const idsFiltrados = torneiosDisponiveis.map((torneio) => String(torneio.id));
-    setTorneiosSelecionados((prev) => Array.from(new Set([...prev, ...idsFiltrados])));
+    const next = Array.from(new Set([...torneiosSelecionados, ...idsFiltrados]));
+    const adicionados = next.length - torneiosSelecionados.length;
+    setTorneiosSelecionados(next);
+    addToast(
+      adicionados > 0
+        ? `${adicionados} torneio(s) filtrado(s) adicionados.`
+        : "Todos os torneios filtrados já estavam selecionados.",
+      { type: adicionados > 0 ? "success" : "info" },
+    );
+  };
+
+  const handleRemoverTodosFiltrados = () => {
+    const idsFiltrados = new Set(torneiosDisponiveis.map((torneio) => String(torneio.id)));
+    const next = torneiosSelecionados.filter((id) => !idsFiltrados.has(id));
+    const removidos = torneiosSelecionados.length - next.length;
+    setTorneiosSelecionados(next);
+    addToast(
+      removidos > 0
+        ? `${removidos} torneio(s) filtrado(s) removidos.`
+        : "Nenhum torneio filtrado estava selecionado.",
+      { type: removidos > 0 ? "success" : "info" },
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -125,9 +164,11 @@ export function LigaCreatePage({ editMode = false }) {
       } else {
         await criarLiga(payload, token);
       }
+      addToast(editMode ? "Liga atualizada com sucesso." : "Liga criada com sucesso.", { type: "success" });
       navigate("/ligas");
     } catch (err) {
       setError(editMode ? "Erro ao atualizar liga." : "Erro ao criar liga.");
+      addToast(editMode ? "Erro ao atualizar liga." : "Erro ao criar liga.", { type: "error" });
       console.error(err);
     } finally {
       setLoading(false);
@@ -289,6 +330,14 @@ export function LigaCreatePage({ editMode = false }) {
                 >
                   Adicionar todos
                 </button>
+                <button
+                  type="button"
+                  onClick={handleRemoverTodosFiltrados}
+                  disabled={loading || loadingTorneios || torneiosDisponiveis.length === 0}
+                  className="px-4 py-2 rounded-lg border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.07)] text-[#fca5a5] cursor-pointer font-semibold transition-all duration-200 hover:bg-[rgba(239,68,68,0.16)] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Remover filtrados
+                </button>
               </div>
               {filterError && (
                 <div className="bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-2 rounded-[6px] text-[0.85rem]">
@@ -298,7 +347,19 @@ export function LigaCreatePage({ editMode = false }) {
               {loadingTorneios ? (
                 <p className="text-[#888] text-[0.875rem] m-0">Carregando torneios...</p>
               ) : torneiosDisponiveis.length === 0 ? (
-                <p className="text-[#888] text-[0.875rem] m-0">Nenhum torneio disponível.</p>
+                <EmptyState
+                  title="Nenhum torneio disponível"
+                  description="Ajuste o período ou limpe os filtros para buscar outros torneios."
+                  action={
+                    <button
+                      type="button"
+                      onClick={handleLimparFiltrosTorneio}
+                      className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
+                    >
+                      Limpar filtros
+                    </button>
+                  }
+                />
               ) : (
                 <div className="flex flex-col gap-2 max-h-[280px] overflow-y-auto pr-1">
                   {torneiosDisponiveis.map((torneio) => {
@@ -330,7 +391,7 @@ export function LigaCreatePage({ editMode = false }) {
               )}
               {torneiosSelecionados.length > 0 && (
                 <p className="text-[#a5b4fc] text-[0.8rem] m-0">
-                  {torneiosSelecionados.length} torneio(s) selecionado(s)
+                  {torneiosDisponiveis.length} filtrado(s), {torneiosSelecionados.length} selecionado(s)
                 </p>
               )}
             </div>

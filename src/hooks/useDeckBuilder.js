@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
-import { buscarCartaPorNome } from "../services/scryfallApi";
+import { buscarCartasPorNome } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
 import { parseDeckTxt } from "../utils/parseDeckTxt";
 import {
@@ -45,7 +45,7 @@ export function useDeckBuilder() {
 
         if (newQuantidade > maxAllowed) {
           setCardLimitMessage(
-            `Limite de ${maxAllowed} cópias de "${card.nome}" atingido.`,
+            `Limite de ${maxAllowed} copias de "${card.nome}" atingido.`,
           );
           setTimeout(() => setCardLimitMessage(""), MESSAGE_DISPLAY_MS);
           return current;
@@ -86,7 +86,7 @@ export function useDeckBuilder() {
 
     if (parsed === maxAllowed && Number(quantidade) > maxAllowed) {
       setCardLimitMessage(
-        `Limite de ${maxAllowed} cópias de "${nome}" atingido.`,
+        `Limite de ${maxAllowed} copias de "${nome}" atingido.`,
       );
       setTimeout(() => setCardLimitMessage(""), MESSAGE_DISPLAY_MS);
     }
@@ -101,13 +101,11 @@ export function useDeckBuilder() {
     setter((current) => current.filter((card) => card.nome !== nome));
   };
 
-  // Função auxiliar para comparar duas listas de cartas
   const compareDeckCards = (currentCards, originalCards) => {
     if (currentCards.length !== originalCards.length) {
       return false;
     }
 
-    // Normalizar e ordenar
     const currentNorm = currentCards
       .map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
       .sort((a, b) => a.nome.localeCompare(b.nome));
@@ -116,7 +114,6 @@ export function useDeckBuilder() {
       .map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
       .sort((a, b) => a.nome.localeCompare(b.nome));
 
-    // Comparar JSON serializado
     return JSON.stringify(currentNorm) === JSON.stringify(originalNorm);
   };
 
@@ -131,29 +128,24 @@ export function useDeckBuilder() {
     setIllegalCardMessage("");
 
     if (!token) {
-      setDeckMessage("Faça login para cadastrar um deck.");
+      setDeckMessage("Faca login para cadastrar um deck.");
       return;
     }
 
-    // Se estiver editando, verificar se houve mudanças
     if (deckIdParam && originalDeck) {
       const nomeIgual = deckForm.nome === originalDeck.nome;
       const formatoIgual = deckForm.formato === originalDeck.formato;
-
-      // Comparar cartas do maindeck
       const maindeckIgual = compareDeckCards(
         mainDeck,
         originalDeck.maindeck || [],
       );
-
-      // Comparar cartas do sideboard
       const sideboardIgual = compareDeckCards(
         sideboard,
         originalDeck.sideboard || [],
       );
 
       if (nomeIgual && formatoIgual && maindeckIgual && sideboardIgual) {
-        setDeckMessage("Nenhuma alteração foi feita.");
+        setDeckMessage("Nenhuma alteracao foi feita.");
         setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
         return;
       }
@@ -168,7 +160,7 @@ export function useDeckBuilder() {
 
     if (totalSide > MAX_SIDEBOARD_SIZE) {
       setDeckMessage(
-        `O sideboard pode ter no máximo ${MAX_SIDEBOARD_SIZE} cartas.`,
+        `O sideboard pode ter no maximo ${MAX_SIDEBOARD_SIZE} cartas.`,
       );
       return;
     }
@@ -186,7 +178,7 @@ export function useDeckBuilder() {
 
     if (ilegalCards.length > 0) {
       setIllegalCardMessage(
-        `As seguintes cartas não são legais em ${formatoChecagem}: ${ilegalCards.join(", ")}`,
+        `As seguintes cartas nao sao legais em ${formatoChecagem}: ${ilegalCards.join(", ")}`,
       );
       return;
     }
@@ -202,11 +194,9 @@ export function useDeckBuilder() {
       };
 
       if (deckIdParam) {
-        // Modo edição - usar o deckId passado como parâmetro
         await atualizarDeck(deckIdParam, payload, token);
         setDeckMessage("Deck atualizado com sucesso.");
       } else {
-        // Modo criação
         await cadastrarDeck(payload, token);
         setDeckMessage("Deck cadastrado com sucesso.");
         setDeckForm({ nome: "", formato: "" });
@@ -223,37 +213,27 @@ export function useDeckBuilder() {
   };
 
   const resolveImportedCards = async (entries) => {
-    const CONCURRENCY = 6;
-    const results = new Array(entries.length).fill(null);
-    let index = 0;
+    const cards = await buscarCartasPorNome(entries.map((entry) => entry.nome));
 
-    const worker = async () => {
-      while (index < entries.length) {
-        const i = index++;
-        const entry = entries[i];
-        try {
-          const card = await buscarCartaPorNome(entry.nome);
-          if (card) {
-            results[i] = {
-              nome: card.nome,
-              quantidade: entry.quantidade,
-              imagem: card.imagem || "",
-              isBasicLand: card.isBasicLand,
-              legalities: card.legalities || {},
-              colors: card.colors || card.colorIdentity || [],
-              cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
-              manaCost: card.manaCost || "",
-              typeLine: card.typeLine || "",
-            };
-          }
-        } catch {
-          // carta não encontrada — mantém null
+    return cards
+      .map((card, index) => {
+        if (!card) {
+          return null;
         }
-      }
-    };
 
-    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, entries.length) }, worker));
-    return results.filter(Boolean);
+        return {
+          nome: card.nome,
+          quantidade: entries[index].quantidade,
+          imagem: card.imagem || "",
+          isBasicLand: card.isBasicLand,
+          legalities: card.legalities || {},
+          colors: card.colors || card.colorIdentity || [],
+          cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
+          manaCost: card.manaCost || "",
+          typeLine: card.typeLine || "",
+        };
+      })
+      .filter(Boolean);
   };
 
   const importDeckFromTxt = async (file) => {
@@ -276,7 +256,7 @@ export function useDeckBuilder() {
       const { mainEntries, sideEntries } = parseDeckTxt(content);
 
       if (mainEntries.length === 0 && sideEntries.length === 0) {
-        setImportMessage("Nenhuma carta válida foi encontrada no arquivo.");
+        setImportMessage("Nenhuma carta valida foi encontrada no arquivo.");
         return;
       }
 
@@ -286,7 +266,7 @@ export function useDeckBuilder() {
       ]);
 
       if (resolvedMain.length === 0 && resolvedSide.length === 0) {
-        setImportMessage("Não foi possível encontrar as cartas no Scryfall.");
+        setImportMessage("Nao foi possivel encontrar as cartas no Scryfall.");
         return;
       }
 
@@ -302,7 +282,6 @@ export function useDeckBuilder() {
   };
 
   return {
-    // State
     deckForm,
     mainDeck,
     sideboard,
@@ -314,11 +293,9 @@ export function useDeckBuilder() {
     importMessage,
     totalMain,
     totalSide,
-    // Setters
     setDeckForm,
     setMainDeck,
     setSideboard,
-    // Handlers
     addCardToDeck,
     updateCardQuantity,
     removeCard,

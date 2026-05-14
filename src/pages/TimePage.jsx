@@ -2,23 +2,33 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { listarTimes, deletarTime, entrarPorConvite } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useToast } from "../context/ToastContext";
+import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
 const LIMITE = 12;
 
+const getTotalMembros = (time) =>
+  time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? 0;
+
 export function TimePage() {
   const { token, isAdmin, usuario } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialBusca = searchParams.get("nome") || "";
+  const initialPagina = Math.max(1, Number(searchParams.get("pagina") || 1));
 
   const [times, setTimes] = useState([]);
   const [total, setTotal] = useState(0);
-  const [pagina, setPagina] = useState(1);
-  const [busca, setBusca] = useState("");
-  const [buscaInput, setBuscaInput] = useState("");
+  const [pagina, setPagina] = useState(initialPagina);
+  const [busca, setBusca] = useState(initialBusca);
+  const [buscaInput, setBuscaInput] = useState(initialBusca);
   const [loading, setLoading] = useState(true);
+  const debouncedBuscaInput = useDebouncedValue(buscaInput, 450);
 
   const [userJaTemTime, setUserJaTemTime] = useState(false);
 
@@ -34,7 +44,8 @@ export function TimePage() {
   const usuarioNaLista = useMemo(
     () =>
       times.some((t) =>
-        t.membros?.some((m) => String(m.id ?? m.usuarioId ?? m) === String(usuario?.id))
+        t.membroIds?.some((id) => String(id) === String(usuario?.id))
+        || t.membros?.some((m) => String(m.id ?? m.usuarioId ?? m) === String(usuario?.id))
       ),
     [times, usuario?.id]
   );
@@ -64,27 +75,48 @@ export function TimePage() {
       setTotal(data.total ?? list.length);
     } catch (err) {
       console.error("Erro ao carregar times:", err);
+      addToast("Erro ao carregar times.", { type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [token, busca, pagina]);
+  }, [token, busca, pagina, addToast]);
 
   useEffect(() => { loadTimes(); }, [loadTimes]);
 
-  useEffect(() => { setPagina(1); }, [busca]);
+  useEffect(() => {
+    if (debouncedBuscaInput === busca) return;
+    setBusca(debouncedBuscaInput);
+    setPagina(1);
+  }, [debouncedBuscaInput, busca]);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (busca.trim()) nextParams.set("nome", busca.trim());
+    else nextParams.delete("nome");
+
+    if (pagina > 1) nextParams.set("pagina", String(pagina));
+    else nextParams.delete("pagina");
+
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [busca, pagina, searchParams, setSearchParams]);
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get("convite");
     if (tokenFromUrl) {
       setConviteInput(tokenFromUrl);
       setShowConviteModal(true);
-      setSearchParams({}, { replace: true });
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("convite");
+      setSearchParams(nextParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
 
   const handleBusca = (e) => {
     e.preventDefault();
     setBusca(buscaInput);
+    setPagina(1);
   };
 
   const handleLimparBusca = () => {
@@ -99,8 +131,10 @@ export function TimePage() {
       await deletarTime(deleteTarget.id, token);
       setTimes((prev) => prev.filter((t) => t.id !== deleteTarget.id));
       setDeleteTarget(null);
+      addToast("Time excluído com sucesso.", { type: "success" });
     } catch (err) {
       console.error("Erro ao deletar time:", err);
+      addToast("Erro ao excluir time.", { type: "error" });
     } finally {
       setDeleting(false);
     }
@@ -119,6 +153,7 @@ export function TimePage() {
       const res = data?.data ?? data;
       const nomeTime = res?.timeNome || res?.time?.nome || "time";
       setConviteSuccess(`Você entrou no time "${nomeTime}" com sucesso!`);
+      addToast(`Você entrou no time "${nomeTime}".`, { type: "success" });
       setConviteInput("");
       setUserJaTemTime(true);
       loadTimes();
@@ -204,9 +239,19 @@ export function TimePage() {
           ))}
         </div>
       ) : times.length === 0 ? (
-        <p className="text-center text-[#888] py-12 text-base">
-          {busca ? `Nenhum time encontrado para "${busca}".` : "Nenhum time cadastrado ainda."}
-        </p>
+        <EmptyState
+          title={busca ? "Nenhum time encontrado" : "Nenhum time cadastrado ainda"}
+          description={busca ? `Não encontramos resultados para "${busca}".` : "Quando os times forem criados, eles aparecerão aqui."}
+          action={busca && (
+            <button
+              type="button"
+              onClick={handleLimparBusca}
+              className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
+            >
+              Limpar busca
+            </button>
+          )}
+        />
       ) : (
         <>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 max-[768px]:grid-cols-1">
@@ -222,6 +267,8 @@ export function TimePage() {
                       <img
                         src={time.imagemUrl}
                         alt={time.nome}
+                        loading="lazy"
+                        decoding="async"
                         className="w-9 h-9 rounded-lg object-cover border border-[rgba(199,149,255,0.2)] flex-shrink-0"
                       />
                     )}
@@ -230,7 +277,7 @@ export function TimePage() {
                     </h3>
                   </div>
                   <span className="inline-flex items-center gap-[0.3rem] text-[0.72rem] font-semibold text-[#c795ff] bg-[rgba(199,149,255,0.1)] border border-[rgba(199,149,255,0.2)] rounded-full px-[0.55rem] py-[0.12rem] flex-shrink-0">
-                    {time.totalMembros ?? time.membros?.length ?? 0} membros
+                    {getTotalMembros(time)} membros
                   </span>
                 </div>
                 {time.descricao && (
