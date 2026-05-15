@@ -1,5 +1,48 @@
 import httpClient from "./httpClient";
 
+/**
+ * @typedef {object} RankingTimeEntry
+ * @property {number|null} posicao
+ * @property {{ id?: string|number, nome?: string }|null} time
+ * @property {number} vitorias
+ * @property {number} derrotas
+ * @property {number} empates
+ * @property {number} pontos
+ */
+
+const mapRankingTimeEntry = (timeRanking) => ({
+  ...timeRanking,
+  posicao: timeRanking?.posicao ?? null,
+  time: timeRanking?.time ?? (timeRanking?.nome || timeRanking?.timeId
+    ? {
+        id: timeRanking?.timeId ?? timeRanking?.id,
+        nome: timeRanking?.nome ?? "—",
+      }
+    : null),
+  vitorias: timeRanking?.vitorias ?? 0,
+  derrotas: timeRanking?.derrotas ?? 0,
+  empates: timeRanking?.empates ?? 0,
+  pontos: timeRanking?.pontos ?? 0,
+});
+
+export const normalizeLigaRankingResponse = (payload) => {
+  const source = payload?.ranking ?? payload ?? {};
+  const rankingTimes = Array.isArray(source.rankingTimes)
+    ? source.rankingTimes
+    : Array.isArray(source.times)
+      ? source.times
+      : [];
+
+  return {
+    ...source,
+    rankingJogadores: source.rankingJogadores ?? source.jogadores ?? source.players ?? [],
+    rankingDecks: source.rankingDecks ?? source.decks ?? [],
+    rankingCartas: source.rankingCartas ?? source.cartas ?? source.cards ?? [],
+    rankingTimes: rankingTimes.map(mapRankingTimeEntry),
+    totalTimes: source.totalTimes ?? rankingTimes.length,
+  };
+};
+
 // Autenticação
 export const loginUsuario = (payload) =>
   httpClient.post("/usuario/login", payload);
@@ -198,10 +241,14 @@ export const deletarLiga = (ligaId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const getRankingLiga = (ligaId, token) =>
-  httpClient.get(`/liga/${ligaId}/ranking`, {
+export const getRankingLiga = async (ligaId, token, options = {}) => {
+  const response = await httpClient.get(`/liga/${ligaId}/ranking`, {
     headers: { Authorization: `Bearer ${token}` },
+    params: options.limiteTimes != null ? { limiteTimes: options.limiteTimes } : undefined,
   });
+
+  return normalizeLigaRankingResponse(response);
+};
 
 // Times
 export const criarTime = (payload, token) =>

@@ -297,11 +297,10 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
   return (
     <li
-      className={`flex items-center gap-3 px-5 py-[0.85rem] transition-colors duration-150 hover:bg-white/[0.025] ${
-        isLogado
+      className={`flex items-center gap-3 px-5 py-[0.85rem] transition-colors duration-150 hover:bg-white/[0.025] ${isLogado
           ? "bg-[rgba(79,70,229,0.07)] border-l-[3px] border-l-[rgba(99,102,241,0.55)]"
           : ""
-      }`}
+        }`}
     >
       <MedalBadge pos={pos} />
 
@@ -479,6 +478,64 @@ function SectionInfo({ count, label, hint }) {
   );
 }
 
+function TeamRankingTable({ rankingTimes, totalTimes }) {
+  return (
+    <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden">
+      <SectionInfo
+        count={totalTimes}
+        label={`time${totalTimes !== 1 ? "s" : ""}`}
+        hint="ranking coletivo"
+      />
+
+      {rankingTimes.length === 0 ? (
+        <div className="px-5 py-8 text-center">
+          <p className="m-0 text-[0.95rem] font-medium text-[rgba(190,175,215,0.55)]">
+            Nenhum dado de ranking coletivo disponível ainda.
+          </p>
+          <p className="m-0 mt-2 text-[0.82rem] text-[rgba(190,175,215,0.32)]">
+            O ranking de times será exibido aqui assim que a API retornar `rankingTimes`.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[640px]">
+            <thead>
+              <tr className="bg-white/[0.03] text-left">
+                {["Posição", "Time", "Vitórias", "Derrotas", "Empates", "Pontos"].map((column) => (
+                  <th
+                    key={column}
+                    scope="col"
+                    className="px-5 py-3 text-[0.72rem] uppercase tracking-[0.08em] text-[rgba(190,175,215,0.5)] font-semibold"
+                  >
+                    {column}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rankingTimes.map((time, idx) => (
+                <tr
+                  key={time.time?.id ?? time.id ?? idx}
+                  className="border-t border-[rgba(217,180,255,0.07)] hover:bg-white/[0.02] transition-colors duration-150"
+                >
+                  <td className="px-5 py-4 text-[0.88rem] font-semibold text-[#f5edff]">{time.posicao ?? idx + 1}</td>
+                  <td className="px-5 py-4 text-[0.9rem] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
+                  <td className="px-5 py-4 text-[0.88rem] text-[#22c55e]">{time.vitorias ?? 0}</td>
+                  <td className="px-5 py-4 text-[0.88rem] text-[#ef4444]">{time.derrotas ?? 0}</td>
+                  <td className="px-5 py-4 text-[0.88rem] text-[#fbbf24]">{time.empates ?? 0}</td>
+                  <td className="px-5 py-4 font-['Bebas_Neue',sans-serif] text-[1.2rem] tracking-[0.04em] text-[rgba(240,180,41,0.8)]">
+                    {time.pontos ?? 0}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 10;
@@ -530,8 +587,11 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const jogadores = ranking.rankingJogadores || ranking.jogadores || ranking.players || [];
   const decks = ranking.rankingDecks || ranking.decks || [];
   const cartas = ranking.rankingCartas || ranking.cartas || ranking.cards || [];
+  const rankingTimes = Array.isArray(ranking.rankingTimes) ? ranking.rankingTimes : [];
+  const totalTimes = ranking.totalTimes ?? rankingTimes.length;
+  const isTeamLeague = ranking.tipo === "times";
 
-  const hasData = jogadores.length > 0 || decks.length > 0 || cartas.length > 0;
+  const hasData = jogadores.length > 0 || decks.length > 0 || cartas.length > 0 || (isTeamLeague && totalTimes > 0);
 
   if (!hasData) {
     return (
@@ -574,12 +634,24 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     top3.length === 1
       ? "grid grid-cols-1 max-w-[240px] mx-auto"
       : top3.length === 2
-      ? "grid grid-cols-2 max-w-sm mx-auto gap-3"
-      : "grid grid-cols-1 sm:grid-cols-3 gap-3";
+        ? "grid grid-cols-2 max-w-sm mx-auto gap-3"
+        : "grid grid-cols-1 sm:grid-cols-3 gap-3";
+  const teamRankingSection = isTeamLeague ? (
+    <section className="space-y-3" aria-label="Ranking coletivo">
+      <div>
+        <h3 className="m-0 text-[1.05rem] font-semibold text-[#f5edff]">Ranking coletivo</h3>
+        <p className="m-0 mt-1 text-[0.82rem] text-[rgba(190,175,215,0.45)]">
+          Classificação consolidada dos times da liga.
+        </p>
+      </div>
+      <TeamRankingTable rankingTimes={rankingTimes} totalTimes={totalTimes} />
+    </section>
+  ) : null;
 
   return (
-    <>
+    <div className="space-y-6">
       <CardPreviewTooltip {...cardPreview} />
+      {teamRankingSection}
 
       {/* ── Sub-tabs ── */}
       {tabs.length > 1 && (
@@ -589,19 +661,17 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               key={tab.key}
               type="button"
               onClick={() => setSubAba(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] rounded-[0.6rem] text-[0.85rem] font-medium transition-all duration-200 ${
-                activeTab === tab.key
+              className={`flex-1 flex items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] rounded-[0.6rem] text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
                   ? "bg-[rgba(79,70,229,0.35)] text-white border border-[rgba(99,102,241,0.45)] shadow-sm"
                   : "text-[#888] hover:text-[#c0bfff] border border-transparent"
-              }`}
+                }`}
             >
               {tab.label}
               <span
-                className={`text-[0.68rem] px-[0.45rem] py-[0.1rem] rounded-full leading-[1.5] ${
-                  activeTab === tab.key
+                className={`text-[0.68rem] px-[0.45rem] py-[0.1rem] rounded-full leading-[1.5] ${activeTab === tab.key
                     ? "bg-white/[0.18] text-white"
                     : "bg-[rgba(217,180,255,0.1)] text-[#beafd7]"
-                }`}
+                  }`}
               >
                 {tab.count}
               </span>
@@ -742,6 +812,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
           </ul>
         </div>
       )}
-    </>
+    </div>
   );
 }
+
