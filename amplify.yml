@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        - if [ -f package-lock.json ]; then npm ci; else npm install; fi
     build:
       commands:
         - npm run build
