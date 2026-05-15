@@ -5,6 +5,10 @@ const CACHE_TTL = 10 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 const COLLECTION_BATCH_SIZE = 75;
 
+function normalizeNameKey(name) {
+  return name?.trim().toLowerCase();
+}
+
 function getCached(key) {
   const entry = _cache.get(key);
   if (!entry) return undefined;
@@ -189,10 +193,11 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
   const missingNames = [];
 
   uniqueNames.forEach((name) => {
-    const cacheKey = `named:${name.toLowerCase()}`;
+    const normalizedKey = normalizeNameKey(name);
+    const cacheKey = `named:${normalizedKey}`;
     const cached = getCached(cacheKey);
     if (cached !== undefined) {
-      resultsByName.set(name, cached);
+      resultsByName.set(normalizedKey, cached);
     } else {
       missingNames.push(name);
     }
@@ -238,12 +243,13 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
       });
 
       cards.forEach((card) => {
-        const cacheKey = `named:${card.nome.toLowerCase()}`;
+        const normalizedKey = normalizeNameKey(card.nome);
+        const cacheKey = `named:${normalizedKey}`;
         setCache(cacheKey, card);
-        resultsByName.set(card.nome, card);
+        resultsByName.set(normalizedKey, card);
       });
     }
   }
 
-  return normalizedNames.map((name) => resultsByName.get(name) || null);
+  return normalizedNames.map((name) => resultsByName.get(normalizeNameKey(name)) || null);
 }

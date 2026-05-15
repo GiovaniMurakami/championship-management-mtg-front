@@ -6,15 +6,16 @@ import { useAuth } from "../context/AuthContext";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
+import { buscarDeck } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
 
 export function DeckBuilderPage({ isEditMode = false }) {
   const { token } = useAuth();
   const { id } = useParams();
   const location = useLocation();
-  const deck = location.state?.deck;
   const readOnly = location.state?.readOnly || false;
   const [analysisTab, setAnalysisTab] = useState("mao");
+  const [originalDeck, setOriginalDeck] = useState(location.state?.deck ?? null);
 
   const {
     deckForm, setDeckForm, mainDeck, setMainDeck, sideboard, setSideboard,
@@ -30,68 +31,81 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
 
-  // Carregar dados do deck para editar, ou limpar em modo criação
   useEffect(() => {
-    if (!isEditMode && !deck) {
+    if (!isEditMode) {
       setDeckForm({ nome: "", formato: "" });
       setMainDeck([]);
       setSideboard([]);
-    } else if (isEditMode && deck) {
-      setDeckForm({ nome: deck.nome, formato: deck.formato });
-
-      const loadDeckCards = async () => {
-        try {
-          const groupByName = (entries) => {
-            const map = new Map();
-            for (const entry of entries) {
-              const nome = entry.nome;
-              if (map.has(nome)) {
-                map.get(nome).quantidade += entry.quantidade || 1;
-              } else {
-                map.set(nome, { nome, quantidade: entry.quantidade || 1 });
-              }
-            }
-            return Array.from(map.values());
-          };
-
-          const toCardEntry = (cartaScryfall, quantidade) => ({
-            nome: cartaScryfall.nome,
-            quantidade,
-            imagem: cartaScryfall.imagem || "",
-            isBasicLand: cartaScryfall.isBasicLand,
-            legalities: cartaScryfall.legalities || {},
-            colors: cartaScryfall.colors || cartaScryfall.colorIdentity || [],
-            cmc: Number.isFinite(cartaScryfall.cmc) ? cartaScryfall.cmc : Number(cartaScryfall.cmc) || 0,
-            manaCost: cartaScryfall.manaCost || "",
-            typeLine: cartaScryfall.typeLine || "",
-          });
-
-          const mainEntries = groupByName(deck.maindeck || []);
-          const sideEntries = groupByName(deck.sideboard || []);
-
-          const [resolvedMainCards, resolvedSideCards] = await Promise.all([
-            buscarCartasPorNome(mainEntries.map((entry) => entry.nome)),
-            buscarCartasPorNome(sideEntries.map((entry) => entry.nome)),
-          ]);
-
-          const resolvedMain = resolvedMainCards.map((carta, index) =>
-            carta ? toCardEntry(carta, mainEntries[index].quantidade) : null,
-          );
-          const resolvedSide = resolvedSideCards.map((carta, index) =>
-            carta ? toCardEntry(carta, sideEntries[index].quantidade) : null,
-          );
-
-          setMainDeck(resolvedMain.filter(Boolean));
-          setSideboard(resolvedSide.filter(Boolean));
-        } catch (error) {
-          console.error("Erro ao carregar cartas do deck:", error);
-        }
-      };
-
-      loadDeckCards();
+      setOriginalDeck(null);
+      return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode]);
+
+    if (!id || !token) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const groupByName = (entries) => {
+      const map = new Map();
+      for (const entry of entries) {
+        const nome = entry.nome;
+        if (map.has(nome)) {
+          map.get(nome).quantidade += entry.quantidade || 1;
+        } else {
+          map.set(nome, { nome, quantidade: entry.quantidade || 1 });
+        }
+      }
+      return Array.from(map.values());
+    };
+
+    const toCardEntry = (entry, card) => ({
+      nome: card?.nome || entry.nome,
+      quantidade: entry.quantidade,
+      imagem: card?.imagem || "",
+      isBasicLand: card?.isBasicLand || false,
+      legalities: card?.legalities || {},
+      colors: card?.colors || card?.colorIdentity || [],
+      cmc: Number.isFinite(card?.cmc) ? card.cmc : Number(card?.cmc) || 0,
+      manaCost: card?.manaCost || "",
+      typeLine: card?.typeLine || "",
+    });
+
+    const loadDeckCards = async () => {
+      try {
+        const fullDeck = await buscarDeck(id, token);
+        if (cancelled) return;
+
+        setOriginalDeck(fullDeck);
+        setDeckForm({ nome: fullDeck.nome, formato: fullDeck.formato });
+
+        const mainEntries = groupByName(fullDeck.maindeck || []);
+        const sideEntries = groupByName(fullDeck.sideboard || []);
+
+        const [resolvedMainCards, resolvedSideCards] = await Promise.all([
+          buscarCartasPorNome(mainEntries.map((entry) => entry.nome)),
+          buscarCartasPorNome(sideEntries.map((entry) => entry.nome)),
+        ]);
+
+        if (cancelled) return;
+
+        setMainDeck(
+          resolvedMainCards.map((card, index) => toCardEntry(mainEntries[index], card)),
+        );
+        setSideboard(
+          resolvedSideCards.map((card, index) => toCardEntry(sideEntries[index], card)),
+        );
+      } catch (error) {
+        console.error("Erro ao carregar cartas do deck:", error);
+      }
+    };
+
+    loadDeckCards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isEditMode, setDeckForm, setMainDeck, setSideboard, token]);
 
   useEffect(() => {
     return () => closeCardPreview();
@@ -100,7 +114,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (isEditMode && id) {
-      handleCreateDeck(event, token, id, deck);
+      handleCreateDeck(event, token, id, originalDeck);
     } else {
       handleCreateDeck(event, token);
     }
