@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { buscarLiga, getRankingLiga, getRankingTimesLiga } from "../services/backendApi";
-import { LigaRankingTimesSection } from "../components/liga/LigaRankingTimesSection";
+import { buscarLiga, getRankingLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { LigaRankingSection } from "../components/liga";
 import {
@@ -14,15 +13,14 @@ import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
 
 export function LigaDetailPage() {
+  const LIMITE_RANKING_TIMES = 10;
   const { id: ligaId } = useParams();
   const { token, isAdmin, usuario } = useAuth();
   const navigate = useNavigate();
   const [liga, setLiga] = useState(null);
   const [ranking, setRanking] = useState(null);
-  const [rankingTimes, setRankingTimes] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rankingLoading, setRankingLoading] = useState(false);
-  const [rankingTimesLoading, setRankingTimesLoading] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState("torneios");
 
   const loadLiga = useCallback(async () => {
@@ -42,40 +40,24 @@ export function LigaDetailPage() {
     if (!ligaId || !token) return;
     setRankingLoading(true);
     try {
-      const data = await getRankingLiga(ligaId, token);
-      setRanking(data.ranking || data);
+      const data = await getRankingLiga(ligaId, token, liga?.tipo === "times" ? { limiteTimes: LIMITE_RANKING_TIMES } : undefined);
+      setRanking(data);
     } catch (err) {
       console.error("Erro ao carregar ranking:", err);
     } finally {
       setRankingLoading(false);
     }
-  }, [ligaId, token]);
+  }, [liga?.tipo, ligaId, token]);
 
   useEffect(() => {
     loadLiga();
   }, [loadLiga]);
 
-  const loadRankingTimes = useCallback(async () => {
-    if (!ligaId || !token) return;
-    setRankingTimesLoading(true);
-    try {
-      const data = await getRankingTimesLiga(ligaId, token);
-      setRankingTimes(data.ranking || data);
-    } catch (err) {
-      console.error("Erro ao carregar ranking de times:", err);
-    } finally {
-      setRankingTimesLoading(false);
-    }
-  }, [ligaId, token]);
-
   useEffect(() => {
     if (abaAtiva === "ranking" && !ranking) {
       loadRanking();
     }
-    if (abaAtiva === "ranking-times" && !rankingTimes) {
-      loadRankingTimes();
-    }
-  }, [abaAtiva, ranking, rankingTimes, loadRanking, loadRankingTimes]);
+  }, [abaAtiva, ranking, loadRanking]);
 
   const isOwner = liga && usuario && String(liga.donoId) === String(usuario.id);
   const canManage = isOwner || isAdmin;
@@ -143,9 +125,6 @@ export function LigaDetailPage() {
           <Tabs value={abaAtiva} onChange={setAbaAtiva}>
             <Tabs.Item value="torneios" label="Torneios" count={torneios.length} />
             <Tabs.Item value="ranking" label="Ranking" />
-            {liga.tipo === "times" && (
-              <Tabs.Item value="ranking-times" label="Ranking de Times" />
-            )}
           </Tabs>
 
           {/* Torneios tab */}
@@ -217,11 +196,6 @@ export function LigaDetailPage() {
           {/* Ranking tab */}
           {abaAtiva === "ranking" && (
             <LigaRankingSection ranking={ranking} loading={rankingLoading} usuarioLogado={usuario} />
-          )}
-
-          {/* Ranking de Times tab */}
-          {abaAtiva === "ranking-times" && (
-            <LigaRankingTimesSection ranking={rankingTimes} loading={rankingTimesLoading} />
           )}
         </>
       ) : (

@@ -219,23 +219,22 @@ export function TournamentJoinPage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="flex flex-col gap-[0.35rem] max-h-[260px] overflow-y-auto pr-1 mb-4">
-                                            {decks.map((deck) => (
-                                                <button
-                                                    key={deck.id}
-                                                    type="button"
-                                                    className={`flex justify-between items-center gap-2 px-[0.85rem] py-[0.6rem] border rounded-[0.65rem] text-[#f5edff] text-[0.88rem] cursor-pointer text-left transition-[border-color,background] duration-150 w-full ${selectedDeckId === deck.id ? "bg-[rgba(199,149,255,0.12)] border-[rgba(199,149,255,0.7)]" : "bg-[rgba(255,255,255,0.03)] border-[rgba(217,180,255,0.2)] hover:bg-[rgba(199,149,255,0.07)] hover:border-[rgba(199,149,255,0.4)]"}`}
-                                                    onClick={() => setSelectedDeckId(deck.id)}
-                                                >
-                                                    <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{deck.nome}</span>
-                                                    <span className="flex items-center gap-2 flex-shrink-0">
-                                                        {deck.formato && (
-                                                            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.04em] px-[0.45rem] py-[0.15rem] rounded-[0.4rem] bg-[rgba(199,149,255,0.15)] text-[#c795ff]">{deck.formato}</span>
-                                                        )}
-                                                        <span className="text-[0.78rem] text-[#beafd7] whitespace-nowrap">{calcTotal(deck)} cartas</span>
-                                                    </span>
-                                                </button>
-                                            ))}
+                                        <div className="mb-4">
+                                            <select
+                                                className={inputClass}
+                                                value={selectedDeckId}
+                                                onChange={(e) => setSelectedDeckId(e.target.value)}
+                                                aria-label="Selecionar deck"
+                                            >
+                                                <option value="">Selecione um deck</option>
+                                                {decks.map((deck) => (
+                                                    <option key={deck.id} value={deck.id}>
+                                                        {deck.nome}
+                                                        {deck.formato ? ` - ${deck.formato}` : ""}
+                                                        {` - ${calcTotal(deck)} cartas`}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         <button

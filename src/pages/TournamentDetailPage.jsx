@@ -266,6 +266,7 @@ export function TournamentDetailPage() {
             isRegistrationOpen={isRegistrationOpen}
             token={token}
             isOwner={isOwner}
+            isAdmin={isAdmin}
             torneioNome={torneio?.nome}
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
@@ -286,12 +287,8 @@ export function TournamentDetailPage() {
         // ── Ongoing: standings compact sidebar on left, everything else on right ──
         if (isOngoing) {
           return (
-            <div className="grid grid-cols-[minmax(260px,300px)_1fr] gap-6 items-start max-[900px]:grid-cols-1">
-              {/* Left: sticky compact standings */}
-              <div className="sticky top-4 max-[900px]:static max-[900px]:order-last">
-                {standingsTable(true)}
-              </div>
-              {/* Right: player/admin actions + tables */}
+            <div className="grid gap-6">
+              {standingsTable(false)}
               <div className="grid gap-6">
                 {matchPanel}
                 {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
