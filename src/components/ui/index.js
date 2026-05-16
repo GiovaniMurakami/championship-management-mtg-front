@@ -8,6 +8,7 @@ export { LandingHeader } from "./LandingHeader";
 export { Navbar } from "./Navbar";
 export { PageShell } from "./PageShell";
 export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail } from "./Skeleton";
+export { SitePasswordGate } from "./SitePasswordGate";
 export { Spinner } from "./Spinner";
 export { SponsorSection } from "./SponsorSection";
 export { Tabs } from "./Tabs";
