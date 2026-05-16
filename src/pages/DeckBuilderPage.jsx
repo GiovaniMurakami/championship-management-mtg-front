@@ -69,7 +69,11 @@ export function DeckBuilderPage({ isEditMode = false }) {
         if (cancelled) return;
 
         setOriginalDeck(fullDeck);
-        setDeckForm({ nome: fullDeck.nome, formato: fullDeck.formato });
+        setDeckForm({
+          nome: fullDeck.nome,
+          formato: fullDeck.formato,
+          linkLigaMagic: fullDeck.linkLigaMagic || "",
+        });
 
         const mainEntries = groupByName(fullDeck.maindeck || []);
         const sideEntries = groupByName(fullDeck.sideboard || []);

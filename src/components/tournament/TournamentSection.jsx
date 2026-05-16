@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { listarTorneios } from "../../services/backendApi";
 import { useAuth } from "../../hooks/useAuth";
 import { SkeletonBannerCard } from "../ui/Skeleton";
+import { getTournamentFormatLabel } from "../../constants/tournament";
 
 const FORMAT_COLORS = {
   modern: "#a78bfa",
@@ -11,6 +12,7 @@ const FORMAT_COLORS = {
   legacy: "#f87171",
   vintage: "#60a5fa",
   commander: "#fb923c",
+  commander500: "#f59e0b",
   draft: "#e879f9",
   sealed: "#38bdf8",
 };
@@ -129,7 +131,7 @@ export function TournamentSection() {
                         color: cor,
                       }}
                     >
-                      {formato.toUpperCase()}
+                      {getTournamentFormatLabel(formato).toUpperCase()}
                     </span>
                     {status && (
                       <span className={`text-[0.68rem] font-medium tracking-[0.05em] px-2 py-[0.15rem] rounded-full ${STATUS_STYLE[status] ?? ""}`}>

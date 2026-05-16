@@ -52,7 +52,7 @@ const GROUP_COLOR = {
 };
 const FMT_COLOR = {
   standard: "#93c5fd", modern: "#fdba74", pioneer: "#6ee7b7",
-  legacy: "#c4b5fd", commander: "#fcd34d", pauper: "#cbd5e1",
+  legacy: "#c4b5fd", commander: "#fcd34d", commander500: "#f59e0b", pauper: "#cbd5e1",
 };
 
 // ── shared canvas helpers ─────────────────────────────────────────────────────

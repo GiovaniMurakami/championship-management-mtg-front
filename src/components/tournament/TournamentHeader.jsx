@@ -1,4 +1,5 @@
 import { Skeleton } from "../ui/Skeleton";
+import { getTournamentFormatLabel } from "../../constants/tournament";
 
 const STATUS_CONFIG = {
   inscricoes_abertas: {
@@ -120,7 +121,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
       {!loading && torneio && (
         <div className="flex flex-wrap gap-2 max-[480px]:gap-[0.4rem]">
           {torneio.formato && (
-            <StatChip icon={<IconFormat />} label="Formato" value={torneio.formato} accent="#c795ff" />
+            <StatChip icon={<IconFormat />} label="Formato" value={getTournamentFormatLabel(torneio.formato)} accent="#c795ff" />
           )}
           <StatChip
             icon={<IconRound />}
