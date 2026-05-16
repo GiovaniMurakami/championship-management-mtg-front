@@ -11,7 +11,7 @@ import {
 } from "../constants/auth";
 
 export function useDeckBuilder() {
-  const [deckForm, setDeckForm] = useState({ nome: "", formato: "" });
+  const [deckForm, setDeckForm] = useState({ nome: "", formato: "", linkLigaMagic: "" });
   const [mainDeck, setMainDeck] = useState([]);
   const [sideboard, setSideboard] = useState([]);
   const [commander, setCommander] = useState([]);
@@ -179,6 +179,8 @@ export function useDeckBuilder() {
     if (deckIdParam && originalDeck) {
       const nomeIgual = deckForm.nome === originalDeck.nome;
       const formatoIgual = deckForm.formato === originalDeck.formato;
+      const linkLigaMagicIgual =
+        (deckForm.linkLigaMagic || "") === (originalDeck.linkLigaMagic || "");
       const maindeckIgual = compareDeckCards(
         mainDeck,
         originalDeck.maindeck || [],
@@ -196,16 +198,29 @@ export function useDeckBuilder() {
             : [],
       );
 
-      if (nomeIgual && formatoIgual && maindeckIgual && sideboardIgual && commanderIgual) {
+      if (
+        nomeIgual
+        && formatoIgual
+        && linkLigaMagicIgual
+        && maindeckIgual
+        && sideboardIgual
+        && commanderIgual
+      ) {
         setDeckMessage("Nenhuma alteracao foi feita.");
         setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
         return;
       }
     }
 
-    const isCommander = deckForm.formato === "commander";
+    const isCommander =
+      deckForm.formato === "commander" || deckForm.formato === "commander500";
     const minimumMainDeckSize = isCommander ? 99 : MAX_DECK_SIZE;
     const maximumSideboardSize = isCommander ? 1 : MAX_SIDEBOARD_SIZE;
+
+    if (deckForm.formato === "commander500" && !deckForm.linkLigaMagic.trim()) {
+      setDeckMessage("Informe o link LigaMagic para decks Commander 500.");
+      return;
+    }
 
     if (totalMain < minimumMainDeckSize) {
       setDeckMessage(
@@ -252,6 +267,7 @@ export function useDeckBuilder() {
       const payload = {
         nome: deckForm.nome,
         formato: deckForm.formato,
+        linkLigaMagic: deckForm.linkLigaMagic.trim() || undefined,
         maindeck: toDeckPayload(mainDeck),
         sideboard: toDeckPayload(sideboard),
         commander: toDeckPayload(commander),
@@ -263,7 +279,7 @@ export function useDeckBuilder() {
       } else {
         await cadastrarDeck(payload, token);
         setDeckMessage("Deck cadastrado com sucesso.");
-        setDeckForm({ nome: "", formato: "" });
+        setDeckForm({ nome: "", formato: "", linkLigaMagic: "" });
         setMainDeck([]);
         setSideboard([]);
         setCommander([]);

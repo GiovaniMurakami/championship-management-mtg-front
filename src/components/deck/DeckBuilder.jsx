@@ -8,8 +8,11 @@ const FORMATS = [
   { value: "pioneer", label: "Pioneer" },
   { value: "legacy", label: "Legacy" },
   { value: "commander", label: "Commander" },
+  { value: "commander500", label: "Commander 500" },
   { value: "pauper", label: "Pauper" },
 ];
+
+const FORMAT_LABELS = Object.fromEntries(FORMATS.map((format) => [format.value, format.label]));
 
 const EXPORT_FORMATS = [
   { key: "arena", label: "MTG Arena" },
@@ -22,7 +25,7 @@ function buildExport(type, deckForm, mainDeck, sideboard, commander) {
   const main = mainDeck ?? [];
   const side = sideboard ?? [];
   const commanderCards = commander ?? [];
-  const isCommander = deckForm.formato === "commander";
+  const isCommander = deckForm.formato === "commander" || deckForm.formato === "commander500";
   const sideSectionLabel = isCommander ? "Commander" : "Sideboard";
 
   switch (type) {
@@ -70,8 +73,9 @@ function buildExport(type, deckForm, mainDeck, sideboard, commander) {
       const total = main.reduce((s, c) => s + (c.quantidade || 0), 0);
       const lines = [
         `// ${deckForm.nome || "Deck"}`,
-        `// Formato: ${deckForm.formato || "—"}`,
+        `// Formato: ${FORMAT_LABELS[deckForm.formato] || deckForm.formato || "—"}`,
         `// ${total} cartas`,
+        ...(deckForm.linkLigaMagic ? [`// LigaMagic: ${deckForm.linkLigaMagic}`] : []),
         "",
       ];
       main.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
@@ -268,30 +272,36 @@ export function DeckBuilder({
   isEditMode = false,
   readOnly = false,
 }) {
-  const [invalidFields, setInvalidFields] = useState({ nome: false, formato: false });
-  const [shakeFields, setShakeFields] = useState({ nome: false, formato: false });
+  const [invalidFields, setInvalidFields] = useState({ nome: false, formato: false, linkLigaMagic: false });
+  const [shakeFields, setShakeFields] = useState({ nome: false, formato: false, linkLigaMagic: false });
 
-  const isCommander = deckForm.formato === "commander";
+  const isCommander = deckForm.formato === "commander" || deckForm.formato === "commander500";
+  const isCommander500 = deckForm.formato === "commander500";
   const mainLimit = isCommander ? 99 : 60;
   const sideLimit = isCommander ? 1 : 15;
   const sideLabel = "Sideboard";
   const commanderLimit = 1;
 
-  const triggerFieldFeedback = ({ nome, formato }) => {
-    setInvalidFields({ nome, formato });
-    setShakeFields({ nome, formato });
+  const triggerFieldFeedback = ({ nome, formato, linkLigaMagic }) => {
+    setInvalidFields({ nome, formato, linkLigaMagic });
+    setShakeFields({ nome, formato, linkLigaMagic });
     setTimeout(() => {
-      setShakeFields({ nome: false, formato: false });
+      setShakeFields({ nome: false, formato: false, linkLigaMagic: false });
     }, 420);
   };
 
   const handleFormSubmit = (event) => {
     const nomeInvalido = !deckForm.nome.trim();
     const formatoInvalido = !deckForm.formato;
+    const linkLigaMagicInvalido = isCommander500 && !deckForm.linkLigaMagic?.trim();
 
-    if (nomeInvalido || formatoInvalido) {
+    if (nomeInvalido || formatoInvalido || linkLigaMagicInvalido) {
       event.preventDefault();
-      triggerFieldFeedback({ nome: nomeInvalido, formato: formatoInvalido });
+      triggerFieldFeedback({
+        nome: nomeInvalido,
+        formato: formatoInvalido,
+        linkLigaMagic: linkLigaMagicInvalido,
+      });
       return;
     }
 
@@ -393,7 +403,11 @@ export function DeckBuilder({
                 "
                 value={deckForm.formato}
                 onChange={(event) => {
-                  onDeckFormChange((current) => ({ ...current, formato: event.target.value }));
+                  onDeckFormChange((current) => ({
+                    ...current,
+                    formato: event.target.value,
+                    linkLigaMagic: event.target.value === "commander500" ? current.linkLigaMagic : "",
+                  }));
                   setInvalidFields((current) => ({ ...current, formato: false }));
                 }}
                 required
@@ -417,9 +431,54 @@ export function DeckBuilder({
           </label>
         </div>
 
+        {isCommander500 && (
+          <label
+            className={`
+              grid gap-[0.45rem] text-[0.95rem]
+              ${invalidFields.linkLigaMagic
+                ? "text-[#ffb5c3] [&_input]:border-[rgba(255,98,124,0.95)] [&_input]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
+                : "text-text-soft"
+              }
+              ${shakeFields.linkLigaMagic ? "animate-[field-shake_420ms_ease]" : ""}
+            `}
+          >
+            Link LigaMagic
+            <input
+              type="url"
+              className="border border-line rounded-[0.7rem] bg-white/[0.03] text-text-main px-[0.7rem] py-[0.65rem] w-full focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)]"
+              value={deckForm.linkLigaMagic || ""}
+              onChange={(event) => {
+                onDeckFormChange((current) => ({ ...current, linkLigaMagic: event.target.value }));
+                setInvalidFields((current) => ({ ...current, linkLigaMagic: false }));
+              }}
+              placeholder="https://www.ligamagic.com.br/?view=dks/deck&id=..."
+              required={isCommander500}
+              disabled={readOnly}
+            />
+          </label>
+        )}
+
+        {(deckForm.formato === "commander500" || deckForm.linkLigaMagic) && (
+          <div className="px-3 py-3 rounded-[0.7rem] border border-[rgba(96,165,250,0.28)] bg-[rgba(59,130,246,0.08)] text-[0.88rem]">
+            <span className="text-[#bfdbfe] font-semibold">LigaMagic:</span>{" "}
+            {deckForm.linkLigaMagic ? (
+              <a
+                href={deckForm.linkLigaMagic}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#dbeafe] underline break-all hover:text-white"
+              >
+                {deckForm.linkLigaMagic}
+              </a>
+            ) : (
+              <span className="text-text-soft">não informado</span>
+            )}
+          </div>
+        )}
+
         {isCommander && (
           <div className="px-3 py-3 rounded-[0.7rem] border border-[rgba(251,191,36,0.28)] bg-[rgba(251,191,36,0.08)] text-[#fde68a] text-[0.88rem]">
-            Commander usa <strong>99 cartas no maindeck</strong>, <strong>1 comandante</strong> e pode manter sideboard separado, se o formato exigir.
+            {isCommander500 ? "Commander 500" : "Commander"} usa <strong>99 cartas no maindeck</strong>, <strong>1 comandante</strong> e pode manter sideboard separado, se o formato exigir.
           </div>
         )}
 

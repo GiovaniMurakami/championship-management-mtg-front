@@ -16,6 +16,7 @@ const FORMAT_META = {
   pioneer: { label: "Pioneer", color: "#6ee7b7", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.45)" },
   legacy: { label: "Legacy", color: "#c4b5fd", bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.45)" },
   commander: { label: "Commander", color: "#fcd34d", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
+  commander500: { label: "Commander 500", color: "#f59e0b", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
   pauper: { label: "Pauper", color: "#cbd5e1", bg: "rgba(148,163,184,0.18)", border: "rgba(148,163,184,0.45)" },
 };
 
