@@ -2,7 +2,7 @@ import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, SitePasswordGate } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import { resolveExternalNavigationTarget } from "./utils/externalNavigation";
@@ -106,11 +106,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
-      </AuthProvider>
+      <SitePasswordGate>
+        <AuthProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </AuthProvider>
+      </SitePasswordGate>
     </BrowserRouter>
   );
 }
