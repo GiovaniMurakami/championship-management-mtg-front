@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { flushSync } from "react-dom";
+import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 
 function NavAvatar({ nome }) {
   const initial = (nome?.[0] ?? "?").toUpperCase();
@@ -126,9 +127,14 @@ export function Navbar({
       className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.72)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)] max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:rounded-2xl max-nav:top-[0.7rem] max-nav:row-gap-[0.6rem]"
     >
       {/* Brand */}
-      <a href="/" onClick={transitionTo("/")} className="shrink-0 opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
+      <a
+        href={MAIN_SITE_URL}
+        target="_top"
+        rel="noopener noreferrer"
+        className="shrink-0 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+      >
         <img
-          src="https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png"
+          src={BRAND_LOGO_URL}
           alt="Tiago Fuguete"
           className="h-7 object-contain"
           style={{ viewTransitionName: "brand-logo" }}

@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
+import {
+  buildTournamentExternalUrl,
+  buildTournamentJoinExternalUrl,
+} from "../../utils/externalNavigation";
 const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
 const hasInitialCheckin = (player) => (player?.checkinRodada ?? -1) >= 0;
 
@@ -132,8 +136,10 @@ export function OwnerControlPanel({
   const [generatingJoinLink, setGeneratingJoinLink] = useState(false);
   const [joinLinkCopied, setJoinLinkCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState(false);
   const joinLinkTimeoutRef = useRef(null);
   const linkCopiedTimeoutRef = useRef(null);
+  const shareFeedbackTimeoutRef = useRef(null);
 
   useEffect(() => {
     setActiveTab(isOngoing ? "mesas" : "jogadores");
@@ -143,11 +149,12 @@ export function OwnerControlPanel({
     return () => {
       clearTimeout(joinLinkTimeoutRef.current);
       clearTimeout(linkCopiedTimeoutRef.current);
+      clearTimeout(shareFeedbackTimeoutRef.current);
     };
   }, []);
 
   const handleCopyTournamentLink = () => {
-    const url = `${window.location.origin}/torneios/${torneio?.id}`;
+    const url = buildTournamentExternalUrl(torneio?.id);
     navigator.clipboard.writeText(url).then(() => {
       setLinkCopied(true);
       clearTimeout(linkCopiedTimeoutRef.current);
@@ -161,7 +168,7 @@ export function OwnerControlPanel({
     try {
       const result = await onGerarLinkIngresso();
       if (result?.token) {
-        setJoinLinkModal(`${window.location.origin}/torneio/ingressar/${result.token}`);
+        setJoinLinkModal(buildTournamentJoinExternalUrl(result.token));
       }
     } finally {
       setGeneratingJoinLink(false);
@@ -174,6 +181,29 @@ export function OwnerControlPanel({
       setJoinLinkCopied(true);
       clearTimeout(joinLinkTimeoutRef.current);
       joinLinkTimeoutRef.current = setTimeout(() => setJoinLinkCopied(false), 2000);
+    });
+  };
+
+  const handleShareTournament = async () => {
+    const url = buildTournamentExternalUrl(torneio?.id);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: torneio?.nome || "Torneio",
+          text: "Confira este torneio no app.",
+          url,
+        });
+        return;
+      }
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+
+    navigator.clipboard.writeText(url).then(() => {
+      setShareFeedback(true);
+      clearTimeout(shareFeedbackTimeoutRef.current);
+      shareFeedbackTimeoutRef.current = setTimeout(() => setShareFeedback(false), 2000);
     });
   };
 
@@ -281,6 +311,22 @@ export function OwnerControlPanel({
           </svg>
           {linkCopied ? "Link copiado!" : "Copiar link do torneio"}
         </button>
+        {isRegistrationOpen && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(96,165,250,0.35)] rounded-[0.7rem] text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#93c5fd] bg-[rgba(59,130,246,0.08)] hover:bg-[rgba(59,130,246,0.18)] hover:text-[#dbeafe]"
+            onClick={handleShareTournament}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="M8.59 13.51 15.42 17.49" />
+              <path d="M15.41 6.51 8.59 10.49" />
+            </svg>
+            {shareFeedback ? "Link copiado!" : "Compartilhar torneio"}
+          </button>
+        )}
         {isOngoing && (
           <button
             type="button"

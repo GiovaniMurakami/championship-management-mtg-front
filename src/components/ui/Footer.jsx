@@ -1,4 +1,4 @@
-const LOGO = "https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png";
+import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 
 const SOCIALS = [
     { label: "Youtube", href: "https://www.youtube.com/tiagofuguete", icon: "M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z", vb: "0 0 576 512" },
@@ -11,8 +11,8 @@ export function Footer() {
     return (
         <footer className="bg-[#0a061a] border-t border-[rgba(217,180,255,0.12)] py-12">
             <div className="max-w-5xl mx-auto px-4 flex flex-col items-center gap-7">
-                <a href="https://tiagofuguete.com.br" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
-                    <img src={LOGO} alt="Tiago Fuguete" className="h-10 object-contain" />
+                <a href={MAIN_SITE_URL} target="_top" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
+                    <img src={BRAND_LOGO_URL} alt="Tiago Fuguete" className="h-10 object-contain" />
                 </a>
 
                 <div className="flex gap-3">
