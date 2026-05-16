@@ -18,16 +18,23 @@ const EXPORT_FORMATS = [
   { key: "moxfield", label: "Moxfield / Archidekt" },
 ];
 
-function buildExport(type, deckForm, mainDeck, sideboard) {
+function buildExport(type, deckForm, mainDeck, sideboard, commander) {
   const main = mainDeck ?? [];
   const side = sideboard ?? [];
+  const commanderCards = commander ?? [];
+  const isCommander = deckForm.formato === "commander";
+  const sideSectionLabel = isCommander ? "Commander" : "Sideboard";
 
   switch (type) {
     case "arena": {
       const lines = ["Deck"];
       main.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      if (commanderCards.length > 0) {
+        lines.push("", "Commander");
+        commanderCards.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      }
       if (side.length > 0) {
-        lines.push("", "Sideboard");
+        lines.push("", sideSectionLabel);
         side.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
       }
       return { content: lines.join("\n"), ext: "txt" };
@@ -35,6 +42,10 @@ function buildExport(type, deckForm, mainDeck, sideboard) {
     case "mtgo": {
       const lines = [];
       main.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      if (commanderCards.length > 0) {
+        lines.push("");
+        commanderCards.forEach((c) => lines.push(`CM: ${c.quantidade} ${c.nome}`));
+      }
       if (side.length > 0) {
         lines.push("");
         side.forEach((c) => lines.push(`SB: ${c.quantidade} ${c.nome}`));
@@ -44,8 +55,12 @@ function buildExport(type, deckForm, mainDeck, sideboard) {
     case "moxfield": {
       const lines = [];
       main.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      if (commanderCards.length > 0) {
+        lines.push("", "COMMANDER:");
+        commanderCards.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      }
       if (side.length > 0) {
-        lines.push("", "SIDEBOARD:");
+        lines.push("", `${(isCommander ? "SIDEBOARD" : sideSectionLabel).toUpperCase()}:`);
         side.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
       }
       return { content: lines.join("\n"), ext: "txt" };
@@ -60,10 +75,17 @@ function buildExport(type, deckForm, mainDeck, sideboard) {
         "",
       ];
       main.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      if (commanderCards.length > 0) {
+        lines.push(
+          "",
+          `// Commander (${commanderCards.reduce((s, c) => s + (c.quantidade || 0), 0)})`
+        );
+        commanderCards.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
+      }
       if (side.length > 0) {
         lines.push(
           "",
-          `// Sideboard (${side.reduce((s, c) => s + (c.quantidade || 0), 0)})`
+          `// ${(isCommander ? "Sideboard" : sideSectionLabel)} (${side.reduce((s, c) => s + (c.quantidade || 0), 0)})`
         );
         side.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
       }
@@ -82,7 +104,7 @@ function downloadText(content, filename) {
   URL.revokeObjectURL(url);
 }
 
-function ExportDropdown({ deckForm, mainDeck, sideboard }) {
+function ExportDropdown({ deckForm, mainDeck, sideboard, commander }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -95,7 +117,7 @@ function ExportDropdown({ deckForm, mainDeck, sideboard }) {
   }, []);
 
   const handleExport = (key) => {
-    const { content, ext } = buildExport(key, deckForm, mainDeck, sideboard);
+    const { content, ext } = buildExport(key, deckForm, mainDeck, sideboard, commander);
     const slug = (deckForm.nome || "deck").replace(/\s+/g, "_").toLowerCase();
     downloadText(content, `${slug}.${ext}`);
     setOpen(false);
@@ -218,12 +240,17 @@ export function DeckBuilder({
   onMainSearchChange,
   sideSearch,
   onSideSearchChange,
+  commanderSearch,
+  onCommanderSearchChange,
   mainSuggestions,
   sideSuggestions,
+  commanderSuggestions,
   mainDeck,
   sideboard,
+  commander,
   totalMain,
   totalSide,
+  totalCommander,
   onAddCard,
   onRemoveCard,
   onUpdateCardQuantity,
@@ -244,7 +271,11 @@ export function DeckBuilder({
   const [invalidFields, setInvalidFields] = useState({ nome: false, formato: false });
   const [shakeFields, setShakeFields] = useState({ nome: false, formato: false });
 
-  const mainLimit = deckForm.formato === "commander" ? 100 : 60;
+  const isCommander = deckForm.formato === "commander";
+  const mainLimit = isCommander ? 99 : 60;
+  const sideLimit = isCommander ? 1 : 15;
+  const sideLabel = "Sideboard";
+  const commanderLimit = 1;
 
   const triggerFieldFeedback = ({ nome, formato }) => {
     setInvalidFields({ nome, formato });
@@ -386,8 +417,14 @@ export function DeckBuilder({
           </label>
         </div>
 
+        {isCommander && (
+          <div className="px-3 py-3 rounded-[0.7rem] border border-[rgba(251,191,36,0.28)] bg-[rgba(251,191,36,0.08)] text-[#fde68a] text-[0.88rem]">
+            Commander usa <strong>99 cartas no maindeck</strong>, <strong>1 comandante</strong> e pode manter sideboard separado, se o formato exigir.
+          </div>
+        )}
+
         {/* card-pickers: 2-col grid */}
-        <div className="grid grid-cols-2 gap-[0.8rem] items-stretch max-sm:grid-cols-1 max-sm:gap-4">
+        <div className={`grid gap-[0.8rem] items-stretch max-sm:grid-cols-1 max-sm:gap-4 ${isCommander ? "grid-cols-3" : "grid-cols-2"}`}>
 
           {/* picker-column (main) */}
           <div
@@ -441,7 +478,7 @@ export function DeckBuilder({
               max-sm:min-h-[clamp(400px,calc(100vh-280px),600px)] max-sm:p-4
             "
           >
-            <PickerHeader label="Sideboard" total={totalSide} limit={15} />
+            <PickerHeader label={sideLabel} total={totalSide} limit={sideLimit} />
             {!readOnly && (
               <CardSearch
                 searchValue={sideSearch}
@@ -466,6 +503,46 @@ export function DeckBuilder({
               readOnly={readOnly}
             />
           </div>
+
+          {isCommander && (
+            <div
+              className="
+                border border-line rounded-[0.8rem] p-3
+                bg-white/[0.01]
+                min-h-[clamp(520px,calc(100vh-240px),760px)]
+                flex flex-col overflow-hidden
+                transition-all duration-[220ms]
+                animate-[fade-in_300ms_ease-out]
+                hover:border-[rgba(199,149,255,0.3)] hover:bg-white/[0.03] hover:shadow-[0_2px_8px_rgba(167,79,255,0.05)]
+                max-sm:min-h-[clamp(400px,calc(100vh-280px),600px)] max-sm:p-4
+              "
+            >
+              <PickerHeader label="Comandante" total={totalCommander} limit={commanderLimit} />
+              {!readOnly && (
+                <CardSearch
+                  searchValue={commanderSearch}
+                  onSearchChange={onCommanderSearchChange}
+                  suggestions={commanderSuggestions}
+                  onCardAdd={(card) => onAddCard(card, "commander")}
+                  onCardMouseEnter={onCardMouseEnter}
+                  onCardMouseLeave={onCardMouseLeave}
+                  onPreviewDismiss={onPreviewDismiss}
+                  title=""
+                  readOnly={readOnly}
+                />
+              )}
+              <DeckList
+                cards={commander}
+                onCardRemove={(nome) => onRemoveCard("commander", nome)}
+                onCardQuantityChange={(nome, quantidade) =>
+                  onUpdateCardQuantity("commander", nome, quantidade)
+                }
+                onCardMouseEnter={onCardMouseEnter}
+                onCardMouseLeave={onCardMouseLeave}
+                readOnly={readOnly}
+              />
+            </div>
+          )}
         </div>
 
         {/* deck-actions */}
@@ -506,7 +583,7 @@ export function DeckBuilder({
             </>
           )}
 
-          <ExportDropdown deckForm={deckForm} mainDeck={mainDeck} sideboard={sideboard} />
+          <ExportDropdown deckForm={deckForm} mainDeck={mainDeck} sideboard={sideboard} commander={commander} />
 
           {!readOnly && (
             /* btn primary */

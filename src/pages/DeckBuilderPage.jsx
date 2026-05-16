@@ -13,34 +13,26 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const { token } = useAuth();
   const { id } = useParams();
   const location = useLocation();
-  const readOnly = location.state?.readOnly || false;
+  const readOnly = location.state?.readOnly || new URLSearchParams(location.search).get("modo") === "visualizar";
   const [analysisTab, setAnalysisTab] = useState("mao");
   const [originalDeck, setOriginalDeck] = useState(location.state?.deck ?? null);
 
   const {
-    deckForm, setDeckForm, mainDeck, setMainDeck, sideboard, setSideboard,
+    deckForm, setDeckForm, mainDeck, setMainDeck, sideboard, setSideboard, commander, setCommander,
     deckLoading, deckMessage, cardLimitMessage, illegalCardMessage,
-    importLoading, importMessage, totalMain, totalSide,
+    importLoading, importMessage, totalMain, totalSide, totalCommander,
     addCardToDeck, updateCardQuantity, removeCard, handleCreateDeck, importDeckFromTxt,
   } = useDeckBuilder();
 
   const {
-    mainSearch, setMainSearch, sideSearch, setSideSearch,
-    mainSuggestions, sideSuggestions,
+    mainSearch, setMainSearch, sideSearch, setSideSearch, commanderSearch, setCommanderSearch,
+    mainSuggestions, sideSuggestions, commanderSuggestions,
   } = useCardSearch();
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
 
   useEffect(() => {
-    if (!isEditMode) {
-      setDeckForm({ nome: "", formato: "" });
-      setMainDeck([]);
-      setSideboard([]);
-      setOriginalDeck(null);
-      return;
-    }
-
-    if (!id || !token) {
+    if (!isEditMode || !id || !token) {
       return;
     }
 
@@ -81,10 +73,18 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
         const mainEntries = groupByName(fullDeck.maindeck || []);
         const sideEntries = groupByName(fullDeck.sideboard || []);
+        const commanderEntries = groupByName(
+          Array.isArray(fullDeck.commander)
+            ? fullDeck.commander
+            : fullDeck.commander
+              ? [fullDeck.commander]
+              : [],
+        );
 
-        const [resolvedMainCards, resolvedSideCards] = await Promise.all([
+        const [resolvedMainCards, resolvedSideCards, resolvedCommanderCards] = await Promise.all([
           buscarCartasPorNome(mainEntries.map((entry) => entry.nome)),
           buscarCartasPorNome(sideEntries.map((entry) => entry.nome)),
+          buscarCartasPorNome(commanderEntries.map((entry) => entry.nome)),
         ]);
 
         if (cancelled) return;
@@ -94,6 +94,9 @@ export function DeckBuilderPage({ isEditMode = false }) {
         );
         setSideboard(
           resolvedSideCards.map((card, index) => toCardEntry(sideEntries[index], card)),
+        );
+        setCommander(
+          resolvedCommanderCards.map((card, index) => toCardEntry(commanderEntries[index], card)),
         );
       } catch (error) {
         console.error("Erro ao carregar cartas do deck:", error);
@@ -105,7 +108,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
     return () => {
       cancelled = true;
     };
-  }, [id, isEditMode, setDeckForm, setMainDeck, setSideboard, token]);
+  }, [id, isEditMode, setCommander, setDeckForm, setMainDeck, setSideboard, token]);
 
   useEffect(() => {
     return () => closeCardPreview();
@@ -129,12 +132,17 @@ export function DeckBuilderPage({ isEditMode = false }) {
         onMainSearchChange={setMainSearch}
         sideSearch={sideSearch}
         onSideSearchChange={setSideSearch}
+        commanderSearch={commanderSearch}
+        onCommanderSearchChange={setCommanderSearch}
         mainSuggestions={mainSuggestions}
         sideSuggestions={sideSuggestions}
+        commanderSuggestions={commanderSuggestions}
         mainDeck={mainDeck}
         sideboard={sideboard}
+        commander={commander}
         totalMain={totalMain}
         totalSide={totalSide}
+        totalCommander={totalCommander}
         onAddCard={addCardToDeck}
         onRemoveCard={removeCard}
         onUpdateCardQuantity={updateCardQuantity}

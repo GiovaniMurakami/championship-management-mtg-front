@@ -5,6 +5,8 @@ const getTotalMembros = (time) =>
 
 const inputClass =
   "w-full border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.8rem] py-[0.7rem] outline-none transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
+const selectMenuStyle = { colorScheme: "dark" };
+const optionClass = "bg-[#110a22] text-[#f5edff]";
 
 export function PlayerProfile({
   torneio,
@@ -198,24 +200,26 @@ export function PlayerProfile({
                 <span className="text-[0.72rem] text-[#beafd7]">Ordenar:</span>
                 <select
                   className="text-[0.72rem] bg-[rgba(255,255,255,0.05)] border border-[rgba(217,180,255,0.2)] rounded-[0.4rem] text-[#f5edff] px-[0.4rem] py-[0.15rem] outline-none cursor-pointer"
+                  style={selectMenuStyle}
                   value={deckSort}
                   onChange={(e) => setDeckSort(e.target.value)}
                 >
-                  <option value="recente">Mais recentes</option>
-                  <option value="nome">Nome (A-Z)</option>
+                  <option className={optionClass} value="recente">Mais recentes</option>
+                  <option className={optionClass} value="nome">Nome (A-Z)</option>
                 </select>
               </div>
 
               <select
                 className={inputClass}
+                style={selectMenuStyle}
                 value={selectedDeckId || ""}
                 onChange={(e) => onDeckChange(e.target.value)}
                 disabled={actionLoading}
                 aria-label="Selecionar deck"
               >
-                <option value="">Selecione um deck</option>
+                <option className={optionClass} value="">Selecione um deck</option>
                 {deckOptions.map((deck) => (
-                  <option key={deck.id} value={deck.id}>
+                  <option className={optionClass} key={deck.id} value={deck.id}>
                     {deck.nome}
                     {deck.formato ? ` - ${deck.formato}` : ""}
                     {` - ${deck.totalCartas} cartas`}

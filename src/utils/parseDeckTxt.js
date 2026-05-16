@@ -27,6 +27,7 @@ export function parseDeckTxt(content) {
   const lines = String(content || "").split(/\r?\n/);
   const mainEntries = [];
   const sideEntries = [];
+  const commanderEntries = [];
 
   let section = "main";
 
@@ -50,6 +51,11 @@ export function parseDeckTxt(content) {
       continue;
     }
 
+    if (header === "commander" || header === "comandante") {
+      section = "commander";
+      continue;
+    }
+
     const parsed = parseDeckLine(line);
 
     if (!parsed) {
@@ -58,10 +64,12 @@ export function parseDeckTxt(content) {
 
     if (section === "main") {
       mainEntries.push(parsed);
-    } else {
+    } else if (section === "side") {
       sideEntries.push(parsed);
+    } else {
+      commanderEntries.push(parsed);
     }
   }
 
-  return { mainEntries, sideEntries };
+  return { mainEntries, sideEntries, commanderEntries };
 }
