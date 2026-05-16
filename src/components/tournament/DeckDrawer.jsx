@@ -46,7 +46,6 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
 
   useEffect(() => {
     if (!deckId || !token) return;
-    setLoading(true);
 
     const resolveCards = async (entries) => {
       const cards = await buscarCartasPorNome(entries.map((entry) => entry.nome));
@@ -131,7 +130,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
         onClick={onClose}
       />
 
-      {/* Card image hover preview — centered on page */}
+      {/* Card image hover preview - centered on page */}
       {hoveredCard?.imagem && (
         <div
           key={hoveredCard.nome}
@@ -414,7 +413,7 @@ function DeckNameEditPopover({ deckId, currentName, currentNomeConsolidado, toke
           onClick={handleSave}
           disabled={loading || !name.trim()}
         >
-          {loading ? "Salvando…" : "Salvar"}
+          {loading ? "Salvando..." : "Salvar"}
         </button>
       </div>
     </div>

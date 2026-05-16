@@ -280,7 +280,7 @@ export function StandingsTable({
                             />
                           ) : (
                             <span className={getDeckStatus(player) ? "text-[#4ade80]" : "text-[#beafd7]"}>
-                              {getDeckStatus(player) ? "âœ“" : "-"}
+                              {getDeckStatus(player) ? "✓" : "-"}
                             </span>
                           )}
                         </td>
@@ -288,7 +288,7 @@ export function StandingsTable({
                           <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">
                             {isCheckedIn(player) ? (
                               <span className="inline-flex items-center gap-[0.25rem] text-[#4ade80] font-semibold">
-                                âœ“
+                                ✓
                                 <span className="text-[0.7rem] font-bold text-[#86efac] bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.3)] rounded-full px-[0.4rem] py-[0.05rem]">
                                   R{(player.checkinRodada ?? -1) + 1}
                                 </span>
@@ -363,10 +363,10 @@ export function StandingsTable({
                     {isRegistrationOpen ? (
                       <div className="flex items-center gap-3 text-[0.82rem]">
                         <span className={`text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${getDeckStatus(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
-                          {getDeckStatus(player) ? "âœ“ Deck" : "Sem deck"}
+                          {getDeckStatus(player) ? "✓ Deck" : "Sem deck"}
                         </span>
                         <span className={`text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${isCheckedIn(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
-                          {isCheckedIn(player) ? `âœ“ Check-in R${(player.checkinRodada ?? -1) + 1}` : "Sem check-in"}
+                          {isCheckedIn(player) ? `✓ Check-in R${(player.checkinRodada ?? -1) + 1}` : "Sem check-in"}
                         </span>
                       </div>
                     ) : (
@@ -379,7 +379,7 @@ export function StandingsTable({
                           <span className="font-semibold text-[#f5edff]">{empates}E</span>
                           {!isFinished && (
                             <span className={`ml-auto text-[0.72rem] font-semibold px-2 py-[0.1rem] rounded-full border ${isCheckedIn(player) ? "bg-[rgba(34,197,94,0.12)] border-[rgba(34,197,94,0.3)] text-[#86efac]" : "bg-[rgba(239,68,68,0.12)] border-[rgba(239,68,68,0.3)] text-[#fca5a5]"}`}>
-                              {isCheckedIn(player) ? `âœ“ Check-in R${(player.checkinRodada ?? -1) + 1}` : "Sem check-in"}
+                              {isCheckedIn(player) ? `✓ Check-in R${(player.checkinRodada ?? -1) + 1}` : "Sem check-in"}
                             </span>
                           )}
                         </div>
