@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
+import {
+  buildTournamentExternalUrl,
+  buildTournamentJoinExternalUrl,
+} from "../../utils/externalNavigation";
 const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
 const hasInitialCheckin = (player) => (player?.checkinRodada ?? -1) >= 0;
 
@@ -147,7 +151,7 @@ export function OwnerControlPanel({
   }, []);
 
   const handleCopyTournamentLink = () => {
-    const url = `${window.location.origin}/torneios/${torneio?.id}`;
+    const url = buildTournamentExternalUrl(torneio?.id);
     navigator.clipboard.writeText(url).then(() => {
       setLinkCopied(true);
       clearTimeout(linkCopiedTimeoutRef.current);
@@ -161,7 +165,7 @@ export function OwnerControlPanel({
     try {
       const result = await onGerarLinkIngresso();
       if (result?.token) {
-        setJoinLinkModal(`${window.location.origin}/torneio/ingressar/${result.token}`);
+        setJoinLinkModal(buildTournamentJoinExternalUrl(result.token));
       }
     } finally {
       setGeneratingJoinLink(false);

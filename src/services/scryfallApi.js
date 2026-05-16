@@ -45,6 +45,7 @@ function normalizeCard(card) {
       pioneer: card.legalities?.pioneer === "legal",
       legacy: card.legalities?.legacy === "legal",
       commander: card.legalities?.commander === "legal",
+      commander500: card.legalities?.commander === "legal",
       pauper: card.legalities?.pauper === "legal",
     },
     colors: card.colors || [],

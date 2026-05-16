@@ -11,9 +11,10 @@ import {
 } from "../constants/auth";
 
 export function useDeckBuilder() {
-  const [deckForm, setDeckForm] = useState({ nome: "", formato: "" });
+  const [deckForm, setDeckForm] = useState({ nome: "", formato: "", linkLigaMagic: "" });
   const [mainDeck, setMainDeck] = useState([]);
   const [sideboard, setSideboard] = useState([]);
+  const [commander, setCommander] = useState([]);
   const [deckLoading, setDeckLoading] = useState(false);
   const [deckMessage, setDeckMessage] = useState("");
   const [cardLimitMessage, setCardLimitMessage] = useState("");
@@ -32,11 +33,38 @@ export function useDeckBuilder() {
     [sideboard],
   );
 
+  const totalCommander = useMemo(
+    () =>
+      commander.reduce((acc, card) => acc + Number(card.quantidade || 0), 0),
+    [commander],
+  );
+
   const addCardToDeck = (card, section) => {
-    const setter = section === "main" ? setMainDeck : setSideboard;
+    const setter =
+      section === "main"
+        ? setMainDeck
+        : section === "commander"
+          ? setCommander
+          : setSideboard;
     const isBasicLand = card.isBasicLand;
 
     setter((current) => {
+      if (section === "commander") {
+        return [
+          {
+            nome: card.nome,
+            quantidade: 1,
+            imagem: card.imagem || "",
+            isBasicLand,
+            legalities: card.legalities || {},
+            colors: card.colors || card.colorIdentity || [],
+            cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
+            manaCost: card.manaCost || "",
+            typeLine: card.typeLine || "",
+          },
+        ];
+      }
+
       const found = current.find((item) => item.nome === card.nome);
 
       if (found) {
@@ -76,13 +104,24 @@ export function useDeckBuilder() {
   };
 
   const updateCardQuantity = (section, nome, quantidade) => {
-    const deck = section === "main" ? mainDeck : sideboard;
+    const deck =
+      section === "main"
+        ? mainDeck
+        : section === "commander"
+          ? commander
+          : sideboard;
     const card = deck.find((c) => c.nome === nome);
     const isBasicLand = card?.isBasicLand;
-    const maxAllowed = isBasicLand ? 999 : MAX_CARD_COPIES;
+    const maxAllowed =
+      section === "commander" ? 1 : (isBasicLand ? 999 : MAX_CARD_COPIES);
 
     const parsed = Math.max(1, Math.min(maxAllowed, Number(quantidade || 1)));
-    const setter = section === "main" ? setMainDeck : setSideboard;
+    const setter =
+      section === "main"
+        ? setMainDeck
+        : section === "commander"
+          ? setCommander
+          : setSideboard;
 
     if (parsed === maxAllowed && Number(quantidade) > maxAllowed) {
       setCardLimitMessage(
@@ -97,7 +136,12 @@ export function useDeckBuilder() {
   };
 
   const removeCard = (section, nome) => {
-    const setter = section === "main" ? setMainDeck : setSideboard;
+    const setter =
+      section === "main"
+        ? setMainDeck
+        : section === "commander"
+          ? setCommander
+          : setSideboard;
     setter((current) => current.filter((card) => card.nome !== nome));
   };
 
@@ -135,6 +179,8 @@ export function useDeckBuilder() {
     if (deckIdParam && originalDeck) {
       const nomeIgual = deckForm.nome === originalDeck.nome;
       const formatoIgual = deckForm.formato === originalDeck.formato;
+      const linkLigaMagicIgual =
+        (deckForm.linkLigaMagic || "") === (originalDeck.linkLigaMagic || "");
       const maindeckIgual = compareDeckCards(
         mainDeck,
         originalDeck.maindeck || [],
@@ -143,32 +189,64 @@ export function useDeckBuilder() {
         sideboard,
         originalDeck.sideboard || [],
       );
+      const commanderIgual = compareDeckCards(
+        commander,
+        Array.isArray(originalDeck.commander)
+          ? originalDeck.commander
+          : originalDeck.commander
+            ? [originalDeck.commander]
+            : [],
+      );
 
-      if (nomeIgual && formatoIgual && maindeckIgual && sideboardIgual) {
+      if (
+        nomeIgual
+        && formatoIgual
+        && linkLigaMagicIgual
+        && maindeckIgual
+        && sideboardIgual
+        && commanderIgual
+      ) {
         setDeckMessage("Nenhuma alteracao foi feita.");
         setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
         return;
       }
     }
 
-    if (totalMain < MAX_DECK_SIZE) {
+    const isCommander =
+      deckForm.formato === "commander" || deckForm.formato === "commander500";
+    const minimumMainDeckSize = isCommander ? 99 : MAX_DECK_SIZE;
+    const maximumSideboardSize = isCommander ? 1 : MAX_SIDEBOARD_SIZE;
+
+    if (deckForm.formato === "commander500" && !deckForm.linkLigaMagic.trim()) {
+      setDeckMessage("Informe o link LigaMagic para decks Commander 500.");
+      return;
+    }
+
+    if (totalMain < minimumMainDeckSize) {
       setDeckMessage(
-        `O maindeck precisa ter pelo menos ${MAX_DECK_SIZE} cartas.`,
+        `O maindeck precisa ter pelo menos ${minimumMainDeckSize} cartas.`,
       );
       return;
     }
 
-    if (totalSide > MAX_SIDEBOARD_SIZE) {
+    if (totalSide > maximumSideboardSize) {
       setDeckMessage(
-        `O sideboard pode ter no maximo ${MAX_SIDEBOARD_SIZE} cartas.`,
+        isCommander
+          ? "O deck Commander pode ter apenas 1 comandante."
+          : `O sideboard pode ter no maximo ${MAX_SIDEBOARD_SIZE} cartas.`,
       );
+      return;
+    }
+
+    if (isCommander && totalCommander !== 1) {
+      setDeckMessage("O deck Commander precisa ter exatamente 1 comandante.");
       return;
     }
 
     const ilegalCards = [];
     const formatoChecagem = deckForm.formato;
 
-    [...mainDeck, ...sideboard].forEach((card) => {
+    [...mainDeck, ...sideboard, ...commander].forEach((card) => {
       const legalFormat = card.legalities?.[formatoChecagem];
 
       if (legalFormat === false) {
@@ -189,8 +267,10 @@ export function useDeckBuilder() {
       const payload = {
         nome: deckForm.nome,
         formato: deckForm.formato,
+        linkLigaMagic: deckForm.linkLigaMagic.trim() || undefined,
         maindeck: toDeckPayload(mainDeck),
         sideboard: toDeckPayload(sideboard),
+        commander: toDeckPayload(commander),
       };
 
       if (deckIdParam) {
@@ -199,9 +279,10 @@ export function useDeckBuilder() {
       } else {
         await cadastrarDeck(payload, token);
         setDeckMessage("Deck cadastrado com sucesso.");
-        setDeckForm({ nome: "", formato: "" });
+        setDeckForm({ nome: "", formato: "", linkLigaMagic: "" });
         setMainDeck([]);
         setSideboard([]);
+        setCommander([]);
       }
 
       setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
@@ -253,25 +334,27 @@ export function useDeckBuilder() {
 
     try {
       const content = await file.text();
-      const { mainEntries, sideEntries } = parseDeckTxt(content);
+      const { mainEntries, sideEntries, commanderEntries } = parseDeckTxt(content);
 
-      if (mainEntries.length === 0 && sideEntries.length === 0) {
+      if (mainEntries.length === 0 && sideEntries.length === 0 && commanderEntries.length === 0) {
         setImportMessage("Nenhuma carta valida foi encontrada no arquivo.");
         return;
       }
 
-      const [resolvedMain, resolvedSide] = await Promise.all([
+      const [resolvedMain, resolvedSide, resolvedCommander] = await Promise.all([
         resolveImportedCards(mainEntries),
         resolveImportedCards(sideEntries),
+        resolveImportedCards(commanderEntries),
       ]);
 
-      if (resolvedMain.length === 0 && resolvedSide.length === 0) {
+      if (resolvedMain.length === 0 && resolvedSide.length === 0 && resolvedCommander.length === 0) {
         setImportMessage("Nao foi possivel encontrar as cartas no Scryfall.");
         return;
       }
 
       setMainDeck(resolvedMain);
       setSideboard(resolvedSide);
+      setCommander(resolvedCommander);
       setImportMessage("Deck importado com sucesso.");
       setTimeout(() => setImportMessage(""), MESSAGE_DISPLAY_MS);
     } catch {
@@ -285,6 +368,7 @@ export function useDeckBuilder() {
     deckForm,
     mainDeck,
     sideboard,
+    commander,
     deckLoading,
     deckMessage,
     cardLimitMessage,
@@ -293,9 +377,11 @@ export function useDeckBuilder() {
     importMessage,
     totalMain,
     totalSide,
+    totalCommander,
     setDeckForm,
     setMainDeck,
     setSideboard,
+    setCommander,
     addCardToDeck,
     updateCardQuantity,
     removeCard,

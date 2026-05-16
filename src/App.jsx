@@ -1,10 +1,11 @@
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, SitePasswordGate } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
+import { resolveExternalNavigationTarget } from "./utils/externalNavigation";
 
 const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
 
@@ -16,6 +17,25 @@ function RateLimitBridge() {
     window.addEventListener("auth:rateLimited", handle);
     return () => window.removeEventListener("auth:rateLimited", handle);
   }, [addToast]);
+  return null;
+}
+
+function ExternalRouteSync() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const target = resolveExternalNavigationTarget(location);
+    if (!target) return;
+
+    const nextUrl = `${target.pathname}${target.search}`;
+    const currentUrl = `${location.pathname}${location.search}`;
+
+    if (nextUrl !== currentUrl) {
+      navigate(nextUrl, { replace: true });
+    }
+  }, [location, navigate]);
+
   return null;
 }
 
@@ -36,6 +56,7 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col text-text-main">
       <RateLimitBridge />
+      <ExternalRouteSync />
 
       <Navbar
         usuario={usuario}
@@ -85,11 +106,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
-      </AuthProvider>
+      <SitePasswordGate>
+        <AuthProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </AuthProvider>
+      </SitePasswordGate>
     </BrowserRouter>
   );
 }

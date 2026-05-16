@@ -7,6 +7,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { buildTeamInviteExternalUrl } from "../utils/externalNavigation";
 
 function getInitials(nome) {
   if (!nome) return "?";
@@ -106,7 +107,7 @@ export function TimeDetailPage() {
   };
 
   const conviteLink = conviteToken
-    ? `${window.location.origin}/times?convite=${encodeURIComponent(conviteToken)}`
+    ? buildTeamInviteExternalUrl(conviteToken)
     : null;
 
   const handleCopyConvite = () => {

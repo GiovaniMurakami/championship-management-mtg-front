@@ -8,6 +8,7 @@ import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { buildDeckExternalUrl } from "../utils/externalNavigation";
 
 const FORMAT_META = {
   standard: { label: "Standard", color: "#93c5fd", bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.45)" },
@@ -15,6 +16,7 @@ const FORMAT_META = {
   pioneer: { label: "Pioneer", color: "#6ee7b7", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.45)" },
   legacy: { label: "Legacy", color: "#c4b5fd", bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.45)" },
   commander: { label: "Commander", color: "#fcd34d", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
+  commander500: { label: "Commander 500", color: "#f59e0b", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
   pauper: { label: "Pauper", color: "#cbd5e1", bg: "rgba(148,163,184,0.18)", border: "rgba(148,163,184,0.45)" },
 };
 
@@ -60,6 +62,7 @@ export function MyDecksPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [imageModal, setImageModal] = useState(null);
+  const [sharedDeckId, setSharedDeckId] = useState(null);
 
   const isOwner = useCallback(
     (deck) => String(deck.usuario?.id ?? deck.usuarioId) === String(usuario?.id),
@@ -148,6 +151,30 @@ export function MyDecksPage() {
     } finally {
       setDeleteLoading(false);
     }
+  };
+
+  const handleShareDeck = async (deck) => {
+    const url = buildDeckExternalUrl(deck.id);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: deck.nome || "Deck",
+          text: "Confira este deck no app.",
+          url,
+        });
+        return;
+      }
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+
+    navigator.clipboard?.writeText(url).then(() => {
+      setSharedDeckId(deck.id);
+      window.setTimeout(() => {
+        setSharedDeckId((currentId) => (currentId === deck.id ? null : currentId));
+      }, 2000);
+    });
   };
 
   const temFiltrosAtivos = busca || somenteMyDecks;
@@ -295,6 +322,31 @@ export function MyDecksPage() {
                         </span>
                       )}
                     </div>
+                    <button
+                      className={`absolute left-[0.75rem] bottom-[0.75rem] inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md cursor-pointer transition-all duration-[180ms] shadow-[0_8px_18px_rgba(0,0,0,0.35)] ${
+                        sharedDeckId === deck.id
+                          ? "border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.2)] text-[#86efac]"
+                          : "border-[rgba(96,165,250,0.45)] bg-[rgba(10,18,38,0.55)] text-[#dbeafe] hover:bg-[rgba(59,130,246,0.28)] hover:border-[rgba(96,165,250,0.75)] hover:text-white"
+                      }`}
+                      type="button"
+                      title={sharedDeckId === deck.id ? "Link copiado!" : "Compartilhar deck"}
+                      aria-label={sharedDeckId === deck.id ? "Link copiado!" : "Compartilhar deck"}
+                      onClick={() => handleShareDeck(deck)}
+                    >
+                      {sharedDeckId === deck.id ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                          <circle cx="18" cy="5" r="3" />
+                          <circle cx="6" cy="12" r="3" />
+                          <circle cx="18" cy="19" r="3" />
+                          <path d="M8.59 13.51 15.42 17.49" />
+                          <path d="M15.41 6.51 8.59 10.49" />
+                        </svg>
+                      )}
+                    </button>
                   </div>
 
                   <div className="p-[1rem_1.1rem_1.1rem] flex flex-col flex-1">

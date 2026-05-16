@@ -4,7 +4,15 @@ export const TOURNAMENT_FORMATS = [
   { value: "pioneer", label: "Pioneer" },
   { value: "pauper", label: "Pauper" },
   { value: "commander", label: "Commander" },
+  { value: "commander500", label: "Commander 500" },
 ];
+
+export const TOURNAMENT_FORMAT_LABELS = Object.fromEntries(
+  TOURNAMENT_FORMATS.map((format) => [format.value, format.label]),
+);
+
+export const getTournamentFormatLabel = (formato) =>
+  TOURNAMENT_FORMAT_LABELS[formato] || formato || "—";
 
 export const TOP_CUT_OPTIONS = [
   { value: "", label: "Sem corte" },

@@ -19,6 +19,15 @@ const TYPE_LABELS = {
 };
 const TYPE_ORDER = ["Creature", "Planeswalker", "Battle", "Instant", "Sorcery", "Enchantment", "Artifact", "Land", "Other"];
 const CURVE_BUCKETS = ["0", "1", "2", "3", "4", "5", "6", "7+"];
+const FORMAT_LABELS = {
+  standard: "Standard",
+  modern: "Modern",
+  pioneer: "Pioneer",
+  legacy: "Legacy",
+  pauper: "Pauper",
+  commander: "Commander",
+  commander500: "Commander 500",
+};
 
 function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }) {
   const [deck, setDeck] = useState(null);
@@ -46,7 +55,6 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
 
   useEffect(() => {
     if (!deckId || !token) return;
-    setLoading(true);
 
     const resolveCards = async (entries) => {
       const cards = await buscarCartasPorNome(entries.map((entry) => entry.nome));
@@ -131,7 +139,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
         onClick={onClose}
       />
 
-      {/* Card image hover preview — centered on page */}
+      {/* Card image hover preview - centered on page */}
       {hoveredCard?.imagem && (
         <div
           key={hoveredCard.nome}
@@ -167,8 +175,18 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
             <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-2">
               {deck?.formato && (
                 <span className="text-[0.63rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[rgba(167,79,255,0.18)] border border-[rgba(199,149,255,0.35)] text-[#c795ff]">
-                  {deck.formato}
+                  {FORMAT_LABELS[deck.formato] || deck.formato}
                 </span>
+              )}
+              {deck?.linkLigaMagic && (
+                <a
+                  href={deck.linkLigaMagic}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[0.72rem] text-[#bfdbfe] underline break-all hover:text-white"
+                >
+                  LigaMagic
+                </a>
               )}
               {colors.map((c) => (
                 <span key={c} className="inline-flex items-center gap-1 text-[0.68rem] text-[#beafd7]">
@@ -376,8 +394,14 @@ function DeckNameEditPopover({ deckId, currentName, currentNomeConsolidado, toke
           nome: deck.nome,
           nomeConsolidado: name.trim(),
           formato: deck.formato,
+          linkLigaMagic: deck.linkLigaMagic,
           maindeck: (deck.maindeck || []).map((c) => ({ nome: c.nome, quantidade: c.quantidade })),
           sideboard: (deck.sideboard || []).map((c) => ({ nome: c.nome, quantidade: c.quantidade })),
+          commander: Array.isArray(deck.commander)
+            ? deck.commander.map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
+            : deck.commander
+              ? [{ nome: deck.commander.nome, quantidade: deck.commander.quantidade }]
+              : [],
         },
         token
       );
@@ -414,7 +438,7 @@ function DeckNameEditPopover({ deckId, currentName, currentNomeConsolidado, toke
           onClick={handleSave}
           disabled={loading || !name.trim()}
         >
-          {loading ? "Salvando…" : "Salvar"}
+          {loading ? "Salvando..." : "Salvar"}
         </button>
       </div>
     </div>

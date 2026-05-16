@@ -1,11 +1,10 @@
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { flushSync } from "react-dom";
-
-const LOGO = "https://tiagofuguete.com.br/wp-content/uploads/2025/06/cropped-logo-horizontal.png";
+import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 
 const NAV_LINKS = [
-    { label: "Home", href: "/" },
+    { label: "Home", href: MAIN_SITE_URL, external: true },
     { label: "Torneios", href: "/torneio" },
     { label: "Blog", href: "/blog" },
     { label: "Sobre mim", href: "/sobre-mim" },
@@ -60,14 +59,21 @@ export function LandingHeader() {
             style={{ position: "fixed" }}
         >
             {/* Logo */}
-            <a href="/" onClick={transitionTo("/")} className="shrink-0 cursor-pointer">
-                <img src={LOGO} alt="Tiago Fuguete" className="h-7 object-contain" style={{ viewTransitionName: "brand-logo" }} />
+            <a href={MAIN_SITE_URL} target="_top" rel="noopener noreferrer" className="shrink-0 cursor-pointer">
+                <img src={BRAND_LOGO_URL} alt="Tiago Fuguete" className="h-7 object-contain" style={{ viewTransitionName: "brand-logo" }} />
             </a>
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-5" aria-label="Navegação principal">
                 {NAV_LINKS.map((l) => (
-                    <a key={l.label} href={l.href} className={linkClass(l.href)} onClick={transitionTo(l.href)}>
+                    <a
+                        key={l.label}
+                        href={l.href}
+                        className={linkClass(l.href)}
+                        onClick={l.external ? close : transitionTo(l.href)}
+                        target={l.external ? "_top" : undefined}
+                        rel={l.external ? "noopener noreferrer" : undefined}
+                    >
                         {l.label}
                     </a>
                 ))}
@@ -106,7 +112,14 @@ export function LandingHeader() {
                 >
                     <nav className="flex flex-col gap-[0.2rem]">
                         {NAV_LINKS.map((l) => (
-                            <a key={l.label} href={l.href} className={mobileLinkClass(l.href)} onClick={transitionTo(l.href)}>
+                            <a
+                                key={l.label}
+                                href={l.href}
+                                className={mobileLinkClass(l.href)}
+                                onClick={l.external ? close : transitionTo(l.href)}
+                                target={l.external ? "_top" : undefined}
+                                rel={l.external ? "noopener noreferrer" : undefined}
+                            >
                                 {l.label}
                             </a>
                         ))}

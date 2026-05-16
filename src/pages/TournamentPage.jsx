@@ -9,7 +9,7 @@ import { SkeletonTorneioCard } from "../components";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
-import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
+import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { SponsorSection } from "../components/ui/SponsorSection";
 
@@ -19,7 +19,7 @@ function PlatformStats() {
       {[
         { value: "50+", label: "Torneios realizados" },
         { value: "200+", label: "Jogadores ativos" },
-        { value: "6", label: "Formatos suportados" },
+        { value: "7", label: "Formatos suportados" },
       ].map((stat, i, arr) => (
         <div key={stat.label} className="flex items-center gap-4">
           <div className="flex flex-col">
@@ -230,7 +230,7 @@ export function TournamentPage() {
                   {/* Card header */}
                   <div className="flex items-center justify-between px-5 py-[0.9rem] pb-3 border-b border-[rgba(217,180,255,0.2)] bg-white/[0.02]">
                     <span className="font-['Bebas_Neue',sans-serif] text-[1.1rem] tracking-[0.12em] text-[#c795ff]">
-                      {(torneio.formato || "—").toUpperCase()}
+                      {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
                     <span className={`inline-block px-3 py-1 rounded-[20px] text-[0.8rem] font-medium uppercase tracking-[0.5px] ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
                       {STATUS_LABEL[torneio.status] ?? torneio.status}
