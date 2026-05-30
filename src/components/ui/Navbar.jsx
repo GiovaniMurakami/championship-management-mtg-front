@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { flushSync } from "react-dom";
+import { NavLink } from "react-router-dom";
 import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 
 function NavAvatar({ nome }) {
@@ -112,14 +111,6 @@ export function Navbar({
   }, []);
 
   const close = () => setMenuOpen(false);
-  const navigate = useNavigate();
-
-  const transitionTo = (href) => (e) => {
-    e.preventDefault();
-    close();
-    if (!document.startViewTransition) { navigate(href); return; }
-    document.startViewTransition(() => flushSync(() => navigate(href)));
-  };
 
   return (
     <header

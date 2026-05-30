@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { CardSearch } from "./CardSearch";
 import { DeckList } from "./DeckList";
+import { SelectField } from "../ui";
 
 const FORMATS = [
   { value: "standard", label: "Standard" },
@@ -387,9 +388,8 @@ export function DeckBuilder({
             `}
           >
             Formato
-            {/* select-field: relative wrapper with CSS arrow via pseudo-element replaced by a real element */}
             <div className={`relative format-select-wrapper ${invalidFields.formato ? "border border-[rgba(255,98,124,0.95)] shadow-[0_0_0_2px_rgba(255,98,124,0.2)] rounded-[0.7rem]" : ""}`}>
-              <select
+              <SelectField
                 className="
                   w-full appearance-none
                   border border-line rounded-[0.7rem]
@@ -412,6 +412,7 @@ export function DeckBuilder({
                 }}
                 required
                 disabled={readOnly}
+                iconClassName="text-[rgba(245,237,255,0.72)]"
               >
                 <option value="" disabled>
                   Selecione um formato
@@ -421,12 +422,7 @@ export function DeckBuilder({
                     {format.label}
                   </option>
                 ))}
-              </select>
-              {/* Custom arrow to replace select-field::after pseudo-element */}
-              <span
-                className="absolute right-[0.85rem] top-1/2 -translate-y-[62%] w-2 h-2 border-r-2 border-b-2 border-[rgba(245,237,255,0.72)] rotate-45 pointer-events-none"
-                aria-hidden="true"
-              />
+              </SelectField>
             </div>
           </label>
         </div>

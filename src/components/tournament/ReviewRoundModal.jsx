@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
+import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
+import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
 
 const btnBase =
   "inline-flex items-center justify-center px-4 py-[0.55rem] border border-transparent rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed";
@@ -19,6 +21,17 @@ const btnDanger =
 
 const btnSm = "px-[0.65rem] py-[0.3rem] text-[0.78rem]";
 
+function getMesaSortValue(partida) {
+  const mesa = Number(partida?.mesa ?? partida?.mesaNumero ?? partida?.numeroMesa);
+  return Number.isFinite(mesa) ? mesa : Number.MAX_SAFE_INTEGER;
+}
+
+function sortByMesa(a, b) {
+  const mesaDiff = getMesaSortValue(a) - getMesaSortValue(b);
+  if (mesaDiff !== 0) return mesaDiff;
+  return Number(a?.rodada ?? 0) - Number(b?.rodada ?? 0);
+}
+
 function MatchStatusRow({ partida }) {
   const nome1 = partida.jogador1Nome || partida.jogador1?.nome || "Jogador 1";
   const nome2 = !partida.jogador2Id && !partida.jogador2
@@ -26,9 +39,13 @@ function MatchStatusRow({ partida }) {
     : (partida.jogador2Nome || partida.jogador2?.nome || "Jogador 2");
   const mesa = partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? "—";
   const isFinalizada = partida.status === "finalizada";
+  const isBye = !partida.jogador2Id && !partida.jogador2;
+  const confirmation = getMatchConfirmationSummary(partida);
+  const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
+  const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
 
   return (
-    <div className={`flex items-center gap-3 px-[0.85rem] py-[0.6rem] rounded-lg border text-[0.85rem] ${isFinalizada
+    <div className={`flex items-center gap-3 px-[0.85rem] py-[0.6rem] rounded-lg border text-[0.85rem] flex-wrap ${isFinalizada
       ? "border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.04)]"
       : "border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.04)]"
       }`}>
@@ -39,15 +56,24 @@ function MatchStatusRow({ partida }) {
         <span className="flex-1 text-[#e8d5ff] font-medium overflow-hidden text-ellipsis whitespace-nowrap">
           {nome1}
         </span>
+        {isFinalizada && !isBye && (
+          <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
+        )}
         <span className="text-[0.8rem] font-bold text-[#c795ff] flex-shrink-0 min-w-[44px] text-center">
           {isFinalizada
             ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
             : "VS"}
         </span>
+        {isFinalizada && !isBye && (
+          <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
+        )}
         <span className="flex-1 text-[#e8d5ff] font-medium overflow-hidden text-ellipsis whitespace-nowrap text-right">
           {nome2}
         </span>
       </div>
+      {isFinalizada && !isBye && (
+        <ConfirmationSummaryIcon confirmation={confirmation} />
+      )}
       <span className={`text-[0.72rem] font-semibold px-2 py-[2px] rounded-full flex-shrink-0 ${isFinalizada
         ? "bg-[rgba(34,197,94,0.12)] text-[#4ade80]"
         : "bg-[rgba(251,191,36,0.1)] text-[#fbbf24]"
@@ -120,7 +146,7 @@ export function ReviewRoundModal({
   const rodadaAtual = Number(torneio?.rodadaAtual || 0);
   const partidasRodada = (partidas || []).filter(
     (p) => !rodadaAtual || Number(p.rodada) === rodadaAtual
-  );
+  ).sort(sortByMesa);
   const finalizadas = partidasRodada.filter((p) => p.status === "finalizada");
   const pendentes = partidasRodada.filter((p) => p.status !== "finalizada");
   const allDone = pendentes.length === 0 && partidasRodada.length > 0;

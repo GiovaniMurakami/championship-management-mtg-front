@@ -4,84 +4,52 @@ let ablyClient = null;
 
 export const getAblyClient = () => {
     if (!ablyClient) {
-        const apiKey = import.meta.env.VITE_ABLY_API_KEY;
+        const authUrl = import.meta.env.VITE_ABLY_AUTH_URL;
+        const apiKey = import.meta.env.VITE_ABLY_API_KEY || import.meta.env.VITE_ABLY_KEY;
+
+        if (authUrl) {
+            ablyClient = new Realtime({ authUrl });
+            return ablyClient;
+        }
+
         if (!apiKey) {
-            console.error("[Ably] VITE_ABLY_API_KEY não encontrada no .env");
+            console.error("[Ably] Configure VITE_ABLY_AUTH_URL ou VITE_ABLY_API_KEY no .env");
             return null;
         }
+
         ablyClient = new Realtime({ key: apiKey });
     }
     return ablyClient;
 };
 
-export const subscribeToTournament = (torneioId, callbacks) => {
+const subscribeIfPresent = (channel, eventName, callback) => {
+    if (callback) {
+        channel.subscribe(eventName, (msg) => callback(msg));
+    }
+};
+
+export const subscribeToTournament = (torneioId, callbacks = {}) => {
     const client = getAblyClient();
     if (!client) return null;
 
     const channelName = `torneio-${torneioId}`;
     const channel = client.channels.get(channelName);
 
-    if (callbacks.onRodadaIniciada) {
-        channel.subscribe("rodada_iniciada", (msg) => {
-            callbacks.onRodadaIniciada(msg);
-        });
-    }
-    if (callbacks.onResultadoRegistrado) {
-        channel.subscribe("resultado_registrado", (msg) => {
-            callbacks.onResultadoRegistrado(msg);
-        });
-    }
-    if (callbacks.onStandingsAtualizados) {
-        channel.subscribe("standings_atualizados", (msg) => {
-            callbacks.onStandingsAtualizados(msg);
-        });
-    }
-    if (callbacks.onTorneioFinalizado) {
-        channel.subscribe("torneio_finalizado", (msg) => {
-            callbacks.onTorneioFinalizado(msg);
-        });
-    }
-    if (callbacks.onParticipanteInscrito) {
-        channel.subscribe("participante_inscrito", (msg) => {
-            callbacks.onParticipanteInscrito(msg);
-        });
-    }
-    if (callbacks.onCheckinRealizado) {
-        channel.subscribe("checkin_realizado", (msg) => {
-            callbacks.onCheckinRealizado(msg);
-        });
-    }
-    if (callbacks.onDeckInserido) {
-        channel.subscribe("deck_inserido", (msg) => {
-            callbacks.onDeckInserido(msg);
-        });
-    }
-    if (callbacks.onResultadoContestado) {
-        channel.subscribe("resultado_contestado", (msg) => {
-            callbacks.onResultadoContestado(msg);
-        });
-    }
-    if (callbacks.onTorneioIniciado) {
-        channel.subscribe("torneio_iniciado", (msg) => callbacks.onTorneioIniciado(msg));
-    }
-    if (callbacks.onJogadorDropou) {
-        channel.subscribe("jogador_dropou", (msg) => callbacks.onJogadorDropou(msg));
-    }
-    if (callbacks.onResultadoAjustado) {
-        channel.subscribe("resultado_ajustado", (msg) => callbacks.onResultadoAjustado(msg));
-    }
-    if (callbacks.onCorteIniciado) {
-        channel.subscribe("corte_iniciado", (msg) => callbacks.onCorteIniciado(msg));
-    }
-    if (callbacks.onJogadorIngressou) {
-        channel.subscribe("jogador_ingressou", (msg) => callbacks.onJogadorIngressou(msg));
-    }
-    if (callbacks.onTotalRodadasAlterado) {
-        channel.subscribe("total_rodadas_alterado", (msg) => callbacks.onTotalRodadasAlterado(msg));
-    }
-    if (callbacks.onCheckinRodadaAberto) {
-        channel.subscribe("checkin_rodada_aberto", (msg) => callbacks.onCheckinRodadaAberto(msg));
-    }
+    subscribeIfPresent(channel, "rodada_iniciada", callbacks.onRodadaIniciada);
+    subscribeIfPresent(channel, "resultado_registrado", callbacks.onResultadoRegistrado);
+    subscribeIfPresent(channel, "standings_atualizados", callbacks.onStandingsAtualizados);
+    subscribeIfPresent(channel, "torneio_finalizado", callbacks.onTorneioFinalizado);
+    subscribeIfPresent(channel, "participante_inscrito", callbacks.onParticipanteInscrito);
+    subscribeIfPresent(channel, "checkin_realizado", callbacks.onCheckinRealizado);
+    subscribeIfPresent(channel, "deck_inserido", callbacks.onDeckInserido);
+    subscribeIfPresent(channel, "resultado_contestado", callbacks.onResultadoContestado);
+    subscribeIfPresent(channel, "torneio_iniciado", callbacks.onTorneioIniciado);
+    subscribeIfPresent(channel, "jogador_dropou", callbacks.onJogadorDropou);
+    subscribeIfPresent(channel, "resultado_ajustado", callbacks.onResultadoAjustado);
+    subscribeIfPresent(channel, "corte_iniciado", callbacks.onCorteIniciado);
+    subscribeIfPresent(channel, "jogador_ingressou", callbacks.onJogadorIngressou);
+    subscribeIfPresent(channel, "total_rodadas_alterado", callbacks.onTotalRodadasAlterado);
+    subscribeIfPresent(channel, "checkin_rodada_aberto", callbacks.onCheckinRodadaAberto);
 
     return channel;
 };

@@ -137,10 +137,11 @@ export function TournamentDetailPage() {
         )}
       </div>
 
-      {torneio?.linkLive && (() => {
-        const url = torneio.linkLive;
+      {torneio && (() => {
+        const url = torneio.linkLive || "https://twitch.tv/tiagofuguete";
         const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/);
         const twitchMatch = url.match(/(?:twitch\.tv\/)([\w]+)/);
+        const twitchParent = typeof window !== "undefined" ? window.location.hostname : "localhost";
         if (ytMatch) {
           return (
             <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
@@ -155,11 +156,12 @@ export function TournamentDetailPage() {
             </div>
           );
         }
-        if (twitchMatch) {
+        if (twitchMatch || !torneio.linkLive) {
+          const twitchChannel = twitchMatch?.[1] || "tiagofuguete";
           return (
             <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
               <iframe
-                src={`https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${window.location.hostname}`}
+                src={`https://player.twitch.tv/?channel=${twitchChannel}&parent=${twitchParent}&muted=true`}
                 height="450"
                 width="100%"
                 allowFullScreen
@@ -284,17 +286,16 @@ export function TournamentDetailPage() {
           />
         );
 
+        const shouldShowPlayerProfile = !isOngoing && !isFinished;
+
         // ── Ongoing: standings compact sidebar on left, everything else on right ──
         if (isOngoing) {
           return (
             <div className="grid gap-6">
+              {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
+              {matchPanel}
               {standingsTable(false)}
-              <div className="grid gap-6">
-                {matchPanel}
-                {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
-                {playerProfile}
-                {matchTablesPanel}
-              </div>
+              {matchTablesPanel}
             </div>
           );
         }
@@ -311,15 +312,10 @@ export function TournamentDetailPage() {
 
         // ── Registration: admin+player on left, registered players on right ──────
         return (
-          <div className="grid grid-cols-2 gap-6 items-start max-[900px]:grid-cols-1">
-            <div className="grid gap-6">
-              {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
-              {matchPanel}
-              {playerProfile}
-            </div>
-            <div className="grid gap-6">
-              {standingsTable(false)}
-            </div>
+          <div className="grid gap-6">
+            {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
+            {shouldShowPlayerProfile && playerProfile}
+            {standingsTable(false)}
           </div>
         );
       })()}

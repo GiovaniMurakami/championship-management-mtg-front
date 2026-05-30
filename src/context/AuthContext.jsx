@@ -73,13 +73,22 @@ export function AuthProvider({ children }) {
   }, []);
 
   const saveAuth = (authData) => {
-    setToken(authData.token);
-    setUsuario(authData.usuario);
-    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+    let previousAuth = {};
+    try {
+      previousAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+    } catch {
+      previousAuth = {};
+    }
+
+    const nextAuth = {
       token: authData.token,
-      refreshToken: authData.refreshToken,
+      refreshToken: authData.refreshToken ?? previousAuth.refreshToken ?? "",
       usuario: authData.usuario,
-    }));
+    };
+
+    setToken(nextAuth.token);
+    setUsuario(nextAuth.usuario);
+    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
   };
 
   const clearAuth = async () => {

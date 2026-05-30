@@ -1,7 +1,7 @@
 {
   "name": "championship-management-mtg-front",
   "private": true,
-  "version": "1.2.02",
+  "version": "1.2.03",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "ably": "^2.20.0",
-    "axios": "^1.13.6",
-    "gifenc": "^1.0.3",
+    "axios": "^1.16.1",
     "mp4-muxer": "^5.2.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -33,7 +32,7 @@
     "globals": "^16.5.0",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4.2.2",
-    "vite": "^7.3.1",
+    "vite": "^7.3.3",
     "vitest": "^3.2.4"
   }
 }

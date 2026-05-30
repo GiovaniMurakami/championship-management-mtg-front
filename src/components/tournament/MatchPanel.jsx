@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 
 export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
+
+    useEffect(() => {
+        setWinsPlayer1(0);
+        setWinsPlayer2(0);
+    }, [myMatch?.id, myMatch?.rodada, torneio?.rodadaAtual]);
 
     const eliminationPhase = isEliminationPhase(torneio);
     const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);

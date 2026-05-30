@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
+import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
+import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
 import {
   buildTournamentExternalUrl,
   buildTournamentJoinExternalUrl,
@@ -29,6 +31,17 @@ function ScoreStepper({ value, onChange }) {
   );
 }
 
+function getMesaSortValue(partida) {
+  const mesa = Number(partida?.mesa ?? partida?.mesaNumero ?? partida?.numeroMesa);
+  return Number.isFinite(mesa) ? mesa : Number.MAX_SAFE_INTEGER;
+}
+
+function sortByMesa(a, b) {
+  const mesaDiff = getMesaSortValue(a) - getMesaSortValue(b);
+  if (mesaDiff !== 0) return mesaDiff;
+  return Number(a?.rodada ?? 0) - Number(b?.rodada ?? 0);
+}
+
 function MatchEditRow({ partida, onSave, saving }) {
   const [v1, setV1] = useState(partida.vitoriasJogador1 ?? 0);
   const [v2, setV2] = useState(partida.vitoriasJogador2 ?? 0);
@@ -41,6 +54,9 @@ function MatchEditRow({ partida, onSave, saving }) {
   const mesa = partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? "—";
   const isBye = nome2 === "BYE";
   const isFinalizada = partida.status === "finalizada";
+  const confirmation = getMatchConfirmationSummary(partida);
+  const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
+  const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
 
   if (editing && !isBye) {
     return (
@@ -88,12 +104,21 @@ function MatchEditRow({ partida, onSave, saving }) {
 
       <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
         <span className="text-[0.85rem] text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap min-w-[60px] max-w-[140px]">{nome1}</span>
+        {isFinalizada && !isBye && (
+          <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
+        )}
         <span className={`inline-flex items-center justify-center min-w-[56px] px-[0.45rem] py-[0.12rem] rounded-full font-bold text-[0.78rem] tracking-[0.04em] ${isFinalizada ? "text-white border border-[rgba(199,149,255,0.5)] bg-[rgba(199,149,255,0.22)]" : "text-[#c4b5fd] border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.12)]"}`}>
           {isFinalizada
             ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
             : "VS"}
         </span>
         <span className="text-[0.85rem] text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap min-w-[60px] max-w-[140px]">{nome2}</span>
+        {isFinalizada && !isBye && (
+          <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
+        )}
+        {isFinalizada && !isBye && (
+          <ConfirmationSummaryIcon confirmation={confirmation} />
+        )}
       </div>
 
       {!isBye && (
@@ -200,7 +225,7 @@ export function OwnerControlPanel({
   const rodadaAtual = Number(torneio?.rodadaAtual || 0);
   const partidasRodada = (partidas || []).filter(
     (p) => !rodadaAtual || Number(p.rodada) === rodadaAtual,
-  );
+  ).sort(sortByMesa);
   const pendentes = partidasRodada.filter((p) => p.status !== "finalizada");
   const finalizadas = partidasRodada.filter((p) => p.status === "finalizada");
   const contestadas = partidasRodada.filter((p) => p.contestado);

@@ -20,6 +20,7 @@ import {
     listarTimes,
     atualizarTorneio,
     deletarTorneio,
+    editarPareamentosRodada,
 } from "../services/backendApi";
 import {
     subscribeToTournament,
@@ -92,6 +93,38 @@ export function useTournamentDetail() {
         }));
 
         return updated;
+    }, []);
+
+    const upsertPartidaState = useCallback((incomingPartida) => {
+        if (!incomingPartida?.id) return false;
+
+        let inserted = false;
+
+        setPartidas((prev) => {
+            const existingIndex = prev.findIndex(
+                (partida) => normalizeId(partida?.id) === normalizeId(incomingPartida.id)
+            );
+
+            if (existingIndex >= 0) {
+                return prev.map((partida, index) => {
+                    if (index !== existingIndex) return partida;
+
+                    return {
+                        ...partida,
+                        ...incomingPartida,
+                        jogador1: incomingPartida.jogador1 ?? partida.jogador1,
+                        jogador2: incomingPartida.jogador2 ?? partida.jogador2,
+                        jogador1Nome: incomingPartida.jogador1Nome ?? partida.jogador1Nome,
+                        jogador2Nome: incomingPartida.jogador2Nome ?? partida.jogador2Nome,
+                    };
+                });
+            }
+
+            inserted = true;
+            return [...prev, incomingPartida];
+        });
+
+        return inserted;
     }, []);
 
     const loadTournament = useCallback(async () => {
@@ -313,16 +346,38 @@ export function useTournamentDetail() {
             },
             onJogadorIngressou: (msg) => {
                 const data = msg?.data || {};
-                const { usuarioId: uid, usuarioNome, substituiuBye } = data;
+                const {
+                    usuarioId: uid,
+                    usuarioNome,
+                    partida,
+                    match,
+                    novaPartida,
+                    partidaPenalidade,
+                } = data;
+                const partidaIngressoTardio =
+                    partidaPenalidade ||
+                    novaPartida ||
+                    partida ||
+                    match ||
+                    null;
+
                 setStandings((prev) => {
                     const jaExiste = prev.some((p) => normalizeId(p.usuario?.id || p.usuarioId || p.id) === normalizeId(uid));
                     if (jaExiste) return prev;
                     return [...prev, { usuario: { id: uid, nome: usuarioNome }, id: uid, usuarioId: uid, nome: usuarioNome, pontos: 0 }];
                 });
                 setTorneio((prev) => prev ? { ...prev, totalInscritos: (prev.totalInscritos || 0) + 1 } : prev);
-                if (substituiuBye) loadPartidas();
-                const toastMsg = substituiuBye
-                    ? `${usuarioNome || "Jogador"} entrou no torneio (substituiu BYE).`
+                if (partidaIngressoTardio?.id) {
+                    upsertPartidaState(partidaIngressoTardio);
+                } else {
+                    loadPartidas();
+                }
+                const recebeuByePenalidade =
+                    partidaIngressoTardio?.tipoBye === "penalidade" &&
+                    !partidaIngressoTardio?.jogador2Id &&
+                    !partidaIngressoTardio?.jogador2;
+                const toastMsg = recebeuByePenalidade
+                    ? `${usuarioNome || "Jogador"} entrou no torneio e recebeu bye por penalidade.`
                     : `${usuarioNome || "Jogador"} entrou no torneio.`;
                 showToast(toastMsg, "success");
             },
@@ -338,7 +393,7 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast]);
+    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
     const dismissCheckinBanner = useCallback(() => setCheckinRodadaAberto(false), []);
@@ -653,7 +708,7 @@ export function useTournamentDetail() {
 
     const handleNextRound = async () => {
         if (!torneioId || !canManageTournament) return;
-        if (requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
+        if (false && requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
             const total = pendingCheckinPlayers.length;
             setError(
                 `Não é possível iniciar a próxima rodada: faltam ${total} jogador(es) fazer check-in da próxima rodada.`,
@@ -877,3 +932,4 @@ export function useTournamentDetail() {
         token,
     };
 }
+

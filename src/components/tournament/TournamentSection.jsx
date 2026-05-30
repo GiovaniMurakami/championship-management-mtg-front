@@ -79,7 +79,7 @@ export function TournamentSection() {
             const formato = item.formato || "—";
             const cor = getFormatColor(formato);
             const data = item.horario ? formatDate(item.horario) : "—";
-            const premio = item.premio || null;
+            const descricao = item.descricao || item.premio || null;
             const status = item.status;
             const banner = item.bannerUrl || null;
 
@@ -154,13 +154,19 @@ export function TournamentSection() {
                     {data}
                   </p>
 
-                  {premio && (
-                    <div className="flex items-center gap-[0.4rem] mt-[0.6rem] pt-[0.65rem] border-t border-[rgba(217,180,255,0.2)]">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" style={{ color: cor, flexShrink: 0 }}>
-                        <circle cx="12" cy="8" r="6" />
-                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                  {descricao && (
+                    <p className="m-0 mt-[0.6rem] pt-[0.65rem] border-t border-[rgba(217,180,255,0.2)] text-[0.83rem] leading-[1.45] text-[#e9defb] line-clamp-3">
+                      {descricao}
+                    </p>
+                  )}
+
+                  {item.visualizacoes != null && (
+                    <div className="flex items-center gap-[0.35rem] mt-[0.75rem] text-[0.76rem] text-[#beafd7]">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" style={{ color: cor, flexShrink: 0 }}>
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                        <circle cx="12" cy="12" r="3" />
                       </svg>
-                      <strong className="text-[#efe6ff] text-[0.85rem] font-semibold">{premio}</strong>
+                      <span>{item.visualizacoes} visualizacoes</span>
                     </div>
                   )}
                 </div>
