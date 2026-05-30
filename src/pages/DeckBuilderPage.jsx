@@ -129,6 +129,19 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
   return (
     <main className="w-[min(1100px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12">
+      {originalDeck && (
+        <div className="flex flex-wrap items-center gap-3 mb-4 px-1">
+          <div className="text-[0.9rem] text-text-soft">
+            {originalDeck.visualizacoes != null ? `${originalDeck.visualizacoes} visualizacoes` : ""}
+          </div>
+          {originalDeck.usuario?.nome && (
+            <div className="text-[0.9rem] text-text-soft">
+              por <span className="text-text-main">{originalDeck.usuario.nome}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <DeckBuilder
         deckForm={deckForm}
         onDeckFormChange={setDeckForm}

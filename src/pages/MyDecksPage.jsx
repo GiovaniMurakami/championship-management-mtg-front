@@ -382,6 +382,16 @@ export function MyDecksPage() {
                       </div>
                     </div>
 
+                    {deck.visualizacoes != null && (
+                      <div className="flex items-center gap-[0.4rem] mb-[0.85rem] text-[0.78rem] text-text-soft">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                          <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <span>{deck.visualizacoes} visualizacoes</span>
+                      </div>
+                    )}
+
                     <div className="flex gap-2 mt-auto pt-3">
                       {owner ? (
                         <>

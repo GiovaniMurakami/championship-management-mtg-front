@@ -1,6 +1,7 @@
 import { useMemo, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
-import { editarMesaPartida } from "../../services/backendApi";
+import { editarMesaPartida, editarPareamentosRodada } from "../../services/backendApi";
+import { SelectField } from "../ui";
 
 function getPlayerName(partida, playerNumber, usuarioId) {
     const isMe =
@@ -140,11 +141,43 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
     const [mesaInput, setMesaInput] = useState("");
     const [mesaLoading, setMesaLoading] = useState(false);
     const [mesaError, setMesaError] = useState("");
+    const [pairingsOpen, setPairingsOpen] = useState(false);
+    const [pairingsLoading, setPairingsLoading] = useState(false);
+    const [pairingsError, setPairingsError] = useState("");
+    const [pairingsDraft, setPairingsDraft] = useState([]);
+
+    const roundPlayers = useMemo(() => {
+        const map = new Map();
+        partidasRodada.forEach((partida) => {
+            const jogador1Id = partida.jogador1Id || partida.jogador1?.id;
+            const jogador2Id = partida.jogador2Id || partida.jogador2?.id;
+            if (jogador1Id && !map.has(jogador1Id)) {
+                map.set(jogador1Id, partida.jogador1Nome || partida.jogador1?.nome || "Jogador 1");
+            }
+            if (jogador2Id && !map.has(jogador2Id)) {
+                map.set(jogador2Id, partida.jogador2Nome || partida.jogador2?.nome || "Jogador 2");
+            }
+        });
+        return Array.from(map.entries()).map(([id, nome]) => ({ id, nome }));
+    }, [partidasRodada]);
 
     const handleEditMesaClick = (partida) => {
         setEditingMesa(partida);
         setMesaInput(String(getMesa(partida, 0)));
         setMesaError("");
+    };
+
+    const handleOpenPairingsEditor = () => {
+        setPairingsError("");
+        setPairingsDraft(
+            partidasRodada.map((partida, index) => ({
+                id: partida.id,
+                jogador1Id: partida.jogador1Id || partida.jogador1?.id || "",
+                jogador2Id: partida.jogador2Id || partida.jogador2?.id || "",
+                mesa: String(getMesa(partida, index)),
+            }))
+        );
+        setPairingsOpen(true);
     };
 
     const handleSaveMesa = async () => {
@@ -164,6 +197,37 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
             setMesaError(err.message || "Erro ao salvar mesa.");
         } finally {
             setMesaLoading(false);
+        }
+    };
+
+    const handlePairingChange = (index, field, value) => {
+        setPairingsDraft((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item));
+    };
+
+    const handleSavePairings = async () => {
+        if (!token || !torneio?.id || !selectedRound) return;
+        setPairingsLoading(true);
+        setPairingsError("");
+        try {
+            await editarPareamentosRodada(
+                torneio.id,
+                selectedRound,
+                {
+                    partidas: pairingsDraft.map((partida) => ({
+                        id: partida.id,
+                        jogador1Id: partida.jogador1Id,
+                        jogador2Id: partida.jogador2Id || null,
+                        mesa: partida.mesa ? Number(partida.mesa) : null,
+                    })),
+                },
+                token
+            );
+            await onPartidasUpdate?.();
+            setPairingsOpen(false);
+        } catch (err) {
+            setPairingsError(err.message || "Erro ao atualizar os pareamentos.");
+        } finally {
+            setPairingsLoading(false);
         }
     };
 
@@ -222,6 +286,16 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                             </button>
                         ))}
                     </div>
+                )}
+
+                {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
+                    <button
+                        type="button"
+                        className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-[0.7rem] border border-[rgba(125,211,252,0.35)] bg-[rgba(56,189,248,0.08)] text-[#7dd3fc] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.16)]"
+                        onClick={handleOpenPairingsEditor}
+                    >
+                        Editar pareamentos
+                    </button>
                 )}
             </div>
 
@@ -353,6 +427,52 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                         >
                             {mesaLoading ? "Salvando..." : "Salvar"}
                         </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {pairingsOpen && (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+                onMouseDown={(e) => { if (e.target === e.currentTarget) setPairingsOpen(false); }}
+            >
+                <div className="bg-[#110a22] border border-[rgba(56,189,248,0.3)] rounded-2xl p-6 w-full max-w-[760px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+                    <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-4">Editar Pareamentos da Rodada {selectedRound}</h3>
+                    <div className="grid gap-3">
+                        {pairingsDraft.map((partida, index) => (
+                            <div key={partida.id} className="grid grid-cols-[1fr_1fr_110px] gap-3 max-[640px]:grid-cols-1 border border-[rgba(255,255,255,0.08)] rounded-xl p-3 bg-white/[0.03]">
+                                <SelectField
+                                    value={partida.jogador1Id}
+                                    onChange={(e) => handlePairingChange(index, "jogador1Id", e.target.value)}
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    placeholder={undefined}
+                                >
+                                    {roundPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
+                                </SelectField>
+                                <SelectField
+                                    value={partida.jogador2Id}
+                                    onChange={(e) => handlePairingChange(index, "jogador2Id", e.target.value)}
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    placeholder="BYE"
+                                >
+                                    {roundPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
+                                </SelectField>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={partida.mesa}
+                                    onChange={(e) => handlePairingChange(index, "mesa", e.target.value)}
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    placeholder="Mesa"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    {pairingsError && <p className="text-[#fca5a5] text-[0.85rem] mt-4 mb-0">{pairingsError}</p>}
+                    <div className="flex gap-3 mt-5">
+                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
+                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50" onClick={handleSavePairings} disabled={pairingsLoading}>{pairingsLoading ? "Salvando..." : "Salvar pareamentos"}</button>
                     </div>
                 </div>
             </div>

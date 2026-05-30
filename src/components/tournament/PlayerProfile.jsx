@@ -1,12 +1,11 @@
 import { useState } from "react";
+import { SelectField } from "../ui";
 
 const getTotalMembros = (time) =>
   time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? 0;
 
 const inputClass =
   "w-full border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.8rem] py-[0.7rem] outline-none transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
-const selectMenuStyle = { colorScheme: "dark" };
-const optionClass = "bg-[#110a22] text-[#f5edff]";
 
 export function PlayerProfile({
   torneio,
@@ -198,35 +197,34 @@ export function PlayerProfile({
             <>
               <div className="flex items-center gap-2 mb-[0.35rem]">
                 <span className="text-[0.72rem] text-[#beafd7]">Ordenar:</span>
-                <select
+                <SelectField
                   className="text-[0.72rem] bg-[rgba(255,255,255,0.05)] border border-[rgba(217,180,255,0.2)] rounded-[0.4rem] text-[#f5edff] px-[0.4rem] py-[0.15rem] outline-none cursor-pointer"
-                  style={selectMenuStyle}
                   value={deckSort}
+                  size="compact"
                   onChange={(e) => setDeckSort(e.target.value)}
                 >
-                  <option className={optionClass} value="recente">Mais recentes</option>
-                  <option className={optionClass} value="nome">Nome (A-Z)</option>
-                </select>
+                  <option value="recente">Mais recentes</option>
+                  <option value="nome">Nome (A-Z)</option>
+                </SelectField>
               </div>
 
-              <select
+              <SelectField
                 className={inputClass}
-                style={selectMenuStyle}
                 value={selectedDeckId || ""}
                 onChange={(e) => onDeckChange(e.target.value)}
                 disabled={actionLoading}
                 aria-label="Selecionar deck"
+                placeholder="Selecione um deck"
               >
-                <option className={optionClass} value="">Selecione um deck</option>
                 {deckOptions.map((deck) => (
-                  <option className={optionClass} key={deck.id} value={deck.id}>
+                  <option key={deck.id} value={deck.id}>
                     {deck.nome}
                     {deck.formato ? ` - ${deck.formato}` : ""}
                     {` - ${deck.totalCartas} cartas`}
                     {!deck.isCompatible ? " - incompatível" : ""}
                   </option>
                 ))}
-              </select>
+              </SelectField>
 
               {selectedDeck && (
                 <p className="text-[0.78rem] text-[#beafd7] mt-[0.15rem] mb-0">

@@ -35,9 +35,18 @@ const rejectPending = (error) => {
   pendingRequests = [];
 };
 
+const decodeJwtPayload = (token) => {
+  const [, rawPayload] = token.split(".");
+  if (!rawPayload) return null;
+
+  const base64 = rawPayload.replace(/-/g, "+").replace(/_/g, "/");
+  const paddedBase64 = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+  return JSON.parse(atob(paddedBase64));
+};
+
 const getTokenExpiry = (token) => {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const payload = decodeJwtPayload(token);
     return payload.exp ? payload.exp * 1000 : null;
   } catch {
     return null;
@@ -125,6 +134,7 @@ httpClient.interceptors.response.use(
         return new Promise((resolve, reject) => {
           pendingRequests.push({ resolve, reject });
         }).then((newToken) => {
+          originalRequest.headers = originalRequest.headers ?? {};
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
           return httpClient(originalRequest);
         });
@@ -138,6 +148,7 @@ httpClient.interceptors.response.use(
 
         notifyPending(newToken);
 
+        originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
         return httpClient(originalRequest);
       } catch {
@@ -158,7 +169,7 @@ httpClient.interceptors.response.use(
     }
 
     // Handle Zod structured validation errors (errors[] array)
-    const zodErrors = error.response?.data?.errors;
+    const zodErrors = error.response?.data?.errors || error.response?.data?.erros;
     if (Array.isArray(zodErrors) && zodErrors.length > 0) {
       const messages = zodErrors.map((e) => e.message || e.msg || JSON.stringify(e)).join("; ");
       throw new Error(messages);

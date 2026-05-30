@@ -11,10 +11,13 @@ export default defineConfig({
     setupFiles: "./src/test/setupTests.js",
   },
   build: {
+    chunkSizeWarningLimit: 450,
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          ably: ["ably"],
+        manualChunks(id) {
+          if (id.includes("node_modules/ably")) return "ably";
+          if (id.includes("node_modules/mp4-muxer")) return "story-export";
         },
       },
     },
