@@ -10,3 +10,4 @@ export { ReviewRoundModal } from "./ReviewRoundModal";
 export { TournamentCreateForm } from "./TournamentCreateForm";
 export { TournamentSection } from "./TournamentSection";
 export { TournamentEditModal } from "./TournamentEditModal";
+export { ExpandableText } from "./ExpandableText";

@@ -327,6 +327,11 @@ export const editarMesaPartida = (partidaId, mesa, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const editarPareamentosRodada = (torneioId, rodada, payload, token) =>
+  httpClient.put(`/torneio/${torneioId}/rodada/${rodada}/pareamentos`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const inscreverTardio = (torneioId, token, payload = {}) =>
   httpClient.post(`/torneio/${torneioId}/inscrever-tarde`, payload, {
     headers: { Authorization: `Bearer ${token}` },

@@ -1,6 +1,9 @@
 import { useMemo, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
-import { editarMesaPartida } from "../../services/backendApi";
+import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
+import { editarPareamentosRodada } from "../../services/backendApi";
+import { SelectField } from "../ui";
+import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
 
 function getPlayerName(partida, playerNumber, usuarioId) {
     const isMe =
@@ -22,6 +25,17 @@ function getMesa(partida, index) {
     return partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? index + 1;
 }
 
+function getMesaSortValue(partida) {
+    const mesa = Number(partida?.mesa ?? partida?.mesaNumero ?? partida?.numeroMesa);
+    return Number.isFinite(mesa) ? mesa : Number.MAX_SAFE_INTEGER;
+}
+
+function sortByMesa(a, b) {
+    const mesaDiff = getMesaSortValue(a) - getMesaSortValue(b);
+    if (mesaDiff !== 0) return mesaDiff;
+    return Number(a?.rodada ?? 0) - Number(b?.rodada ?? 0);
+}
+
 function isUserMatch(partida, usuarioId) {
     if (!usuarioId) return false;
     const uid = normalizeId(usuarioId);
@@ -31,10 +45,13 @@ function isUserMatch(partida, usuarioId) {
     );
 }
 
-function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
+function MatchCard({ partida, index, usuarioId }) {
     const isFinalizada = partida.status === "finalizada";
     const isBye = !partida.jogador2Id && !partida.jogador2;
     const isMe = isUserMatch(partida, usuarioId);
+    const confirmation = getMatchConfirmationSummary(partida);
+    const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
+    const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
 
     const p1 = getPlayerName(partida, 1, usuarioId);
     const p2 = isBye ? { nome: "BYE", isMe: false } : getPlayerName(partida, 2, usuarioId);
@@ -48,16 +65,6 @@ function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
             <div className="flex items-center justify-between mb-[0.55rem]">
                 <div className="flex items-center gap-[0.4rem]">
                     <span className="text-[0.72rem] font-bold text-[#7dd3fc] tracking-[0.04em] uppercase">Mesa {getMesa(partida, index)}</span>
-                    {isOwner && (
-                        <button
-                            type="button"
-                            className="text-[0.62rem] text-[rgba(125,211,252,0.5)] hover:text-[#7dd3fc] transition-colors p-[0.1rem] rounded"
-                            onClick={(e) => { e.stopPropagation(); onEditMesaClick(partida); }}
-                            title="Editar número da mesa"
-                        >
-                            ✎
-                        </button>
-                    )}
                 </div>
                 <div className="flex items-center gap-[0.4rem]">
                     {partida.contestado && (
@@ -68,13 +75,19 @@ function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
                     <span className={`text-[0.68rem] font-bold tracking-[0.05em] uppercase px-2 py-[0.15rem] rounded-full ${isFinalizada ? "bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.35)] text-[#86efac]" : "bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] text-[#fde047]"}`}>
                         {isFinalizada ? "Finalizada" : "Pendente"}
                     </span>
+                    {isFinalizada && !isBye && (
+                        <ConfirmationSummaryIcon confirmation={confirmation} />
+                    )}
                 </div>
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem]">
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
                     <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.nome}</span>
-                    {p1.isMe && <span className="text-[0.65rem] font-bold text-[#a78bfa] bg-[rgba(167,79,255,0.15)] border border-[rgba(167,79,255,0.3)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.03em] uppercase">Você</span>}
+                    {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
+                    {isFinalizada && !isBye && (
+                        <ConfirmationIcon confirmed={player1Confirmed} label={`${p1.nome}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
+                    )}
                 </div>
 
                 <span className={`text-[0.88rem] font-extrabold tracking-[0.04em] text-center px-2 py-[0.2rem] rounded-[6px] flex-shrink-0 ${isFinalizada ? "text-white bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.3)]" : "text-[rgba(199,149,255,0.7)] bg-[rgba(167,79,255,0.1)] border border-[rgba(167,79,255,0.2)]"}`}>
@@ -82,8 +95,11 @@ function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
                 </span>
 
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
-                    {p2.isMe && <span className="text-[0.65rem] font-bold text-[#a78bfa] bg-[rgba(167,79,255,0.15)] border border-[rgba(167,79,255,0.3)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.03em] uppercase">Você</span>}
+                    {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
                     <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.nome}</span>
+                    {isFinalizada && !isBye && (
+                        <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.nome}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
+                    )}
                 </div>
             </div>
 
@@ -123,7 +139,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
             if (!p) return false;
             if (!selectedRound || p.rodada == null) return true;
             return Number(p.rodada) === Number(selectedRound);
-        }),
+        }).sort(sortByMesa),
         [partidas, selectedRound]
     );
 
@@ -136,34 +152,67 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
 
     const [searchQuery, setSearchQuery] = useState("");
     const [showPendingOnly, setShowPendingOnly] = useState(false);
-    const [editingMesa, setEditingMesa] = useState(null); // { partida }
-    const [mesaInput, setMesaInput] = useState("");
-    const [mesaLoading, setMesaLoading] = useState(false);
-    const [mesaError, setMesaError] = useState("");
+    const [pairingsOpen, setPairingsOpen] = useState(false);
+    const [pairingsLoading, setPairingsLoading] = useState(false);
+    const [pairingsError, setPairingsError] = useState("");
+    const [pairingsDraft, setPairingsDraft] = useState([]);
 
-    const handleEditMesaClick = (partida) => {
-        setEditingMesa(partida);
-        setMesaInput(String(getMesa(partida, 0)));
-        setMesaError("");
+    const roundPlayers = useMemo(() => {
+        const map = new Map();
+        partidasRodada.forEach((partida) => {
+            const jogador1Id = partida.jogador1Id || partida.jogador1?.id;
+            const jogador2Id = partida.jogador2Id || partida.jogador2?.id;
+            if (jogador1Id && !map.has(jogador1Id)) {
+                map.set(jogador1Id, partida.jogador1Nome || partida.jogador1?.nome || "Jogador 1");
+            }
+            if (jogador2Id && !map.has(jogador2Id)) {
+                map.set(jogador2Id, partida.jogador2Nome || partida.jogador2?.nome || "Jogador 2");
+            }
+        });
+        return Array.from(map.entries()).map(([id, nome]) => ({ id, nome }));
+    }, [partidasRodada]);
+
+    const handleOpenPairingsEditor = () => {
+        setPairingsError("");
+        setPairingsDraft(
+            partidasRodada.map((partida, index) => ({
+                id: partida.id,
+                jogador1Id: partida.jogador1Id || partida.jogador1?.id || "",
+                jogador2Id: partida.jogador2Id || partida.jogador2?.id || "",
+                mesa: String(getMesa(partida, index)),
+            }))
+        );
+        setPairingsOpen(true);
     };
 
-    const handleSaveMesa = async () => {
-        if (!editingMesa || !token) return;
-        const mesa = parseInt(mesaInput, 10);
-        if (!Number.isFinite(mesa) || mesa < 1) {
-            setMesaError("Informe um número de mesa válido.");
-            return;
-        }
-        setMesaLoading(true);
-        setMesaError("");
+    const handlePairingChange = (index, field, value) => {
+        setPairingsDraft((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item));
+    };
+
+    const handleSavePairings = async () => {
+        if (!token || !torneio?.id || !selectedRound) return;
+        setPairingsLoading(true);
+        setPairingsError("");
         try {
-            await editarMesaPartida(editingMesa.id, mesa, token);
-            onPartidasUpdate?.();
-            setEditingMesa(null);
+            await editarPareamentosRodada(
+                torneio.id,
+                selectedRound,
+                {
+                    partidas: pairingsDraft.map((partida) => ({
+                        id: partida.id,
+                        jogador1Id: partida.jogador1Id,
+                        jogador2Id: partida.jogador2Id || null,
+                        mesa: partida.mesa ? Number(partida.mesa) : null,
+                    })),
+                },
+                token
+            );
+            await onPartidasUpdate?.();
+            setPairingsOpen(false);
         } catch (err) {
-            setMesaError(err.message || "Erro ao salvar mesa.");
+            setPairingsError(err.message || "Erro ao atualizar os pareamentos.");
         } finally {
-            setMesaLoading(false);
+            setPairingsLoading(false);
         }
     };
 
@@ -181,15 +230,8 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                 return n1.includes(q) || n2.includes(q) || mesa.includes(q);
             });
         }
-        if (usuarioId && !searchQuery.trim()) {
-            const myIdx = result.findIndex(p => isUserMatch(p, usuarioId));
-            if (myIdx > 0) {
-                const mine = result[myIdx];
-                result = [mine, ...result.slice(0, myIdx), ...result.slice(myIdx + 1)];
-            }
-        }
         return result;
-    }, [partidasRodada, showPendingOnly, searchQuery, usuarioId]);
+    }, [partidasRodada, showPendingOnly, searchQuery]);
 
     if (!isOngoing && !isFinished) return null;
 
@@ -222,6 +264,16 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                             </button>
                         ))}
                     </div>
+                )}
+
+                {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
+                    <button
+                        type="button"
+                        className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-[0.7rem] border border-[rgba(125,211,252,0.35)] bg-[rgba(56,189,248,0.08)] text-[#7dd3fc] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.16)]"
+                        onClick={handleOpenPairingsEditor}
+                    >
+                        Editar pareamentos
+                    </button>
                 )}
             </div>
 
@@ -300,59 +352,53 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                             usuarioId={usuarioId}
                             torneio={torneio}
                             isOwner={isOwner}
-                            onEditMesaClick={handleEditMesaClick}
                         />
                     ))}
                 </div>
             )}
         </section>
 
-        {/* Mesa edit modal */}
-        {editingMesa && (
+        {pairingsOpen && (
             <div
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-[fade-in_150ms_ease-out]"
-                onMouseDown={(e) => { if (e.target === e.currentTarget) setEditingMesa(null); }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+                onMouseDown={(e) => { if (e.target === e.currentTarget) setPairingsOpen(false); }}
             >
-                <div className="bg-[#110a22] border border-[rgba(56,189,248,0.3)] rounded-2xl p-6 w-full max-w-[320px] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_200ms_ease-out]">
-                    <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-4">Editar Mesa</h3>
-                    <p className="text-[#beafd7] text-[0.85rem] mb-4 m-0">
-                        Partida: <strong className="text-[#f5edff]">
-                            {editingMesa.jogador1Nome || "J1"} vs {editingMesa.jogador2Nome || "J2"}
-                        </strong>
-                    </p>
-                    <div className="flex flex-col gap-2 mb-4">
-                        <label className="text-[#beafd7] text-[0.85rem] font-medium">Número da mesa</label>
-                        <input
-                            type="number"
-                            min="1"
-                            value={mesaInput}
-                            onChange={(e) => setMesaInput(e.target.value)}
-                            className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.3)] rounded-[0.6rem] px-3 py-2 text-[#f5edff] text-[0.95rem] outline-none focus:border-[rgba(56,189,248,0.7)] transition-colors"
-                            disabled={mesaLoading}
-                            autoFocus
-                            onKeyDown={(e) => { if (e.key === "Enter") handleSaveMesa(); }}
-                        />
-                        {mesaError && (
-                            <p className="text-[#fca5a5] text-[0.8rem] m-0">{mesaError}</p>
-                        )}
+                <div className="bg-[#110a22] border border-[rgba(56,189,248,0.3)] rounded-2xl p-6 w-full max-w-[760px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+                    <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-4">Editar Pareamentos da Rodada {selectedRound}</h3>
+                    <div className="grid gap-3">
+                        {pairingsDraft.map((partida, index) => (
+                            <div key={partida.id} className="grid grid-cols-[1fr_1fr_110px] gap-3 max-[640px]:grid-cols-1 border border-[rgba(255,255,255,0.08)] rounded-xl p-3 bg-white/[0.03]">
+                                <SelectField
+                                    value={partida.jogador1Id}
+                                    onChange={(e) => handlePairingChange(index, "jogador1Id", e.target.value)}
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    placeholder={undefined}
+                                >
+                                    {roundPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
+                                </SelectField>
+                                <SelectField
+                                    value={partida.jogador2Id}
+                                    onChange={(e) => handlePairingChange(index, "jogador2Id", e.target.value)}
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    placeholder="BYE"
+                                >
+                                    {roundPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
+                                </SelectField>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={partida.mesa}
+                                    onChange={(e) => handlePairingChange(index, "mesa", e.target.value)}
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    placeholder="Mesa"
+                                />
+                            </div>
+                        ))}
                     </div>
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors disabled:opacity-50"
-                            onClick={() => setEditingMesa(null)}
-                            disabled={mesaLoading}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleSaveMesa}
-                            disabled={mesaLoading}
-                        >
-                            {mesaLoading ? "Salvando..." : "Salvar"}
-                        </button>
+                    {pairingsError && <p className="text-[#fca5a5] text-[0.85rem] mt-4 mb-0">{pairingsError}</p>}
+                    <div className="flex gap-3 mt-5">
+                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
+                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50" onClick={handleSavePairings} disabled={pairingsLoading}>{pairingsLoading ? "Salvando..." : "Salvar pareamentos"}</button>
                     </div>
                 </div>
             </div>

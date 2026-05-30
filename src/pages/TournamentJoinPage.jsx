@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ingressarComToken } from "../services/backendApi";
 import { useMyDecks } from "../hooks/useMyDecks";
 import { Spinner } from "../components/ui/Spinner";
+import { SelectField } from "../components/ui";
 
 const inputClass =
     "border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.7rem] py-[0.65rem] w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
@@ -220,13 +221,13 @@ export function TournamentJoinPage() {
                                 ) : (
                                     <>
                                         <div className="mb-4">
-                                            <select
+                                            <SelectField
                                                 className={inputClass}
                                                 value={selectedDeckId}
                                                 onChange={(e) => setSelectedDeckId(e.target.value)}
                                                 aria-label="Selecionar deck"
+                                                placeholder="Selecione um deck"
                                             >
-                                                <option value="">Selecione um deck</option>
                                                 {decks.map((deck) => (
                                                     <option key={deck.id} value={deck.id}>
                                                         {deck.nome}
@@ -234,7 +235,7 @@ export function TournamentJoinPage() {
                                                         {` - ${calcTotal(deck)} cartas`}
                                                     </option>
                                                 ))}
-                                            </select>
+                                            </SelectField>
                                         </div>
 
                                         <button
