@@ -81,15 +81,37 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
 
       {torneio?.descricao && (
         <div className="mb-4 rounded-2xl border border-[rgba(217,180,255,0.16)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[#d8d1e9] text-[0.92rem]">
-          <p className="m-0 mb-2 text-[0.72rem] uppercase tracking-[0.08em] text-[#a78bfa] font-semibold">Descricao</p>
-          <ExpandableText text={torneio.descricao} maxLength={220} />
+          <ExpandableText
+            label="Descricao"
+            text={torneio.descricao}
+            maxLength={220}
+            alwaysToggle
+            initialExpanded
+            collapseMode="section"
+            collapsedLabel="Mostrar"
+            expandedLabel="Ocultar"
+            headerClassName="flex w-full items-center justify-between gap-3 border-none bg-transparent p-0 text-left text-[#a78bfa] cursor-pointer hover:text-white transition-colors"
+            labelClassName="text-[0.72rem] uppercase tracking-[0.08em] font-semibold"
+            toggleTextClassName="text-[#c795ff]"
+          />
         </div>
       )}
 
       {torneio?.regras && (
         <div className="mb-5 rounded-2xl border border-[rgba(56,189,248,0.16)] bg-[rgba(56,189,248,0.05)] px-4 py-3 text-[#d5ebff] text-[0.9rem]">
-          <p className="m-0 mb-2 text-[0.72rem] uppercase tracking-[0.08em] text-[#7dd3fc] font-semibold">Regras do Torneio</p>
-          <ExpandableText text={torneio.regras} maxLength={260} buttonClassName="mt-2 border-none bg-transparent p-0 text-[#7dd3fc] text-[0.82rem] font-semibold cursor-pointer hover:text-white transition-colors" />
+          <ExpandableText
+            label="Regras do Torneio"
+            text={torneio.regras}
+            maxLength={260}
+            alwaysToggle
+            initialExpanded
+            collapseMode="section"
+            collapsedLabel="Mostrar"
+            expandedLabel="Ocultar"
+            headerClassName="flex w-full items-center justify-between gap-3 border-none bg-transparent p-0 text-left text-[#7dd3fc] cursor-pointer hover:text-white transition-colors"
+            labelClassName="text-[0.72rem] uppercase tracking-[0.08em] font-semibold"
+            toggleTextClassName="text-[#7dd3fc]"
+          />
         </div>
       )}
 

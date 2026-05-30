@@ -1,7 +1,9 @@
 import { useMemo, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
+import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { editarMesaPartida, editarPareamentosRodada } from "../../services/backendApi";
 import { SelectField } from "../ui";
+import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
 
 function getPlayerName(partida, playerNumber, usuarioId) {
     const isMe =
@@ -23,6 +25,17 @@ function getMesa(partida, index) {
     return partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? index + 1;
 }
 
+function getMesaSortValue(partida) {
+    const mesa = Number(partida?.mesa ?? partida?.mesaNumero ?? partida?.numeroMesa);
+    return Number.isFinite(mesa) ? mesa : Number.MAX_SAFE_INTEGER;
+}
+
+function sortByMesa(a, b) {
+    const mesaDiff = getMesaSortValue(a) - getMesaSortValue(b);
+    if (mesaDiff !== 0) return mesaDiff;
+    return Number(a?.rodada ?? 0) - Number(b?.rodada ?? 0);
+}
+
 function isUserMatch(partida, usuarioId) {
     if (!usuarioId) return false;
     const uid = normalizeId(usuarioId);
@@ -36,6 +49,9 @@ function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
     const isFinalizada = partida.status === "finalizada";
     const isBye = !partida.jogador2Id && !partida.jogador2;
     const isMe = isUserMatch(partida, usuarioId);
+    const confirmation = getMatchConfirmationSummary(partida);
+    const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
+    const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
 
     const p1 = getPlayerName(partida, 1, usuarioId);
     const p2 = isBye ? { nome: "BYE", isMe: false } : getPlayerName(partida, 2, usuarioId);
@@ -69,13 +85,19 @@ function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
                     <span className={`text-[0.68rem] font-bold tracking-[0.05em] uppercase px-2 py-[0.15rem] rounded-full ${isFinalizada ? "bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.35)] text-[#86efac]" : "bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] text-[#fde047]"}`}>
                         {isFinalizada ? "Finalizada" : "Pendente"}
                     </span>
+                    {isFinalizada && !isBye && (
+                        <ConfirmationSummaryIcon confirmation={confirmation} />
+                    )}
                 </div>
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem]">
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
                     <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.nome}</span>
-                    {p1.isMe && <span className="text-[0.65rem] font-bold text-[#a78bfa] bg-[rgba(167,79,255,0.15)] border border-[rgba(167,79,255,0.3)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.03em] uppercase">Você</span>}
+                    {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
+                    {isFinalizada && !isBye && (
+                        <ConfirmationIcon confirmed={player1Confirmed} label={`${p1.nome}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
+                    )}
                 </div>
 
                 <span className={`text-[0.88rem] font-extrabold tracking-[0.04em] text-center px-2 py-[0.2rem] rounded-[6px] flex-shrink-0 ${isFinalizada ? "text-white bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.3)]" : "text-[rgba(199,149,255,0.7)] bg-[rgba(167,79,255,0.1)] border border-[rgba(167,79,255,0.2)]"}`}>
@@ -83,8 +105,11 @@ function MatchCard({ partida, index, usuarioId, isOwner, onEditMesaClick }) {
                 </span>
 
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
-                    {p2.isMe && <span className="text-[0.65rem] font-bold text-[#a78bfa] bg-[rgba(167,79,255,0.15)] border border-[rgba(167,79,255,0.3)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.03em] uppercase">Você</span>}
+                    {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
                     <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.nome}</span>
+                    {isFinalizada && !isBye && (
+                        <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.nome}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
+                    )}
                 </div>
             </div>
 
@@ -124,7 +149,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
             if (!p) return false;
             if (!selectedRound || p.rodada == null) return true;
             return Number(p.rodada) === Number(selectedRound);
-        }),
+        }).sort(sortByMesa),
         [partidas, selectedRound]
     );
 
@@ -245,15 +270,8 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                 return n1.includes(q) || n2.includes(q) || mesa.includes(q);
             });
         }
-        if (usuarioId && !searchQuery.trim()) {
-            const myIdx = result.findIndex(p => isUserMatch(p, usuarioId));
-            if (myIdx > 0) {
-                const mine = result[myIdx];
-                result = [mine, ...result.slice(0, myIdx), ...result.slice(myIdx + 1)];
-            }
-        }
         return result;
-    }, [partidasRodada, showPendingOnly, searchQuery, usuarioId]);
+    }, [partidasRodada, showPendingOnly, searchQuery]);
 
     if (!isOngoing && !isFinished) return null;
 

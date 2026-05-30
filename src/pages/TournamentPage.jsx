@@ -12,6 +12,7 @@ import { Tabs } from "../components/ui/Tabs";
 import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { SponsorSection } from "../components/ui/SponsorSection";
+import { ExpandableText } from "../components/tournament";
 
 function PlatformStats() {
   return (
@@ -243,9 +244,20 @@ export function TournamentPage() {
 
                   <div className="flex flex-col gap-[0.45rem] px-5 pb-4">
                     {torneio.descricao && (
-                      <p className="m-0 text-[#d7d0e6] text-[0.84rem] leading-relaxed overflow-hidden [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical]">
-                        {torneio.descricao}
-                      </p>
+                      <ExpandableText
+                        text={torneio.descricao}
+                        maxLength={180}
+                        className="text-[#d7d0e6] text-[0.84rem]"
+                        buttonClassName="mt-2 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#c795ff] text-[0.78rem] font-semibold cursor-pointer hover:text-white transition-colors"
+                      />
+                    )}
+                    {torneio.regras && (
+                      <ExpandableText
+                        text={torneio.regras}
+                        maxLength={220}
+                        className="rounded-xl border border-[rgba(56,189,248,0.16)] bg-[rgba(56,189,248,0.05)] px-3 py-[0.7rem] text-[#d5ebff] text-[0.82rem]"
+                        buttonClassName="mt-2 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#7dd3fc] text-[0.78rem] font-semibold cursor-pointer hover:text-white transition-colors"
+                      />
                     )}
                     <div className="flex items-center gap-2 text-[#beafd7] text-[0.85rem]">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">

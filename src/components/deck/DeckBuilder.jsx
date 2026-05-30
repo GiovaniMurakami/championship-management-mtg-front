@@ -388,7 +388,6 @@ export function DeckBuilder({
             `}
           >
             Formato
-            {/* select-field: relative wrapper with CSS arrow via pseudo-element replaced by a real element */}
             <div className={`relative format-select-wrapper ${invalidFields.formato ? "border border-[rgba(255,98,124,0.95)] shadow-[0_0_0_2px_rgba(255,98,124,0.2)] rounded-[0.7rem]" : ""}`}>
               <SelectField
                 className="
@@ -413,7 +412,7 @@ export function DeckBuilder({
                 }}
                 required
                 disabled={readOnly}
-                iconClassName="opacity-0"
+                iconClassName="text-[rgba(245,237,255,0.72)]"
               >
                 <option value="" disabled>
                   Selecione um formato
@@ -424,11 +423,6 @@ export function DeckBuilder({
                   </option>
                 ))}
               </SelectField>
-              {/* Custom arrow to replace select-field::after pseudo-element */}
-              <span
-                className="absolute right-[0.85rem] top-1/2 -translate-y-[62%] w-2 h-2 border-r-2 border-b-2 border-[rgba(245,237,255,0.72)] rotate-45 pointer-events-none"
-                aria-hidden="true"
-              />
             </div>
           </label>
         </div>

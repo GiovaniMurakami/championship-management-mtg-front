@@ -142,29 +142,50 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       <div className="bg-[#110a22] border border-[rgba(217,180,255,0.2)] rounded-2xl w-full max-w-[620px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(217,180,255,0.15)]">
           <h2 className="text-white font-semibold text-[1.2rem] m-0">Editar Torneio</h2>
-          <button type="button" className="text-[#beafd7] hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={onClose} aria-label="Fechar">✕</button>
+          <button type="button" className="text-[#beafd7] hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={onClose} aria-label="Fechar">X</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 grid gap-5">
           <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
             <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Informacoes Basicas</h3>
             <input name="nome" type="text" value={form.nome} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-            <input name="horario" type="datetime-local" value={form.horario} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-            <div className="relative">
+            <div className="flex items-center gap-3 py-1">
+              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer" />
+              <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
+                Torneio Secreto
+                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Nao aparece em listagens publicas; compartilhe o link diretamente.</span>
+              </label>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="exibirNomeJogador" className="text-[#e0e0e0] font-medium text-[0.95rem]">Exibir Nome do Jogador Como</label>
               <SelectField
-                name="formato"
-                value={form.formato}
+                id="exibirNomeJogador"
+                name="exibirNomeJogador"
+                value={form.exibirNomeJogador}
                 onChange={handleChange}
                 disabled={isDisabled}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="opacity-0"
-                options={TOURNAMENT_FORMATS.map((item) => ({
-                  value: item.value,
-                  label: item.label,
-                }))}
+                iconClassName="text-[#a5b4fc]"
+                options={[
+                  { value: "nome", label: "Nome completo" },
+                  { value: "nickMOL", label: "Nick MOL" },
+                  { value: "nickArena", label: "Nick Arena" },
+                ]}
               />
-              <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] pointer-events-none">▾</span>
             </div>
+            <input name="horario" type="datetime-local" value={form.horario} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
+            <SelectField
+              name="formato"
+              value={form.formato}
+              onChange={handleChange}
+              disabled={isDisabled}
+              className={TOURNAMENT_SELECT_CLASS}
+              iconClassName="text-[#a5b4fc]"
+              options={TOURNAMENT_FORMATS.map((item) => ({
+                value: item.value,
+                label: item.label,
+              }))}
+            />
             <textarea name="descricao" rows="4" maxLength={4000} value={form.descricao} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Resumo do torneio, premiacao e informacoes importantes..." />
             <span className={COUNTER_CLASS}>{form.descricao.length}/4000</span>
             <textarea name="regras" rows="5" maxLength={4000} value={form.regras} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Tempo de rodada, regras da casa, orientacoes e excecoes..." />
@@ -181,21 +202,18 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 {totalCheckin > 0 && <small className="text-[#a5b4fc] text-[0.8rem]">Com {totalCheckin} jogador(es), o suico teria {automaticSwissRounds} rodada(s){form.maxRodadas ? ` e ficaria limitado a ${limitedSwissRounds}.` : "."}</small>}
               </div>
             </div>
-            <div className="relative">
-              <SelectField
-                name="corteTop"
-                value={form.corteTop}
-                onChange={handleChange}
-                disabled={isDisabled}
-                className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="opacity-0"
-                options={TOP_CUT_OPTIONS.map((option) => ({
-                  value: option.value,
-                  label: option.label,
-                }))}
-              />
-              <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] pointer-events-none">▾</span>
-            </div>
+            <SelectField
+              name="corteTop"
+              value={form.corteTop}
+              onChange={handleChange}
+              disabled={isDisabled}
+              className={TOURNAMENT_SELECT_CLASS}
+              iconClassName="text-[#a5b4fc]"
+              options={TOP_CUT_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+            />
           </div>
 
           <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
@@ -204,7 +222,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             {bannerPreview ? (
               <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
                 <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[160px] object-cover" />
-                <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isDisabled}>✕ Remover</button>
+                <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isDisabled}>X Remover</button>
               </div>
             ) : (
               <button type="button" className="flex items-center justify-center gap-[0.6rem] w-full py-[0.75rem] px-4 border-2 border-dashed border-[rgba(79,70,229,0.4)] rounded-lg bg-[rgba(79,70,229,0.04)] text-[#a5b4fc] text-[0.85rem] cursor-pointer transition-all duration-200 hover:border-[#a5b4fc] hover:bg-[rgba(79,70,229,0.1)] hover:text-[#c7d2fe] disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => bannerInputRef.current?.click()} disabled={isDisabled}>

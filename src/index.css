@@ -152,6 +152,20 @@ select:focus {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+select option {
+  background: #1a1129;
+  color: #f5edff;
+}
+
+select option:checked {
+  background: #2a1b45;
+  color: #f5edff;
+}
+
+select option:disabled {
+  color: #8f86a3;
+}
+
 *:focus-visible {
   outline: 2px solid rgba(199, 149, 255, 0.5);
   outline-offset: 2px;

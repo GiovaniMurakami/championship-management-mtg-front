@@ -146,22 +146,19 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
             <div className="flex flex-col gap-2">
               <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Exibir Nome do Jogador Como</label>
-              <div className="relative">
-                <SelectField
+              <SelectField
                 name="exibirNomeJogador"
                 value={createForm.exibirNomeJogador}
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="opacity-0"
+                iconClassName="text-[#a5b4fc]"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
                   { value: "nickArena", label: "Nick Arena" },
                 ]}
               />
-                <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] text-[1.1rem] pointer-events-none" aria-hidden="true">▾</span>
-              </div>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -171,22 +168,19 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
             <div className="flex flex-col gap-2">
               <label htmlFor="formato" className="text-[#e0e0e0] font-medium text-[0.95rem]">Formato</label>
-              <div className="relative">
-                <SelectField
-                  id="formato"
-                  name="formato"
-                  value={createForm.formato}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={TOURNAMENT_SELECT_CLASS}
-                  iconClassName="opacity-0"
-                  options={TOURNAMENT_FORMATS.map((formato) => ({
-                    value: formato.value,
-                    label: formato.label,
-                  }))}
-                />
-                <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] text-[1.1rem] pointer-events-none" aria-hidden="true">▾</span>
-              </div>
+              <SelectField
+                id="formato"
+                name="formato"
+                value={createForm.formato}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                className={TOURNAMENT_SELECT_CLASS}
+                iconClassName="text-[#a5b4fc]"
+                options={TOURNAMENT_FORMATS.map((formato) => ({
+                  value: formato.value,
+                  label: formato.label,
+                }))}
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -220,22 +214,19 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
             <div className="flex flex-col gap-2">
               <label htmlFor="corteTop" className="text-[#e0e0e0] font-medium text-[0.95rem]">Corte para Top <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
-              <div className="relative">
-                <SelectField
-                  id="corteTop"
-                  name="corteTop"
-                  value={createForm.corteTop}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={TOURNAMENT_SELECT_CLASS}
-                  iconClassName="opacity-0"
-                  options={TOP_CUT_OPTIONS.map((option) => ({
-                    value: option.value,
-                    label: option.label,
-                  }))}
-                />
-                <span className="absolute right-[0.9rem] top-1/2 -translate-y-1/2 text-[#a5b4fc] text-[1.1rem] pointer-events-none" aria-hidden="true">▾</span>
-              </div>
+              <SelectField
+                id="corteTop"
+                name="corteTop"
+                value={createForm.corteTop}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                className={TOURNAMENT_SELECT_CLASS}
+                iconClassName="text-[#a5b4fc]"
+                options={TOP_CUT_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: option.label,
+                }))}
+              />
             </div>
           </div>
 
@@ -249,7 +240,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
                   <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[180px] object-cover" />
                   <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isSubmitting} aria-label="Remover banner">
-                    ✕ Remover
+                    X Remover
                   </button>
                 </div>
               ) : (
