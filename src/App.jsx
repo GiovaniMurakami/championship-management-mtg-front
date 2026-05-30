@@ -5,7 +5,7 @@ import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 import { Navbar, AuthModal, EditProfileModal, Footer, SitePasswordGate } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
-import { resolveExternalNavigationTarget } from "./utils/externalNavigation";
+import { resolveExternalNavigationTarget, WORDPRESS_APP_URL } from "./utils/externalNavigation";
 
 const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
 
@@ -39,6 +39,35 @@ function ExternalRouteSync() {
   return null;
 }
 
+function getWordpressTargetOrigin() {
+  try {
+    return new URL(WORDPRESS_APP_URL).origin;
+  } catch {
+    return null;
+  }
+}
+
+function WordpressRouteBridge() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (window.parent === window) return;
+
+    const targetOrigin = getWordpressTargetOrigin();
+    if (!targetOrigin) return;
+
+    window.parent.postMessage(
+      {
+        type: "APP_ROUTE_CHANGED",
+        path: `${location.pathname}${location.search}`,
+      },
+      targetOrigin,
+    );
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 function AppContent() {
   const {
     usuario, openAuth, clearAuth, isAuthenticated, openEditProfileModal,
@@ -51,12 +80,21 @@ function AppContent() {
   const { pathname } = useLocation();
   const isBare = BARE_ROUTES.includes(pathname);
 
-  if (isBare) return <AppRoutes />;
+  if (isBare) {
+    return (
+      <>
+        <ExternalRouteSync />
+        <WordpressRouteBridge />
+        <AppRoutes />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col text-text-main">
       <RateLimitBridge />
       <ExternalRouteSync />
+      <WordpressRouteBridge />
 
       <Navbar
         usuario={usuario}
