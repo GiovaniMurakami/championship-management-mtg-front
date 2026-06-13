@@ -162,6 +162,7 @@ export function OwnerControlPanel({
   const [joinLinkCopied, setJoinLinkCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [playersListOpen, setPlayersListOpen] = useState(false);
+  const [tablesListOpen, setTablesListOpen] = useState(false);
   const joinLinkTimeoutRef = useRef(null);
   const linkCopiedTimeoutRef = useRef(null);
 
@@ -430,30 +431,60 @@ export function OwnerControlPanel({
       </div>
 
       {activeTab === "mesas" && (
-        <div>
-          {partidasRodada.length === 0 ? (
-            <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
-          ) : (
-            <>
-              <div className="flex gap-2 mb-[0.65rem]">
-                <span className="px-[0.6rem] py-[0.2rem] rounded-full text-[0.75rem] font-semibold border text-[#6ee7b7] bg-[rgba(16,185,129,0.12)] border-[rgba(16,185,129,0.3)]">
-                  {finalizadas.length} finalizada{finalizadas.length !== 1 ? "s" : ""}
+        <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.18)] bg-[rgba(255,255,255,0.025)] overflow-hidden">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer text-[#f5edff] transition-colors duration-180 hover:bg-[rgba(251,191,36,0.06)]"
+            onClick={() => setTablesListOpen((value) => !value)}
+            aria-expanded={tablesListOpen}
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold text-[0.9rem] truncate">Lista de mesas</span>
+              <span className="inline-flex items-center justify-center min-w-[22px] h-[20px] px-[0.45rem] rounded-full text-[0.72rem] font-bold bg-[rgba(251,191,36,0.14)] text-[#fde68a] border border-[rgba(251,191,36,0.28)]">
+                {partidasRodada.length}
+              </span>
+              {partidasRodada.length > 0 && (
+                <span className="hidden sm:inline text-[0.75rem] text-[#c6b8a0]">
+                  {finalizadas.length} finalizada{finalizadas.length !== 1 ? "s" : ""}, {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}
                 </span>
-                <span className="px-[0.6rem] py-[0.2rem] rounded-full text-[0.75rem] font-semibold border text-[#fbbf24] bg-[rgba(251,191,36,0.1)] border-[rgba(251,191,36,0.3)]">
-                  {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
-                {partidasRodada.map((partida) => (
-                  <MatchEditRow
-                    key={partida.id}
-                    partida={partida}
-                    onSave={onEditResult}
-                    saving={actionLoading}
-                  />
-                ))}
-              </div>
-            </>
+              )}
+            </span>
+            <span className="inline-flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.06em] text-[#fbbf24]">
+              {tablesListOpen ? "Ocultar" : "Mostrar"}
+              <span
+                className={`inline-block h-2 w-2 border-r-2 border-b-2 border-current transition-transform duration-200 ${tablesListOpen ? "-rotate-135 translate-y-[2px]" : "rotate-45 -translate-y-[2px]"}`}
+                aria-hidden="true"
+              />
+            </span>
+          </button>
+
+          {tablesListOpen && (
+            <div className="border-t border-[rgba(251,191,36,0.12)] p-3">
+              {partidasRodada.length === 0 ? (
+                <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
+              ) : (
+                <>
+                  <div className="flex gap-2 mb-[0.65rem]">
+                    <span className="px-[0.6rem] py-[0.2rem] rounded-full text-[0.75rem] font-semibold border text-[#6ee7b7] bg-[rgba(16,185,129,0.12)] border-[rgba(16,185,129,0.3)]">
+                      {finalizadas.length} finalizada{finalizadas.length !== 1 ? "s" : ""}
+                    </span>
+                    <span className="px-[0.6rem] py-[0.2rem] rounded-full text-[0.75rem] font-semibold border text-[#fbbf24] bg-[rgba(251,191,36,0.1)] border-[rgba(251,191,36,0.3)]">
+                      {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
+                    {partidasRodada.map((partida) => (
+                      <MatchEditRow
+                        key={partida.id}
+                        partida={partida}
+                        onSave={onEditResult}
+                        saving={actionLoading}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
       )}

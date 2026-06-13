@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
+import { Tooltip } from "./Tooltip";
 
 function NavAvatar({ nome }) {
   const initial = (nome?.[0] ?? "?").toUpperCase();
@@ -205,24 +206,28 @@ export function Navbar({
       <div className="flex items-center gap-[0.6rem] max-nav:hidden">
         {usuario ? (
           <>
-            <button
-              className="inline-flex items-center gap-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.8rem] py-[0.45rem] text-[0.85rem] text-[#f5edff] cursor-pointer"
-              type="button"
-              onClick={() => { onOpenEditProfile(); close(); }}
-              title="Editar perfil"
-            >
-              <NavAvatar nome={usuario.nome} />
-              <span className="text-[0.84rem] font-semibold text-[#f5edff]">{usuario.nome}</span>
-            </button>
-            <button
-              className="inline-flex items-center gap-[0.35rem] px-[0.75rem] py-[0.45rem] border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.84rem] font-semibold cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(252,88,119,0.12)] hover:border-[rgba(252,88,119,0.35)] hover:text-[#ffa8b8]"
-              type="button"
-              onClick={() => { onLogout(); close(); }}
-              title="Sair"
-            >
-              <IconLogout />
-              <span>Sair</span>
-            </button>
+            <Tooltip content="Editar perfil" placement="bottom" focusable={false}>
+              <button
+                className="inline-flex items-center gap-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.8rem] py-[0.45rem] text-[0.85rem] text-[#f5edff] cursor-pointer"
+                type="button"
+                onClick={() => { onOpenEditProfile(); close(); }}
+                aria-label="Editar perfil"
+              >
+                <NavAvatar nome={usuario.nome} />
+                <span className="text-[0.84rem] font-semibold text-[#f5edff]">{usuario.nome}</span>
+              </button>
+            </Tooltip>
+            <Tooltip content="Sair" placement="bottom" focusable={false}>
+              <button
+                className="inline-flex items-center gap-[0.35rem] px-[0.75rem] py-[0.45rem] border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.84rem] font-semibold cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(252,88,119,0.12)] hover:border-[rgba(252,88,119,0.35)] hover:text-[#ffa8b8]"
+                type="button"
+                onClick={() => { onLogout(); close(); }}
+                aria-label="Sair"
+              >
+                <IconLogout />
+                <span>Sair</span>
+              </button>
+            </Tooltip>
           </>
         ) : (
           <>

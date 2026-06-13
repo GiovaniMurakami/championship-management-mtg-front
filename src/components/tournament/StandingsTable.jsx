@@ -206,13 +206,15 @@ export function StandingsTable({
             </div>
           )}
           {isOwner && isFinished && (
-            <button
-              className="inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.32rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.76rem] font-bold font-['inherit'] cursor-pointer whitespace-nowrap transition-[background,border-color,color] duration-[180ms] tracking-[0.02em] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] hover:text-[#ffe168]"
-              onClick={() => setShowStory(true)}
-              title="Gerar imagem do Top 8"
-            >
-              Top 8 Story
-            </button>
+            <Tooltip content="Gerar imagem do Top 8" focusable={false}>
+              <button
+                className="inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.32rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.76rem] font-bold font-['inherit'] cursor-pointer whitespace-nowrap transition-[background,border-color,color] duration-[180ms] tracking-[0.02em] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] hover:text-[#ffe168]"
+                onClick={() => setShowStory(true)}
+                aria-label="Gerar imagem do Top 8"
+              >
+                Top 8 Story
+              </button>
+            </Tooltip>
           )}
         </div>
       </div>

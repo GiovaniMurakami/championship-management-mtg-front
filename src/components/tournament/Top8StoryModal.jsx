@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Tooltip } from "../ui/Tooltip";
 
 const TOP8_BACKGROUND_URL = "/images/top8/fundoTop8.jpeg";
 const TOP8_CONTENT_START_RATIO = 0.28;
@@ -483,6 +484,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
             </button>
 
             {/* story-video-btn */}
+            <Tooltip content="Gerar video MP4 animado revelando do ultimo ao primeiro" focusable={false}>
             <button
               className={[
                 "inline-flex items-center gap-[0.35rem] px-[0.9rem] py-[0.38rem] border border-[rgba(167,79,255,0.5)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color,opacity] duration-[160ms] whitespace-nowrap",
@@ -492,7 +494,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
               ].join(" ")}
               onClick={handleMp4}
               disabled={videoProgress !== null}
-              title="Gerar vídeo MP4 animado revelando do último ao primeiro"
+              aria-label="Gerar video MP4 animado revelando do ultimo ao primeiro"
             >
               {videoProgress !== null ? (
                 <>
@@ -511,6 +513,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
                 </>
               )}
             </button>
+            </Tooltip>
 
             {/* story-close-btn: 2rem circle border flex-center text-soft 1.2rem cursor hover */}
             <button
