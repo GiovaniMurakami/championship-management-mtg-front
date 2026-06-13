@@ -33,6 +33,15 @@ const IconTrophy = () => (
   </svg>
 );
 
+const IconDashboard = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="9" rx="1.5" />
+    <rect x="14" y="3" width="7" height="5" rx="1.5" />
+    <rect x="14" y="12" width="7" height="9" rx="1.5" />
+    <rect x="3" y="16" width="7" height="5" rx="1.5" />
+  </svg>
+);
+
 const IconDeck = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -92,6 +101,7 @@ export function Navbar({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef(null);
+  const isAdmin = usuario?.role === "admin";
 
   useEffect(() => {
     const handler = (e) => {
@@ -199,6 +209,12 @@ export function Navbar({
           >
             Times
           </button>
+        )}
+
+        {isAuthenticated && isAdmin && (
+          <NavLink to="/dashboard" className={desktopLinkClass} onClick={close}>
+            Dashboard
+          </NavLink>
         )}
       </nav>
 
@@ -342,6 +358,13 @@ export function Navbar({
                   <IconTime />
                   <span>Times</span>
                 </button>
+              )}
+
+              {isAuthenticated && isAdmin && (
+                <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
+                  <IconDashboard />
+                  <span>Dashboard</span>
+                </NavLink>
               )}
             </nav>
 
