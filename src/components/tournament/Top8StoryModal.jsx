@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+const TOP8_BACKGROUND_URL = "/images/top8/fundoTop8.jpeg";
+const TOP8_CONTENT_START_RATIO = 0.28;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -20,6 +23,26 @@ function easeOutQuart(t) {
   return 1 - Math.pow(1 - t, 4);
 }
 
+function loadImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function drawCoverImage(ctx, img, x, y, w, h) {
+  if (!img) return false;
+  const scale = Math.max(w / img.width, h / img.height);
+  const sw = w / scale;
+  const sh = h / scale;
+  const sx = (img.width - sw) / 2;
+  const sy = (img.height - sh) / 2;
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  return true;
+}
+
 /**
  * Calculate card layout so N players always fit within the available vertical space.
  * Returns { cardH, cardGap, startY }
@@ -36,69 +59,24 @@ function calcLayout(canvasH, headerEndY, bottomReserve, n, nominalCardH) {
 
 // ─── Static PNG (1080 × 1920) ─────────────────────────────────────────────────
 
-function downloadTop8Canvas(players, tournamentName) {
+async function downloadTop8Canvas(players, tournamentName) {
   const W = 1080;
   const H = 1920;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
+  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
 
-  // Background
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#0e091c");
-  bg.addColorStop(0.5, "#150825");
-  bg.addColorStop(1, "#0e091c");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  const glow = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H * 0.35, 600);
-  glow.addColorStop(0, "rgba(167,79,255,0.15)");
-  glow.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, H);
-
-  // Top band
-  const topBand = ctx.createLinearGradient(0, 0, W, 0);
-  topBand.addColorStop(0, "rgba(167,79,255,0)");
-  topBand.addColorStop(0.3, "rgba(167,79,255,0.7)");
-  topBand.addColorStop(0.7, "rgba(255,215,0,0.7)");
-  topBand.addColorStop(1, "rgba(167,79,255,0)");
-  ctx.fillStyle = topBand;
-  ctx.fillRect(0, 0, W, 10);
-
-  // Title
-  ctx.textAlign = "center";
-  ctx.font = "bold 160px Arial, sans-serif";
-  const titleGrad = ctx.createLinearGradient(W / 2 - 220, 0, W / 2 + 220, 0);
-  titleGrad.addColorStop(0, "#c4b5fd");
-  titleGrad.addColorStop(0.5, "#FFD700");
-  titleGrad.addColorStop(1, "#c4b5fd");
-  ctx.fillStyle = titleGrad;
-  const label = players.length <= 4 ? `TOP ${players.length}` : "TOP 8";
-  ctx.fillText(label, W / 2, 210);
-
-  ctx.font = "bold 54px Arial, sans-serif";
-  ctx.fillStyle = "#c4b5fd";
-  ctx.fillText(tournamentName || "Torneio", W / 2, 282);
-
-  // Divider
-  const divGrad = ctx.createLinearGradient(80, 0, W - 80, 0);
-  divGrad.addColorStop(0, "rgba(199,149,255,0)");
-  divGrad.addColorStop(0.2, "rgba(199,149,255,0.6)");
-  divGrad.addColorStop(0.8, "rgba(255,215,0,0.4)");
-  divGrad.addColorStop(1, "rgba(199,149,255,0)");
-  ctx.strokeStyle = divGrad;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(80, 318);
-  ctx.lineTo(W - 80, 318);
-  ctx.stroke();
+  if (!drawCoverImage(ctx, backgroundImage, 0, 0, W, H)) {
+    ctx.fillStyle = "#0e091c";
+    ctx.fillRect(0, 0, W, H);
+  }
 
   // Layout
   const n = players.length;
-  const { cardH, cardGap, startY } = calcLayout(H, 338, 20, n, 177);
-  const fontScale = Math.min(1, cardH / 177);
+  const { cardH, cardGap, startY } = calcLayout(H, Math.round(H * TOP8_CONTENT_START_RATIO), 70, n, 150);
+  const fontScale = Math.min(1, cardH / 150);
 
   players.forEach((player, i) => {
     const pos = player.posicao ?? i + 1;
@@ -110,10 +88,10 @@ function downloadTop8Canvas(players, tournamentName) {
     const y = startY + i * (cardH + cardGap);
 
     const cardGrads = ctx.createLinearGradient(60, y, W - 60, y + cardH);
-    if (isGold) { cardGrads.addColorStop(0, "rgba(255,215,0,0.22)"); cardGrads.addColorStop(1, "rgba(255,215,0,0.06)"); }
-    else if (isSilver) { cardGrads.addColorStop(0, "rgba(192,192,192,0.16)"); cardGrads.addColorStop(1, "rgba(192,192,192,0.04)"); }
-    else if (isBronze) { cardGrads.addColorStop(0, "rgba(205,127,50,0.16)"); cardGrads.addColorStop(1, "rgba(205,127,50,0.04)"); }
-    else { cardGrads.addColorStop(0, "rgba(100,60,180,0.13)"); cardGrads.addColorStop(1, "rgba(100,60,180,0.03)"); }
+    if (isGold) { cardGrads.addColorStop(0, "#4a3510"); cardGrads.addColorStop(1, "#16100a"); }
+    else if (isSilver) { cardGrads.addColorStop(0, "#32343b"); cardGrads.addColorStop(1, "#10131b"); }
+    else if (isBronze) { cardGrads.addColorStop(0, "#3a2418"); cardGrads.addColorStop(1, "#120d0a"); }
+    else { cardGrads.addColorStop(0, "#23153a"); cardGrads.addColorStop(1, "#0d1022"); }
     ctx.fillStyle = cardGrads;
     roundRect(ctx, 60, y, W - 120, cardH, 18);
     ctx.fill();
@@ -153,15 +131,6 @@ function downloadTop8Canvas(players, tournamentName) {
     ctx.fillText(dDeck, 290, y + cardH * 0.78);
   });
 
-  // Bottom band
-  const bottomBand = ctx.createLinearGradient(0, 0, W, 0);
-  bottomBand.addColorStop(0, "rgba(167,79,255,0)");
-  bottomBand.addColorStop(0.3, "rgba(167,79,255,0.7)");
-  bottomBand.addColorStop(0.7, "rgba(255,215,0,0.7)");
-  bottomBand.addColorStop(1, "rgba(167,79,255,0)");
-  ctx.fillStyle = bottomBand;
-  ctx.fillRect(0, H - 10, W, 10);
-
   const link = document.createElement("a");
   link.download = `top${players.length}-${(tournamentName || "torneio").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase()}.png`;
   link.href = canvas.toDataURL("image/png");
@@ -173,61 +142,11 @@ function downloadTop8Canvas(players, tournamentName) {
 const GW = 480;
 const GH = 854;
 
-function gifDrawBackground(ctx) {
-  const bg = ctx.createLinearGradient(0, 0, 0, GH);
-  bg.addColorStop(0, "#0e091c");
-  bg.addColorStop(0.5, "#150825");
-  bg.addColorStop(1, "#0e091c");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, GW, GH);
-}
-
-function gifDrawHeader(ctx, tournamentName, alpha, topN) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-
-  const topBand = ctx.createLinearGradient(0, 0, GW, 0);
-  topBand.addColorStop(0, "rgba(167,79,255,0)");
-  topBand.addColorStop(0.3, "rgba(167,79,255,0.7)");
-  topBand.addColorStop(0.7, "rgba(255,215,0,0.7)");
-  topBand.addColorStop(1, "rgba(167,79,255,0)");
-  ctx.fillStyle = topBand;
-  ctx.fillRect(0, 0, GW, 5);
-
-  ctx.textAlign = "center";
-  ctx.font = "bold 72px Arial, sans-serif";
-  const grad = ctx.createLinearGradient(GW / 2 - 100, 0, GW / 2 + 100, 0);
-  grad.addColorStop(0, "#c4b5fd");
-  grad.addColorStop(0.5, "#FFD700");
-  grad.addColorStop(1, "#c4b5fd");
-  ctx.fillStyle = grad;
-  ctx.fillText(`TOP ${topN}`, GW / 2, 93);
-
-  ctx.font = "bold 24px Arial, sans-serif";
-  ctx.fillStyle = "#c4b5fd";
-  ctx.fillText(tournamentName || "Torneio", GW / 2, 126);
-
-  const divGrad = ctx.createLinearGradient(35, 0, GW - 35, 0);
-  divGrad.addColorStop(0, "rgba(199,149,255,0)");
-  divGrad.addColorStop(0.2, "rgba(199,149,255,0.6)");
-  divGrad.addColorStop(0.8, "rgba(255,215,0,0.4)");
-  divGrad.addColorStop(1, "rgba(199,149,255,0)");
-  ctx.strokeStyle = divGrad;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(35, 142);
-  ctx.lineTo(GW - 35, 142);
-  ctx.stroke();
-
-  const bottomBand = ctx.createLinearGradient(0, 0, GW, 0);
-  bottomBand.addColorStop(0, "rgba(167,79,255,0)");
-  bottomBand.addColorStop(0.3, "rgba(167,79,255,0.7)");
-  bottomBand.addColorStop(0.7, "rgba(255,215,0,0.7)");
-  bottomBand.addColorStop(1, "rgba(167,79,255,0)");
-  ctx.fillStyle = bottomBand;
-  ctx.fillRect(0, GH - 5, GW, 5);
-
-  ctx.restore();
+function gifDrawBackground(ctx, backgroundImage) {
+  if (!drawCoverImage(ctx, backgroundImage, 0, 0, GW, GH)) {
+    ctx.fillStyle = "#0e091c";
+    ctx.fillRect(0, 0, GW, GH);
+  }
 }
 
 function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
@@ -258,10 +177,10 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
   }
 
   const cg = ctx.createLinearGradient(CARD_LEFT, y, CARD_LEFT + CARD_W, y + cardH);
-  if (isGold) { cg.addColorStop(0, "rgba(255,215,0,0.22)"); cg.addColorStop(1, "rgba(255,215,0,0.06)"); }
-  else if (isSilver) { cg.addColorStop(0, "rgba(192,192,192,0.16)"); cg.addColorStop(1, "rgba(192,192,192,0.04)"); }
-  else if (isBronze) { cg.addColorStop(0, "rgba(205,127,50,0.16)"); cg.addColorStop(1, "rgba(205,127,50,0.04)"); }
-  else { cg.addColorStop(0, "rgba(100,60,180,0.13)"); cg.addColorStop(1, "rgba(100,60,180,0.03)"); }
+  if (isGold) { cg.addColorStop(0, "#4a3510"); cg.addColorStop(1, "#16100a"); }
+  else if (isSilver) { cg.addColorStop(0, "#32343b"); cg.addColorStop(1, "#10131b"); }
+  else if (isBronze) { cg.addColorStop(0, "#3a2418"); cg.addColorStop(1, "#120d0a"); }
+  else { cg.addColorStop(0, "#23153a"); cg.addColorStop(1, "#0d1022"); }
   ctx.fillStyle = cg;
   roundRect(ctx, CARD_LEFT, y, CARD_W, cardH, RADIUS);
   ctx.fill();
@@ -316,9 +235,8 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
 
 // ─── Frame renderer (shared between export paths) ────────────────────────────
 
-function renderFrame(ctx, f, n, revealOrder, layout, tournamentName) {
+function renderFrame(ctx, f, n, revealOrder, layout, backgroundImage) {
   const INTRO = 8, PER_P = 7, OUTRO = 22;
-  const titleAlpha = f < INTRO ? (f + 1) / INTRO : 1;
   const revealOffset = f - INTRO;
   const isOutro = f >= INTRO + n * PER_P;
 
@@ -339,8 +257,7 @@ function renderFrame(ctx, f, n, revealOrder, layout, tournamentName) {
     ? Math.sin((outroFrame / OUTRO) * Math.PI * 3.5) * 0.5 + 0.5
     : 0;
 
-  gifDrawBackground(ctx);
-  gifDrawHeader(ctx, tournamentName, titleAlpha, n);
+  gifDrawBackground(ctx, backgroundImage);
 
   for (let ri = 0; ri < revealedCount; ri++) {
     const player = revealOrder[ri];
@@ -361,12 +278,13 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
   const INTRO = 8, PER_P = 7, OUTRO = 22;
   const n = players.length;
   const totalFrames = INTRO + n * PER_P + OUTRO;
+  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
 
   const revealOrder = players
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
     .reverse();
 
-  const layout = calcLayout(GH, 153, 5, n, 78);
+  const layout = calcLayout(GH, Math.round(GH * TOP8_CONTENT_START_RATIO), 24, n, 66);
 
   // Render at 1080×1920 by scaling the GW/GH coordinate space ×2.25
   const OUT_W = 1080, OUT_H = 1920;
@@ -430,7 +348,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
         onDone?.();
         return;
       }
-      renderFrame(ctx, f, n, revealOrder, layout, tournamentName);
+      renderFrame(ctx, f, n, revealOrder, layout, backgroundImage);
       const timestamp = Math.round(f * (1_000_000 / FPS));
       const duration = Math.round(1_000_000 / FPS);
       const frame = new VideoFrame(canvas, { timestamp, duration });
@@ -464,7 +382,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
     recorder.start();
 
     for (let f = 0; f < totalFrames; f++) {
-      renderFrame(ctx, f, n, revealOrder, layout, tournamentName);
+      renderFrame(ctx, f, n, revealOrder, layout, backgroundImage);
       onProgress?.(Math.round(((f + 1) / totalFrames) * 100));
       await new Promise((r) => setTimeout(r, FRAME_MS));
     }
@@ -624,12 +542,15 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
         )}
 
         {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
-        <div className="w-full aspect-[9/16] bg-[linear-gradient(160deg,#0e091c_0%,#150825_50%,#0e091c_100%)] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+        <div
+          className="w-full aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center"
+          style={{ backgroundImage: `url(${TOP8_BACKGROUND_URL})` }}
+        >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}
-          <div className="h-[6px] shrink-0 bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
+          <div className="hidden h-[6px] shrink-0 bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
 
           {/* story-head: flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0 */}
-          <div className="flex flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0">
+          <div className="hidden flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0">
             {/* story-top8-label: clamp font-size, font-black, tracking, gradient text */}
             <h1 className="text-[clamp(2.4rem,10vw,3.8rem)] font-black tracking-[0.06em] m-0 leading-[1.1] bg-gradient-to-r from-[#c4b5fd] via-[#ffd700] to-[#c4b5fd] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]">
               TOP {topN}
@@ -641,10 +562,13 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
           </div>
 
           {/* story-separator: h-px mx-4 my-2 gradient bg shrink-0 */}
-          <div className="h-px mx-4 my-2 bg-[linear-gradient(90deg,rgba(199,149,255,0)_0%,rgba(199,149,255,0.5)_30%,rgba(255,215,0,0.35)_70%,rgba(199,149,255,0)_100%)] shrink-0" />
+          <div className="hidden h-px mx-4 my-2 bg-[linear-gradient(90deg,rgba(199,149,255,0)_0%,rgba(199,149,255,0.5)_30%,rgba(255,215,0,0.35)_70%,rgba(199,149,255,0)_100%)] shrink-0" />
 
           {/* story-players: list-none m-0 px-[0.65rem] py-[0.3rem] flex-col gap-[0.3rem] flex-1 overflow-hidden */}
-          <ul className="list-none m-0 px-[0.65rem] py-[0.3rem] flex flex-col gap-[0.3rem] flex-1 overflow-hidden">
+          <ul
+            className="list-none mb-6 px-[0.65rem] py-[0.3rem] flex flex-col gap-[0.3rem] overflow-hidden"
+            style={{ marginTop: `${TOP8_CONTENT_START_RATIO * 100}%` }}
+          >
             {players.map((player, i) => {
               const pos = player.posicao ?? i + 1;
               const name = player.usuario?.nome || player.nome || "Jogador";
@@ -653,10 +577,10 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
                 pos === 1 ? "gold" : pos === 2 ? "silver" : pos === 3 ? "bronze" : "default";
 
               const tierClasses = {
-                gold:    "border-[rgba(255,215,0,0.55)] bg-[rgba(255,215,0,0.12)]",
-                silver:  "border-[rgba(192,192,192,0.45)] bg-[rgba(192,192,192,0.08)]",
-                bronze:  "border-[rgba(205,127,50,0.45)] bg-[rgba(205,127,50,0.08)]",
-                default: "border-[rgba(167,79,255,0.22)] bg-[rgba(100,60,180,0.1)]",
+                gold:    "border-[rgba(255,215,0,0.65)] bg-[#241a08]",
+                silver:  "border-[rgba(192,192,192,0.55)] bg-[#171923]",
+                bronze:  "border-[rgba(205,127,50,0.55)] bg-[#21130c]",
+                default: "border-[rgba(167,79,255,0.45)] bg-[#11162b]",
               };
 
               const posColorClasses = {
@@ -693,7 +617,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
           </ul>
 
           {/* story-band story-band--bottom: same as top band but mt-auto */}
-          <div className="h-[6px] shrink-0 mt-auto bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
+          <div className="hidden h-[6px] shrink-0 mt-auto bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
         </div>
       </div>
     </div>

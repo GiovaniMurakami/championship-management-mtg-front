@@ -20,7 +20,6 @@ import {
     listarTimes,
     atualizarTorneio,
     deletarTorneio,
-    editarPareamentosRodada,
 } from "../services/backendApi";
 import {
     subscribeToTournament,
@@ -185,6 +184,7 @@ export function useTournamentDetail() {
                 if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
                 if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
                 if (data.status !== undefined) patch.status = data.status;
+                if (data.totalInscritos !== undefined) patch.totalInscritos = data.totalInscritos;
                 if (!Object.keys(patch).length) return prev;
                 return prev ? { ...prev, ...patch } : patch;
             });
@@ -305,12 +305,18 @@ export function useTournamentDetail() {
             },
             onJogadorDropou: (msg) => {
                 const data = msg?.data || {};
-                const { jogadorId, jogadorNome, partidasResolvidas } = data;
+                const { jogadorId, jogadorNome, partidasResolvidas, inscricaoRemovida } = data;
                 setStandings((prev) => prev.map((p) => {
                     const pId = normalizeId(p.usuario?.id || p.usuarioId || p.id);
                     if (pId !== normalizeId(jogadorId)) return p;
                     return { ...p, dropped: true };
+                }).filter((p) => {
+                    if (!inscricaoRemovida) return true;
+                    return normalizeId(p.usuario?.id || p.usuarioId || p.id) !== normalizeId(jogadorId);
                 }));
+                if (inscricaoRemovida) {
+                    setTorneio((prev) => prev ? { ...prev, totalInscritos: Math.max(0, Number(prev.totalInscritos || 0) - 1) } : prev);
+                }
                 if (Array.isArray(partidasResolvidas)) {
                     partidasResolvidas.forEach(({ partidaId, vencedorId }) => {
                         setPartidas((prev) => prev.map((p) => {
@@ -706,9 +712,11 @@ export function useTournamentDetail() {
         }
     };
 
+    const enforceNextRoundCheckin = false;
+
     const handleNextRound = async () => {
         if (!torneioId || !canManageTournament) return;
-        if (false && requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
+        if (enforceNextRoundCheckin && requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
             const total = pendingCheckinPlayers.length;
             setError(
                 `Não é possível iniciar a próxima rodada: faltam ${total} jogador(es) fazer check-in da próxima rodada.`,
