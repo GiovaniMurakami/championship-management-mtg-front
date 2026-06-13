@@ -1,14 +1,5 @@
 import { normalizeId } from "./normalizeId";
-
-export function getMatchPlayerId(partida, playerNumber) {
-  return playerNumber === 1
-    ? partida?.jogador1Id || partida?.jogador1?.id
-    : partida?.jogador2Id || partida?.jogador2?.id;
-}
-
-export function isByeMatch(partida) {
-  return !getMatchPlayerId(partida, 2);
-}
+import { getMatchPlayerId, isByeMatch } from "./matchDisplay";
 
 export function hasPlayerConfirmedResult(partida, playerNumber) {
   const playerId = normalizeId(getMatchPlayerId(partida, playerNumber));

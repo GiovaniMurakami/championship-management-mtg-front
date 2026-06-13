@@ -226,8 +226,11 @@ export function TournamentDetailPage() {
           droppingPlayerId,
         };
 
-        const matchPanel = (
+        const shouldShowMatchPanel = Boolean(currentPlayer) && !currentPlayer?.dropped;
+        const matchPanelKey = `${myMatch?.id || "none"}:${myMatch?.rodada || ""}:${torneio?.rodadaAtual || ""}`;
+        const matchPanel = shouldShowMatchPanel ? (
           <MatchPanel
+            key={matchPanelKey}
             myMatch={myMatch}
             usuario={usuario}
             onReportResult={handleReportResult}
@@ -239,7 +242,7 @@ export function TournamentDetailPage() {
             currentPlayer={currentPlayer}
             onCheckin={handleCheckin}
           />
-        );
+        ) : null;
 
         const playerProfile = (
           <PlayerProfile
@@ -272,6 +275,7 @@ export function TournamentDetailPage() {
             torneioNome={torneio?.nome}
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
+            totalInscritos={torneio?.totalInscritos}
           />
         );
 

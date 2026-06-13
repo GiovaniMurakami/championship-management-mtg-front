@@ -45,7 +45,7 @@ const IconDate = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="non
 export function TournamentHeader({ torneio, loading, className = "" }) {
   const formatDate = (dateString) => {
     if (!dateString) return "—";
-    return new Date(dateString).toLocaleString("pt-BR");
+    return new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
   };
 
   if (loading) {
@@ -86,7 +86,6 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
             text={torneio.descricao}
             maxLength={220}
             alwaysToggle
-            initialExpanded
             collapseMode="section"
             collapsedLabel="Mostrar"
             expandedLabel="Ocultar"
@@ -104,7 +103,6 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
             text={torneio.regras}
             maxLength={260}
             alwaysToggle
-            initialExpanded
             collapseMode="section"
             collapsedLabel="Mostrar"
             expandedLabel="Ocultar"

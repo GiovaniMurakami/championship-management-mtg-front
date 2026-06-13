@@ -12,3 +12,4 @@ export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, Skelet
 export { Spinner } from "./Spinner";
 export { SponsorSection } from "./SponsorSection";
 export { Tabs } from "./Tabs";
+export { Tooltip } from "./Tooltip";

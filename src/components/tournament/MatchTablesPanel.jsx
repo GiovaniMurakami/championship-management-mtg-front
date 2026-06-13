@@ -1,25 +1,10 @@
 import { useMemo, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
+import { getDisplaySides, getMatchPlayerName } from "../../utils/matchDisplay";
 import { editarPareamentosRodada } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
-
-function getPlayerName(partida, playerNumber, usuarioId) {
-    const isMe =
-        playerNumber === 1
-            ? normalizeId(partida.jogador1Id || partida.jogador1?.id) === normalizeId(usuarioId)
-            : normalizeId(partida.jogador2Id || partida.jogador2?.id) === normalizeId(usuarioId);
-
-    if (playerNumber === 2 && !partida.jogador2Id && !partida.jogador2) return "BYE";
-
-    const nome =
-        playerNumber === 1
-            ? partida.jogador1Nome || partida.jogador1?.nome || partida.jogador1?.username || "Jogador 1"
-            : partida.jogador2Nome || partida.jogador2?.nome || partida.jogador2?.username || "Jogador 2";
-
-    return { nome, isMe };
-}
 
 function getMesa(partida, index) {
     return partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? index + 1;
@@ -53,8 +38,9 @@ function MatchCard({ partida, index, usuarioId }) {
     const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
     const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
 
-    const p1 = getPlayerName(partida, 1, usuarioId);
-    const p2 = isBye ? { nome: "BYE", isMe: false } : getPlayerName(partida, 2, usuarioId);
+    const sides = getDisplaySides(partida, usuarioId);
+    const p1 = sides.left;
+    const p2 = isBye ? { name: "BYE", isMe: false } : sides.right;
 
     const score = isFinalizada
         ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
@@ -83,10 +69,10 @@ function MatchCard({ partida, index, usuarioId }) {
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem]">
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
-                    <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.nome}</span>
+                    <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.name}</span>
                     {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
                     {isFinalizada && !isBye && (
-                        <ConfirmationIcon confirmed={player1Confirmed} label={`${p1.nome}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
+                        <ConfirmationIcon confirmed={player1Confirmed} label={`${p1.name}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
                     )}
                 </div>
 
@@ -96,9 +82,9 @@ function MatchCard({ partida, index, usuarioId }) {
 
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
                     {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
-                    <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.nome}</span>
+                    <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.name}</span>
                     {isFinalizada && !isBye && (
-                        <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.nome}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
+                        <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.name}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
                     )}
                 </div>
             </div>
@@ -163,10 +149,10 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
             const jogador1Id = partida.jogador1Id || partida.jogador1?.id;
             const jogador2Id = partida.jogador2Id || partida.jogador2?.id;
             if (jogador1Id && !map.has(jogador1Id)) {
-                map.set(jogador1Id, partida.jogador1Nome || partida.jogador1?.nome || "Jogador 1");
+                map.set(jogador1Id, getMatchPlayerName(partida, 1));
             }
             if (jogador2Id && !map.has(jogador2Id)) {
-                map.set(jogador2Id, partida.jogador2Nome || partida.jogador2?.nome || "Jogador 2");
+                map.set(jogador2Id, getMatchPlayerName(partida, 2));
             }
         });
         return Array.from(map.entries()).map(([id, nome]) => ({ id, nome }));
