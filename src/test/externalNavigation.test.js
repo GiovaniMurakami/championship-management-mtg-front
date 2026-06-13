@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildExternalAppUrlForPath,
   buildTeamInviteExternalUrl,
   buildTournamentExternalUrl,
   buildTournamentJoinExternalUrl,
@@ -66,6 +67,27 @@ describe("resolveExternalNavigationTarget", () => {
       search: "",
     });
   });
+
+  it("redireciona appPath para uma rota interna preservando parametros extras", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas&origem=wordpress",
+    });
+
+    expect(target).toEqual({
+      pathname: "/torneios/abc-123",
+      search: "?aba=mesas&origem=wordpress",
+    });
+  });
+
+  it("ignora appPath externo ou sem barra inicial", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?appPath=https%3A%2F%2Fevil.example%2Ftorneios%2Fabc-123",
+    });
+
+    expect(target).toBeNull();
+  });
 });
 
 describe("build external wordpress urls", () => {
@@ -84,6 +106,12 @@ describe("build external wordpress urls", () => {
   it("gera url externa para convite de time", () => {
     expect(buildTeamInviteExternalUrl("invite-22")).toBe(
       "https://www.tiagofuguete.com.br/app-torneios?rota=times&convite=invite-22",
+    );
+  });
+
+  it("gera url externa dinamica para a rota atual do app", () => {
+    expect(buildExternalAppUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
+      "https://www.tiagofuguete.com.br/app-torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
     );
   });
 });

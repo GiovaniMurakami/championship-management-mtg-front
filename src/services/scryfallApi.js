@@ -6,7 +6,32 @@ const REQUEST_TIMEOUT_MS = 8000;
 const COLLECTION_BATCH_SIZE = 75;
 
 function normalizeNameKey(name) {
-  return name?.trim().toLowerCase();
+  return name?.trim().replace(/\s*\/\/\s*/g, " // ").replace(/\s+/g, " ").toLowerCase();
+}
+
+function getNameCandidates(name) {
+  const normalized = name?.trim().replace(/\s*\/\/\s*/g, " // ").replace(/\s+/g, " ");
+
+  if (!normalized) return [];
+
+  const candidates = [normalized];
+  const faces = normalized.split(" // ").map((face) => face.trim()).filter(Boolean);
+
+  if (faces.length > 1) {
+    candidates.push(...faces);
+  }
+
+  return [...new Set(candidates.map(normalizeNameKey).filter(Boolean))];
+}
+
+function cardMatchesName(card, name) {
+  const queryCandidates = getNameCandidates(name);
+  const cardCandidates = [
+    ...getNameCandidates(card?.nome || card?.name),
+    ...((card?.card_faces || []).flatMap((face) => getNameCandidates(face?.name))),
+  ];
+
+  return queryCandidates.some((candidate) => cardCandidates.includes(candidate));
 }
 
 function getCached(key) {
@@ -157,17 +182,37 @@ export async function buscarCartaPorNome(nome, options = {}) {
   if (cached !== undefined) return cached;
 
   return withPending(cacheKey, async () => {
-    const url = new URL("https://api.scryfall.com/cards/named");
-    url.searchParams.set("exact", query);
+    const candidates = getNameCandidates(query);
+    let card = null;
 
-    let card;
-    try {
-      card = await fetchJson(url.toString(), { signal: options.signal });
-    } catch (error) {
-      if (isAbortError(error)) {
-        throw error;
+    for (const candidate of candidates) {
+      const url = new URL("https://api.scryfall.com/cards/named");
+      url.searchParams.set("exact", candidate);
+
+      try {
+        card = await fetchJson(url.toString(), { signal: options.signal });
+      } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+        return null;
       }
-      return null;
+
+      if (card) break;
+    }
+
+    if (!card) {
+      const url = new URL("https://api.scryfall.com/cards/named");
+      url.searchParams.set("fuzzy", query);
+
+      try {
+        card = await fetchJson(url.toString(), { signal: options.signal });
+      } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+        return null;
+      }
     }
 
     if (!card) {
@@ -248,8 +293,22 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
         const cacheKey = `named:${normalizedKey}`;
         setCache(cacheKey, card);
         resultsByName.set(normalizedKey, card);
+
+        for (const requestedName of batch) {
+          if (cardMatchesName(card, requestedName)) {
+            resultsByName.set(normalizeNameKey(requestedName), card);
+            setCache(`named:${normalizeNameKey(requestedName)}`, card);
+          }
+        }
       });
     }
+  }
+
+  const unresolvedNames = normalizedNames.filter((name) => !resultsByName.has(normalizeNameKey(name)));
+
+  for (const name of unresolvedNames) {
+    const card = await buscarCartaPorNome(name, options);
+    resultsByName.set(normalizeNameKey(name), card);
   }
 
   return normalizedNames.map((name) => resultsByName.get(normalizeNameKey(name)) || null);
