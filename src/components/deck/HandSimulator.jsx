@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Tooltip } from "../ui/Tooltip";
 
 export function HandSimulator({ mainDeck }) {
   const [hand, setHand] = useState([]);
@@ -78,24 +79,24 @@ export function HandSimulator({ mainDeck }) {
             <div className="flex justify-center items-end w-fit mx-auto">
               {hand.map((card, index) => (
                 /* hs-card: relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease shrink-0 hover:-translate-y-3 */
-                <div
-                  key={`${card.nome}-${index}`}
-                  className="relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease-[ease] shrink-0 hover:!-translate-y-3"
-                  style={{
-                    marginLeft: index === 0 ? "0" : "-20px",
-                    transform: `translateY(${Math.abs(3 - index) * 9 - 12}px) rotate(${(index - 3) * 3}deg)`,
-                    zIndex: index + 1,
-                  }}
-                  title={card.nome}
-                >
-                  {card.imagem ? (
-                    /* hs-card-img: w-full h-full object-cover */
-                    <img src={card.imagem} alt={card.nome} className="w-full h-full object-cover" />
-                  ) : (
-                    /* hs-card-name: flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words */
-                    <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{card.nome}</div>
-                  )}
-                </div>
+                <Tooltip key={`${card.nome}-${index}`} content={card.nome} focusable={false}>
+                  <div
+                    className="relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease-[ease] shrink-0 hover:!-translate-y-3"
+                    style={{
+                      marginLeft: index === 0 ? "0" : "-20px",
+                      transform: `translateY(${Math.abs(3 - index) * 9 - 12}px) rotate(${(index - 3) * 3}deg)`,
+                      zIndex: index + 1,
+                    }}
+                  >
+                    {card.imagem ? (
+                      /* hs-card-img: w-full h-full object-cover */
+                      <img src={card.imagem} alt={card.nome} className="w-full h-full object-cover" />
+                    ) : (
+                      /* hs-card-name: flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words */
+                      <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{card.nome}</div>
+                    )}
+                  </div>
+                </Tooltip>
               ))}
             </div>
           </div>

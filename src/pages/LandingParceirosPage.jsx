@@ -1,5 +1,6 @@
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer } from "../components";
+import { Tooltip } from "../components/ui/Tooltip";
 
 const PARTNERS = [
     { name: "Bandeira Cards", img: "/images/landing/parceiros/bandeira-cards.png", link: "https://www.bandeiracards.com.br/" },
@@ -47,13 +48,13 @@ export function LandingParceirosPage() {
                 <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">Nossos patrocinadores</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {PARTNERS.map((p) => (
+                        <Tooltip key={p.name} content={p.name} focusable={false} className="aspect-square">
                         <a
-                            key={p.name}
                             href={p.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title={p.name}
-                            className="group relative flex flex-col items-center justify-center p-4 rounded-xl bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.18)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.4)] transition-all duration-300 aspect-square hover:scale-105 hover:shadow-[0_8px_28px_rgba(142,57,237,0.35)] active:scale-100"
+                            aria-label={p.name}
+                            className="group relative flex h-full w-full flex-col items-center justify-center p-4 rounded-xl bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.18)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_8px_28px_rgba(142,57,237,0.35)] active:scale-100"
                         >
                             <img
                                 src={p.img}
@@ -65,6 +66,7 @@ export function LandingParceirosPage() {
                                 {p.name}
                             </span>
                         </a>
+                        </Tooltip>
                     ))}
                 </div>
             </section>

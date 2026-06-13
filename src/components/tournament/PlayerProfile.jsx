@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SelectField } from "../ui";
+import { Tooltip } from "../ui/Tooltip";
 
 const getTotalMembros = (time) =>
   time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? 0;
@@ -137,28 +138,36 @@ export function PlayerProfile({
           )}
 
           {canEditDeck && (
-            <button
-              className={`${buttonBase} border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.15)] text-[#86efac] hover:not-disabled:bg-[rgba(34,197,94,0.26)]`}
-              onClick={onInscrever}
-              disabled={actionLoading || missingNick || isFull}
-              title={missingNick ? "Configure seu nick do MTGO no perfil" : isFull ? "Torneio lotado" : undefined}
+            <Tooltip
+              content={missingNick ? "Configure seu nick do MTGO no perfil" : isFull ? "Torneio lotado" : "Inscrever-se"}
+              focusable={false}
             >
-              {actionLoading ? "Inscrevendo..." : isFull ? "Torneio lotado" : "Inscrever-se"}
-            </button>
+              <button
+                className={`${buttonBase} border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.15)] text-[#86efac] hover:not-disabled:bg-[rgba(34,197,94,0.26)]`}
+                onClick={onInscrever}
+                disabled={actionLoading || missingNick || isFull}
+              >
+                {actionLoading ? "Inscrevendo..." : isFull ? "Torneio lotado" : "Inscrever-se"}
+              </button>
+            </Tooltip>
           )}
 
           {canLateJoin && (
             <SectionBlock title="Inscricao tardia">
               <div className="grid gap-3">
                 <Notice tone="warning">Ao entrar agora, voce recebe uma derrota de punicao na rodada atual.</Notice>
-                <button
-                  className={`${buttonBase} border border-[rgba(251,191,36,0.5)] bg-[rgba(251,191,36,0.12)] text-[#fde68a] hover:not-disabled:bg-[rgba(251,191,36,0.22)]`}
-                  onClick={onInscreverTarde}
-                  disabled={actionLoading || missingNick}
-                  title={missingNick ? "Configure seu nick do MTGO no perfil" : undefined}
+                <Tooltip
+                  content={missingNick ? "Configure seu nick do MTGO no perfil" : "Entrar nesta rodada"}
+                  focusable={false}
                 >
-                  {actionLoading ? "Inscrevendo..." : "Entrar nesta rodada"}
-                </button>
+                  <button
+                    className={`${buttonBase} border border-[rgba(251,191,36,0.5)] bg-[rgba(251,191,36,0.12)] text-[#fde68a] hover:not-disabled:bg-[rgba(251,191,36,0.22)]`}
+                    onClick={onInscreverTarde}
+                    disabled={actionLoading || missingNick}
+                  >
+                    {actionLoading ? "Inscrevendo..." : "Entrar nesta rodada"}
+                  </button>
+                </Tooltip>
               </div>
             </SectionBlock>
           )}

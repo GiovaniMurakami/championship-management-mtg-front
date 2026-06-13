@@ -7,6 +7,7 @@ import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
 const LIMITE = 12;
@@ -175,12 +176,13 @@ export function TimePage() {
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
           {jaTemTime ? (
+            <Tooltip content="Saia do seu time atual para criar ou entrar em outro">
             <span
               className="px-4 py-2 border border-[rgba(251,191,36,0.35)] rounded-lg bg-[rgba(251,191,36,0.07)] text-[#fbbf24] text-[0.82rem] font-medium"
-              title="Saia do seu time atual para criar ou entrar em outro"
             >
               Você já pertence a um time
             </span>
+            </Tooltip>
           ) : (
             <>
               <button

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { buscarCartaPorNome } from "../../services/scryfallApi";
 import { fetchCardImg, buildListCanvas, buildVisualCanvas } from "./deckImageCanvas";
+import { Tooltip } from "../ui/Tooltip";
 
 export function DeckImageModal({ deck, ownerName, onClose }) {
   const [cardDataMap, setCardDataMap] = useState({});
@@ -110,10 +111,13 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               { key: "lista", label: "Lista", hint: "portrait · exporta mais rápido" },
               { key: "visual", label: "Visual", hint: "landscape · requer imagens" },
             ].map(({ key, label, hint }) => (
-              <button
+              <Tooltip
                 key={key}
+                content={hint}
+                focusable={false}
+              >
+              <button
                 type="button"
-                title={hint}
                 onClick={() => setLayout(key)}
                 className={`px-[0.75rem] py-[0.3rem] rounded-[0.4rem] text-[0.78rem] font-semibold transition-all duration-150 ${
                   layout === key
@@ -123,6 +127,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               >
                 {label}
               </button>
+              </Tooltip>
             ))}
           </div>
 
@@ -152,13 +157,14 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* download button */}
             {canDownload && (
+              <Tooltip content={`Salvar imagem do deck como PNG (${layout === "lista" ? "lista de cartas" : `visual ${ratio}`})`} focusable={false}>
               <button
                 className="inline-flex items-center gap-[0.3rem] px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold cursor-pointer transition-[background,border-color] duration-150 hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)]"
                 onClick={handleDownload}
-                title={`Salvar imagem do deck como PNG (${layout === "lista" ? "lista de cartas" : `visual ${ratio}`})`}
               >
                 ↓ Salvar imagem
               </button>
+              </Tooltip>
             )}
             {/* early-available indicator for list when images are still loading */}
             {layout === "lista" && stage === "imgs" && (
