@@ -40,6 +40,25 @@ const TEAM_ID_KEYS = ["timeId", "teamId"];
 const LEAGUE_ID_KEYS = ["ligaId", "leagueId"];
 const DECK_ID_KEYS = ["deckId"];
 const JOIN_TOKEN_KEYS = ["ingressoToken", "joinToken", "torneioToken"];
+const APP_PATH_KEYS = ["appPath", "path", "pathname"];
+
+const parseInternalPath = (value) => {
+  const path = trimValue(value);
+  if (!path || !path.startsWith("/") || path.startsWith("//")) return null;
+
+  try {
+    const url = new URL(path, "https://app.local");
+    return { pathname: url.pathname, search: url.search };
+  } catch {
+    return null;
+  }
+};
+
+const withMergedSearch = (target, searchParams) => {
+  const mergedSearchParams = new URLSearchParams(target.search);
+  searchParams.forEach((value, key) => mergedSearchParams.set(key, value));
+  return withSearch(target.pathname, mergedSearchParams);
+};
 
 export function resolveExternalNavigationTarget(locationLike) {
   const pathname = locationLike?.pathname || "/";
@@ -54,6 +73,13 @@ export function resolveExternalNavigationTarget(locationLike) {
   const ligaId = getParam(searchParams, LEAGUE_ID_KEYS);
   const deckId = getParam(searchParams, DECK_ID_KEYS);
   const ingressoToken = getParam(searchParams, JOIN_TOKEN_KEYS);
+  const appPath = parseInternalPath(getParam(searchParams, APP_PATH_KEYS));
+
+  if (appPath) {
+    deleteParams(searchParams, APP_PATH_KEYS);
+    deleteParams(searchParams, ROUTE_KEYS);
+    return withMergedSearch(appPath, searchParams);
+  }
 
   if (ingressoToken) {
     deleteParams(searchParams, JOIN_TOKEN_KEYS);
@@ -144,6 +170,12 @@ export function buildExternalAppUrl(query = {}) {
 
   const search = searchParams.toString();
   return search ? `${WORDPRESS_APP_URL}?${search}` : WORDPRESS_APP_URL;
+}
+
+export function buildExternalAppUrlForPath(path) {
+  const target = parseInternalPath(path);
+  if (!target || (target.pathname === "/" && !target.search)) return WORDPRESS_APP_URL;
+  return buildExternalAppUrl({ appPath: `${target.pathname}${target.search}` });
 }
 
 export function buildTournamentExternalUrl(torneioId) {

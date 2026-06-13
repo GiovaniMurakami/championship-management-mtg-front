@@ -15,10 +15,28 @@ function rr(ctx, x, y, w, h, r) {
 }
 
 export async function fetchCardImg(cardName) {
+  const normalizedName = cardName?.trim().replace(/\s*\/\/\s*/g, " // ").replace(/\s+/g, " ");
+  const candidates = [
+    normalizedName,
+    ...(normalizedName?.includes(" // ") ? normalizedName.split(" // ").map((face) => face.trim()) : []),
+  ].filter(Boolean);
+
   try {
-    const url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`;
-    const resp = await fetch(url);
-    if (!resp.ok) return null;
+    let resp = null;
+
+    for (const candidate of [...new Set(candidates)]) {
+      const url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(candidate)}&format=image&version=normal`;
+      resp = await fetch(url);
+      if (resp.ok) break;
+    }
+
+    if (!resp?.ok && normalizedName) {
+      const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(normalizedName)}&format=image&version=normal`;
+      resp = await fetch(url);
+    }
+
+    if (!resp?.ok) return null;
+
     const blob = await resp.blob();
     const blobUrl = URL.createObjectURL(blob);
     return await new Promise((resolve) => {
