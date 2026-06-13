@@ -1,14 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
+import { getDisplaySides, getMatchScore } from "../../utils/matchDisplay";
 
 export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
-
-    useEffect(() => {
-        setWinsPlayer1(0);
-        setWinsPlayer2(0);
-    }, [myMatch?.id, myMatch?.rodada, torneio?.rodadaAtual]);
 
     const eliminationPhase = isEliminationPhase(torneio);
     const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
@@ -49,29 +45,16 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         );
     }
 
-    const player1Name =
-        myMatch.jogador1Nome ||
-        myMatch.jogador1?.nome ||
-        myMatch.jogador1?.username ||
-        "Jogador 1";
-    const player2Name =
-        myMatch.jogador2Nome ||
-        myMatch.jogador2?.nome ||
-        myMatch.jogador2?.username ||
-        "Jogador 2";
-
-    const player1Nick = myMatch.jogador1NickMTGO || myMatch.jogador1?.nickMTGO || null;
-    const player2Nick = myMatch.jogador2NickMTGO || myMatch.jogador2?.nickMTGO || null;
+    const sides = getDisplaySides(myMatch, usuario?.id);
+    const score = getMatchScore(myMatch);
 
     const isBye = !myMatch.jogador2Id && !myMatch.jogador2;
     const isContested = Boolean(myMatch.contestado);
     const isReported = myMatch.status === "finalizada" || myMatch.resultado || myMatch.reportado;
     const hasLaterRound = Number(torneio?.rodadaAtual || 0) > Number(myMatch?.rodada || 0);
 
-    const isPlayer1 =
-        myMatch.jogador1Id === usuario?.id || myMatch.jogador1?.id === usuario?.id;
-    const isPlayer2 =
-        myMatch.jogador2Id === usuario?.id || myMatch.jogador2?.id === usuario?.id;
+    const isPlayer1 = sides.seat === 1;
+    const isPlayer2 = sides.seat === 2;
     const canContest =
         torneio?.status === "em_andamento"
         && isReported
@@ -91,14 +74,12 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         && (isPlayer1 || isPlayer2)
         && !jaConfirmou;
 
-    const myName = isPlayer1 ? player1Name : player2Name;
-    const myNick = isPlayer1 ? player1Nick : player2Nick;
-    const opponentName = isPlayer1
-        ? isBye
-            ? "BYE"
-            : player2Name
-        : player1Name;
-    const opponentNick = isPlayer1 ? player2Nick : player1Nick;
+    const mySide = isPlayer2 ? sides.right : sides.left;
+    const opponentSide = isPlayer2 ? sides.left : sides.right;
+    const myName = mySide.name;
+    const myNick = mySide.nick;
+    const opponentName = isBye ? "BYE" : opponentSide.name;
+    const opponentNick = opponentSide.nick;
 
     const handleSubmit = () => {
         const resultado = {
@@ -150,7 +131,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                         </div>
                         <div className={isReported && !isContested ? "font-['Bebas_Neue',sans-serif] text-[2.1rem] text-white [text-shadow:0_0_14px_rgba(199,149,255,0.45)] max-[900px]:text-[1.4rem]" : "font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)] max-[900px]:text-[1.4rem]"}>
                             {isReported && !isContested
-                                ? `${myMatch.vitoriasJogador1 ?? "?"} - ${myMatch.vitoriasJogador2 ?? "?"}`
+                                ? `${score.player1} - ${score.player2}`
                                 : "VS"}
                         </div>
                         <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(239,68,68,0.3)] rounded-[0.85rem] bg-[rgba(239,68,68,0.05)]">

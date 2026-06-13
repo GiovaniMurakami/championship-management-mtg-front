@@ -45,6 +45,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
   const bannerInputRef = useRef(null);
   const existingBannerUrlRef = useRef("");
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!torneio || !isOpen) return;
     existingBannerUrlRef.current = torneio.bannerUrl || "";
@@ -68,6 +69,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       exibirNomeJogador: torneio.exibirNomeJogador || "nome",
     });
   }, [torneio, isOpen]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!isOpen) return null;
 

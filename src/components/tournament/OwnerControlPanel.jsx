@@ -161,6 +161,7 @@ export function OwnerControlPanel({
   const [generatingJoinLink, setGeneratingJoinLink] = useState(false);
   const [joinLinkCopied, setJoinLinkCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [playersListOpen, setPlayersListOpen] = useState(false);
   const joinLinkTimeoutRef = useRef(null);
   const linkCopiedTimeoutRef = useRef(null);
 
@@ -458,7 +459,30 @@ export function OwnerControlPanel({
       )}
 
       {activeTab === "jogadores" && (
-        <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
+        <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.18)] bg-[rgba(255,255,255,0.025)] overflow-hidden">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer text-[#f5edff] transition-colors duration-180 hover:bg-[rgba(251,191,36,0.06)]"
+            onClick={() => setPlayersListOpen((value) => !value)}
+            aria-expanded={playersListOpen}
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold text-[0.9rem] truncate">Lista de jogadores</span>
+              <span className="inline-flex items-center justify-center min-w-[22px] h-[20px] px-[0.45rem] rounded-full text-[0.72rem] font-bold bg-[rgba(251,191,36,0.14)] text-[#fde68a] border border-[rgba(251,191,36,0.28)]">
+                {jogadoresAtivos.length}
+              </span>
+            </span>
+            <span className="inline-flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.06em] text-[#fbbf24]">
+              {playersListOpen ? "Ocultar" : "Mostrar"}
+              <span
+                className={`inline-block h-2 w-2 border-r-2 border-b-2 border-current transition-transform duration-200 ${playersListOpen ? "-rotate-135 translate-y-[2px]" : "rotate-45 -translate-y-[2px]"}`}
+                aria-hidden="true"
+              />
+            </span>
+          </button>
+
+          {playersListOpen && (
+            <div className="grid gap-1.5 max-h-[360px] overflow-y-auto border-t border-[rgba(251,191,36,0.12)] p-3 pr-[0.8rem]">
           {jogadoresAtivos.length === 0 ? (
             <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador ativo.</p>
           ) : (
@@ -472,30 +496,30 @@ export function OwnerControlPanel({
               return (
                 <div
                   key={normalizedId || getPlayerName(player)}
-                  className="flex justify-between items-center gap-[0.8rem] border border-[rgba(251,191,36,0.2)] rounded-[0.65rem] px-[0.7rem] py-[0.55rem] bg-[rgba(251,191,36,0.04)]"
+                  className="flex justify-between items-center gap-[0.65rem] border border-[rgba(251,191,36,0.16)] rounded-[0.55rem] px-[0.6rem] py-[0.38rem] bg-[rgba(251,191,36,0.035)]"
                 >
                   <div className="grid gap-[0.15rem] min-w-0">
-                    <span className="text-white font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+                    <span className="text-white text-[0.88rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap leading-tight">
                       {getPlayerName(player)}{isMe ? " (Você)" : ""}
                     </span>
                     {isRegistrationOpen ? (
-                      <div className="flex items-center gap-[0.6rem] text-[#c6b8a0] text-[0.8rem] flex-wrap">
-                        <span className={`text-[0.78rem] font-semibold ${hasConfirmedDeck(player) ? "text-[#6ee7b7]" : "text-[#fca5a5]"}`}>
+                      <div className="flex items-center gap-[0.45rem] text-[#c6b8a0] text-[0.74rem] flex-wrap leading-tight">
+                        <span className={`font-semibold ${hasConfirmedDeck(player) ? "text-[#6ee7b7]" : "text-[#fca5a5]"}`}>
                           {hasConfirmedDeck(player) ? "✓ deck enviado" : "sem deck"}
                         </span>
-                        <span className={`text-[0.78rem] font-semibold ${hasInitialCheckin(player) ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
+                        <span className={`font-semibold ${hasInitialCheckin(player) ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
                           {hasInitialCheckin(player) ? "✓ check-in" : "sem check-in"}
                         </span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-[0.6rem] text-[#c6b8a0] text-[0.8rem] flex-wrap">
+                      <div className="flex items-center gap-[0.45rem] text-[#c6b8a0] text-[0.74rem] flex-wrap leading-tight">
                         <span>{player?.pontosMesa ?? player?.pontos ?? 0} pts</span>
                         {requiresNextRoundCheckin ? (
-                          <span className={`text-[0.78rem] font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
+                          <span className={`font-semibold ${checkinOk ? "text-[#6ee7b7]" : "text-[#fbbf24]"}`}>
                             {checkinOk ? "✓ presença confirmada" : "⏳ sem presença"}
                           </span>
                         ) : (
-                          <span className="text-[0.78rem] font-semibold text-[#93c5fd]">
+                          <span className="font-semibold text-[#93c5fd]">
                             sem novo check-in
                           </span>
                         )}
@@ -504,7 +528,7 @@ export function OwnerControlPanel({
                   </div>
 
                   <button
-                    className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(239,68,68,0.5)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.25)] hover:not-disabled:border-[rgba(239,68,68,0.8)]"
+                    className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(239,68,68,0.45)] rounded-[0.55rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.25)] hover:not-disabled:border-[rgba(239,68,68,0.8)]"
                     type="button"
                     onClick={() => onDropPlayer(playerId)}
                     disabled={actionLoading || !playerId}
@@ -516,6 +540,8 @@ export function OwnerControlPanel({
                 </div>
               );
             })
+          )}
+            </div>
           )}
         </div>
       )}

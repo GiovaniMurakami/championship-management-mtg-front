@@ -1,6 +1,7 @@
 import { Fragment, useState } from "react";
 import { Top8StoryModal } from "./Top8StoryModal";
 import { DeckViewButton, RANK_BADGE } from "./DeckDrawer";
+import { Tooltip } from "../ui/Tooltip";
 
 export function StandingsTable({
   standings,
@@ -11,6 +12,7 @@ export function StandingsTable({
   isAdmin = false,
   torneioNome = "",
   compact = false,
+  totalInscritos,
 }) {
   const [deckNameOverrides, setDeckNameOverrides] = useState({});
   const [showStory, setShowStory] = useState(false);
@@ -40,6 +42,22 @@ export function StandingsTable({
     (player?.checkinRodada ?? -1) >= 0;
 
   const formatPct = (val) => (val != null ? `${(val * 100).toFixed(1)}%` : "-");
+  const getExpressiveResults = (player) =>
+    Number(player?.resultadosExpressivos ?? player?.usuario?.resultadosExpressivos ?? 0);
+  const expressiveBadge = (player) => {
+    const total = getExpressiveResults(player);
+    if (total <= 0) return null;
+    return (
+      <Tooltip
+        content="Resultados expressivos"
+        aria-label={`${total} resultado(s) expressivo(s)`}
+      >
+        <span className="inline-flex min-w-[1.1rem] items-center justify-center rounded-full border border-[rgba(251,191,36,0.35)] bg-[rgba(251,191,36,0.12)] px-[0.3rem] py-[0.04rem] text-[0.66rem] font-bold text-[#fde68a] leading-tight">
+          {total}
+        </span>
+      </Tooltip>
+    );
+  };
 
   const handleDeckNameUpdate = (deckId, newName) => {
     setDeckNameOverrides((prev) => ({ ...prev, [deckId]: newName }));
@@ -72,7 +90,7 @@ export function StandingsTable({
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 flex-shrink-0">
           <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#f5edff]">Standings</h2>
           <span className="text-[0.72rem] font-semibold text-[#beafd7] bg-[rgba(167,79,255,0.12)] border border-[rgba(217,180,255,0.2)] rounded-full px-[0.55rem] py-[0.15rem] flex-shrink-0">
-            {standings.length} jogadores
+            {totalInscritos ?? standings.length} inscritos
           </span>
         </div>
 
@@ -137,6 +155,7 @@ export function StandingsTable({
                         />
                       )}
                       <span className="truncate">{getPlayerName(player)}</span>
+                      {expressiveBadge(player)}
                     </span>
                     <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-[#beafd7]"}`}>
                       {isRegistrationOpen ? "-" : pts}
@@ -156,6 +175,9 @@ export function StandingsTable({
       <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
         <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">{isRegistrationOpen ? "Jogadores Inscritos" : "Standings"}</h2>
         <div className="flex items-center gap-[0.6rem] flex-wrap">
+          <span className="text-[0.72rem] font-semibold text-[#beafd7] bg-[rgba(167,79,255,0.12)] border border-[rgba(217,180,255,0.2)] rounded-full px-[0.55rem] py-[0.15rem] flex-shrink-0">
+            {totalInscritos ?? standings.length} inscritos
+          </span>
           {standings.length > 5 && (
             <div className="relative flex items-center">
               <input
@@ -203,7 +225,7 @@ export function StandingsTable({
         <>
           <div className="rounded-xl border border-[rgba(217,180,255,0.2)] overflow-auto max-h-[62vh] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] hidden max-[480px]:hidden [&]:block max-[480px]:[&]:hidden">
             <table className="w-full border-collapse text-[0.88rem]">
-              <thead className="bg-[rgba(142,57,237,0.12)] sticky top-0 z-10 shadow-[0_1px_0_rgba(217,180,255,0.15)]">
+              <thead className="bg-[#21133a] sticky top-0 z-10 shadow-[0_1px_0_rgba(217,180,255,0.15)]">
                 <tr>
                   <th className="w-10 text-center px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">#</th>
                   <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Jogador</th>
@@ -251,6 +273,7 @@ export function StandingsTable({
                               />
                             )}
                             <span>{getPlayerName(player)}</span>
+                            {expressiveBadge(player)}
                           </span>
                         </td>
                         {!isRegistrationOpen && (
@@ -352,6 +375,7 @@ export function StandingsTable({
                           />
                         )}
                         <span>{getPlayerName(player)}</span>
+                        {expressiveBadge(player)}
                       </span>
                       {!isRegistrationOpen && (
                         <span className={`font-bold text-[0.82rem] ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>

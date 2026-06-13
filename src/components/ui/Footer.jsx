@@ -32,15 +32,6 @@ export function Footer() {
                     ))}
                 </div>
 
-                <a
-                    href="https://www.instagram.com/tiagofuguete/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 border border-[rgba(199,149,255,0.5)] rounded-xl px-5 py-[0.55rem] font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white text-sm transition-all duration-200 hover:shadow-[0_4px_20px_rgba(142,57,237,0.45)] hover:-translate-y-[1px]"
-                >
-                    Seguir no Instagram
-                </a>
-
                 <div className="w-full h-px bg-[rgba(217,180,255,0.08)]" />
 
                 <p className="text-[#6b5a8a] text-xs">© {new Date().getFullYear()} Tiago Fuguete — Todos os direitos reservados</p>

@@ -1,7 +1,7 @@
 {
   "name": "championship-management-mtg-front",
   "private": true,
-  "version": "1.2.03",
+  "version": "1.2.06",
   "type": "module",
   "scripts": {
     "dev": "vite",
