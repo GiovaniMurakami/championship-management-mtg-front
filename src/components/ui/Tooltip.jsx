@@ -26,6 +26,7 @@ export function Tooltip({
   className = "",
   tooltipClassName = "",
   ariaLabel,
+  focusable = true,
 }) {
   const tooltipId = useId();
   const placementClasses = PLACEMENT_CLASSES[placement] || PLACEMENT_CLASSES.top;
@@ -33,16 +34,16 @@ export function Tooltip({
   return (
     <span
       className={`group relative inline-flex cursor-help ${className}`}
-      tabIndex={0}
-      aria-label={ariaLabel}
-      aria-describedby={tooltipId}
+      tabIndex={focusable ? 0 : undefined}
+      aria-label={focusable ? ariaLabel : undefined}
+      aria-describedby={focusable ? tooltipId : undefined}
     >
       {children}
       <span
         id={tooltipId}
         role="tooltip"
         className={[
-          "pointer-events-none absolute z-50 whitespace-nowrap rounded-lg border border-[rgba(251,191,36,0.25)] bg-[#120c1f] px-2.5 py-1.5 text-[0.68rem] font-semibold normal-case tracking-normal text-[#fef3c7] opacity-0 shadow-[0_10px_28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.04] transition-all duration-150",
+          "pointer-events-none absolute z-50 max-w-[min(16rem,calc(100vw-1rem))] whitespace-normal text-center rounded-lg border border-[rgba(251,191,36,0.25)] bg-[#120c1f] px-2.5 py-1.5 text-[0.68rem] font-semibold normal-case tracking-normal text-[#fef3c7] opacity-0 shadow-[0_10px_28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.04] transition-all duration-150",
           "scale-95 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100",
           placementClasses.bubble,
           tooltipClassName,

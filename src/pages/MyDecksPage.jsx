@@ -7,6 +7,7 @@ import { SkeletonCard } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
 
@@ -322,31 +323,37 @@ export function MyDecksPage() {
                         </span>
                       )}
                     </div>
-                    <button
-                      className={`absolute left-[0.75rem] bottom-[0.75rem] inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md cursor-pointer transition-all duration-[180ms] shadow-[0_8px_18px_rgba(0,0,0,0.35)] ${
-                        sharedDeckId === deck.id
-                          ? "border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.2)] text-[#86efac]"
-                          : "border-[rgba(96,165,250,0.45)] bg-[rgba(10,18,38,0.55)] text-[#dbeafe] hover:bg-[rgba(59,130,246,0.28)] hover:border-[rgba(96,165,250,0.75)] hover:text-white"
-                      }`}
-                      type="button"
-                      title={sharedDeckId === deck.id ? "Link copiado!" : "Compartilhar deck"}
-                      aria-label={sharedDeckId === deck.id ? "Link copiado!" : "Compartilhar deck"}
-                      onClick={() => handleShareDeck(deck)}
+                    <Tooltip
+                      content={sharedDeckId === deck.id ? "Link copiado!" : "Compartilhar deck"}
+                      placement="right"
+                      focusable={false}
+                      className="!absolute left-[0.75rem] bottom-[0.75rem]"
                     >
-                      {sharedDeckId === deck.id ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                          <circle cx="18" cy="5" r="3" />
-                          <circle cx="6" cy="12" r="3" />
-                          <circle cx="18" cy="19" r="3" />
-                          <path d="M8.59 13.51 15.42 17.49" />
-                          <path d="M15.41 6.51 8.59 10.49" />
-                        </svg>
-                      )}
-                    </button>
+                      <button
+                        className={`inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md cursor-pointer transition-all duration-[180ms] shadow-[0_8px_18px_rgba(0,0,0,0.35)] ${
+                          sharedDeckId === deck.id
+                            ? "border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.2)] text-[#86efac]"
+                            : "border-[rgba(96,165,250,0.45)] bg-[rgba(10,18,38,0.55)] text-[#dbeafe] hover:bg-[rgba(59,130,246,0.28)] hover:border-[rgba(96,165,250,0.75)] hover:text-white"
+                        }`}
+                        type="button"
+                        aria-label={sharedDeckId === deck.id ? "Link copiado!" : "Compartilhar deck"}
+                        onClick={() => handleShareDeck(deck)}
+                      >
+                        {sharedDeckId === deck.id ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <path d="M8.59 13.51 15.42 17.49" />
+                            <path d="M15.41 6.51 8.59 10.49" />
+                          </svg>
+                        )}
+                      </button>
+                    </Tooltip>
                   </div>
 
                   <div className="p-[1rem_1.1rem_1.1rem] flex flex-col flex-1">
@@ -402,19 +409,21 @@ export function MyDecksPage() {
                           >
                             Editar
                           </button>
-                          <button
-                            className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
-                            type="button"
-                            title="Gerar imagem do deck para compartilhar"
-                            onClick={() => setImageModal(deck)}
-                          >
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                              <circle cx="8.5" cy="8.5" r="1.5" />
-                              <polyline points="21 15 16 10 5 21" />
-                            </svg>
-                            Imagem
-                          </button>
+                          <Tooltip content="Gerar imagem do deck para compartilhar" focusable={false}>
+                            <button
+                              className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
+                              type="button"
+                              aria-label="Gerar imagem do deck para compartilhar"
+                              onClick={() => setImageModal(deck)}
+                            >
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <polyline points="21 15 16 10 5 21" />
+                              </svg>
+                              Imagem
+                            </button>
+                          </Tooltip>
                           <button
                             className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(252,88,119,0.4)] rounded-xl cursor-pointer font-bold bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] transition-all duration-[220ms] hover:bg-[rgba(252,88,119,0.28)] hover:border-[rgba(252,88,119,0.7)] hover:text-white"
                             type="button"

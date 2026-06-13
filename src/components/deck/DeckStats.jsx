@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Tooltip } from "../ui/Tooltip";
 
 export function DeckStats({ mainDeck }) {
   const stats = useMemo(() => {
@@ -112,19 +113,18 @@ export function DeckStats({ mainDeck }) {
                   {count}
                 </span>
                 {/* ds-curve-bar-bg: w-full h-[108px] bg-white/[0.05] rounded border border-white/[0.08] relative overflow-hidden, responsive h-[80px] */}
-                <div
-                  className="w-full h-[108px] max-[600px]:h-[80px] bg-white/[0.05] rounded border border-white/[0.08] relative overflow-hidden"
-                  title={`${cmc} mana: ${count} cartas`}
-                >
-                  {/* ds-curve-bar-fill: absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease */}
-                  <div
-                    className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#0d7a6e] via-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease-[ease]"
-                    style={{
-                      height: `${Math.max(0, Math.round(heightPercent))}%`,
-                      minHeight: count > 0 ? "4px" : "0",
-                    }}
-                  />
-                </div>
+                <Tooltip content={`${cmc} mana: ${count} cartas`} focusable={false} className="w-full">
+                  <div className="w-full h-[108px] max-[600px]:h-[80px] bg-white/[0.05] rounded border border-white/[0.08] relative overflow-hidden">
+                    {/* ds-curve-bar-fill: absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease */}
+                    <div
+                      className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-[#0d7a6e] via-[#6f23b3] to-[#a74fff] transition-[height] duration-[280ms] ease-[ease]"
+                      style={{
+                        height: `${Math.max(0, Math.round(heightPercent))}%`,
+                        minHeight: count > 0 ? "4px" : "0",
+                      }}
+                    />
+                  </div>
+                </Tooltip>
                 {/* ds-curve-label: text-[0.75rem] opacity-70 */}
                 <span className="text-[0.75rem] opacity-70">{cmc}</span>
               </div>

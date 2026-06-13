@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
+import { Tooltip } from "../ui/Tooltip";
 
 export const RANK_BADGE = {
   1: "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]",
@@ -456,11 +457,12 @@ export function DeckViewButton({ player, token, isOwner, deckNameOverride, onDec
 
   return (
     <div className="relative inline-flex items-center gap-1.5">
+      <Tooltip content={deckNome || "Ver deck"} focusable={false}>
       <button
         type="button"
         className="inline-flex items-center gap-[0.3rem] px-[0.6rem] py-[0.22rem] border border-[rgba(199,149,255,0.4)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.74rem] font-semibold font-['inherit'] cursor-pointer max-w-[180px] min-w-0 transition-[background,border-color] duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.6)]"
         onClick={() => { setOpen(true); setEditing(false); }}
-        title={deckNome || "Ver deck"}
+        aria-label={deckNome || "Ver deck"}
       >
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" style={{ flexShrink: 0, opacity: 0.7 }}>
           <rect x="2" y="3" width="20" height="14" rx="2" />
@@ -468,17 +470,19 @@ export function DeckViewButton({ player, token, isOwner, deckNameOverride, onDec
         </svg>
         <span className="overflow-hidden text-ellipsis whitespace-nowrap min-w-0">{deckNome || "Ver deck"}</span>
       </button>
+      </Tooltip>
 
       {isOwner && (
+        <Tooltip content="Editar nome consolidado" focusable={false}>
         <button
           type="button"
           className="inline-flex items-center justify-center px-[0.35rem] py-[0.2rem] border border-[rgba(199,149,255,0.3)] rounded-[6px] bg-transparent text-[#beafd7] text-[0.72rem] cursor-pointer transition-[background,color,border-color] duration-150 flex-shrink-0 hover:bg-[rgba(167,79,255,0.15)] hover:text-[#c4b5fd] hover:border-[rgba(199,149,255,0.5)]"
           onClick={(e) => { e.stopPropagation(); setOpen(false); setEditing((v) => !v); }}
-          title="Editar nome consolidado"
           aria-label="Editar nome consolidado"
         >
           ✏
         </button>
+        </Tooltip>
       )}
 
       {open && (

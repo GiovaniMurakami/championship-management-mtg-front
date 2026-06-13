@@ -62,7 +62,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         && !hasLaterRound
         && (isPlayer1 || isPlayer2 || isOwner);
 
-    const confirmadoPor = myMatch.confirmadoPor || [];
+    const confirmadoPor = Array.isArray(myMatch.confirmadoPor) ? myMatch.confirmadoPor : [];
     const myUserId = usuario?.id;
     const jaConfirmou = myUserId && confirmadoPor.some((id) => String(id) === String(myUserId));
     const canConfirm =
@@ -74,17 +74,20 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
         && (isPlayer1 || isPlayer2)
         && !jaConfirmou;
 
-    const mySide = isPlayer2 ? sides.right : sides.left;
-    const opponentSide = isPlayer2 ? sides.left : sides.right;
+    const leftSide = sides.left;
+    const rightSide = sides.right;
+    const mySide = isPlayer2 ? rightSide : leftSide;
     const myName = mySide.name;
     const myNick = mySide.nick;
-    const opponentName = isBye ? "BYE" : opponentSide.name;
-    const opponentNick = opponentSide.nick;
+    const leftLabel = leftSide.isMe ? "Você" : "Oponente";
+    const rightLabel = rightSide.isMe ? "Você" : "Oponente";
+    const rightName = isBye ? "BYE" : rightSide.name;
+    const rightNick = rightSide.nick;
 
     const handleSubmit = () => {
         const resultado = {
-            vitoriasJogador1: isPlayer1 ? winsPlayer1 : winsPlayer2,
-            vitoriasJogador2: isPlayer1 ? winsPlayer2 : winsPlayer1,
+            vitoriasJogador1: winsPlayer1,
+            vitoriasJogador2: winsPlayer2,
         };
         onReportResult(myMatch.id, resultado);
     };
@@ -122,11 +125,11 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
             ) : (
                 <>
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 mb-5 max-[900px]:grid-cols-1 max-[900px]:gap-2 max-[900px]:text-center">
-                        <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(142,57,237,0.4)] rounded-[0.85rem] bg-[rgba(142,57,237,0.08)]">
-                            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
-                            <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
-                            {myNick && (
-                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{myNick}</span>
+                        <div className={`flex flex-col items-center gap-[0.35rem] p-4 px-2 border rounded-[0.85rem] ${leftSide.isMe ? "border-[rgba(142,57,237,0.4)] bg-[rgba(142,57,237,0.08)]" : "border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.05)]"}`}>
+                            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">{leftLabel}</span>
+                            <span className="text-[1.1rem] font-bold text-white text-center break-words">{leftSide.name}</span>
+                            {leftSide.nick && (
+                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{leftSide.nick}</span>
                             )}
                         </div>
                         <div className={isReported && !isContested ? "font-['Bebas_Neue',sans-serif] text-[2.1rem] text-white [text-shadow:0_0_14px_rgba(199,149,255,0.45)] max-[900px]:text-[1.4rem]" : "font-['Bebas_Neue',sans-serif] text-[1.8rem] text-[#c795ff] [text-shadow:0_0_12px_rgba(199,149,255,0.4)] max-[900px]:text-[1.4rem]"}>
@@ -134,11 +137,11 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                 ? `${score.player1} - ${score.player2}`
                                 : "VS"}
                         </div>
-                        <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(239,68,68,0.3)] rounded-[0.85rem] bg-[rgba(239,68,68,0.05)]">
-                            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Oponente</span>
-                            <span className="text-[1.1rem] font-bold text-white text-center break-words">{opponentName}</span>
-                            {opponentNick && (
-                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{opponentNick}</span>
+                        <div className={`flex flex-col items-center gap-[0.35rem] p-4 px-2 border rounded-[0.85rem] ${rightSide.isMe ? "border-[rgba(142,57,237,0.4)] bg-[rgba(142,57,237,0.08)]" : "border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.05)]"}`}>
+                            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">{rightLabel}</span>
+                            <span className="text-[1.1rem] font-bold text-white text-center break-words">{rightName}</span>
+                            {rightNick && (
+                                <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{rightNick}</span>
                             )}
                         </div>
                     </div>
@@ -200,7 +203,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                             <h3 className="m-0 mb-4 text-[0.95rem] font-semibold text-[#beafd7]">Registrar Resultado</h3>
                             <div className="flex items-center justify-center gap-4 mb-4 max-[900px]:flex-col max-[900px]:gap-3">
                                 <div className="flex flex-col items-center gap-2">
-                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{myName}</label>
+                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{leftSide.name}</label>
                                     <div className="flex items-center gap-[0.25rem]">
                                         <button
                                             type="button"
@@ -223,7 +226,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                 <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] text-[#beafd7] mt-5 max-[900px]:mt-0">×</span>
 
                                 <div className="flex flex-col items-center gap-2">
-                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{opponentName}</label>
+                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{rightName}</label>
                                     <div className="flex items-center gap-[0.25rem]">
                                         <button
                                             type="button"
