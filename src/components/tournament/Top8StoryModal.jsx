@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 
-const TOP8_BACKGROUND_URL = "/images/top8/fundoTop8.jpeg";
+const TOP8_PREVIEW_BACKGROUND_URL = "https://fuguete-championship-management.s3.us-east-1.amazonaws.com/imagens/b14080b1-fd2e-4ef8-aa13-acab1d9c9c79/dfcbc07f-6d81-4e14-9b18-0188b3a55339.jpeg";
+const TOP8_EXPORT_BACKGROUND_URL = import.meta.env.DEV
+  ? "/images/top8/fundoTop8.jpeg"
+  : new URL(/* @vite-ignore */ "../images/top8/fundoTop8.jpeg", import.meta.url).href;
 const TOP8_CONTENT_START_RATIO = 0.28;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -27,6 +30,7 @@ function easeOutQuart(t) {
 function loadImage(src) {
   return new Promise((resolve) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
@@ -67,7 +71,7 @@ async function downloadTop8Canvas(players, tournamentName) {
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
-  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
+  const backgroundImage = await loadImage(TOP8_EXPORT_BACKGROUND_URL);
 
   if (!drawCoverImage(ctx, backgroundImage, 0, 0, W, H)) {
     ctx.fillStyle = "#0e091c";
@@ -279,7 +283,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
   const INTRO = 8, PER_P = 7, OUTRO = 22;
   const n = players.length;
   const totalFrames = INTRO + n * PER_P + OUTRO;
-  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
+  const backgroundImage = await loadImage(TOP8_EXPORT_BACKGROUND_URL);
 
   const revealOrder = players
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
@@ -412,6 +416,54 @@ function getTopNOptions(total) {
   return opts.sort((a, b) => a - b);
 }
 
+function getPlayerVisualTier(pos) {
+  if (pos === 1) {
+    return {
+      cardBg: "linear-gradient(90deg, #4a3510 0%, #16100a 100%)",
+      borderColor: "rgba(255,215,0,0.65)",
+      posColor: "#FFD700",
+      nameColor: "#fff8e0",
+      deckColor: "#fcd34d",
+    };
+  }
+
+  if (pos === 2) {
+    return {
+      cardBg: "linear-gradient(90deg, #32343b 0%, #10131b 100%)",
+      borderColor: "rgba(192,192,192,0.5)",
+      posColor: "#C0C0C0",
+      nameColor: "#f0e6ff",
+      deckColor: "#a78bfa",
+    };
+  }
+
+  if (pos === 3) {
+    return {
+      cardBg: "linear-gradient(90deg, #3a2418 0%, #120d0a 100%)",
+      borderColor: "rgba(205,127,50,0.5)",
+      posColor: "#CD7F32",
+      nameColor: "#f0e6ff",
+      deckColor: "#a78bfa",
+    };
+  }
+
+  return {
+    cardBg: "linear-gradient(90deg, #23153a 0%, #0d1022 100%)",
+    borderColor: "rgba(167,79,255,0.28)",
+    posColor: "#9d74e8",
+    nameColor: "#f0e6ff",
+    deckColor: "#a78bfa",
+  };
+}
+
+function pxToPreviewWidth(value) {
+  return `${(value / 1080) * 100}cqw`;
+}
+
+function pxToPercent(value, total) {
+  return `${(value / total) * 100}%`;
+}
+
 // ─── Modal component ──────────────────────────────────────────────────────────
 
 export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {}, onClose }) {
@@ -427,6 +479,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
 
   const players = allPlayers.slice(0, topN);
+  const previewLayout = calcLayout(1920, Math.round(1920 * TOP8_CONTENT_START_RATIO), 70, Math.max(players.length, 1), 150);
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
@@ -484,7 +537,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
             </button>
 
             {/* story-video-btn */}
-            <Tooltip content="Gerar video MP4 animado revelando do ultimo ao primeiro" focusable={false}>
+            <Tooltip content="Gerar video MP4 animado revelando do ultimo ao primeiro" placement="bottom" focusable={false}>
             <button
               className={[
                 "inline-flex items-center gap-[0.35rem] px-[0.9rem] py-[0.38rem] border border-[rgba(167,79,255,0.5)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color,opacity] duration-[160ms] whitespace-nowrap",
@@ -547,7 +600,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
         {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
         <div
           className="w-full aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center"
-          style={{ backgroundImage: `url(${TOP8_BACKGROUND_URL})` }}
+          style={{ backgroundImage: `url(${TOP8_PREVIEW_BACKGROUND_URL})` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}
           <div className="hidden h-[6px] shrink-0 bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
@@ -569,51 +622,78 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
 
           {/* story-players: list-none m-0 px-[0.65rem] py-[0.3rem] flex-col gap-[0.3rem] flex-1 overflow-hidden */}
           <ul
-            className="list-none mb-6 px-[0.65rem] py-[0.3rem] flex flex-col gap-[0.3rem] overflow-hidden"
-            style={{ marginTop: `${TOP8_CONTENT_START_RATIO * 100}%` }}
+            className="absolute inset-0 list-none m-0 p-0 overflow-hidden [container-type:inline-size]"
           >
             {players.map((player, i) => {
               const pos = player.posicao ?? i + 1;
               const name = player.usuario?.nome || player.nome || "Jogador";
-              const deck = player.deckNome;
-              const tier =
-                pos === 1 ? "gold" : pos === 2 ? "silver" : pos === 3 ? "bronze" : "default";
-
-              const tierClasses = {
-                gold:    "border-[rgba(255,215,0,0.65)] bg-[#241a08]",
-                silver:  "border-[rgba(192,192,192,0.55)] bg-[#171923]",
-                bronze:  "border-[rgba(205,127,50,0.55)] bg-[#21130c]",
-                default: "border-[rgba(167,79,255,0.45)] bg-[#11162b]",
-              };
-
-              const posColorClasses = {
-                gold:    "text-[#ffd700]",
-                silver:  "text-[#c0c0c0]",
-                bronze:  "text-[#cd7f32]",
-                default: "text-[#9d74e8]",
+              const deck = player.deckNome || "â€”";
+              const tier = getPlayerVisualTier(pos);
+              const cardY = previewLayout.startY + i * (previewLayout.cardH + previewLayout.cardGap);
+              const isPodium = pos <= 3;
+              const fontScale = Math.min(1, previewLayout.cardH / 150);
+              const posFs = Math.round((pos === 1 ? 82 : 70) * fontScale);
+              const nameFs = Math.round((pos === 1 ? 62 : 56) * fontScale);
+              const deckFs = Math.round(44 * fontScale);
+              const cardStyle = {
+                top: pxToPercent(cardY, 1920),
+                left: pxToPercent(60, 1080),
+                width: pxToPercent(960, 1080),
+                height: pxToPercent(previewLayout.cardH, 1920),
+                background: tier.cardBg,
+                borderColor: tier.borderColor,
+                borderWidth: isPodium ? pxToPreviewWidth(2.5) : pxToPreviewWidth(1.2),
+                borderRadius: pxToPreviewWidth(18),
               };
 
               return (
                 <li
                   key={player.usuario?.id || i}
-                  className={`flex items-center gap-2 px-[0.65rem] py-[0.42rem] rounded-[0.6rem] border story-player ${tierClasses[tier]}`}
-                  style={{ animationDelay: `${i * 0.12}s` }}
+                  className="absolute overflow-hidden border story-player"
+                  style={{ ...cardStyle, animationDelay: `${i * 0.12}s` }}
                 >
                   {/* story-player-pos: clamp 0.85rem–1.2rem font-black min-w-[2.6rem] text-center shrink-0 */}
-                  <span className={`text-[clamp(0.85rem,3.5vw,1.2rem)] font-black min-w-[2.6rem] text-center shrink-0 ${posColorClasses[tier]}`}>
+                  {isPodium && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0 h-full"
+                      style={{
+                        width: pxToPercent(8, 960),
+                        background: tier.posColor,
+                        borderRadius: `${pxToPreviewWidth(4)} 0 0 ${pxToPreviewWidth(4)}`,
+                      }}
+                    />
+                  )}
+                  <span
+                    className="absolute left-[4.1667%] top-1/2 -translate-y-1/2 font-bold leading-none"
+                    style={{
+                      color: tier.posColor,
+                      fontSize: pxToPreviewWidth(posFs),
+                    }}
+                  >
                     #{pos}
                   </span>
                   {/* story-player-details: flex-col gap-[0.06rem] min-w-0 */}
-                  <div className="flex flex-col gap-[0.06rem] min-w-0">
+                  <span
+                    className="absolute left-[23.9584%] top-[20%] max-w-[64.5834%] overflow-hidden text-ellipsis whitespace-nowrap font-bold leading-[1.12]"
+                    style={{
+                      color: tier.nameColor,
+                      fontSize: pxToPreviewWidth(nameFs),
+                    }}
+                  >
                     {/* story-player-name: clamp 0.7rem–0.98rem font-bold text-[#f0e6ff] (gold: #fff8e0) truncate */}
-                    <span className={`text-[clamp(0.7rem,3vw,0.98rem)] font-bold whitespace-nowrap overflow-hidden text-ellipsis ${tier === "gold" ? "text-[#fff8e0]" : "text-[#f0e6ff]"}`}>
                       {name}
                     </span>
                     {/* story-player-deck: clamp 0.6rem–0.8rem text-[#a78bfa] (gold: #fcd34d) truncate */}
-                    <span className={`text-[clamp(0.6rem,2.4vw,0.8rem)] whitespace-nowrap overflow-hidden text-ellipsis ${tier === "gold" ? "text-[#fcd34d]" : "text-[#a78bfa]"}`}>
+                    <span
+                      className="absolute left-[23.9584%] top-[57%] max-w-[68.75%] overflow-hidden text-ellipsis whitespace-nowrap leading-[1.12]"
+                      style={{
+                        color: tier.deckColor,
+                        fontSize: pxToPreviewWidth(deckFs),
+                      }}
+                    >
                       {deck}
                     </span>
-                  </div>
                 </li>
               );
             })}
