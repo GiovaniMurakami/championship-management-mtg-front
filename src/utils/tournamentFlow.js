@@ -37,7 +37,15 @@ export function hasTopCut(torneio) {
 }
 
 export function isEliminationPhase(torneio) {
-    return hasTopCut(torneio) && toPositiveNumber(torneio?.rodadaAtual) > toPositiveNumber(torneio?.totalRodadas);
+    if (!hasTopCut(torneio)) {
+        return false;
+    }
+
+    if (torneio?.emCorte === true) {
+        return true;
+    }
+
+    return toPositiveNumber(torneio?.rodadaAtual) > toPositiveNumber(torneio?.totalRodadas);
 }
 
 export function isSwissLastRound(torneio) {

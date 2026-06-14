@@ -22,6 +22,7 @@ export function ToastProvider({ children }) {
     error:   { border: "rgba(252,88,119,0.4)", bg: "rgba(30,15,45,0.95)", text: "#ffa8b8" },
     success: { border: "rgba(34,197,94,0.4)",  bg: "rgba(10,30,20,0.95)", text: "#86efac" },
     info:    { border: "rgba(167,79,255,0.4)", bg: "rgba(20,10,40,0.95)", text: "#d8b4fe" },
+    warning: { border: "rgba(251,191,36,0.45)", bg: "rgba(42,30,8,0.95)", text: "#fde68a" },
   };
 
   return (

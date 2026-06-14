@@ -6,13 +6,13 @@ const BLOG_POSTS = [
         title: "O SONHO DO DOWNSHIFT: Cartas Incomuns para o Pauper",
         img: "/images/landing/blog/downshift.png",
         link: "https://tiagofuguete.com.br/2026/02/10/o-sonho-do-downshift-cartas-incomuns-para-o-pauper/",
-        excerpt: "Olá, sou Guilherme Gomes, jogo há 14 anos, meus decks favoritos válidos são Walls combo e Retriever...",
+        excerpt: "Ol�, sou Guilherme Gomes, jogo h� 14 anos, meus decks favoritos v�lidos s�o Walls combo e Retriever...",
     },
     {
         title: "Guia de side: Rakdos Madness",
         img: "/images/landing/blog/rakdos-madness.png",
         link: "https://tiagofuguete.com.br/2026/02/06/guia-de-side-rakdos-madness/",
-        excerpt: "Depois do 5-0 em liga achei legal trazer um guia para vocês!",
+        excerpt: "Depois do 5-0 em liga achei legal trazer um guia para voc�s!",
     },
     {
         title: "Melhores Cartas de Side do Pauper",
@@ -21,22 +21,22 @@ const BLOG_POSTS = [
         excerpt: "Criei uma lista com as melhores cartas de side!",
     },
     {
-        title: "Guia de side: BG PESTILÊNCIA Pauper",
+        title: "Guia de side: BG PESTIL�NCIA Pauper",
         img: "/images/landing/blog/bg-pestilencia.png",
         link: "https://tiagofuguete.com.br/2026/01/23/guia-de-side-bg-pestilencia-pauper/",
-        excerpt: "Depois do 5-0 em liga achei legal trazer um guia para vocês!",
+        excerpt: "Depois do 5-0 em liga achei legal trazer um guia para voc�s!",
     },
     {
         title: "SuperCup 2025, o seu Torneio Pauper de Times",
         img: "/images/landing/blog/supercup.png",
         link: "https://tiagofuguete.com.br/2025/07/21/fui-campeao-do-pauper-challenge-de-jund-wildfire/",
-        excerpt: "Joga Pauper no MTGO juntos com os amigos? Esse torneio é para vocês!",
+        excerpt: "Joga Pauper no MTGO juntos com os amigos? Esse torneio � para voc�s!",
     },
     {
-        title: "Fui CAMPEÃO do Pauper Challenge de Jund Wildfire",
+        title: "Fui CAMPE�O do Pauper Challenge de Jund Wildfire",
         img: "/images/landing/blog/jund-wildfire-campeao.jpg",
         link: "https://tiagofuguete.com.br/2025/07/17/campeao-do-pauper-challenge-de-jund-wildfire/",
-        excerpt: "Saiba como foi o Challenge e como está o Jund Wildfire no meta do Pauper!",
+        excerpt: "Saiba como foi o Challenge e como est� o Jund Wildfire no meta do Pauper!",
     },
 ];
 
@@ -48,8 +48,8 @@ export function LandingBlogPage() {
             <section className="max-w-7xl mx-auto px-4 pt-28 pb-12">
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">Veja as novidades</h1>
                 <p className="text-center text-[#9b8dc0] mb-10 max-w-3xl mx-auto">
-                    Além dos torneios, você pode acessar conteúdos educativos, deck techs, dicas de gameplay e muito mais.
-                    O objetivo é simples: fazer você se divertir e melhorar como jogador de Magic: The Gathering no formato Pauper.
+                    Al�m dos torneios, voc� pode acessar conte�dos educativos, deck techs, dicas de gameplay e muito mais.
+                    O objetivo � simples: fazer voc� se divertir e melhorar como jogador de Magic: The Gathering no formato Pauper.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

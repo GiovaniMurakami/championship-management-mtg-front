@@ -47,6 +47,7 @@ export function TournamentDetailPage() {
     handleGerarLinkIngresso,
     handleStartTournament,
     handleNextRound,
+    handleRefazerRodada,
     handleBulkDropPlayers,
     handleDropPlayer,
     handleEditTorneio,
@@ -207,6 +208,7 @@ export function TournamentDetailPage() {
           canManage: canManageTournament,
           onStartTournament: handleStartTournament,
           onNextRound: handleNextRound,
+          onRefazerRodada: handleRefazerRodada,
           onDropPlayersWithoutDeck: (playerIds) => handleBulkDropPlayers(playerIds, {
             actionKey: "drop-missing-decks",
             successMessage: "Jogadores sem deck dropados com sucesso!",

@@ -179,6 +179,11 @@ export const proximaRodada = (torneioId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const refazerRodada = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/refazer-rodada`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const dropJogador = (torneioId, jogadorId, token) =>
   httpClient.post(`/torneio/${torneioId}/drop`, jogadorId ? { jogadorId } : {}, {
     headers: { Authorization: `Bearer ${token}` },
