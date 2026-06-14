@@ -19,6 +19,7 @@ const LandingPage         = lazy(() => import("../pages/LandingPage").then(m => 
 const LandingBlogPage     = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
 const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
 const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
+const DashboardPage       = lazy(() => import("../pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
 const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
@@ -53,6 +54,9 @@ export function AppRoutes() {
           <ProtectedRoute><TournamentDetailPage /></ProtectedRoute>
         } />
         <Route path="/torneio/ingressar/:token" element={<TournamentJoinPage />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute requireAdmin><DashboardPage /></ProtectedRoute>
+        } />
 
         <Route path="/times" element={
           <ProtectedRoute><TimePage /></ProtectedRoute>

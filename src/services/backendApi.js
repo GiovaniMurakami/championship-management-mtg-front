@@ -337,6 +337,18 @@ export const inscreverTardio = (torneioId, token, payload = {}) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+// Site
+export const buscarAnuncios = () =>
+  httpClient.get("/site/anuncios");
+
+export const salvarAnuncios = (anuncios, token) =>
+  httpClient.put("/site/anuncios", { anuncios }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const registrarCliqueAnuncio = (anuncioId) =>
+  httpClient.post(`/site/anuncios/${encodeURIComponent(anuncioId)}/clique`, {});
+
 // Imagens
 export const obterPresignedUrl = (payload, token) =>
   httpClient.post("/imagem/upload-url", payload, {
