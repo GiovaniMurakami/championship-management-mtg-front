@@ -346,6 +346,9 @@ export const salvarAnuncios = (anuncios, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const registrarCliqueAnuncio = (anuncioId) =>
+  httpClient.post(`/site/anuncios/${encodeURIComponent(anuncioId)}/clique`, {});
+
 // Imagens
 export const obterPresignedUrl = (payload, token) =>
   httpClient.post("/imagem/upload-url", payload, {
