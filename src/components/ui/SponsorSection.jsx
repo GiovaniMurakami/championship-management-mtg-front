@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { buscarAnuncios } from "../../services/backendApi";
+import { buscarAnuncios, registrarCliqueAnuncio } from "../../services/backendApi";
 import { DEFAULT_ADS, normalizeAds } from "../../constants/ads";
 
 export function SponsorSection() {
@@ -24,6 +24,11 @@ export function SponsorSection() {
   const prev = () => {
     if (activeAds.length <= 1) return;
     goTo((current - 1 + activeAds.length) % activeAds.length);
+  };
+
+  const trackClick = (ad) => {
+    if (!ad?.id || !ad?.link) return;
+    registrarCliqueAnuncio(ad.id).catch(() => {});
   };
 
   useEffect(() => {
@@ -67,6 +72,7 @@ export function SponsorSection() {
             rel={slide.link ? "noopener noreferrer" : undefined}
             className={`block transition-all duration-200 ${animating ? "opacity-0 translate-y-[6px]" : "opacity-100 translate-y-0"}`}
             aria-label={slide.titulo || "Anuncio"}
+            onClick={() => trackClick(slide)}
           >
             <img
               src={slide.imagemUrl}
@@ -107,6 +113,7 @@ export function SponsorSection() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-[0.3rem] bg-[rgba(44,207,180,0.12)] border border-[rgba(44,207,180,0.4)] text-[#2ccfb4] rounded-full px-[1.1rem] py-[0.45rem] text-[0.85rem] font-semibold cursor-pointer transition-all duration-200 hover:bg-[rgba(44,207,180,0.25)] hover:border-[rgba(44,207,180,0.7)] hover:text-white no-underline"
+                  onClick={() => trackClick(slide)}
                 >
                   {slide.botaoTexto} →
                 </a>

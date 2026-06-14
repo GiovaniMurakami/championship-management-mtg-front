@@ -12,6 +12,7 @@ export const DEFAULT_ADS = [
     imagemUrl: mukaLogo,
     ativo: true,
     ordem: 0,
+    cliques: 0,
   },
   {
     id: "muka-singles",
@@ -24,6 +25,7 @@ export const DEFAULT_ADS = [
     imagemUrl: mukaLogo,
     ativo: true,
     ordem: 1,
+    cliques: 0,
   },
   {
     id: "muka-boosters",
@@ -36,6 +38,7 @@ export const DEFAULT_ADS = [
     imagemUrl: mukaLogo,
     ativo: true,
     ordem: 2,
+    cliques: 0,
   },
 ];
 
@@ -50,6 +53,7 @@ export const createEmptyAd = () => ({
   imagemUrl: "",
   ativo: true,
   ordem: 0,
+  cliques: 0,
 });
 
 export function normalizeAds(anuncios, fallback = DEFAULT_ADS) {
@@ -67,6 +71,7 @@ export function normalizeAds(anuncios, fallback = DEFAULT_ADS) {
       imagemUrl: ad.imagemUrl || ad.bg || "",
       ativo: ad.ativo !== false,
       ordem: Number.isFinite(ad.ordem) ? ad.ordem : index,
+      cliques: Number.isFinite(ad.cliques) ? ad.cliques : 0,
     }))
     .sort((a, b) => a.ordem - b.ordem);
 }
