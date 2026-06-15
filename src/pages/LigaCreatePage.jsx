@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { logError } from "../utils/logger";
 
 const buildTorneiosParams = ({ dataInicio, dataFim }) => {
   const params = new URLSearchParams();
@@ -42,7 +43,7 @@ export function LigaCreatePage({ editMode = false }) {
       const torneiosData = await listarTorneios(token, params);
       setTorneiosDisponiveis(torneiosData.torneios || []);
     } catch (err) {
-      console.error("Erro ao carregar torneios:", err);
+      logError("Erro ao carregar torneios:", err);
       setError("Erro ao carregar torneios.");
     } finally {
       setLoadingTorneios(false);
@@ -65,7 +66,7 @@ export function LigaCreatePage({ editMode = false }) {
         setTorneiosSelecionados(ids.map(String));
       }
     } catch (err) {
-      console.error("Erro ao carregar dados:", err);
+      logError("Erro ao carregar dados:", err);
       setError("Erro ao carregar dados.");
     } finally {
       setLoadingData(false);
@@ -169,7 +170,7 @@ export function LigaCreatePage({ editMode = false }) {
     } catch (err) {
       setError(editMode ? "Erro ao atualizar liga." : "Erro ao criar liga.");
       addToast(editMode ? "Erro ao atualizar liga." : "Erro ao criar liga.", { type: "error" });
-      console.error(err);
+      logError(err);
     } finally {
       setLoading(false);
     }

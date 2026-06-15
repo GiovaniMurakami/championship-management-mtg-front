@@ -27,6 +27,11 @@ const TEXTAREA_CLASS = `${TOURNAMENT_INPUT_CLASS} min-h-[120px] resize-y`;
 const COUNTER_CLASS = "text-[0.78rem] text-[#8ea0c7] text-right";
 const TOURNAMENT_SELECT_CLASS = `${TOURNAMENT_INPUT_CLASS} pr-10`;
 
+const optionalTrimmed = (value) => {
+  const trimmed = String(value ?? "").trim();
+  return trimmed || undefined;
+};
+
 function SectionTitle({ children }) {
   return (
     <h3 className="text-[0.78rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 mb-1 pb-2 border-b border-[rgba(79,70,229,0.18)]">
@@ -96,8 +101,11 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       const payload = {
         ...createForm,
         nome: sanitizeText(createForm.nome),
-        descricao: sanitizeText(createForm.descricao),
-        regras: sanitizeText(createForm.regras),
+        descricao: optionalTrimmed(sanitizeText(createForm.descricao)),
+        regras: optionalTrimmed(sanitizeText(createForm.regras)),
+        linkBanner: optionalTrimmed(createForm.linkBanner),
+        somRodada: optionalTrimmed(createForm.somRodada),
+        linkLive: optionalTrimmed(createForm.linkLive),
         ...(bannerUrl !== undefined ? { bannerUrl } : {}),
         maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
         maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,

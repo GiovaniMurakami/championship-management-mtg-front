@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { normalizeId } from "../utils/normalizeId";
 import {
-    getStandings,
     escolherDeckTorneio,
     checkinTorneio,
     inscreverTorneio,
@@ -13,11 +12,9 @@ import {
     confirmarResultadoPartida,
     ajustarResultado,
     gerarLinkIngresso,
-    buscarTorneio,
     proximaRodada,
+    refazerRodada,
     dropJogador,
-    listarPartidasTorneio,
-    listarTimes,
     atualizarTorneio,
     deletarTorneio,
 } from "../services/backendApi";
@@ -28,14 +25,21 @@ import {
 import { useAuth } from "./useAuth";
 import { useMyDecks } from "./useMyDecks";
 import { useActionGuard } from "./useActionGuard";
+import { useToast } from "../context/ToastContext";
 import {
     getNextRoundActionLabels,
     getTournamentNextAction,
     shouldRequestNextRoundCheckin,
 } from "../utils/tournamentFlow";
+import {
+    normalizeMatchesPayload,
+    normalizeStandingsPayload,
+    useTournamentQueries,
+} from "./useTournamentQueries";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin } = useAuth();
+    const { addToast } = useToast();
     const { id: torneioId } = useParams();
 
     const [torneio, setTorneio] = useState(null);
@@ -58,15 +62,22 @@ export function useTournamentDetail() {
     const toastTimeoutRef = useRef(null);
 
     const { decks } = useMyDecks(token, usuario?.id);
+    const {
+        tournamentQuery,
+        standingsQuery,
+        matchesQuery,
+        teamsQuery,
+    } = useTournamentQueries({ torneioId, token });
     const guard = useActionGuard(800);
     const isCheckedForNextRound = (player, rodadaAtual) =>
         Number(player?.checkinRodada) >= Number(rodadaAtual);
 
     const showToast = useCallback((msg, type = "info") => {
+        addToast(msg, { type });
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
         setRealtimeToast({ msg, type });
         toastTimeoutRef.current = setTimeout(() => setRealtimeToast(null), 5000);
-    }, []);
+    }, [addToast]);
 
     // Cleanup toast timeout on unmount
     useEffect(() => () => { if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current); }, []);
@@ -126,33 +137,71 @@ export function useTournamentDetail() {
         return inserted;
     }, []);
 
+    useEffect(() => {
+        if (tournamentQuery.data) {
+            setTorneio(tournamentQuery.data);
+            setPartidas(tournamentQuery.data.partidas || tournamentQuery.data.rodadaAtualPartidas || []);
+        }
+    }, [tournamentQuery.data]);
+
+    useEffect(() => {
+        if (!standingsQuery.data) return;
+        const data = standingsQuery.data;
+        setStandings(normalizeStandingsPayload(data));
+        if (data.partidas || data.rodadaAtualPartidas) {
+            setPartidas(data.partidas || data.rodadaAtualPartidas || []);
+        }
+        setTorneio((prev) => {
+            const patch = {};
+            if (data.nome || data.torneioNome) Object.assign(patch, data);
+            if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
+            if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
+            if (data.status !== undefined) patch.status = data.status;
+            if (data.totalInscritos !== undefined) patch.totalInscritos = data.totalInscritos;
+            if (!Object.keys(patch).length) return prev;
+            return prev ? { ...prev, ...patch } : patch;
+        });
+    }, [standingsQuery.data]);
+
+    useEffect(() => {
+        if (!matchesQuery.data) return;
+        const partidasList = normalizeMatchesPayload(matchesQuery.data);
+        if (Array.isArray(partidasList) && partidasList.length > 0) {
+            setPartidas(partidasList);
+        }
+    }, [matchesQuery.data]);
+
+    useEffect(() => {
+        if (teamsQuery.data) setTimes(teamsQuery.data);
+    }, [teamsQuery.data]);
+
+    useEffect(() => {
+        if (!torneioId || !token) {
+            setLoading(false);
+            return;
+        }
+        setLoading(tournamentQuery.isLoading || standingsQuery.isLoading || matchesQuery.isLoading);
+    }, [torneioId, token, tournamentQuery.isLoading, standingsQuery.isLoading, matchesQuery.isLoading]);
+
     const loadTournament = useCallback(async () => {
         if (!torneioId || !token) return;
         setError("");
         try {
-            const data = await buscarTorneio(torneioId, token);
+            const { data } = await tournamentQuery.refetch();
+            if (!data) return;
             setTorneio(data);
             setPartidas(data.partidas || data.rodadaAtualPartidas || []);
-            if (data?.liga?.tipo === "times") {
-                try {
-                    const timesData = await listarTimes(token);
-                    setTimes(timesData.times || timesData || []);
-                } catch {
-                    // silently fail; times are optional
-                }
-            }
-        } catch (err) {
+        } catch {
             setError("Erro ao carregar dados do torneio.");
-            console.error(err);
         }
-    }, [torneioId, token]);
+    }, [torneioId, token, tournamentQuery]);
 
     const loadPartidas = useCallback(async () => {
         if (!torneioId || !token) return;
 
         try {
-            const data = await listarPartidasTorneio(torneioId, token);
-            const partidasList = data?.partidas || data?.matches || [];
+            const { data } = await matchesQuery.refetch();
+            const partidasList = normalizeMatchesPayload(data);
 
             if (Array.isArray(partidasList) && partidasList.length > 0) {
                 setPartidas(partidasList);
@@ -160,20 +209,14 @@ export function useTournamentDetail() {
         } catch {
             // Fallback: manter partidas carregadas por buscarTorneio/standings.
         }
-    }, [torneioId, token]);
+    }, [torneioId, token, matchesQuery]);
 
     const loadStandings = useCallback(async () => {
         if (!torneioId || !token) return;
         try {
-            const data = await getStandings(torneioId, token);
-            const rawStandings = data.standings || data.participantes || data.players || [];
-            // Normaliza o campo checkInRodada (backend) para checkinRodada (frontend)
-            const normalizedStandings = rawStandings.map((p) =>
-                "checkInRodada" in p && !("checkinRodada" in p)
-                    ? { ...p, checkinRodada: p.checkInRodada }
-                    : p
-            );
-            setStandings(normalizedStandings);
+            const { data } = await standingsQuery.refetch();
+            if (!data) return;
+            setStandings(normalizeStandingsPayload(data));
             if (data.partidas || data.rodadaAtualPartidas) {
                 setPartidas(data.partidas || data.rodadaAtualPartidas || []);
             }
@@ -188,22 +231,12 @@ export function useTournamentDetail() {
                 if (!Object.keys(patch).length) return prev;
                 return prev ? { ...prev, ...patch } : patch;
             });
-        } catch (err) {
-            console.error("Erro ao carregar standings:", err);
+        } catch {
+            // Mantem o estado atual se a revalidacao falhar.
         }
-    }, [torneioId, token]);
+    }, [torneioId, token, standingsQuery]);
 
     // Initial load — wait for all three before hiding skeleton
-    useEffect(() => {
-        if (!torneioId || !token) {
-            setLoading(false);
-            return;
-        }
-        setLoading(true);
-        Promise.all([loadTournament(), loadStandings(), loadPartidas()])
-            .finally(() => setLoading(false));
-    }, [torneioId, token, loadTournament, loadStandings, loadPartidas]);
-
     // Ably realtime subscriptions
     useEffect(() => {
         if (!torneioId) return;
@@ -394,6 +427,20 @@ export function useTournamentDetail() {
             },
             onCheckinRodadaAberto: () => {
                 setCheckinRodadaAberto(true);
+            },
+            onRodadaRefeita: (msg) => {
+                const data = msg?.data || {};
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    rodadaAtual: data.rodadaAtual ?? prev.rodadaAtual,
+                    totalRodadas: data.totalRodadas ?? prev.totalRodadas,
+                    emCorte: data.emCorte ?? prev.emCorte,
+                    rodadaIniciadaEm: undefined,
+                } : prev);
+                loadTournament();
+                loadStandings();
+                loadPartidas();
+                showToast(`Rodada ${data.rodadaRemovida || "atual"} removida. Torneio voltou para a rodada ${data.rodadaAtual || "anterior"}.`, "warning");
             },
         });
         return () => {
@@ -753,6 +800,36 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleRefazerRodada = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("redo-round");
+        setError("");
+        try {
+            const data = await refazerRodada(torneioId, token);
+            setTorneio((prev) => prev ? {
+                ...prev,
+                rodadaAtual: data?.rodadaAtual ?? prev.rodadaAtual,
+                totalRodadas: data?.totalRodadas ?? prev.totalRodadas,
+                emCorte: data?.emCorte ?? prev.emCorte,
+                rodadaIniciadaEm: undefined,
+            } : prev);
+            setSuccessMsg(`Rodada ${data?.rodadaRemovida || "atual"} removida. Ajuste a rodada ${data?.rodadaAtual || "anterior"} e avance novamente quando estiver pronto.`);
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao refazer rodada.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
     const handleStartTournament = async () => {
         if (!torneioId || !canManageTournament) return;
 
@@ -925,6 +1002,7 @@ export function useTournamentDetail() {
         handleGerarLinkIngresso,
         handleStartTournament: guard(handleStartTournament),
         handleNextRound: guard(handleNextRound),
+        handleRefazerRodada: guard(handleRefazerRodada),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayer: guard(handleDropPlayer),
         handleEditTorneio: guard(handleEditTorneio),

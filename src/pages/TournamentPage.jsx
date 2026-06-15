@@ -13,6 +13,7 @@ import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../c
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { SponsorSection } from "../components/ui/SponsorSection";
 import { ExpandableText } from "../components/tournament";
+import { logError } from "../utils/logger";
 
 function PlatformStats() {
   return (
@@ -57,7 +58,7 @@ export function TournamentPage() {
       const data = await listarTorneios(token);
       setTorneios(data.torneios || []);
     } catch (error) {
-      console.error("Erro ao carregar torneios:", error);
+      logError("Erro ao carregar torneios:", error);
     } finally {
       setLoading(false);
     }

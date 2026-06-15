@@ -9,6 +9,7 @@ import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { logError } from "../utils/logger";
 
 const LIMITE = 12;
 
@@ -75,7 +76,7 @@ export function TimePage() {
       setTimes(list);
       setTotal(data.total ?? list.length);
     } catch (err) {
-      console.error("Erro ao carregar times:", err);
+      logError("Erro ao carregar times:", err);
       addToast("Erro ao carregar times.", { type: "error" });
     } finally {
       setLoading(false);
@@ -134,7 +135,7 @@ export function TimePage() {
       setDeleteTarget(null);
       addToast("Time excluído com sucesso.", { type: "success" });
     } catch (err) {
-      console.error("Erro ao deletar time:", err);
+      logError("Erro ao deletar time:", err);
       addToast("Erro ao excluir time.", { type: "error" });
     } finally {
       setDeleting(false);

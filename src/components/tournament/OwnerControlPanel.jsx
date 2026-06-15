@@ -142,6 +142,7 @@ export function OwnerControlPanel({
   canManage,
   onStartTournament,
   onNextRound,
+  onRefazerRodada,
   onDropPlayersWithoutDeck,
   onDropPlayersWithoutCheckin,
   onDropPlayer,
@@ -234,6 +235,16 @@ export function OwnerControlPanel({
   const isBulkDroppingDeck = actionLoading && adminActionKey === "drop-missing-decks";
   const isBulkDroppingCheckin = actionLoading && adminActionKey === "drop-missing-checkin";
   const isStartingTournament = actionLoading && adminActionKey === "start-tournament";
+  const isRedoingRound = actionLoading && adminActionKey === "redo-round";
+  const canRedoRound = isOngoing && Number(torneio?.rodadaAtual || 0) > 1;
+
+  const handleRedoRound = () => {
+    if (!onRefazerRodada || !canRedoRound || actionLoading) return;
+    const ok = window.confirm(
+      `Refazer a rodada ${torneio?.rodadaAtual}? As partidas desta rodada serao removidas e o torneio voltara para a rodada anterior.`,
+    );
+    if (ok) onRefazerRodada();
+  };
 
   return (
     <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
@@ -278,14 +289,25 @@ export function OwnerControlPanel({
             </button>
           )}
           {isOngoing && (
-            <button
-              className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
-              type="button"
-              onClick={() => setReviewModalOpen(true)}
-              disabled={actionLoading}
-            >
-              Revisar Rodada
-            </button>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <button
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)]"
+                type="button"
+                onClick={handleRedoRound}
+                disabled={actionLoading || !canRedoRound}
+                title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponivel a partir da rodada 2"}
+              >
+                {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+                type="button"
+                onClick={() => setReviewModalOpen(true)}
+                disabled={actionLoading}
+              >
+                Revisar Rodada
+              </button>
+            </div>
           )}
         </div>
       </div>

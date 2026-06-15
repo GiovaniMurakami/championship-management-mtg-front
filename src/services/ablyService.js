@@ -1,4 +1,5 @@
 import { Realtime } from "ably";
+import { logError } from "../utils/logger";
 
 let ablyClient = null;
 
@@ -13,7 +14,7 @@ export const getAblyClient = () => {
         }
 
         if (!apiKey) {
-            console.error("[Ably] Configure VITE_ABLY_AUTH_URL ou VITE_ABLY_API_KEY no .env");
+            logError("[Ably] Configure VITE_ABLY_AUTH_URL ou VITE_ABLY_API_KEY no .env");
             return null;
         }
 
@@ -50,6 +51,7 @@ export const subscribeToTournament = (torneioId, callbacks = {}) => {
     subscribeIfPresent(channel, "jogador_ingressou", callbacks.onJogadorIngressou);
     subscribeIfPresent(channel, "total_rodadas_alterado", callbacks.onTotalRodadasAlterado);
     subscribeIfPresent(channel, "checkin_rodada_aberto", callbacks.onCheckinRodadaAberto);
+    subscribeIfPresent(channel, "rodada_refeita", callbacks.onRodadaRefeita);
 
     return channel;
 };

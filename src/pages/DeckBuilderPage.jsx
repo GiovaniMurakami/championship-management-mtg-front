@@ -8,6 +8,7 @@ import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarDeck } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
+import { logError } from "../utils/logger";
 
 export function DeckBuilderPage({ isEditMode = false }) {
   const { token } = useAuth();
@@ -103,7 +104,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
           resolvedCommanderCards.map((card, index) => toCardEntry(commanderEntries[index], card)),
         );
       } catch (error) {
-        console.error("Erro ao carregar cartas do deck:", error);
+        logError("Erro ao carregar cartas do deck:", error);
       }
     };
 

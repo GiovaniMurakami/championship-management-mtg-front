@@ -8,6 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { buildTeamInviteExternalUrl } from "../utils/externalNavigation";
+import { logError } from "../utils/logger";
 
 function getInitials(nome) {
   if (!nome) return "?";
@@ -49,7 +50,7 @@ export function TimeDetailPage() {
       const data = await buscarTime(timeId, token);
       setTime(data.time || data);
     } catch (err) {
-      console.error("Erro ao carregar time:", err);
+      logError("Erro ao carregar time:", err);
       setError("Erro ao carregar time.");
     } finally {
       setLoading(false);

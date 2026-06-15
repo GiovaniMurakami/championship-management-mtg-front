@@ -1,4 +1,5 @@
 import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
@@ -12,6 +13,16 @@ import {
 } from "./utils/externalNavigation";
 
 const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /** Conecta eventos de rate-limit do interceptor ao ToastProvider. */
 function RateLimitBridge() {
@@ -233,11 +244,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }
