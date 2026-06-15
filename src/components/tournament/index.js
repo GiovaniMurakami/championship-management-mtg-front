@@ -2,6 +2,7 @@ export { TournamentHeader } from "./TournamentHeader";
 export { PlayerProfile } from "./PlayerProfile";
 export { MatchPanel } from "./MatchPanel";
 export { MatchTablesPanel } from "./MatchTablesPanel";
+export { EliminationBracket } from "./EliminationBracket";
 export { StandingsTable } from "./StandingsTable";
 export { OwnerControlPanel } from "./OwnerControlPanel";
 export { RoundTimer } from "./RoundTimer";

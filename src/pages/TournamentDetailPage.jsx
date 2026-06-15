@@ -6,6 +6,7 @@ import {
   PlayerProfile,
   MatchPanel,
   MatchTablesPanel,
+  EliminationBracket,
   StandingsTable,
   OwnerControlPanel,
   RoundTimer,
@@ -282,14 +283,17 @@ export function TournamentDetailPage() {
         );
 
         const matchTablesPanel = (
-          <MatchTablesPanel
-            torneio={torneio}
-            partidas={partidas}
-            usuarioId={usuario?.id}
-            isOwner={isOwner}
-            token={token}
-            onPartidasUpdate={loadPartidas}
-          />
+          <>
+            <EliminationBracket torneio={torneio} partidas={partidas} />
+            <MatchTablesPanel
+              torneio={torneio}
+              partidas={partidas}
+              usuarioId={usuario?.id}
+              isOwner={isOwner}
+              token={token}
+              onPartidasUpdate={loadPartidas}
+            />
+          </>
         );
 
         const shouldShowPlayerProfile = !isOngoing && !isFinished;
