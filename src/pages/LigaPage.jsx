@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
+import { logError } from "../utils/logger";
 
 const LIMITE = 20;
 
@@ -31,7 +32,7 @@ export function LigaPage() {
       setLigas(list);
       setTotal(data.total ?? list.length);
     } catch (err) {
-      console.error("Erro ao carregar ligas:", err);
+      logError("Erro ao carregar ligas:", err);
       addToast("Erro ao carregar ligas.", { type: "error" });
     } finally {
       setLoading(false);
@@ -58,7 +59,7 @@ export function LigaPage() {
       setLigas((prev) => prev.filter((l) => l.id !== ligaId));
       addToast("Liga excluída com sucesso.", { type: "success" });
     } catch (err) {
-      console.error("Erro ao excluir liga:", err);
+      logError("Erro ao excluir liga:", err);
       addToast("Erro ao excluir liga.", { type: "error" });
     } finally {
       setDeletingId(null);

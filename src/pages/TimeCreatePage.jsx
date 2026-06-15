@@ -5,6 +5,7 @@ import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUploa
 import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { logError } from "../utils/logger";
 
 export function TimeCreatePage({ editMode = false }) {
   const { id: timeId } = useParams();
@@ -28,7 +29,7 @@ export function TimeCreatePage({ editMode = false }) {
       setForm({ nome: time.nome || "", descricao: time.descricao || "" });
       if (time.imagemUrl) setImagemPreview(time.imagemUrl);
     } catch (err) {
-      console.error("Erro ao carregar time:", err);
+      logError("Erro ao carregar time:", err);
       setError("Erro ao carregar dados do time.");
     } finally {
       setLoadingData(false);
@@ -80,7 +81,7 @@ export function TimeCreatePage({ editMode = false }) {
       }
     } catch (err) {
       setError(err?.message || err?.userMessage || (editMode ? "Erro ao atualizar time." : "Erro ao criar time."));
-      console.error(err);
+      logError(err);
     } finally {
       setLoading(false);
       setUploadProgress(0);

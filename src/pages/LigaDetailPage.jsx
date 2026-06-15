@@ -11,6 +11,7 @@ import {
 } from "../constants/tournament";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
+import { logError } from "../utils/logger";
 
 export function LigaDetailPage() {
   const LIMITE_RANKING_TIMES = 10;
@@ -30,7 +31,7 @@ export function LigaDetailPage() {
       const data = await buscarLiga(ligaId, token);
       setLiga(data.liga || data);
     } catch (err) {
-      console.error("Erro ao carregar liga:", err);
+      logError("Erro ao carregar liga:", err);
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ export function LigaDetailPage() {
       const data = await getRankingLiga(ligaId, token, liga?.tipo === "times" ? { limiteTimes: LIMITE_RANKING_TIMES } : undefined);
       setRanking(data);
     } catch (err) {
-      console.error("Erro ao carregar ranking:", err);
+      logError("Erro ao carregar ranking:", err);
     } finally {
       setRankingLoading(false);
     }

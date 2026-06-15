@@ -21,6 +21,11 @@ const TEXTAREA_CLASS = `${TOURNAMENT_INPUT_CLASS} min-h-[120px] resize-y`;
 const COUNTER_CLASS = "text-[0.78rem] text-[#8ea0c7] text-right";
 const TOURNAMENT_SELECT_CLASS = `${TOURNAMENT_INPUT_CLASS} pr-10`;
 
+const optionalTrimmed = (value) => {
+  const trimmed = String(value ?? "").trim();
+  return trimmed || undefined;
+};
+
 export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loading, token }) {
   const [form, setForm] = useState({
     nome: "",
@@ -127,16 +132,24 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       setUploadingBanner(false);
     }
 
-    onSubmit({
+    const payload = {
       ...form,
       nome: sanitizeText(form.nome),
-      descricao: sanitizeText(form.descricao),
-      regras: sanitizeText(form.regras),
-      bannerUrl,
+      descricao: optionalTrimmed(sanitizeText(form.descricao)),
+      regras: optionalTrimmed(sanitizeText(form.regras)),
+      linkBanner: optionalTrimmed(form.linkBanner),
+      somRodada: optionalTrimmed(form.somRodada),
+      linkLive: optionalTrimmed(form.linkLive),
       maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
       maxRodadas: form.maxRodadas ? Number(form.maxRodadas) : undefined,
       corteTop: form.corteTop ? Number(form.corteTop) : undefined,
-    });
+    };
+
+    if (bannerUrl || torneio?.bannerUrl) {
+      payload.bannerUrl = bannerUrl;
+    }
+
+    onSubmit(payload);
   };
 
   return (

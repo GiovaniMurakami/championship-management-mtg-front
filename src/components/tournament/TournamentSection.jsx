@@ -4,6 +4,7 @@ import { listarTorneios } from "../../services/backendApi";
 import { useAuth } from "../../hooks/useAuth";
 import { SkeletonBannerCard } from "../ui/Skeleton";
 import { getTournamentFormatLabel } from "../../constants/tournament";
+import { logError } from "../../utils/logger";
 
 const FORMAT_COLORS = {
   modern: "#a78bfa",
@@ -45,7 +46,7 @@ export function TournamentSection() {
         const data = await listarTorneios(token);
         setTorneios(data.torneios || []);
       } catch (error) {
-        console.error("Erro ao carregar torneios:", error);
+        logError("Erro ao carregar torneios:", error);
       } finally {
         setLoading(false);
       }

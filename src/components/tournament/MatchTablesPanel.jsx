@@ -2,6 +2,7 @@ import { useMemo, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { getDisplaySides, getMatchPlayerName } from "../../utils/matchDisplay";
+import { isEliminationPhase } from "../../utils/tournamentFlow";
 import { editarPareamentosRodada } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
@@ -96,6 +97,8 @@ function MatchCard({ partida, index, usuarioId }) {
 export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token, onPartidasUpdate }) {
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
+    const isTopCut = isEliminationPhase(torneio);
+    const corteTop = Number(torneio?.corteTop || 0);
 
     const rodadaAtual = Number(torneio?.rodadaAtual || 0);
 
@@ -233,6 +236,11 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                             Rodada {torneio?.rodadaAtual} / {torneio?.totalRodadas}
                         </span>
                     )}
+                    {isTopCut && (
+                        <span className="text-[0.75rem] font-semibold text-[#fef08a] bg-[rgba(250,204,21,0.12)] border border-[rgba(250,204,21,0.35)] rounded-full px-[0.65rem] py-[0.2rem]">
+                            Top {corteTop || ""}
+                        </span>
+                    )}
                 </div>
 
                 {showRoundPicker && (
@@ -262,6 +270,12 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                     </button>
                 )}
             </div>
+
+            {isTopCut && total > 0 && (
+                <div className="mb-3 rounded-[0.75rem] border border-[rgba(250,204,21,0.22)] bg-[rgba(250,204,21,0.07)] px-3 py-2 text-[0.82rem] font-semibold text-[#fef3c7]">
+                    Pareamentos do corte eliminatorio visiveis para os jogadores classificados.
+                </div>
+            )}
 
             {total > 0 && (
                 <div className="flex items-center gap-[0.65rem] mb-3">

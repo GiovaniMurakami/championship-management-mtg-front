@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { logError } from "../../utils/logger";
 
 /**
  * ErrorBoundary — captura erros de render em qualquer filho e exibe
@@ -15,7 +16,7 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error("[ErrorBoundary]", error, info.componentStack);
+    logError("[ErrorBoundary]", error, info.componentStack);
   }
 
   render() {
