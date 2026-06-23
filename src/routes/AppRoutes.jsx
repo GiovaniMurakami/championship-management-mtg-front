@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "../components";
+import { UuidParamGuard } from "../components/ui/UuidParamGuard";
 import { Spinner } from "../components/ui/Spinner";
 
 // Rotas lazy-loaded — cada rota gera um chunk separado pelo Vite
@@ -43,7 +44,11 @@ export function AppRoutes() {
           <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
         } />
         <Route path="/editar-deck/:id" element={
-          <ProtectedRoute><DeckBuilderPage isEditMode={true} /></ProtectedRoute>
+          <ProtectedRoute>
+            <UuidParamGuard param="id">
+              <DeckBuilderPage isEditMode={true} />
+            </UuidParamGuard>
+          </ProtectedRoute>
         } />
 
         <Route path="/torneios" element={<Navigate to="/" replace />} />
@@ -51,7 +56,11 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><TournamentCreatePage /></ProtectedRoute>
         } />
         <Route path="/torneios/:id" element={
-          <ProtectedRoute><TournamentDetailPage /></ProtectedRoute>
+          <ProtectedRoute>
+            <UuidParamGuard param="id">
+              <TournamentDetailPage />
+            </UuidParamGuard>
+          </ProtectedRoute>
         } />
         <Route path="/torneio/ingressar/:token" element={<TournamentJoinPage />} />
         <Route path="/dashboard" element={
@@ -65,10 +74,18 @@ export function AppRoutes() {
           <ProtectedRoute><TimeCreatePage editMode={false} /></ProtectedRoute>
         } />
         <Route path="/times/:id" element={
-          <ProtectedRoute><TimeDetailPage /></ProtectedRoute>
+          <ProtectedRoute>
+            <UuidParamGuard param="id">
+              <TimeDetailPage />
+            </UuidParamGuard>
+          </ProtectedRoute>
         } />
         <Route path="/times/:id/editar" element={
-          <ProtectedRoute><TimeCreatePage editMode={true} /></ProtectedRoute>
+          <ProtectedRoute>
+            <UuidParamGuard param="id">
+              <TimeCreatePage editMode={true} />
+            </UuidParamGuard>
+          </ProtectedRoute>
         } />
 
         <Route path="/ligas" element={
@@ -78,10 +95,18 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><LigaCreatePage editMode={false} /></ProtectedRoute>
         } />
         <Route path="/ligas/:id" element={
-          <ProtectedRoute><LigaDetailPage /></ProtectedRoute>
+          <ProtectedRoute>
+            <UuidParamGuard param="id">
+              <LigaDetailPage />
+            </UuidParamGuard>
+          </ProtectedRoute>
         } />
         <Route path="/ligas/:id/editar" element={
-          <ProtectedRoute requireAdmin><LigaCreatePage editMode={true} /></ProtectedRoute>
+          <ProtectedRoute requireAdmin>
+            <UuidParamGuard param="id">
+              <LigaCreatePage editMode={true} />
+            </UuidParamGuard>
+          </ProtectedRoute>
         } />
 
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />

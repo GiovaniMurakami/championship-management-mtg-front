@@ -79,6 +79,11 @@ export function useTournamentDetail() {
         toastTimeoutRef.current = setTimeout(() => setRealtimeToast(null), 5000);
     }, [addToast]);
 
+    const dismissRealtimeToast = useCallback(() => {
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        setRealtimeToast(null);
+    }, []);
+
     // Cleanup toast timeout on unmount
     useEffect(() => () => { if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current); }, []);
 
@@ -1009,6 +1014,7 @@ export function useTournamentDetail() {
         handleDeleteTorneio: guard(handleDeleteTorneio),
         loadPartidas,
         realtimeToast,
+        dismissRealtimeToast,
         corteInfo,
         dismissCorteInfo,
         checkinRodadaAberto,

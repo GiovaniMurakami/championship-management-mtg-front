@@ -48,12 +48,12 @@ function MatchCard({ partida, index, usuarioId }) {
         : "VS";
 
     return (
-        <article className={`rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
-            <div className="flex items-center justify-between mb-[0.55rem]">
-                <div className="flex items-center gap-[0.4rem]">
+        <article className={`min-w-0 max-w-full overflow-hidden rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
+            <div className="flex items-start justify-between gap-2 mb-[0.55rem] flex-wrap max-md:flex-col max-md:items-start">
+                <div className="flex items-center gap-[0.4rem] min-w-0">
                     <span className="text-[0.72rem] font-bold text-[#7dd3fc] tracking-[0.04em] uppercase">Mesa {getMesa(partida, index)}</span>
                 </div>
-                <div className="flex items-center gap-[0.4rem]">
+                <div className="flex items-center gap-[0.4rem] flex-wrap max-md:w-full">
                     {partida.contestado && (
                         <span className="text-[0.65rem] font-bold tracking-[0.05em] uppercase px-[0.55rem] py-[0.15rem] rounded-full bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.4)] text-[#f87171]">
                             Contestado
@@ -68,22 +68,22 @@ function MatchCard({ partida, index, usuarioId }) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem]">
-                <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
-                    <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.name}</span>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem] max-md:grid-cols-1 max-md:gap-2">
+                <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start max-md:items-center max-md:text-center ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
+                    <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.name}</span>
                     {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
                     {isFinalizada && !isBye && (
                         <ConfirmationIcon confirmed={player1Confirmed} label={`${p1.name}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
                     )}
                 </div>
 
-                <span className={`text-[0.88rem] font-extrabold tracking-[0.04em] text-center px-2 py-[0.2rem] rounded-[6px] flex-shrink-0 ${isFinalizada ? "text-white bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.3)]" : "text-[rgba(199,149,255,0.7)] bg-[rgba(167,79,255,0.1)] border border-[rgba(167,79,255,0.2)]"}`}>
+                <span className={`text-[0.88rem] font-extrabold tracking-[0.04em] text-center px-2 py-[0.2rem] rounded-[6px] flex-shrink-0 max-md:mx-auto ${isFinalizada ? "text-white bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.3)]" : "text-[rgba(199,149,255,0.7)] bg-[rgba(167,79,255,0.1)] border border-[rgba(167,79,255,0.2)]"}`}>
                     {score}
                 </span>
 
-                <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
+                <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right max-md:items-center max-md:text-center ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
                     {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
-                    <span className={`text-[0.86rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-full ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.name}</span>
+                    <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.name}</span>
                     {isFinalizada && !isBye && (
                         <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.name}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
                     )}
@@ -226,9 +226,9 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
 
     return (
         <Fragment>
-        <section className="border border-[rgba(56,189,248,0.3)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(7,37,49,0.6),rgba(8,20,34,0.9))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-[480px]:p-4 max-[480px]:rounded-xl">
+        <section className="border border-[rgba(56,189,248,0.3)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(7,37,49,0.6),rgba(8,20,34,0.9))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-md:rounded-xl max-w-full min-w-0 overflow-x-clip overflow-hidden">
 
-            <div className="flex items-center justify-between gap-3 flex-wrap mb-[0.9rem] max-[480px]:flex-col max-[480px]:items-start">
+            <div className="flex items-center justify-between gap-3 flex-wrap mb-[0.9rem] max-md:flex-col max-md:items-stretch">
                 <div className="flex items-center gap-[0.65rem] flex-wrap">
                     <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Mesas</h2>
                     {isOngoing && (
@@ -244,7 +244,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                 </div>
 
                 {showRoundPicker && (
-                    <div className="flex items-center gap-[0.3rem] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex-shrink-0" role="tablist" aria-label="Selecionar rodada">
+                    <div className="flex items-center gap-[0.3rem] flex-wrap max-md:w-full min-w-0 max-w-full" role="tablist" aria-label="Selecionar rodada">
                         {roundNumbers.map((r) => (
                             <button
                                 key={r}
@@ -263,7 +263,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                 {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
                     <button
                         type="button"
-                        className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-[0.7rem] border border-[rgba(125,211,252,0.35)] bg-[rgba(56,189,248,0.08)] text-[#7dd3fc] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.16)]"
+                        className="inline-flex items-center justify-center gap-[0.4rem] px-3 py-[0.45rem] rounded-[0.7rem] border border-[rgba(125,211,252,0.35)] bg-[rgba(56,189,248,0.08)] text-[#7dd3fc] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.16)] max-md:w-full"
                         onClick={handleOpenPairingsEditor}
                     >
                         Editar pareamentos
@@ -278,7 +278,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
             )}
 
             {total > 0 && (
-                <div className="flex items-center gap-[0.65rem] mb-3">
+                <div className="flex items-center gap-[0.65rem] mb-3 min-w-0">
                     <div className="flex-1 h-1 bg-[rgba(255,255,255,0.08)] rounded-full overflow-hidden">
                         <div
                             className={`h-full rounded-full transition-[width] duration-[0.4s] ease-in-out ${allDone ? "bg-[#4ade80]" : "bg-[#38bdf8]"}`}
@@ -292,8 +292,8 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
             )}
 
             {total > 3 && (
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <div className="relative flex-1 min-w-[170px] max-w-[360px]">
+                <div className="flex items-center gap-2 mb-3 flex-wrap max-md:flex-col max-md:items-stretch">
+                    <div className="relative flex-1 min-w-[170px] max-w-[360px] max-md:max-w-none max-md:w-full">
                         <input
                             type="search"
                             placeholder="Buscar jogador ou mesa…"
@@ -309,7 +309,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                     <button
                         type="button"
                         onClick={() => setShowPendingOnly(p => !p)}
-                        className={`inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-[0.6rem] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-[#beafd7] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"}`}
+                        className={`inline-flex items-center justify-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-[0.6rem] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 max-md:w-full ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-[#beafd7] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"}`}
                     >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -343,7 +343,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                         : "Ainda não há mesas para a rodada atual."}
                 </p>
             ) : (
-                <div className={`grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[0.65rem] ${total > 8 ? "max-h-[560px] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(56,189,248,0.3)_transparent] pr-[2px]" : ""}`}>
+                <div className={`grid grid-cols-[repeat(auto-fill,minmax(min(100%,220px),1fr))] gap-[0.65rem] max-md:grid-cols-1 min-w-0 w-full ${total > 8 ? "max-h-[560px] overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:rgba(56,189,248,0.3)_transparent]" : ""}`}>
                     {filteredAndSortedPartidas.map((partida, index) => (
                         <MatchCard
                             key={partida.id || `${partida.rodada}-${index}`}
@@ -396,9 +396,9 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                         ))}
                     </div>
                     {pairingsError && <p className="text-[#fca5a5] text-[0.85rem] mt-4 mb-0">{pairingsError}</p>}
-                    <div className="flex gap-3 mt-5">
-                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
-                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50" onClick={handleSavePairings} disabled={pairingsLoading}>{pairingsLoading ? "Salvando..." : "Salvar pareamentos"}</button>
+                    <div className="flex gap-3 mt-5 max-md:flex-col">
+                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors max-md:w-full" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
+                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50 max-md:w-full" onClick={handleSavePairings} disabled={pairingsLoading}>{pairingsLoading ? "Salvando..." : "Salvar pareamentos"}</button>
                     </div>
                 </div>
             </div>

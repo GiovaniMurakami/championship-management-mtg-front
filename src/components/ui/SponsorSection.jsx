@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { buscarAnuncios, registrarCliqueAnuncio } from "../../services/backendApi";
 import { DEFAULT_ADS, normalizeAds } from "../../constants/ads";
+import { SkeletonSponsorSection } from "./Skeleton";
 
 export function SponsorSection() {
+  const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [ads, setAds] = useState(() => normalizeAds(DEFAULT_ADS));
+  const [ads, setAds] = useState([]);
   const activeAds = ads.filter((ad) => ad.ativo);
 
   const goTo = useCallback((index) => {
@@ -36,19 +38,32 @@ export function SponsorSection() {
 
     buscarAnuncios()
       .then((data) => {
-        if (mounted) setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
+        if (!mounted) return;
+        setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
       })
       .catch(() => {
         if (mounted) setAds(normalizeAds(DEFAULT_ADS));
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
       });
 
     return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
+    setCurrent(0);
+  }, [ads]);
+
+  useEffect(() => {
+    if (loading || activeAds.length <= 1) return undefined;
     const id = setInterval(next, 5500);
     return () => clearInterval(id);
-  }, [next]);
+  }, [next, loading, activeAds.length]);
+
+  if (loading) {
+    return <SkeletonSponsorSection />;
+  }
 
   if (activeAds.length === 0) return null;
 
@@ -140,6 +155,7 @@ export function SponsorSection() {
                   className={`w-[7px] h-[7px] rounded-full border-none p-0 cursor-pointer transition-all duration-200 ${i === currentIndex ? "bg-[#2ccfb4] scale-[1.3]" : "bg-[rgba(44,207,180,0.25)]"}`}
                   onClick={() => goTo(i)}
                   aria-label={`Slide ${i + 1}`}
+                  aria-current={i === currentIndex ? "true" : undefined}
                 />
               ))}
             </div>

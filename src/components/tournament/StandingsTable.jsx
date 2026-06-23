@@ -3,6 +3,32 @@ import { Top8StoryModal } from "./Top8StoryModal";
 import { DeckViewButton, RANK_BADGE } from "./DeckDrawer";
 import { Tooltip } from "../ui/Tooltip";
 
+function CollapseToggle({ collapsed, onToggle, label = "standings" }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={!collapsed}
+      aria-controls="standings-panel"
+      className="inline-flex items-center gap-1 px-3 py-1 border border-[rgba(217,180,255,0.25)] rounded-full bg-white/[0.04] text-[#beafd7] text-[0.75rem] font-semibold cursor-pointer transition-[color,border-color,background-color] duration-150 hover:text-white hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.06] shrink-0"
+    >
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        aria-hidden="true"
+        className={`transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`}
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+      {collapsed ? `Mostrar ${label}` : `Ocultar ${label}`}
+    </button>
+  );
+}
+
 export function StandingsTable({
   standings,
   isFinished = false,
@@ -17,6 +43,10 @@ export function StandingsTable({
   const [deckNameOverrides, setDeckNameOverrides] = useState({});
   const [showStory, setShowStory] = useState(false);
   const [search, setSearch] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
+
+  const sectionTitle = isRegistrationOpen ? "Jogadores Inscritos" : "Standings";
+  const collapseLabel = isRegistrationOpen ? "inscritos" : "standings";
 
   if (!standings || standings.length === 0) {
     return (
@@ -88,12 +118,21 @@ export function StandingsTable({
     return (
       <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 flex-shrink-0">
-          <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#f5edff]">Standings</h2>
-          <span className="text-[0.72rem] font-semibold text-[#beafd7] bg-[rgba(167,79,255,0.12)] border border-[rgba(217,180,255,0.2)] rounded-full px-[0.55rem] py-[0.15rem] flex-shrink-0">
-            {totalInscritos ?? standings.length} inscritos
-          </span>
+          <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#f5edff]">{sectionTitle}</h2>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-[0.72rem] font-semibold text-[#beafd7] bg-[rgba(167,79,255,0.12)] border border-[rgba(217,180,255,0.2)] rounded-full px-[0.55rem] py-[0.15rem]">
+              {totalInscritos ?? standings.length} inscritos
+            </span>
+            <CollapseToggle
+              collapsed={collapsed}
+              onToggle={() => setCollapsed((value) => !value)}
+              label={collapseLabel}
+            />
+          </div>
         </div>
 
+        {!collapsed && (
+          <>
         <div className="relative px-4 pb-3 flex-shrink-0">
           <input
             className="w-full pl-3 pr-[1.85rem] py-[0.3rem] border border-[rgba(199,149,255,0.25)] rounded-full bg-[rgba(167,79,255,0.07)] text-[#f5edff] text-[0.78rem] font-['inherit'] outline-none transition-[border-color] duration-[250ms] placeholder:text-[#beafd7] focus:border-[rgba(199,149,255,0.5)]"
@@ -166,22 +205,29 @@ export function StandingsTable({
             })
           )}
         </div>
+          </>
+        )}
       </section>
     );
   }
 
   return (
-    <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
-      <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-        <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">{isRegistrationOpen ? "Jogadores Inscritos" : "Standings"}</h2>
-        <div className="flex items-center gap-[0.6rem] flex-wrap">
+    <section id="standings-panel" className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-w-full min-w-0 overflow-hidden">
+      <div className={`flex items-center justify-between gap-3 flex-wrap max-md:flex-col max-md:items-stretch ${collapsed ? "mb-0" : "mb-4"}`}>
+        <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff] max-md:text-[1.35rem]">{sectionTitle}</h2>
+        <div className="flex items-center gap-[0.6rem] flex-wrap max-md:w-full">
           <span className="text-[0.72rem] font-semibold text-[#beafd7] bg-[rgba(167,79,255,0.12)] border border-[rgba(217,180,255,0.2)] rounded-full px-[0.55rem] py-[0.15rem] flex-shrink-0">
             {totalInscritos ?? standings.length} inscritos
           </span>
-          {standings.length > 5 && (
-            <div className="relative flex items-center">
+          <CollapseToggle
+            collapsed={collapsed}
+            onToggle={() => setCollapsed((value) => !value)}
+            label={collapseLabel}
+          />
+          {!collapsed && standings.length > 5 && (
+            <div className="relative flex items-center max-md:flex-1">
               <input
-                className="pl-3 pr-[1.8rem] py-[0.28rem] border border-[rgba(199,149,255,0.3)] rounded-full bg-[rgba(167,79,255,0.08)] text-[#f5edff] text-[0.78rem] font-['inherit'] outline-none w-40 transition-[border-color,background,width] duration-[250ms] placeholder:text-[#beafd7] focus:border-[rgba(199,149,255,0.55)] focus:bg-[rgba(167,79,255,0.13)] focus:w-52"
+                className="pl-3 pr-[1.8rem] py-[0.28rem] border border-[rgba(199,149,255,0.3)] rounded-full bg-[rgba(167,79,255,0.08)] text-[#f5edff] text-[0.78rem] font-['inherit'] outline-none w-40 max-md:w-full transition-[border-color,background,width] duration-[250ms] placeholder:text-[#beafd7] focus:border-[rgba(199,149,255,0.55)] focus:bg-[rgba(167,79,255,0.13)] focus:w-52 max-md:focus:w-full"
                 type="text"
                 placeholder="Buscar jogador..."
                 value={search}
@@ -205,7 +251,7 @@ export function StandingsTable({
               )}
             </div>
           )}
-          {isOwner && isFinished && (
+          {!collapsed && isOwner && isFinished && (
             <Tooltip content="Gerar imagem do Top 8" focusable={false}>
               <button
                 className="inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.32rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.76rem] font-bold font-['inherit'] cursor-pointer whitespace-nowrap transition-[background,border-color,color] duration-[180ms] tracking-[0.02em] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] hover:text-[#ffe168]"
@@ -219,13 +265,13 @@ export function StandingsTable({
         </div>
       </div>
 
-      {filtered.length === 0 && (
+      {!collapsed && filtered.length === 0 && (
         <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador encontrado para "{search}".</p>
       )}
 
-      {filtered.length > 0 && (
+      {!collapsed && filtered.length > 0 && (
         <>
-          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] overflow-auto max-h-[62vh] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] hidden max-[480px]:hidden [&]:block max-[480px]:[&]:hidden">
+          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] overflow-auto max-h-[62vh] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] max-md:hidden">
             <table className="w-full border-collapse text-[0.88rem]">
               <thead className="bg-[#21133a] sticky top-0 z-10 shadow-[0_1px_0_rgba(217,180,255,0.15)]">
                 <tr>
@@ -338,7 +384,7 @@ export function StandingsTable({
             </table>
           </div>
 
-          <div className="hidden max-[480px]:grid gap-[0.55rem]">
+          <div className="hidden max-md:grid gap-[0.55rem]">
             {filtered.map((player, index) => {
               const posicao = player.posicao ?? index + 1;
               const pontos = player.pontosMesa ?? player.pontos ?? 0;
@@ -360,27 +406,29 @@ export function StandingsTable({
               return (
                 <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
                   <article className={`border rounded-xl p-[0.7rem] ${mobileBorderClass}`}>
-                    <div className="flex items-center justify-between gap-2 mb-[0.45rem]">
-                      {isTop3 && !isRegistrationOpen ? (
-                        <span className={`inline-flex items-center justify-center w-[1.6rem] h-[1.6rem] rounded-full text-[0.72rem] font-extrabold leading-none flex-shrink-0 ${RANK_BADGE[posicao]}`}>
-                          {posicao}
-                        </span>
-                      ) : (
-                        <span className={`font-bold flex-shrink-0 ${mobileRankColor}`}>#{posicao}</span>
-                      )}
-                      <span className="inline-flex items-center gap-[0.35rem] font-semibold text-white break-words flex-wrap">
-                        {player.time?.imagemUrl && (
-                          <img
-                            src={player.time.imagemUrl}
-                            alt={player.time.nome}
-                            className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
-                          />
+                    <div className="flex items-start justify-between gap-2 mb-[0.45rem]">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {isTop3 && !isRegistrationOpen ? (
+                          <span className={`inline-flex items-center justify-center w-[1.6rem] h-[1.6rem] rounded-full text-[0.72rem] font-extrabold leading-none flex-shrink-0 ${RANK_BADGE[posicao]}`}>
+                            {posicao}
+                          </span>
+                        ) : (
+                          <span className={`font-bold flex-shrink-0 ${mobileRankColor}`}>#{posicao}</span>
                         )}
-                        <span>{getPlayerName(player)}</span>
-                        {expressiveBadge(player)}
-                      </span>
+                        <span className="inline-flex items-center gap-[0.35rem] font-semibold text-white min-w-0 break-words">
+                          {player.time?.imagemUrl && (
+                            <img
+                              src={player.time.imagemUrl}
+                              alt={player.time.nome}
+                              className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
+                            />
+                          )}
+                          <span className="break-words">{getPlayerName(player)}</span>
+                          {expressiveBadge(player)}
+                        </span>
+                      </div>
                       {!isRegistrationOpen && (
-                        <span className={`font-bold text-[0.82rem] ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>
+                        <span className={`font-bold text-[0.82rem] flex-shrink-0 ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>
                           {pontos} pts
                         </span>
                       )}

@@ -65,7 +65,7 @@ export function RoundTimer({ torneioId, rodadaAtual, status, rodadaIniciadaEm })
 
   const displaySizeClass = isOver
     ? "text-[1.1rem] tracking-[0.02em]"
-    : "text-[2rem] tracking-[0.05em]";
+    : "text-[2rem] max-md:text-[1.6rem] tracking-[0.05em]";
 
   const fillGradientClass = isUrgent
     ? "bg-[linear-gradient(90deg,#b91c1c,#f87171)]"
@@ -75,8 +75,8 @@ export function RoundTimer({ torneioId, rodadaAtual, status, rodadaIniciadaEm })
 
   return (
     <div className={`border rounded-[0.9rem] bg-[rgba(14,9,28,0.85)] mt-5 mb-5 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>
-      <div className="flex items-center justify-between px-4 py-[0.65rem] gap-4">
-        <div className="flex items-center gap-[0.45rem] text-[#beafd7] text-[0.85rem] font-semibold">
+      <div className="flex items-center justify-between px-4 py-[0.65rem] gap-4 max-md:flex-col max-md:gap-2 max-md:text-center">
+        <div className="flex items-center gap-[0.45rem] text-[#beafd7] text-[0.85rem] font-semibold max-md:justify-center">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />

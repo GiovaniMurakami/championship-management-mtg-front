@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
+import { SkeletonCard } from "../components/ui/Skeleton";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 import { logError } from "../utils/logger";
 
@@ -87,12 +88,9 @@ export function LigaPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-5">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="rounded-[1.1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] h-[180px] animate-pulse"
-            />
+            <SkeletonCard key={i} />
           ))}
         </div>
       ) : ligas.length === 0 ? (
@@ -110,7 +108,7 @@ export function LigaPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5 max-[768px]:grid-cols-1">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-5 max-[768px]:grid-cols-1">
           {ligas.map((liga) => (
             <div
               key={liga.id}
@@ -197,25 +195,29 @@ export function LigaPage() {
 
       {/* Paginação */}
       {!loading && totalPaginas > 1 && (
-        <div className="flex items-center justify-center gap-3 mt-8">
+        <nav className="flex items-center justify-center gap-3 mt-8" aria-label="Paginação de ligas">
           <button
+            type="button"
             onClick={() => setPagina((p) => Math.max(1, p - 1))}
             disabled={pagina === 1}
+            aria-label="Página anterior"
             className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
           >
             ←
           </button>
-          <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center">
+          <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
             {pagina} / {totalPaginas}
           </span>
           <button
+            type="button"
             onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
             disabled={pagina === totalPaginas}
+            aria-label="Próxima página"
             className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
           >
             →
           </button>
-        </div>
+        </nav>
       )}
 
       {confirmDeleteId && (

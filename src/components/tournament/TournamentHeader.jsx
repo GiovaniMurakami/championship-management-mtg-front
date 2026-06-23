@@ -28,10 +28,10 @@ const DEFAULT_STATUS = {
 
 function StatChip({ icon, label, value, accent }) {
   return (
-    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.14)]">
-      <span style={accent ? { color: accent } : undefined} className={accent ? undefined : "text-[#8b7aab]"}>{icon}</span>
-      <span className="text-[0.78rem] text-[#8b7aab] font-medium">{label}</span>
-      <span className="text-[0.85rem] font-semibold text-[#f5edff]">{value}</span>
+    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.14)] min-w-0 max-md:basis-[calc(50%-0.25rem)] max-md:flex-1">
+      <span style={accent ? { color: accent } : undefined} className={`flex-shrink-0 ${accent ? undefined : "text-[#8b7aab]"}`}>{icon}</span>
+      <span className="text-[0.78rem] text-[#8b7aab] font-medium whitespace-nowrap">{label}</span>
+      <span className="text-[0.85rem] font-semibold text-[#f5edff] break-words min-w-0">{value}</span>
     </div>
   );
 }
@@ -114,14 +114,14 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
       )}
 
       {torneio && (
-        <div className="flex flex-wrap gap-2 max-[480px]:gap-[0.4rem]">
+        <div className="flex flex-wrap gap-2 max-md:gap-[0.4rem]">
           {torneio.formato && <StatChip icon={<IconFormat />} label="Formato" value={getTournamentFormatLabel(torneio.formato)} accent="#c795ff" />}
           <StatChip icon={<IconRound />} label="Rodada" value={torneio.totalRodadas ? `${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas}` : `${torneio.rodadaAtual ?? 0} / Sem limite`} accent="#2ccfb4" />
           {torneio.totalInscritos != null && <StatChip icon={<IconPlayers />} label="Inscritos" value={torneio.maxJogadores != null ? `${torneio.totalInscritos} / ${torneio.maxJogadores}` : torneio.totalCheckin != null ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)` : String(torneio.totalInscritos)} accent="#2ccfb4" />}
           {torneio.visualizacoes != null && <StatChip icon={<IconViews />} label="Visualizacoes" value={String(torneio.visualizacoes)} accent="#f0b429" />}
           {torneio.horario && <StatChip icon={<IconDate />} label="Data" value={formatDate(torneio.horario)} />}
           {torneio.linkLive && (
-            <a href={torneio.linkLive} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#f87171] text-[0.82rem] font-semibold no-underline transition-all duration-200 hover:bg-[rgba(239,68,68,0.18)] hover:text-[#fca5a5]">
+            <a href={torneio.linkLive} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#f87171] text-[0.82rem] font-semibold no-underline transition-all duration-200 hover:bg-[rgba(239,68,68,0.18)] hover:text-[#fca5a5] max-md:w-full max-md:justify-center">
               Assistir ao vivo
             </a>
           )}

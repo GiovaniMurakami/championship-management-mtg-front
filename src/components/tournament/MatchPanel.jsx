@@ -18,14 +18,14 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
 
     if (checkinPending) {
         return (
-            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite]">
+            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite] max-md:p-4">
                 <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
                 <div className="flex flex-col items-center gap-4 py-2">
                     <p className="text-[#beafd7] text-[0.9rem] m-0 text-center">
                         Confirme sua presença para visualizar a partida desta rodada.
                     </p>
                     <button
-                        className="inline-flex items-center justify-center px-6 py-[0.65rem] border rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                        className="inline-flex items-center justify-center w-full max-w-[320px] px-6 py-[0.65rem] border rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
                         disabled={actionLoading}
                         onClick={onCheckin}
                     >
@@ -38,7 +38,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
 
     if (!myMatch) {
         return (
-            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite]">
+            <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite] max-md:p-4">
                 <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
                 <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma partida na rodada atual.</p>
             </section>
@@ -95,7 +95,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
     const mesaNum = myMatch?.mesa ?? myMatch?.mesaNumero ?? myMatch?.numeroMesa;
 
     return (
-        <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite]">
+        <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite] max-md:p-4">
             <div className="flex items-center gap-3 flex-wrap m-0 mb-5">
                 <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Partida Atual</h2>
                 {mesaNum != null && (
@@ -203,12 +203,13 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                             <h3 className="m-0 mb-4 text-[0.95rem] font-semibold text-[#beafd7]">Registrar Resultado</h3>
                             <div className="flex items-center justify-center gap-4 mb-4 max-[900px]:flex-col max-[900px]:gap-3">
                                 <div className="flex flex-col items-center gap-2">
-                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{leftSide.name}</label>
+                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] max-md:max-w-[min(100%,12rem)] overflow-hidden text-ellipsis whitespace-nowrap">{leftSide.name}</label>
                                     <div className="flex items-center gap-[0.25rem]">
                                         <button
                                             type="button"
                                             className="w-9 h-9 border border-[rgba(217,180,255,0.2)] rounded-lg bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.2rem] cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.5)]"
                                             onClick={() => setWinsPlayer1(Math.max(0, winsPlayer1 - 1))}
+                                            aria-label={`Diminuir vitórias de ${leftSide.name}`}
                                         >
                                             −
                                         </button>
@@ -217,6 +218,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                             type="button"
                                             className="w-9 h-9 border border-[rgba(217,180,255,0.2)] rounded-lg bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.2rem] cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.5)]"
                                             onClick={() => setWinsPlayer1(Math.min(2, winsPlayer1 + 1))}
+                                            aria-label={`Aumentar vitórias de ${leftSide.name}`}
                                         >
                                             +
                                         </button>
@@ -226,12 +228,13 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                 <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] text-[#beafd7] mt-5 max-[900px]:mt-0">×</span>
 
                                 <div className="flex flex-col items-center gap-2">
-                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{rightName}</label>
+                                    <label className="text-[0.78rem] font-semibold text-[#beafd7] max-w-[100px] max-md:max-w-[min(100%,12rem)] overflow-hidden text-ellipsis whitespace-nowrap">{rightName}</label>
                                     <div className="flex items-center gap-[0.25rem]">
                                         <button
                                             type="button"
                                             className="w-9 h-9 border border-[rgba(217,180,255,0.2)] rounded-lg bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.2rem] cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.5)]"
                                             onClick={() => setWinsPlayer2(Math.max(0, winsPlayer2 - 1))}
+                                            aria-label={`Diminuir vitórias de ${rightName}`}
                                         >
                                             −
                                         </button>
@@ -240,6 +243,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                             type="button"
                                             className="w-9 h-9 border border-[rgba(217,180,255,0.2)] rounded-lg bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.2rem] cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.5)]"
                                             onClick={() => setWinsPlayer2(Math.min(2, winsPlayer2 + 1))}
+                                            aria-label={`Aumentar vitórias de ${rightName}`}
                                         >
                                             +
                                         </button>

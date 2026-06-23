@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { listarDecks, deletarDeck } from "../services/backendApi";
@@ -6,6 +6,8 @@ import { buscarCartasPorNome } from "../services/scryfallApi";
 import { SkeletonCard } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
+import { EmptyState } from "../components/ui/EmptyState";
+import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
@@ -70,27 +72,29 @@ export function MyDecksPage() {
     [usuario?.id]
   );
 
-  const fetchDecks = useCallback(async () => {
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  const loadDecks = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };
       if (somenteMyDecks && usuario?.id) params.usuarioId = usuario.id;
       if (busca.trim()) params.nome = busca.trim();
-      const data = await listarDecks(token, params);
-      const list = data.decks ?? (Array.isArray(data) ? data : []);
-      setDecks(list);
-      setTotal(data.total ?? list.length);
+      const data = await listarDecks(tokenRef.current, params);
+      setDecks(data.decks);
+      setTotal(data.total);
     } catch (err) {
       setError(err.message || "Erro ao carregar decks.");
     } finally {
       setLoading(false);
     }
-  }, [token, pagina, somenteMyDecks, usuario?.id, busca]);
+  }, [pagina, somenteMyDecks, usuario?.id, busca]);
 
-  useEffect(() => { fetchDecks(); }, [fetchDecks]);
-
-  useEffect(() => { setPagina(1); }, [somenteMyDecks, busca]);
+  useEffect(() => {
+    loadDecks();
+  }, [loadDecks]);
 
   // Carrega imagem da primeira carta de cada deck
   useEffect(() => {
@@ -114,6 +118,7 @@ export function MyDecksPage() {
 
   const handleBusca = (e) => {
     e.preventDefault();
+    setPagina(1);
     setBusca(buscaInput);
   };
 
@@ -146,7 +151,7 @@ export function MyDecksPage() {
     try {
       await deletarDeck(deleteModal.deck.id, token);
       onSuccess?.();
-      await fetchDecks();
+      await loadDecks();
     } catch (err) {
       setDeleteError(err.message || "Erro ao excluir o deck. Tente novamente.");
     } finally {
@@ -237,7 +242,7 @@ export function MyDecksPage() {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setSomenteMyDecks(false)}
+            onClick={() => { setPagina(1); setSomenteMyDecks(false); }}
             className={`px-4 py-[0.45rem] rounded-lg text-[0.82rem] font-semibold border transition-all duration-200 ${
               !somenteMyDecks
                 ? "bg-[rgba(79,70,229,0.3)] border-[rgba(79,70,229,0.7)] text-[#d9d6ff]"
@@ -248,7 +253,7 @@ export function MyDecksPage() {
           </button>
           <button
             type="button"
-            onClick={() => setSomenteMyDecks(true)}
+            onClick={() => { setPagina(1); setSomenteMyDecks(true); }}
             className={`px-4 py-[0.45rem] rounded-lg text-[0.82rem] font-semibold border transition-all duration-200 ${
               somenteMyDecks
                 ? "bg-[rgba(79,70,229,0.3)] border-[rgba(79,70,229,0.7)] text-[#d9d6ff]"
@@ -266,27 +271,32 @@ export function MyDecksPage() {
           {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
         </div>
       ) : error ? (
-        <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(239,68,68,0.1)] text-[#fca5a5] text-[0.9rem]">
+        <InlineAlert
+          type="error"
+          className="mt-6"
+          action={(
+            <button
+              type="button"
+              onClick={() => loadDecks()}
+              className="text-[0.82rem] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-inherit"
+            >
+              Tentar novamente
+            </button>
+          )}
+        >
           {error}
-        </p>
+        </InlineAlert>
       ) : decksPagina.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-16 px-8 text-center text-text-soft">
-          <div className="w-[72px] h-[72px] rounded-full border border-[rgba(217,180,255,0.2)] bg-[rgba(167,79,255,0.08)] flex items-center justify-center mb-2">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-              <line x1="8" y1="21" x2="16" y2="21" />
-              <line x1="12" y1="17" x2="12" y2="21" />
-            </svg>
-          </div>
-          <h3 className="m-0 text-[1.1rem] text-text-main">
-            {temFiltrosAtivos ? "Nenhum deck encontrado" : "Nenhum deck ainda"}
-          </h3>
-          <p className="m-0 text-[0.9rem]">
-            {temFiltrosAtivos
+        <EmptyState
+          className="mt-6"
+          icon="🃏"
+          title={temFiltrosAtivos ? "Nenhum deck encontrado" : "Nenhum deck ainda"}
+          description={
+            temFiltrosAtivos
               ? "Tente ajustar os filtros de busca."
-              : "Crie seu primeiro deck para começar a jogar."}
-          </p>
-          {!temFiltrosAtivos && (
+              : "Crie seu primeiro deck para começar a jogar."
+          }
+          action={!temFiltrosAtivos && (
             <button
               className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
               type="button"
@@ -295,7 +305,7 @@ export function MyDecksPage() {
               Criar primeiro deck
             </button>
           )}
-        </div>
+        />
       ) : (
         <>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-6 max-sm:grid-cols-1">
@@ -450,25 +460,29 @@ export function MyDecksPage() {
 
           {/* Paginação */}
           {totalPaginas > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-8">
+            <nav className="flex items-center justify-center gap-3 mt-8" aria-label="Paginação de decks">
               <button
+                type="button"
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
+                aria-label="Página anterior"
                 className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 ←
               </button>
-              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center">
+              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
                 {pagina} / {totalPaginas}
               </span>
               <button
+                type="button"
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
+                aria-label="Próxima página"
                 className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 →
               </button>
-            </div>
+            </nav>
           )}
         </>
       )}

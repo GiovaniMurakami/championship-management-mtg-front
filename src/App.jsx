@@ -191,7 +191,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col text-text-main">
+    <div className="min-h-screen flex flex-col text-text-main overflow-x-clip">
       <RateLimitBridge />
       <ExternalRouteSync />
       <WordpressRouteBridge />
@@ -204,7 +204,7 @@ function AppContent() {
         onOpenEditProfile={openEditProfileModal}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 min-w-0 overflow-x-clip">
         <ErrorBoundary>
           <AppRoutes />
         </ErrorBoundary>

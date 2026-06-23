@@ -1,5 +1,6 @@
 import axios from "axios";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
+import { extractValidationMessages, formatApiErrorMessage } from "../utils/apiError";
 
 // Resolver URL base automaticamente
 const getBaseURL = () => {
@@ -21,6 +22,37 @@ const httpClient = axios.create({
   baseURL: getBaseURL(),
   timeout: 10000,
 });
+
+/** Deduplica GETs idênticos em voo (ex.: React StrictMode em dev). */
+const inflightGetRequests = new Map();
+
+function buildGetDedupeKey(url, config = {}) {
+  const params = config.params;
+  let paramsKey = "";
+  if (params instanceof URLSearchParams) {
+    paramsKey = params.toString();
+  } else if (params && typeof params === "object") {
+    paramsKey = Object.keys(params)
+      .sort()
+      .map((key) => `${key}=${params[key]}`)
+      .join("&");
+  }
+  const auth = config.headers?.Authorization || "";
+  return `GET|${url}|${paramsKey}|${auth}`;
+}
+
+const rawGet = httpClient.get.bind(httpClient);
+httpClient.get = (url, config = {}) => {
+  const key = buildGetDedupeKey(url, config);
+  const existing = inflightGetRequests.get(key);
+  if (existing) return existing;
+
+  const promise = rawGet(url, config).finally(() => {
+    inflightGetRequests.delete(key);
+  });
+  inflightGetRequests.set(key, promise);
+  return promise;
+};
 
 let isRefreshing = false;
 let pendingRequests = [];
@@ -122,7 +154,19 @@ httpClient.interceptors.request.use(
 );
 
 httpClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    const requestId = response.headers?.["x-request-id"];
+    if (
+      requestId
+      && import.meta.env.DEV
+      && response.data
+      && typeof response.data === "object"
+      && !Array.isArray(response.data)
+    ) {
+      response.data._requestId = requestId;
+    }
+    return response.data;
+  },
   async (error) => {
     const originalRequest = error.config;
     const is401 = error.response?.status === 401;
@@ -168,21 +212,23 @@ httpClient.interceptors.response.use(
       throw new Error(msg429);
     }
 
-    // Handle Zod structured validation errors (errors[] array)
-    const zodErrors = error.response?.data?.errors || error.response?.data?.erros;
-    if (Array.isArray(zodErrors) && zodErrors.length > 0) {
-      const messages = zodErrors.map((e) => e.message || e.msg || JSON.stringify(e)).join("; ");
-      throw new Error(messages);
+    // Handle validation errors (erros[] / errors[] — strings or Zod objects)
+    const validationMessages = extractValidationMessages(error.response?.data);
+    if (validationMessages.length > 0) {
+      const normalizedError = new Error(validationMessages.join("; "));
+      normalizedError.status = error.response?.status;
+      normalizedError.validationErrors = validationMessages;
+      normalizedError.responseData = error.response?.data;
+      normalizedError.requestId = error.response?.headers?.["x-request-id"];
+      normalizedError.originalError = error;
+      throw normalizedError;
     }
 
-    const message =
-      error.response?.data?.mensagem ||
-      error.response?.data?.message ||
-      error.message ||
-      "Falha na requisição";
+    const message = formatApiErrorMessage(error.response?.data, error.message || "Falha na requisição");
     const normalizedError = new Error(message);
     normalizedError.status = error.response?.status;
     normalizedError.responseData = error.response?.data;
+    normalizedError.requestId = error.response?.headers?.["x-request-id"];
     normalizedError.originalError = error;
     throw normalizedError;
   },
