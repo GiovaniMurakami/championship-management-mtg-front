@@ -1,7 +1,9 @@
 import { Fragment, useState } from "react";
+import { Link } from "react-router-dom";
 import { Top8StoryModal } from "./Top8StoryModal";
 import { DeckViewButton, RANK_BADGE } from "./DeckDrawer";
 import { Tooltip } from "../ui/Tooltip";
+import { RankBadge } from "../rank";
 
 function CollapseToggle({ collapsed, onToggle, label = "standings" }) {
   return (
@@ -65,6 +67,11 @@ export function StandingsTable({
     player?.jogadorNome ||
     "Jogador";
 
+  const getPlayerId = (player) =>
+    player?.usuario?.id || player?.usuarioId || player?.id;
+
+  const getPlayerRank = (player) => player?.usuario?.rank || player?.rank;
+
   const getDeckStatus = (player) =>
     player?.deckId || player?.deck?.id || player?.deckConfirmado;
 
@@ -86,6 +93,31 @@ export function StandingsTable({
           {total}
         </span>
       </Tooltip>
+    );
+  };
+
+  const playerNameCell = (player) => {
+    const name = getPlayerName(player);
+    const id = getPlayerId(player);
+    const rank = getPlayerRank(player);
+
+    const nameEl = id ? (
+      <Link
+        to={`/jogadores/${id}`}
+        className="text-inherit no-underline hover:text-[#c795ff] transition-colors"
+      >
+        {name}
+      </Link>
+    ) : (
+      <span>{name}</span>
+    );
+
+    return (
+      <span className="inline-flex items-center gap-[0.35rem] min-w-0">
+        {nameEl}
+        <RankBadge rank={rank} size="sm" showLabel={false} />
+        {expressiveBadge(player)}
+      </span>
     );
   };
 
@@ -193,8 +225,7 @@ export function StandingsTable({
                           className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
                         />
                       )}
-                      <span className="truncate">{getPlayerName(player)}</span>
-                      {expressiveBadge(player)}
+                      <span className="truncate flex items-center gap-1 min-w-0">{playerNameCell(player)}</span>
                     </span>
                     <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-[#beafd7]"}`}>
                       {isRegistrationOpen ? "-" : pts}
@@ -320,8 +351,7 @@ export function StandingsTable({
                                 className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
                               />
                             )}
-                            <span>{getPlayerName(player)}</span>
-                            {expressiveBadge(player)}
+                            {playerNameCell(player)}
                           </span>
                         </td>
                         {!isRegistrationOpen && (
@@ -423,8 +453,7 @@ export function StandingsTable({
                               className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
                             />
                           )}
-                          <span className="break-words">{getPlayerName(player)}</span>
-                          {expressiveBadge(player)}
+                          {playerNameCell(player)}
                         </span>
                       </div>
                       {!isRegistrationOpen && (

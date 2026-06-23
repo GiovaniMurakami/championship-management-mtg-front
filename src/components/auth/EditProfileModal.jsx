@@ -1,5 +1,6 @@
 import { BaseModal } from "../ui/BaseModal";
 import { MODAL_INPUT_CLASS } from "../../styles/uiClasses";
+import { RankBadge, RankProgressBar } from "../rank";
 
 export function EditProfileModal({
   isOpen,
@@ -9,10 +10,19 @@ export function EditProfileModal({
   form,
   onFormChange,
   onSubmit,
+  usuario,
 }) {
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
-        <h2 className="mb-6 text-center m-0">Editar Perfil</h2>
+        <h2 className="mb-4 text-center m-0">Editar Perfil</h2>
+
+        {usuario && (
+          <div className="mb-5 flex items-center justify-center gap-2">
+            <RankBadge rank={usuario.rank} size="md" />
+          </div>
+        )}
+
+        {usuario && <RankProgressBar usuario={usuario} className="mb-5" />}
 
         <form className="grid gap-[0.85rem]" onSubmit={onSubmit}>
           <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">

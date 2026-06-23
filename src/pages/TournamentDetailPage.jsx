@@ -16,6 +16,7 @@ import { SkeletonTournamentDetail } from "../components";
 import { PageShell } from "../components/ui/PageShell";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { RankPromotionModal } from "../components/rank";
 
 export function TournamentDetailPage() {
   const navigate = useNavigate();
@@ -66,6 +67,8 @@ export function TournamentDetailPage() {
     dismissCorteInfo,
     usuario,
     token,
+    promotionRank,
+    dismissPromotion,
   } = useTournamentDetail();
 
   const isFinished = torneio?.status === "finalizado";
@@ -411,6 +414,12 @@ export function TournamentDetailPage() {
             <strong className="text-brand">{torneio?.nome}</strong>. Esta ação não pode ser desfeita.
           </>
         }
+      />
+
+      <RankPromotionModal
+        isOpen={Boolean(promotionRank)}
+        onClose={dismissPromotion}
+        rank={promotionRank}
       />
     </PageShell>
   );

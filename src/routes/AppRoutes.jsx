@@ -25,6 +25,8 @@ const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m =>
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
 const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
 const TimeCreatePage      = lazy(() => import("../pages/TimeCreatePage").then(m => ({ default: m.TimeCreatePage })));
+const RankingPage         = lazy(() => import("../pages/RankingPage").then(m => ({ default: m.RankingPage })));
+const PlayerProfilePage   = lazy(() => import("../pages/PlayerProfilePage").then(m => ({ default: m.PlayerProfilePage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -105,6 +107,17 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin>
             <UuidParamGuard param="id">
               <LigaCreatePage editMode={true} />
+            </UuidParamGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/ranking" element={
+          <ProtectedRoute><RankingPage /></ProtectedRoute>
+        } />
+        <Route path="/jogadores/:usuarioId" element={
+          <ProtectedRoute>
+            <UuidParamGuard param="usuarioId">
+              <PlayerProfilePage />
             </UuidParamGuard>
           </ProtectedRoute>
         } />

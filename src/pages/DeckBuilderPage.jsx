@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { PageShell } from "../components/ui/PageShell";
@@ -9,6 +9,7 @@ import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarDeck } from "../services/backendApi";
 import { deckHasCardLists, hydrateDeckCards } from "../utils/hydrateDeckCards";
+import { RankBadge } from "../components/rank";
 import { logError } from "../utils/logger";
 
 export function DeckBuilderPage({ isEditMode = false }) {
@@ -96,8 +97,19 @@ export function DeckBuilderPage({ isEditMode = false }) {
             {originalDeck.visualizacoes != null ? `${originalDeck.visualizacoes} visualizacoes` : ""}
           </div>
           {originalDeck.usuario?.nome && (
-            <div className="text-[0.9rem] text-text-soft">
-              por <span className="text-text-main">{originalDeck.usuario.nome}</span>
+            <div className="text-[0.9rem] text-text-soft flex items-center gap-2 flex-wrap">
+              por{" "}
+              {originalDeck.usuario?.id ? (
+                <Link
+                  to={`/jogadores/${originalDeck.usuario.id}`}
+                  className="inline-flex items-center gap-1.5 text-text-main no-underline hover:text-[#c795ff] transition-colors"
+                >
+                  {originalDeck.usuario.nome}
+                  <RankBadge rank={originalDeck.usuario.rank} size="sm" showLabel={false} />
+                </Link>
+              ) : (
+                <span className="text-text-main">{originalDeck.usuario.nome}</span>
+              )}
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ import { clampLimite, clampOffset } from "../utils/pagination";
 import {
   normalizeListarDecksResponse,
   normalizeListarTorneiosResponse,
+  normalizeRankingGlobalResponse,
 } from "./apiNormalizers";
 
 const optionalAuthConfig = (token) =>
@@ -91,6 +92,21 @@ export const atualizarUsuario = (payload, token) =>
   httpClient.put("/usuario/atualizar", payload, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+export const listarRankingGlobal = async (token, params = {}) => {
+  const queryParams = {};
+  if (params.nome) queryParams.nome = params.nome;
+  if (params.limite != null) queryParams.limite = clampLimite(params.limite);
+  if (params.offset != null) queryParams.offset = clampOffset(params.offset);
+  const data = await httpClient.get("/usuario/ranking", {
+    ...optionalAuthConfig(token),
+    params: queryParams,
+  });
+  return normalizeRankingGlobalResponse(data);
+};
+
+export const buscarRankUsuario = (usuarioId, token) =>
+  httpClient.get(`/usuario/rank/${usuarioId}`, optionalAuthConfig(token));
 
 // Atualizar Deck
 export const atualizarDeck = (deckId, payload, token) =>

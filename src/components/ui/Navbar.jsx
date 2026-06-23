@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 import { Tooltip } from "./Tooltip";
+import { RankBadge } from "../rank";
 
 function NavAvatar({ nome }) {
   const initial = (nome?.[0] ?? "?").toUpperCase();
@@ -62,6 +63,14 @@ const IconTime = () => (
     <circle cx="9" cy="7" r="4" />
     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const IconRanking = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M6 20V10" />
+    <path d="M12 20V4" />
+    <path d="M18 20v-6" />
   </svg>
 );
 
@@ -211,6 +220,12 @@ export function Navbar({
           </button>
         )}
 
+        {isAuthenticated && (
+          <NavLink to="/ranking" className={desktopLinkClass} onClick={close}>
+            Ranking
+          </NavLink>
+        )}
+
         {isAuthenticated && isAdmin && (
           <NavLink to="/dashboard" className={desktopLinkClass} onClick={close}>
             Dashboard
@@ -230,6 +245,7 @@ export function Navbar({
                 aria-label="Editar perfil"
               >
                 <NavAvatar nome={usuario.nome} />
+                <RankBadge rank={usuario.rank} size="sm" showLabel={false} />
                 <span className="text-[0.84rem] font-semibold text-[#f5edff]">{usuario.nome}</span>
               </button>
             </Tooltip>
@@ -360,6 +376,13 @@ export function Navbar({
                 </button>
               )}
 
+              {isAuthenticated && (
+                <NavLink to="/ranking" className={mobileLinkClass} onClick={close}>
+                  <IconRanking />
+                  <span>Ranking</span>
+                </NavLink>
+              )}
+
               {isAuthenticated && isAdmin && (
                 <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
                   <IconDashboard />
@@ -380,7 +403,10 @@ export function Navbar({
                   >
                     <NavAvatar nome={usuario.nome} />
                     <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
-                      <span className="text-[0.9rem] font-semibold text-[#f5edff] whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
+                      <span className="text-[0.9rem] font-semibold text-[#f5edff] whitespace-nowrap overflow-hidden text-ellipsis flex items-center gap-2">
+                        {usuario.nome}
+                        <RankBadge rank={usuario.rank} size="sm" showLabel={false} />
+                      </span>
                       <span className="text-[0.74rem] text-[#beafd7]">Editar perfil</span>
                     </div>
                     <IconEdit />

@@ -23,6 +23,7 @@ import {
     unsubscribeFromTournament,
 } from "../services/ablyService";
 import { useAuth } from "./useAuth";
+import { applyRankFromMatch } from "../utils/rank";
 import { useMyDecks } from "./useMyDecks";
 import { useActionGuard } from "./useActionGuard";
 import { useToast } from "../context/ToastContext";
@@ -38,7 +39,7 @@ import {
 } from "./useTournamentQueries";
 
 export function useTournamentDetail() {
-    const { token, usuario, isAdmin } = useAuth();
+    const { token, usuario, isAdmin, patchUsuarioRank } = useAuth();
     const { addToast } = useToast();
     const { id: torneioId } = useParams();
 
@@ -59,7 +60,9 @@ export function useTournamentDetail() {
     const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
     const [corteInfo, setCorteInfo] = useState(null); // { corteTop, jogadoresClassificados }
     const [checkinRodadaAberto, setCheckinRodadaAberto] = useState(false);
+    const [promotionRank, setPromotionRank] = useState(null);
     const toastTimeoutRef = useRef(null);
+    const lastReportedPartidaRef = useRef(null);
 
     const { decks } = useMyDecks(token, usuario?.id);
     const {
@@ -78,6 +81,16 @@ export function useTournamentDetail() {
         setRealtimeToast({ msg, type });
         toastTimeoutRef.current = setTimeout(() => setRealtimeToast(null), 5000);
     }, [addToast]);
+
+    const handleRankFeedback = useCallback((rankPayload) => {
+        applyRankFromMatch(rankPayload, usuario?.id, {
+            patchUsuarioRank,
+            addToast,
+            onPromotion: setPromotionRank,
+        });
+    }, [usuario?.id, patchUsuarioRank, addToast]);
+
+    const dismissPromotion = useCallback(() => setPromotionRank(null), []);
 
     const dismissRealtimeToast = useCallback(() => {
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -265,10 +278,15 @@ export function useTournamentDetail() {
                 }
             },
             onResultadoRegistrado: (msg) => {
-                const partidaAtualizada = msg?.data?.partida || msg?.data;
+                const data = msg?.data || {};
+                const partidaAtualizada = data.partida || data;
                 const updated = mergePartidaState(partidaAtualizada);
                 if (!updated) loadPartidas();
                 loadStandings();
+                const partidaId = partidaAtualizada?.id || data.partidaId;
+                if (data.rank && partidaId !== lastReportedPartidaRef.current) {
+                    handleRankFeedback(data.rank);
+                }
             },
             onResultadoContestado: (msg) => {
                 const partidaContestada = msg?.data?.partida || msg?.data;
@@ -654,6 +672,7 @@ export function useTournamentDetail() {
         if (!partidaId) return;
         setActionLoading(true);
         setError("");
+        lastReportedPartidaRef.current = partidaId;
         try {
             const data = await registrarResultado(partidaId, resultado, token);
             const updated = mergePartidaState({
@@ -662,7 +681,11 @@ export function useTournamentDetail() {
                 status: "finalizada",
                 ...resultado,
             });
-            setSuccessMsg("Resultado registrado!");
+            if (data?.rank) {
+                handleRankFeedback(data.rank);
+            } else {
+                setSuccessMsg("Resultado registrado!");
+            }
             await loadStandings();
             if (!updated) {
                 await loadPartidas();
@@ -673,6 +696,7 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+            setTimeout(() => { lastReportedPartidaRef.current = null; }, 3000);
         }
     };
 
@@ -729,6 +753,7 @@ export function useTournamentDetail() {
         if (!partidaId) return;
         setActionLoading(true);
         setError("");
+        lastReportedPartidaRef.current = partidaId;
         try {
             const data = await ajustarResultado(partidaId, resultado, token);
             const updated = mergePartidaState({
@@ -738,7 +763,11 @@ export function useTournamentDetail() {
                 contestado: false,
                 ...resultado,
             });
-            setSuccessMsg("Resultado ajustado com sucesso!");
+            if (data?.rank) {
+                handleRankFeedback(data.rank);
+            } else {
+                setSuccessMsg("Resultado ajustado com sucesso!");
+            }
             await loadStandings();
             if (!updated) {
                 await loadPartidas();
@@ -749,6 +778,7 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+            setTimeout(() => { lastReportedPartidaRef.current = null; }, 3000);
         }
     };
 
@@ -1022,6 +1052,8 @@ export function useTournamentDetail() {
         usuario,
         isAdmin,
         token,
+        promotionRank,
+        dismissPromotion,
     };
 }
 

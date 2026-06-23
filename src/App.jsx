@@ -234,6 +234,7 @@ function AppContent() {
         form={editProfileForm}
         onFormChange={setEditProfileForm}
         onSubmit={handleUpdateProfile}
+        usuario={usuario}
       />
 
       <Footer />

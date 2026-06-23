@@ -187,6 +187,11 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const patchUsuarioRank = (rankUpdates) => {
+    if (!usuario || !token) return;
+    saveAuth({ token, usuario: { ...usuario, ...rankUpdates } });
+  };
+
   const isAuthenticated = Boolean(token && usuario);
   const isAdmin = (usuario?.role ?? "user") === "admin";
 
@@ -218,6 +223,7 @@ export function AuthProvider({ children }) {
     openEditProfileModal,
     closeEditProfileModal,
     handleUpdateProfile,
+    patchUsuarioRank,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -13,4 +13,6 @@ export { ResetSenhaPage } from "./ResetSenhaPage";
 export { TimePage } from "./TimePage";
 export { TimeDetailPage } from "./TimeDetailPage";
 export { TimeCreatePage } from "./TimeCreatePage";
+export { RankingPage } from "./RankingPage";
+export { PlayerProfilePage } from "./PlayerProfilePage";
 export { NotFoundPage } from "./NotFoundPage";

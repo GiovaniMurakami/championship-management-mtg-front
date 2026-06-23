@@ -52,3 +52,15 @@ export function normalizeListarTorneiosResponse(data) {
     offset: Number.isFinite(data?.offset) ? data.offset : 0,
   };
 }
+
+/** @param {unknown} data */
+export function normalizeRankingGlobalResponse(data) {
+  const jogadores = data?.jogadores ?? data?.usuarios ?? data?.ranking ?? [];
+  const list = Array.isArray(jogadores) ? jogadores : [];
+  return {
+    jogadores: list,
+    total: Number.isFinite(data?.total) ? data.total : list.length,
+    limite: Number.isFinite(data?.limite) ? data.limite : 20,
+    offset: Number.isFinite(data?.offset) ? data.offset : 0,
+  };
+}
