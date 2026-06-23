@@ -26,9 +26,17 @@ export function AuthModal({
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
         {/* Tabs */}
-        <div className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-4">
+        <div
+          role="tablist"
+          aria-label="Autenticação"
+          className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-4"
+        >
           <button
             type="button"
+            role="tab"
+            id="auth-tab-login"
+            aria-selected={activeTab === "login"}
+            aria-controls="auth-panel-login"
             className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "login"
               ? "bg-[rgba(167,79,255,0.2)] text-white"
               : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
@@ -39,6 +47,10 @@ export function AuthModal({
           </button>
           <button
             type="button"
+            role="tab"
+            id="auth-tab-register"
+            aria-selected={activeTab === "register"}
+            aria-controls="auth-panel-register"
             className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "register"
               ? "bg-[rgba(167,79,255,0.2)] text-white"
               : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
@@ -50,7 +62,7 @@ export function AuthModal({
         </div>
 
         {activeTab === "login" ? (
-          <form className="grid gap-[0.85rem]" onSubmit={onLoginSubmit}>
+          <form id="auth-panel-login" role="tabpanel" aria-labelledby="auth-tab-login" className="grid gap-[0.85rem]" onSubmit={onLoginSubmit}>
             <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
               E-mail
               <input
@@ -87,7 +99,7 @@ export function AuthModal({
             </button>
           </form>
         ) : (
-          <form className="grid gap-[0.85rem]" onSubmit={onRegisterSubmit}>
+          <form id="auth-panel-register" role="tabpanel" aria-labelledby="auth-tab-register" className="grid gap-[0.85rem]" onSubmit={onRegisterSubmit}>
             <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
               Nome
               <input

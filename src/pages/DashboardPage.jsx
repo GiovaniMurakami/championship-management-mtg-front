@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
+import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
 import { useAuth } from "../context/AuthContext";
 import { buscarAnuncios, salvarAnuncios } from "../services/backendApi";
@@ -185,7 +186,7 @@ function DashboardAdsPreview({ ads }) {
 export function DashboardPage() {
   const { token } = useAuth();
   const [activeTab, setActiveTab] = useState("anuncios");
-  const [ads, setAds] = useState(() => normalizeAds(DEFAULT_ADS));
+  const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -203,7 +204,10 @@ export function DashboardPage() {
         if (mounted) setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
       })
       .catch((error) => {
-        if (mounted) setMessage(error.message || "Nao foi possivel carregar os anuncios.");
+        if (mounted) {
+          setMessage(error.message || "Nao foi possivel carregar os anuncios.");
+          setAds(normalizeAds(DEFAULT_ADS));
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -325,10 +329,12 @@ export function DashboardPage() {
       </div>
 
       <Tabs value={activeTab} onChange={setActiveTab} className="mb-5">
-        <Tabs.Item value="anuncios" label="Anuncios" count={ads.length} />
+        <Tabs.Item value="anuncios" label="Anuncios" count={loading ? undefined : ads.length} />
       </Tabs>
 
-      {activeTab === "anuncios" && (
+      {activeTab === "anuncios" && loading && <SkeletonDashboard />}
+
+      {activeTab === "anuncios" && !loading && (
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
@@ -345,7 +351,7 @@ export function DashboardPage() {
             </div>
             <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
               <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#8f82ad]">Status</span>
-              <strong className="mt-1 block text-sm text-[#f5edff]">{loading ? "Carregando" : "Pronto"}</strong>
+              <strong className="mt-1 block text-sm text-[#f5edff]">Pronto</strong>
             </div>
           </div>
 

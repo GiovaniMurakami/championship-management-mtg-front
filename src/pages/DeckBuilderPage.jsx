@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
+import { PageShell } from "../components/ui/PageShell";
 import { useAuth } from "../context/AuthContext";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarDeck } from "../services/backendApi";
-import { buscarCartasPorNome } from "../services/scryfallApi";
+import { deckHasCardLists, hydrateDeckCards } from "../utils/hydrateDeckCards";
 import { logError } from "../utils/logger";
 
 export function DeckBuilderPage({ isEditMode = false }) {
@@ -31,78 +32,37 @@ export function DeckBuilderPage({ isEditMode = false }) {
   } = useCardSearch();
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+  const deckFromState = location.state?.deck;
 
   useEffect(() => {
-    if (!isEditMode || !id || !token) {
+    if (!isEditMode || !id) {
       return;
     }
 
     let cancelled = false;
+    const isCancelled = () => cancelled;
 
-    const groupByName = (entries) => {
-      const map = new Map();
-      for (const entry of entries) {
-        const nome = entry.nome;
-        if (map.has(nome)) {
-          map.get(nome).quantidade += entry.quantidade || 1;
-        } else {
-          map.set(nome, { nome, quantidade: entry.quantidade || 1 });
-        }
-      }
-      return Array.from(map.values());
-    };
-
-    const toCardEntry = (entry, card) => ({
-      nome: card?.nome || entry.nome,
-      quantidade: entry.quantidade,
-      imagem: card?.imagem || "",
-      isBasicLand: card?.isBasicLand || false,
-      legalities: card?.legalities || {},
-      colors: card?.colors || card?.colorIdentity || [],
-      cmc: Number.isFinite(card?.cmc) ? card.cmc : Number(card?.cmc) || 0,
-      manaCost: card?.manaCost || "",
-      typeLine: card?.typeLine || "",
+    const applyDeck = (deck) => hydrateDeckCards(deck, {
+      setOriginalDeck,
+      setDeckForm,
+      setMainDeck,
+      setSideboard,
+      setCommander,
+      isCancelled,
     });
 
     const loadDeckCards = async () => {
       try {
-        const fullDeck = await buscarDeck(id, token);
+        if (deckHasCardLists(deckFromState, id)) {
+          await applyDeck(deckFromState);
+          return;
+        }
+
+        const fullDeck = await buscarDeck(id, tokenRef.current);
         if (cancelled) return;
-
-        setOriginalDeck(fullDeck);
-        setDeckForm({
-          nome: fullDeck.nome,
-          formato: fullDeck.formato,
-          linkLigaMagic: fullDeck.linkLigaMagic || "",
-        });
-
-        const mainEntries = groupByName(fullDeck.maindeck || []);
-        const sideEntries = groupByName(fullDeck.sideboard || []);
-        const commanderEntries = groupByName(
-          Array.isArray(fullDeck.commander)
-            ? fullDeck.commander
-            : fullDeck.commander
-              ? [fullDeck.commander]
-              : [],
-        );
-
-        const [resolvedMainCards, resolvedSideCards, resolvedCommanderCards] = await Promise.all([
-          buscarCartasPorNome(mainEntries.map((entry) => entry.nome)),
-          buscarCartasPorNome(sideEntries.map((entry) => entry.nome)),
-          buscarCartasPorNome(commanderEntries.map((entry) => entry.nome)),
-        ]);
-
-        if (cancelled) return;
-
-        setMainDeck(
-          resolvedMainCards.map((card, index) => toCardEntry(mainEntries[index], card)),
-        );
-        setSideboard(
-          resolvedSideCards.map((card, index) => toCardEntry(sideEntries[index], card)),
-        );
-        setCommander(
-          resolvedCommanderCards.map((card, index) => toCardEntry(commanderEntries[index], card)),
-        );
+        await applyDeck(fullDeck);
       } catch (error) {
         logError("Erro ao carregar cartas do deck:", error);
       }
@@ -113,7 +73,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
     return () => {
       cancelled = true;
     };
-  }, [id, isEditMode, setCommander, setDeckForm, setMainDeck, setSideboard, token]);
+  }, [id, isEditMode, location.key, deckFromState, setCommander, setDeckForm, setMainDeck, setSideboard]);
 
   useEffect(() => {
     return () => closeCardPreview();
@@ -129,7 +89,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   };
 
   return (
-    <main className="w-[min(1100px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12">
+    <PageShell className="max-w-[1100px]">
       {originalDeck && (
         <div className="flex flex-wrap items-center gap-3 mb-4 px-1">
           <div className="text-[0.9rem] text-text-soft">
@@ -206,6 +166,6 @@ export function DeckBuilderPage({ isEditMode = false }) {
       </div>
 
       <CardPreviewModal card={previewCard} />
-    </main>
+    </PageShell>
   );
 }

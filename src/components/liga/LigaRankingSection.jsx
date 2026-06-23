@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { buscarCartaPorNome } from "../../services/scryfallApi";
+import { EmptyState } from "../ui/EmptyState";
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
 
@@ -443,22 +444,6 @@ function LoadingSkeleton() {
           />
         ))}
       </div>
-    </div>
-  );
-}
-
-// ── Empty state ────────────────────────────────────────────────────────────────
-
-function EmptyState({ icon, title, description }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-      <div className="text-[2.5rem] opacity-25">{icon || "📊"}</div>
-      <p className="m-0 text-[1rem] font-medium text-[rgba(190,175,215,0.55)]">{title}</p>
-      {description && (
-        <p className="m-0 text-[0.85rem] text-[rgba(190,175,215,0.3)] max-w-[320px] leading-relaxed">
-          {description}
-        </p>
-      )}
     </div>
   );
 }

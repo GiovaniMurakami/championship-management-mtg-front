@@ -10,6 +10,7 @@ import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
+import { isValidUuid } from "../utils/validateUuid";
 
 const LIMITE = 12;
 
@@ -146,12 +147,19 @@ export function TimePage() {
 
   const handleEntrarPorConvite = async (e) => {
     e.preventDefault();
-    if (!conviteInput.trim()) return;
+    const tokenConvite = conviteInput.trim();
+    if (!tokenConvite) return;
+
+    if (!isValidUuid(tokenConvite)) {
+      setConviteError("Token de convite inválido. Verifique o link recebido.");
+      return;
+    }
+
     setConviteLoading(true);
     setConviteError("");
     setConviteSuccess("");
     try {
-      const data = await entrarPorConvite(conviteInput.trim(), token);
+      const data = await entrarPorConvite(tokenConvite, token);
       const res = data?.data ?? data;
       const nomeTime = res?.timeNome || res?.time?.nome || "time";
       setConviteSuccess(`Você entrou no time "${nomeTime}" com sucesso!`);
@@ -313,25 +321,29 @@ export function TimePage() {
 
           {/* Paginação */}
           {totalPaginas > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-8">
+            <nav className="flex items-center justify-center gap-3 mt-8" aria-label="Paginação de times">
               <button
+                type="button"
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
+                aria-label="Página anterior"
                 className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 ←
               </button>
-              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center">
+              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
                 {pagina} / {totalPaginas}
               </span>
               <button
+                type="button"
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
+                aria-label="Próxima página"
                 className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 →
               </button>
-            </div>
+            </nav>
           )}
         </>
       )}

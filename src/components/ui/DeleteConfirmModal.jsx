@@ -38,8 +38,8 @@ export function DeleteConfirmModal({
   const isMatch = confirmName === itemName;
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose}>
-      <h2 className="font-display text-[1.8rem] mt-0 mb-4 text-text-main">{title}</h2>
+    <BaseModal isOpen={isOpen} onClose={handleClose} ariaLabelledBy="delete-confirm-title">
+      <h2 id="delete-confirm-title" className="font-display text-[1.8rem] mt-0 mb-4 text-text-main">{title}</h2>
 
       <p className="mb-4 text-text-soft text-[0.92rem]">
         {description ?? (

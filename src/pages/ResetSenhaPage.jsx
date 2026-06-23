@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { confirmarResetSenha } from "../services/backendApi";
 import { MODAL_INPUT_CLASS as inputClass } from "../styles/uiClasses";
 
+const TOKEN_ERROR_HINTS = /token|link|expirad|inválid|invalid/i;
+
 const btnPrimary =
     "border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4),0_0_12px_rgba(199,149,255,0.3)] hover:border-[rgba(199,149,255,0.9)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
 
@@ -50,14 +52,24 @@ export function ResetSenhaPage() {
             await confirmarResetSenha(token, form.novaSenha);
             navigate("/?resetSenha=sucesso", { replace: true });
         } catch (error) {
+            if (error?.validationErrors?.length) {
+                setValidationError(error.validationErrors.join(" "));
+                setIsError(true);
+                return;
+            }
+
             const status = error?.status ?? error?.response?.status;
-            if (status === 400) {
+            const message = error.message || "";
+            if (status === 400 && TOKEN_ERROR_HINTS.test(message)) {
                 setTokenInvalido(true);
                 setMessage("Este link de redefinição é inválido ou já expirou. Solicite um novo link.");
+            } else if (status === 400) {
+                setValidationError(message || "Dados inválidos. Verifique a senha informada.");
+                setIsError(true);
             } else {
-                setMessage(error.message || "Não foi possível redefinir a senha. Tente novamente.");
+                setMessage(message || "Não foi possível redefinir a senha. Tente novamente.");
+                setIsError(true);
             }
-            setIsError(true);
         } finally {
             setIsLoading(false);
         }

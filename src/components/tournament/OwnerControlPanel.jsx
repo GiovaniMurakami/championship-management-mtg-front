@@ -71,7 +71,7 @@ function MatchEditRow({ partida, onSave, saving }) {
           >✕</button>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 max-md:grid-cols-1 max-md:gap-2">
           <div className="flex flex-col items-center gap-1">
             <span className="text-[0.72rem] font-semibold text-[#beafd7] uppercase tracking-[0.04em] text-center truncate w-full">{nome1}</span>
             <ScoreStepper value={v1} onChange={setV1} />
@@ -99,11 +99,11 @@ function MatchEditRow({ partida, onSave, saving }) {
   }
 
   return (
-    <div className="flex items-center gap-[0.6rem] border rounded-[0.65rem] px-[0.65rem] py-2 flex-wrap border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
-      <span className="text-[0.75rem] font-bold text-[#c795ff] whitespace-nowrap min-w-[52px]">Mesa {mesa}</span>
+    <div className="flex items-center gap-[0.6rem] border rounded-[0.65rem] px-[0.65rem] py-2 flex-wrap max-md:flex-col max-md:items-stretch min-w-0 max-w-full overflow-hidden border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
+      <span className="text-[0.75rem] font-bold text-[#c795ff] whitespace-nowrap shrink-0">Mesa {mesa}</span>
 
-      <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-        <span className="text-[0.85rem] text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap min-w-[60px] max-w-[140px]">{nome1}</span>
+      <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap max-md:w-full max-md:flex-col max-md:items-center max-md:gap-2">
+        <span className="text-[0.85rem] text-[#f5edff] min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome1}</span>
         {isFinalizada && !isBye && (
           <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
         )}
@@ -112,7 +112,7 @@ function MatchEditRow({ partida, onSave, saving }) {
             ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
             : "VS"}
         </span>
-        <span className="text-[0.85rem] text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap min-w-[60px] max-w-[140px]">{nome2}</span>
+        <span className="text-[0.85rem] text-[#f5edff] min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome2}</span>
         {isFinalizada && !isBye && (
           <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
         )}
@@ -124,7 +124,7 @@ function MatchEditRow({ partida, onSave, saving }) {
       {!isBye && (
         <button
           type="button"
-          className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(199,149,255,0.5)] ml-auto"
+          className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(199,149,255,0.5)] ml-auto max-md:ml-0 max-md:w-full"
           onClick={() => setEditing(true)}
         >
           Editar
@@ -247,9 +247,9 @@ export function OwnerControlPanel({
   };
 
   return (
-    <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
-      <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
-        <div>
+    <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-w-full min-w-0 overflow-x-clip">
+      <div className="flex items-start justify-between gap-4 mb-4 flex-wrap max-md:flex-col">
+        <div className="min-w-0">
           <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Painel do Administrador</h2>
           {isOngoing ? (
             <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
@@ -262,9 +262,9 @@ export function OwnerControlPanel({
           )}
         </div>
 
-        <div className="flex flex-col items-end gap-[0.4rem] flex-shrink-0">
+        <div className="flex flex-col items-end gap-[0.4rem] flex-shrink-0 max-md:w-full max-md:items-stretch">
           {isOngoing && requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
-            <p className="flex items-center gap-[0.3rem] m-0 text-[0.82rem] text-[#fbbf24]">
+            <p className="flex items-center gap-[0.3rem] m-0 text-[0.82rem] text-[#fbbf24] max-md:justify-center">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
@@ -274,7 +274,7 @@ export function OwnerControlPanel({
             </p>
           )}
           {isOngoing && nextRoundLabels.status && (
-            <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right max-w-[320px]">
+            <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right max-w-[320px] max-md:max-w-none max-md:text-center">
               {nextRoundLabels.status}
             </p>
           )}
@@ -289,9 +289,9 @@ export function OwnerControlPanel({
             </button>
           )}
           {isOngoing && (
-            <div className="flex flex-wrap gap-2 justify-end">
+            <div className="flex flex-wrap gap-2 justify-end max-md:w-full">
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)]"
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)] max-md:flex-1"
                 type="button"
                 onClick={handleRedoRound}
                 disabled={actionLoading || !canRedoRound}
@@ -300,7 +300,7 @@ export function OwnerControlPanel({
                 {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
               </button>
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)] max-md:flex-1"
                 type="button"
                 onClick={() => setReviewModalOpen(true)}
                 disabled={actionLoading}
@@ -359,16 +359,16 @@ export function OwnerControlPanel({
               <button type="button" className="text-[#beafd7] hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={() => setJoinLinkModal(null)} aria-label="Fechar">✕</button>
             </div>
             <p className="text-[#beafd7] text-[0.85rem] mb-3">Compartilhe este link para permitir que um jogador ingresse no torneio em andamento:</p>
-            <div className="flex items-stretch gap-2">
+            <div className="flex items-stretch gap-2 max-md:flex-col">
               <input
                 readOnly
                 value={joinLinkModal}
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/[0.05] border border-[rgba(217,180,255,0.2)] text-[#f5edff] text-[0.82rem] font-mono select-all"
+                className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/[0.05] border border-[rgba(217,180,255,0.2)] text-[#f5edff] text-[0.82rem] font-mono select-all max-md:text-[0.75rem]"
                 onFocus={(e) => e.target.select()}
               />
               <button
                 type="button"
-                className="flex-shrink-0 inline-flex items-center gap-[0.35rem] px-4 py-2 border border-[rgba(199,149,255,0.5)] rounded-lg text-[0.85rem] font-semibold cursor-pointer transition-all duration-150 text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)]"
+                className="flex-shrink-0 inline-flex items-center justify-center gap-[0.35rem] px-4 py-2 border border-[rgba(199,149,255,0.5)] rounded-lg text-[0.85rem] font-semibold cursor-pointer transition-all duration-150 text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] max-md:w-full"
                 onClick={handleCopyJoinLink}
               >
                 {joinLinkCopied ? "Copiado!" : "Copiar"}
@@ -417,11 +417,11 @@ export function OwnerControlPanel({
         )}
       </div>
 
-      <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-[rgba(217,180,255,0.2)] pb-0">
+      <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-[rgba(217,180,255,0.2)] pb-0 flex-wrap min-w-0 max-w-full px-1">
         {isOngoing && (
           <button
             type="button"
-            className={`inline-flex items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+            className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
             onClick={() => setActiveTab("mesas")}
           >
             Mesas
@@ -433,7 +433,7 @@ export function OwnerControlPanel({
         {isOngoing && contestadas.length > 0 && (
           <button
             type="button"
-            className={`inline-flex items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "contestadas" ? "text-[#f87171] border-b-[#f87171]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+            className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "contestadas" ? "text-[#f87171] border-b-[#f87171]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
             onClick={() => setActiveTab("contestadas")}
           >
             Contestadas
@@ -442,7 +442,7 @@ export function OwnerControlPanel({
         )}
         <button
           type="button"
-          className={`inline-flex items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "jogadores" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+          className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "jogadores" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
           onClick={() => setActiveTab("jogadores")}
         >
           Jogadores
@@ -486,7 +486,7 @@ export function OwnerControlPanel({
                 <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
               ) : (
                 <>
-                  <div className="flex gap-2 mb-[0.65rem]">
+                  <div className="flex gap-2 mb-[0.65rem] flex-wrap">
                     <span className="px-[0.6rem] py-[0.2rem] rounded-full text-[0.75rem] font-semibold border text-[#6ee7b7] bg-[rgba(16,185,129,0.12)] border-[rgba(16,185,129,0.3)]">
                       {finalizadas.length} finalizada{finalizadas.length !== 1 ? "s" : ""}
                     </span>
@@ -494,7 +494,7 @@ export function OwnerControlPanel({
                       {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
+                  <div className="grid gap-2 max-h-[480px] overflow-y-auto overflow-x-hidden">
                     {partidasRodada.map((partida) => (
                       <MatchEditRow
                         key={partida.id}

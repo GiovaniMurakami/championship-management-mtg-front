@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { normalizeId } from "../utils/normalizeId";
 import { listarTorneios, inscreverTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { useActionGuard } from "../hooks/useActionGuard";
 import { useToast } from "../context/ToastContext";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { SkeletonTorneioCard } from "../components";
 import { EmptyState } from "../components/ui/EmptyState";
+import { InlineAlert } from "../components/ui/InlineAlert";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
 import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
@@ -15,15 +17,17 @@ import { SponsorSection } from "../components/ui/SponsorSection";
 import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
 
+const LIMITE = 20;
+
 function PlatformStats() {
   return (
-    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-[rgba(217,180,255,0.1)] bg-white/[0.02]">
+    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-[rgba(217,180,255,0.1)] bg-white/[0.02] max-md:flex-col max-md:items-start max-md:gap-3">
       {[
         { value: "50+", label: "Torneios realizados" },
         { value: "200+", label: "Jogadores ativos" },
         { value: "7", label: "Formatos suportados" },
       ].map((stat, i, arr) => (
-        <div key={stat.label} className="flex items-center gap-4">
+        <div key={stat.label} className="flex items-center gap-4 max-md:w-full">
           <div className="flex flex-col">
             <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#c795ff] leading-none">
               {stat.value}
@@ -31,7 +35,7 @@ function PlatformStats() {
             <span className="text-[#beafd7] text-[0.7rem]">{stat.label}</span>
           </div>
           {i < arr.length - 1 && (
-            <div className="w-px h-7 bg-[rgba(217,180,255,0.15)]" />
+            <div className="w-px h-7 bg-[rgba(217,180,255,0.15)] max-md:hidden" />
           )}
         </div>
       ))}
@@ -43,8 +47,14 @@ export function TournamentPage() {
   const { token, usuario, isAdmin } = useAuth();
   const { addToast } = useToast();
   const [torneios, setTorneios] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [tabTotals, setTabTotals] = useState({ disponiveis: 0, anteriores: 0 });
+  const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [enrollingId, setEnrollingId] = useState(null);
   const [inscricoesLocais, setInscricoesLocais] = useState({});
+  const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialAba = searchParams.get("aba") === "anteriores" ? "anteriores" : "disponiveis";
   const [abaAtiva, setAbaAtiva] = useState(initialAba);
@@ -54,19 +64,73 @@ export function TournamentPage() {
   const loadTorneios = useCallback(async () => {
     if (!token) return;
     setLoading(true);
+    setLoadError("");
     try {
-      const data = await listarTorneios(token);
-      setTorneios(data.torneios || []);
+      const offset = (pagina - 1) * LIMITE;
+
+      if (abaAtiva === "anteriores") {
+        const data = await listarTorneios(token, {
+          status: "finalizado",
+          limite: LIMITE,
+          offset,
+        });
+        setTorneios(data.torneios);
+        setTotal(data.total);
+        setTabTotals((prev) => ({ ...prev, anteriores: data.total }));
+      } else {
+        const [inscricoes, andamento] = await Promise.all([
+          listarTorneios(token, { status: "inscricoes_abertas", limite: LIMITE, offset }),
+          listarTorneios(token, { status: "em_andamento", limite: LIMITE, offset }),
+        ]);
+        const merged = [...inscricoes.torneios, ...andamento.torneios].sort(
+          (a, b) => new Date(b.horario) - new Date(a.horario),
+        );
+        const disponiveisTotal = inscricoes.total + andamento.total;
+        setTorneios(merged);
+        setTotal(disponiveisTotal);
+        setTabTotals((prev) => ({ ...prev, disponiveis: disponiveisTotal }));
+      }
     } catch (error) {
       logError("Erro ao carregar torneios:", error);
+      const message = error.message || "Erro ao carregar torneios. Tente novamente.";
+      setLoadError(message);
+      addToast(message, { type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, abaAtiva, pagina, addToast]);
 
   useEffect(() => {
     loadTorneios();
   }, [loadTorneios]);
+
+  useEffect(() => {
+    setPagina(1);
+  }, [abaAtiva]);
+
+  useEffect(() => {
+    if (!token) return;
+    const prefetchInactiveTabTotal = async () => {
+      try {
+        if (abaAtiva === "disponiveis") {
+          const data = await listarTorneios(token, { status: "finalizado", limite: 1, offset: 0 });
+          setTabTotals((prev) => ({ ...prev, anteriores: data.total }));
+        } else {
+          const [inscricoes, andamento] = await Promise.all([
+            listarTorneios(token, { status: "inscricoes_abertas", limite: 1, offset: 0 }),
+            listarTorneios(token, { status: "em_andamento", limite: 1, offset: 0 }),
+          ]);
+          setTabTotals((prev) => ({
+            ...prev,
+            disponiveis: inscricoes.total + andamento.total,
+          }));
+        }
+      } catch {
+        // badge count is optional
+      }
+    };
+    prefetchInactiveTabTotal();
+  }, [token, abaAtiva]);
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
@@ -124,19 +188,23 @@ export function TournamentPage() {
     };
   }, [torneios, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
 
-  const handleInscrever = async (torneioId) => {
+  const handleInscrever = guard(async (torneioId) => {
     if (!usuario?.nickMTGO) {
       addToast("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever. Acesse seu perfil pelo menu superior.", { type: "error", duration: 6000 });
       return;
     }
+    setEnrollingId(torneioId);
     try {
       await inscreverTorneio(torneioId, token);
       setInscricoesLocais((prev) => ({ ...prev, [torneioId]: true }));
+      addToast("Inscrição realizada com sucesso!", { type: "success" });
       loadTorneios();
     } catch {
       addToast("Erro ao se inscrever no torneio. Tente novamente.", { type: "error" });
+    } finally {
+      setEnrollingId(null);
     }
-  };
+  });
 
   const handleViewTournament = (torneioId) => navigate(`/torneios/${torneioId}`);
 
@@ -148,17 +216,8 @@ export function TournamentPage() {
     return !!(inscricoesLocais[torneio.id] || torneio?.inscrito);
   };
 
-  const torneiosDisponiveis = useMemo(
-    () => torneios.filter((t) => t.status === "inscricoes_abertas" || t.status === "em_andamento"),
-    [torneios],
-  );
-
-  const torneiosAnteriores = useMemo(
-    () => torneios.filter((t) => t.status === "finalizado"),
-    [torneios],
-  );
-
-  const torneiosExibidos = abaAtiva === "disponiveis" ? torneiosDisponiveis : torneiosAnteriores;
+  const torneiosExibidos = torneios;
+  const totalPaginas = Math.ceil(total / LIMITE) || 1;
 
   return (
     <PageShell>
@@ -166,13 +225,13 @@ export function TournamentPage() {
       <PlatformStats />
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 mb-6 max-[768px]:mb-5">
-        <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">
+      <div className="flex items-center justify-between gap-4 mb-6 max-md:flex-col max-md:items-stretch max-md:gap-3">
+        <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-md:text-[1.75rem]">
           Torneios
         </h1>
         {isAdmin && (
           <button
-            className="px-4 py-[0.7rem] rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white"
+            className="px-4 py-[0.7rem] rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:w-full"
             type="button"
             onClick={() => navigate("/torneios/criar")}
           >
@@ -182,9 +241,28 @@ export function TournamentPage() {
       </div>
 
       <Tabs value={abaAtiva} onChange={setAbaAtiva}>
-        <Tabs.Item value="disponiveis" label="Torneios Disponíveis" count={torneiosDisponiveis.length} />
-        <Tabs.Item value="anteriores" label="Torneios Anteriores" count={torneiosAnteriores.length} />
+        <Tabs.Item value="disponiveis" label="Torneios Disponíveis" count={tabTotals.disponiveis} />
+        <Tabs.Item value="anteriores" label="Torneios Anteriores" count={tabTotals.anteriores} />
       </Tabs>
+
+      {loadError && !loading && (
+        <InlineAlert
+          type="error"
+          className="mt-4"
+          onDismiss={() => setLoadError("")}
+          action={(
+            <button
+              type="button"
+              onClick={loadTorneios}
+              className="text-[0.82rem] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-inherit"
+            >
+              Tentar novamente
+            </button>
+          )}
+        >
+          {loadError}
+        </InlineAlert>
+      )}
 
       {/* List */}
       <section className="mt-6">
@@ -210,6 +288,7 @@ export function TournamentPage() {
           <div className="grid grid-cols-1 min-[700px]:grid-cols-2 gap-5 mb-8">
             {torneiosExibidos.map((torneio) => {
               const inscrito = isInscrito(torneio);
+              const isEnrolling = enrollingId === torneio.id;
               return (
                 <div
                   key={torneio.id}
@@ -217,7 +296,7 @@ export function TournamentPage() {
                 >
                   {/* Banner image */}
                   {torneio.bannerUrl && (
-                    <div className="relative w-full h-[220px] overflow-hidden rounded-t-[1.1rem]">
+                    <div className="relative w-full h-[220px] max-md:h-[160px] overflow-hidden rounded-t-[1.1rem]">
                       <img
                         src={torneio.bannerUrl}
                         alt={`Banner de ${torneio.nome}`}
@@ -230,11 +309,11 @@ export function TournamentPage() {
                   )}
 
                   {/* Card header */}
-                  <div className="flex items-center justify-between px-5 py-[0.9rem] pb-3 border-b border-[rgba(217,180,255,0.2)] bg-white/[0.02]">
+                  <div className="flex items-center justify-between gap-2 px-5 py-[0.9rem] pb-3 border-b border-[rgba(217,180,255,0.2)] bg-white/[0.02] max-md:flex-wrap">
                     <span className="font-['Bebas_Neue',sans-serif] text-[1.1rem] tracking-[0.12em] text-[#c795ff]">
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
-                    <span className={`inline-block px-3 py-1 rounded-[20px] text-[0.8rem] font-medium uppercase tracking-[0.5px] ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
+                    <span className={`inline-block px-3 py-1 rounded-[20px] text-[0.8rem] font-medium uppercase tracking-[0.5px] text-center max-md:text-[0.72rem] ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
                       {STATUS_LABEL[torneio.status] ?? torneio.status}
                     </span>
                   </div>
@@ -296,9 +375,9 @@ export function TournamentPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-auto px-5 py-[0.85rem] pb-[1.1rem] border-t border-[rgba(217,180,255,0.2)] bg-white/[0.015] flex gap-3 flex-wrap max-[768px]:flex-col">
+                  <div className="mt-auto px-5 py-[0.85rem] pb-[1.1rem] border-t border-[rgba(217,180,255,0.2)] bg-white/[0.015] flex gap-3 flex-wrap max-md:flex-col">
                     <button
-                      className="px-4 py-2 border border-[#4f46e5] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(79,70,229,0.1)] text-[#4f46e5] transition-all duration-300 hover:bg-[#4f46e5] hover:text-white hover:-translate-y-px active:translate-y-0 max-[768px]:w-full"
+                      className="px-4 py-2 border border-[#4f46e5] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(79,70,229,0.1)] text-[#4f46e5] transition-all duration-300 hover:bg-[#4f46e5] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full"
                       onClick={() => handleViewTournament(torneio.id)}
                     >
                       Ver Torneio
@@ -306,7 +385,7 @@ export function TournamentPage() {
 
                     {isAdmin && (
                       <button
-                        className="px-4 py-2 border border-[rgba(167,79,255,0.5)] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(167,79,255,0.08)] text-[#c795ff] transition-all duration-300 hover:bg-[rgba(167,79,255,0.22)] hover:text-white hover:-translate-y-px active:translate-y-0 max-[768px]:w-full flex items-center justify-center gap-[0.4rem]"
+                        className="px-4 py-2 border border-[rgba(167,79,255,0.5)] rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(167,79,255,0.08)] text-[#c795ff] transition-all duration-300 hover:bg-[rgba(167,79,255,0.22)] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full flex items-center justify-center gap-[0.4rem]"
                         type="button"
                         onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
                       >
@@ -320,14 +399,16 @@ export function TournamentPage() {
 
                     {torneio.status === "inscricoes_abertas" && (
                       <button
-                        className={`px-4 py-2 border rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] transition-all duration-300 hover:-translate-y-px active:translate-y-0 max-[768px]:w-full disabled:opacity-80 disabled:cursor-not-allowed ${inscrito
+                        className={`px-4 py-2 border rounded-md text-[0.9rem] font-medium cursor-pointer uppercase tracking-[0.5px] transition-all duration-300 hover:-translate-y-px active:translate-y-0 max-md:w-full disabled:opacity-80 disabled:cursor-not-allowed ${inscrito
                           ? "bg-[rgba(148,163,184,0.16)] text-[#cbd5e1] border-[#94a3b8] cursor-default hover:translate-y-0"
                           : "bg-[rgba(34,197,94,0.1)] text-[#22c55e] border-[#22c55e] hover:bg-[#22c55e] hover:text-white"
                           }`}
-                        onClick={() => !inscrito && handleInscrever(torneio.id)}
-                        disabled={inscrito}
+                        type="button"
+                        onClick={() => !inscrito && !isEnrolling && handleInscrever(torneio.id)}
+                        disabled={inscrito || isEnrolling}
+                        aria-busy={isEnrolling}
                       >
-                        {inscrito ? "✓ Inscrito" : "Inscrever-se"}
+                        {inscrito ? "✓ Inscrito" : isEnrolling ? "Inscrevendo..." : "Inscrever-se"}
                       </button>
                     )}
                   </div>
@@ -335,6 +416,32 @@ export function TournamentPage() {
               );
             })}
           </div>
+        )}
+
+        {!loading && totalPaginas > 1 && (
+          <nav className="flex items-center justify-center gap-3 mb-8" aria-label="Paginação de torneios">
+            <button
+              type="button"
+              onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              disabled={pagina === 1}
+              aria-label="Página anterior"
+              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+            >
+              ←
+            </button>
+            <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+              {pagina} / {totalPaginas}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              disabled={pagina === totalPaginas}
+              aria-label="Próxima página"
+              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+            >
+              →
+            </button>
+          </nav>
         )}
       </section>
     </PageShell>

@@ -1,6 +1,7 @@
 export { BaseModal } from "./BaseModal";
 export { DeleteConfirmModal } from "./DeleteConfirmModal";
 export { EmptyState } from "./EmptyState";
+export { InlineAlert } from "./InlineAlert";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { Footer } from "./Footer";
 export { Hero } from "./Hero";
@@ -8,8 +9,9 @@ export { LandingHeader } from "./LandingHeader";
 export { Navbar } from "./Navbar";
 export { PageShell } from "./PageShell";
 export { SelectField } from "./SelectField";
-export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail } from "./Skeleton";
+export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard } from "./Skeleton";
 export { Spinner } from "./Spinner";
 export { SponsorSection } from "./SponsorSection";
 export { Tabs } from "./Tabs";
 export { Tooltip } from "./Tooltip";
+export { UuidParamGuard } from "./UuidParamGuard";

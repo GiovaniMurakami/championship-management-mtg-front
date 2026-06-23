@@ -111,22 +111,23 @@ export function EliminationBracket({ torneio, partidas }) {
     : null;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[rgba(250,204,21,0.22)] bg-[linear-gradient(160deg,rgba(42,29,10,0.78),rgba(14,10,25,0.92))] p-5 shadow-[0_4px_20px_rgba(3,2,8,0.34)]">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <section className="overflow-hidden rounded-2xl border border-[rgba(250,204,21,0.22)] bg-[linear-gradient(160deg,rgba(42,29,10,0.78),rgba(14,10,25,0.92))] p-5 shadow-[0_4px_20px_rgba(3,2,8,0.34)] max-md:p-4 max-w-full min-w-0">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3 max-md:flex-col max-md:items-stretch">
         <div>
           <p className="m-0 text-xs font-black uppercase tracking-[0.12em] text-[#facc15]">Corte Top {corteTop}</p>
-          <h2 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.05em] text-[#f5edff]">
+          <h2 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.05em] text-[#f5edff] max-md:text-[1.45rem]">
             Chaveamento eliminatorio
           </h2>
         </div>
-        <div className="rounded-lg border border-[rgba(250,204,21,0.28)] bg-[rgba(250,204,21,0.1)] px-3 py-2 text-right">
+        <div className="rounded-lg border border-[rgba(250,204,21,0.28)] bg-[rgba(250,204,21,0.1)] px-3 py-2 text-right max-md:text-left">
           <span className="block text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#fde68a]">Campeao</span>
-          <strong className="block max-w-[220px] truncate text-sm text-[#fff7cc]">{championName || "A definir"}</strong>
+          <strong className="block max-w-[220px] truncate text-sm text-[#fff7cc] max-md:max-w-none">{championName || "A definir"}</strong>
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-2 [scrollbar-width:thin] [scrollbar-color:rgba(250,204,21,0.28)_transparent]">
-        <div className="grid min-w-[760px] auto-cols-[minmax(220px,1fr)] grid-flow-col gap-5">
+      <p className="mb-2 text-[0.72rem] text-[#beafd7] hidden md:block">Deslize horizontalmente para ver todas as fases</p>
+      <div className="max-md:grid max-md:grid-cols-1 max-md:gap-4 md:overflow-x-auto md:pb-2 [scrollbar-width:thin] md:[scrollbar-color:rgba(250,204,21,0.28)_transparent]">
+        <div className="grid gap-4 max-md:grid-cols-1 md:grid-flow-col md:auto-cols-[minmax(200px,1fr)] md:gap-5 md:min-w-0">
           {rounds.map(([rodada, matches], roundIndex) => {
             const participants = corteTop / (2 ** roundIndex);
             return (

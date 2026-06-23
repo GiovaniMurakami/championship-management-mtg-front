@@ -1,4 +1,12 @@
 import httpClient from "./httpClient";
+import { clampLimite, clampOffset } from "../utils/pagination";
+import {
+  normalizeListarDecksResponse,
+  normalizeListarTorneiosResponse,
+} from "./apiNormalizers";
+
+const optionalAuthConfig = (token) =>
+  token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
 /**
  * @typedef {object} RankingTimeEntry
@@ -70,11 +78,13 @@ export const cadastrarDeck = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarDecks = (token, params) =>
-  httpClient.get("/deck/listar", {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
+export const listarDecks = async (token, params) => {
+  const data = await httpClient.get("/deck/listar", {
+    ...optionalAuthConfig(token),
+    params: buildDeckListQuery(params),
   });
+  return normalizeListarDecksResponse(data);
+};
 
 // Usuário
 export const atualizarUsuario = (payload, token) =>
@@ -99,6 +109,18 @@ export const criarTorneio = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+const buildDeckListQuery = (params = {}) => {
+  const queryParams = {};
+  if (params.usuarioId) queryParams.usuarioId = params.usuarioId;
+  if (params.formato) queryParams.formato = params.formato;
+  if (params.nome) queryParams.nome = params.nome;
+  if (params.criadoApos) queryParams.criadoApos = params.criadoApos;
+  if (params.criadoAntes) queryParams.criadoAntes = params.criadoAntes;
+  if (params.limite != null) queryParams.limite = clampLimite(params.limite);
+  if (params.offset != null) queryParams.offset = clampOffset(params.offset);
+  return queryParams;
+};
+
 const buildTorneioListQuery = (params) => {
   if (!params) return "";
 
@@ -111,17 +133,17 @@ const buildTorneioListQuery = (params) => {
   if (params.dataFim) queryParams.set("dataFim", params.dataFim);
   if (params.status) queryParams.set("status", params.status);
   if (params.nome) queryParams.set("nome", params.nome);
-  if (params.limite) queryParams.set("limite", String(params.limite));
-  if (params.offset) queryParams.set("offset", String(params.offset));
+  if (params.limite != null) queryParams.set("limite", String(clampLimite(params.limite)));
+  if (params.offset != null) queryParams.set("offset", String(clampOffset(params.offset)));
   return queryParams.toString();
 };
 
-export const listarTorneios = (token, params) => {
+export const listarTorneios = async (token, params) => {
   const query = buildTorneioListQuery(params);
-
-  return httpClient.get(`/torneio/listar${query ? `?${query}` : ""}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const data = await httpClient.get(`/torneio/listar${query ? `?${query}` : ""}`, {
+    ...optionalAuthConfig(token),
   });
+  return normalizeListarTorneiosResponse(data);
 };
 
 export const buscarTorneio = (torneioId, token) =>
@@ -194,10 +216,20 @@ export const getStandings = (torneioId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarPartidasTorneio = (torneioId, token) =>
-  httpClient.get(`/torneio/${torneioId}/partidas`, {
-    headers: { Authorization: `Bearer ${token}` },
+export const listarPartidasTorneio = (torneioId, token, options = {}) => {
+  const params = {};
+  if (options.rodada != null) {
+    const rodada = Number(options.rodada);
+    if (Number.isInteger(rodada) && rodada >= 1) {
+      params.rodada = rodada;
+    }
+  }
+
+  return httpClient.get(`/torneio/${torneioId}/partidas`, {
+    ...optionalAuthConfig(token),
+    params: Object.keys(params).length > 0 ? params : undefined,
   });
+};
 
 export const buscarMeuHistorico = (torneioId, token) =>
   httpClient.get(`/torneio/${torneioId}/meu-historico`, {
@@ -205,9 +237,7 @@ export const buscarMeuHistorico = (torneioId, token) =>
   });
 
 export const buscarDeck = (deckId, token) =>
-  httpClient.get(`/deck/${deckId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  httpClient.get(`/deck/${deckId}`, optionalAuthConfig(token));
 
 export const atualizarTorneio = (torneioId, payload, token) =>
   httpClient.put(`/torneio/${torneioId}`, payload, {

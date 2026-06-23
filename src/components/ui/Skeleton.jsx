@@ -147,3 +147,121 @@ export function SkeletonTournamentDetail() {
     </div>
   );
 }
+
+export function SkeletonSponsorSection() {
+  return (
+    <section className="mb-10" aria-busy="true" aria-label="Carregando patrocinadores">
+      <div className="flex items-center mb-3">
+        <Skeleton width="148px" height="1.5rem" radius="999px" />
+      </div>
+
+      <SkeletonCarouselPreview />
+    </section>
+  );
+}
+
+function SkeletonCarouselPreview() {
+  return (
+    <div className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.25rem] overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#2ccfb4,#7c3aed,#c795ff,#ec4899)]">
+      <div className="flex items-center gap-10 px-10 pt-8 pb-6 max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-5 max-[600px]:px-5 max-[600px]:pt-6 max-[600px]:pb-4">
+        <Skeleton
+          width="120px"
+          height="120px"
+          radius="1rem"
+          className="shrink-0 max-[600px]:!w-[72px] max-[600px]:!h-[72px]"
+        />
+        <div className="flex-1 min-w-0 flex flex-col gap-3 w-full">
+          <Skeleton width="100px" height="0.85rem" radius="0.3rem" />
+          <Skeleton width="min(60%, 280px)" height="2rem" radius="0.4rem" />
+          <Skeleton width="85%" height="0.9rem" radius="0.3rem" />
+          <Skeleton width="70%" height="0.9rem" radius="0.3rem" />
+          <Skeleton width="148px" height="2rem" radius="999px" className="mt-1" />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-3 px-4 py-3 pb-4 border-t border-[rgba(217,180,255,0.2)]">
+        <Skeleton width="1.9rem" height="1.9rem" radius="999px" />
+        <div className="flex gap-[0.4rem] items-center">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} width="7px" height="7px" radius="999px" />
+          ))}
+        </div>
+        <Skeleton width="1.9rem" height="1.9rem" radius="999px" />
+      </div>
+    </div>
+  );
+}
+
+function SkeletonDashboardAdCard() {
+  return (
+    <section className="grid gap-5 rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#0b0717] p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="grid gap-4 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Skeleton width="7rem" height="3rem" radius="0.5rem" />
+            <Skeleton width="8rem" height="2.5rem" radius="0.5rem" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton width="5.5rem" height="2.25rem" radius="0.5rem" />
+            <Skeleton width="4.5rem" height="2.25rem" radius="0.5rem" />
+            <Skeleton width="4.5rem" height="2.25rem" radius="0.5rem" />
+            <Skeleton width="5rem" height="2.25rem" radius="0.5rem" />
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Skeleton width="100%" height="3.5rem" radius="0.5rem" />
+          <Skeleton width="100%" height="3.5rem" radius="0.5rem" />
+          <Skeleton width="100%" height="3.5rem" radius="0.5rem" />
+        </div>
+        <Skeleton width="100%" height="6rem" radius="0.5rem" />
+        <div className="grid gap-4 md:grid-cols-3">
+          <Skeleton width="100%" height="3.5rem" radius="0.5rem" />
+          <Skeleton width="100%" height="3.5rem" radius="0.5rem" />
+          <Skeleton width="100%" height="3.5rem" radius="0.5rem" />
+        </div>
+      </div>
+      <aside className="min-w-0">
+        <Skeleton width="100%" height="12.5rem" radius="0.5rem" />
+      </aside>
+    </section>
+  );
+}
+
+export function SkeletonDashboard() {
+  return (
+    <div className="animate-[fade-in_300ms_ease-out]" aria-busy="true" aria-label="Carregando dashboard">
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
+            <Skeleton width="55%" height="0.75rem" radius="0.25rem" />
+            <Skeleton width="35%" height="1.75rem" radius="0.35rem" className="mt-3" />
+          </div>
+        ))}
+      </div>
+
+      <section className="mb-5">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-col gap-2 min-w-0">
+            <Skeleton width="11rem" height="1.25rem" radius="0.35rem" />
+            <Skeleton width="min(100%, 18rem)" height="0.9rem" radius="0.3rem" />
+          </div>
+          <Skeleton width="4.5rem" height="1.75rem" radius="999px" />
+        </div>
+        <div className="mb-3">
+          <Skeleton width="9rem" height="1.5rem" radius="999px" />
+        </div>
+        <SkeletonCarouselPreview />
+      </section>
+
+      <div className="grid gap-4">
+        <SkeletonDashboardAdCard />
+        <SkeletonDashboardAdCard />
+        <div className="flex flex-wrap justify-end gap-2 border-t border-[rgba(217,180,255,0.12)] pt-4">
+          <Skeleton width="8.75rem" height="2.5rem" radius="0.5rem" />
+          <Skeleton width="8.125rem" height="2.5rem" radius="0.5rem" />
+          <Skeleton width="9.375rem" height="2.5rem" radius="0.5rem" />
+        </div>
+      </div>
+    </div>
+  );
+}

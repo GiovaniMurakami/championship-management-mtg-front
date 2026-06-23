@@ -6,6 +6,7 @@ import {
 } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
+import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { buildTeamInviteExternalUrl } from "../utils/externalNavigation";
 import { logError } from "../utils/logger";
@@ -235,9 +236,9 @@ export function TimeDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-4 bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-3 rounded-[6px] text-[0.9rem]">
+        <InlineAlert type="error" className="mb-4" onDismiss={() => setError("")}>
           {error}
-        </div>
+        </InlineAlert>
       )}
 
       {/* Ações de entrar/sair/solicitar */}
