@@ -10,6 +10,7 @@ import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
+import { isValidUuid } from "../utils/validateUuid";
 
 const LIMITE = 12;
 
@@ -146,12 +147,19 @@ export function TimePage() {
 
   const handleEntrarPorConvite = async (e) => {
     e.preventDefault();
-    if (!conviteInput.trim()) return;
+    const tokenConvite = conviteInput.trim();
+    if (!tokenConvite) return;
+
+    if (!isValidUuid(tokenConvite)) {
+      setConviteError("Token de convite inválido. Verifique o link recebido.");
+      return;
+    }
+
     setConviteLoading(true);
     setConviteError("");
     setConviteSuccess("");
     try {
-      const data = await entrarPorConvite(conviteInput.trim(), token);
+      const data = await entrarPorConvite(tokenConvite, token);
       const res = data?.data ?? data;
       const nomeTime = res?.timeNome || res?.time?.nome || "time";
       setConviteSuccess(`Você entrou no time "${nomeTime}" com sucesso!`);

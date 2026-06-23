@@ -14,3 +14,4 @@ export { Spinner } from "./Spinner";
 export { SponsorSection } from "./SponsorSection";
 export { Tabs } from "./Tabs";
 export { Tooltip } from "./Tooltip";
+export { UuidParamGuard } from "./UuidParamGuard";

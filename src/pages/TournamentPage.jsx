@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { normalizeId } from "../utils/normalizeId";
 import { listarTorneios, inscreverTorneio } from "../services/backendApi";
@@ -16,6 +16,8 @@ import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { SponsorSection } from "../components/ui/SponsorSection";
 import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
+
+const LIMITE = 20;
 
 function PlatformStats() {
   return (
@@ -45,6 +47,9 @@ export function TournamentPage() {
   const { token, usuario, isAdmin } = useAuth();
   const { addToast } = useToast();
   const [torneios, setTorneios] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [tabTotals, setTabTotals] = useState({ disponiveis: 0, anteriores: 0 });
+  const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [enrollingId, setEnrollingId] = useState(null);
@@ -61,21 +66,71 @@ export function TournamentPage() {
     setLoading(true);
     setLoadError("");
     try {
-      const data = await listarTorneios(token);
-      setTorneios(data.torneios || []);
+      const offset = (pagina - 1) * LIMITE;
+
+      if (abaAtiva === "anteriores") {
+        const data = await listarTorneios(token, {
+          status: "finalizado",
+          limite: LIMITE,
+          offset,
+        });
+        setTorneios(data.torneios);
+        setTotal(data.total);
+        setTabTotals((prev) => ({ ...prev, anteriores: data.total }));
+      } else {
+        const [inscricoes, andamento] = await Promise.all([
+          listarTorneios(token, { status: "inscricoes_abertas", limite: LIMITE, offset }),
+          listarTorneios(token, { status: "em_andamento", limite: LIMITE, offset }),
+        ]);
+        const merged = [...inscricoes.torneios, ...andamento.torneios].sort(
+          (a, b) => new Date(b.horario) - new Date(a.horario),
+        );
+        const disponiveisTotal = inscricoes.total + andamento.total;
+        setTorneios(merged);
+        setTotal(disponiveisTotal);
+        setTabTotals((prev) => ({ ...prev, disponiveis: disponiveisTotal }));
+      }
     } catch (error) {
       logError("Erro ao carregar torneios:", error);
-      const message = "Erro ao carregar torneios. Tente novamente.";
+      const message = error.message || "Erro ao carregar torneios. Tente novamente.";
       setLoadError(message);
       addToast(message, { type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [token, addToast]);
+  }, [token, abaAtiva, pagina, addToast]);
 
   useEffect(() => {
     loadTorneios();
   }, [loadTorneios]);
+
+  useEffect(() => {
+    setPagina(1);
+  }, [abaAtiva]);
+
+  useEffect(() => {
+    if (!token) return;
+    const prefetchInactiveTabTotal = async () => {
+      try {
+        if (abaAtiva === "disponiveis") {
+          const data = await listarTorneios(token, { status: "finalizado", limite: 1, offset: 0 });
+          setTabTotals((prev) => ({ ...prev, anteriores: data.total }));
+        } else {
+          const [inscricoes, andamento] = await Promise.all([
+            listarTorneios(token, { status: "inscricoes_abertas", limite: 1, offset: 0 }),
+            listarTorneios(token, { status: "em_andamento", limite: 1, offset: 0 }),
+          ]);
+          setTabTotals((prev) => ({
+            ...prev,
+            disponiveis: inscricoes.total + andamento.total,
+          }));
+        }
+      } catch {
+        // badge count is optional
+      }
+    };
+    prefetchInactiveTabTotal();
+  }, [token, abaAtiva]);
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
@@ -161,17 +216,8 @@ export function TournamentPage() {
     return !!(inscricoesLocais[torneio.id] || torneio?.inscrito);
   };
 
-  const torneiosDisponiveis = useMemo(
-    () => torneios.filter((t) => t.status === "inscricoes_abertas" || t.status === "em_andamento"),
-    [torneios],
-  );
-
-  const torneiosAnteriores = useMemo(
-    () => torneios.filter((t) => t.status === "finalizado"),
-    [torneios],
-  );
-
-  const torneiosExibidos = abaAtiva === "disponiveis" ? torneiosDisponiveis : torneiosAnteriores;
+  const torneiosExibidos = torneios;
+  const totalPaginas = Math.ceil(total / LIMITE) || 1;
 
   return (
     <PageShell>
@@ -195,8 +241,8 @@ export function TournamentPage() {
       </div>
 
       <Tabs value={abaAtiva} onChange={setAbaAtiva}>
-        <Tabs.Item value="disponiveis" label="Torneios Disponíveis" count={torneiosDisponiveis.length} />
-        <Tabs.Item value="anteriores" label="Torneios Anteriores" count={torneiosAnteriores.length} />
+        <Tabs.Item value="disponiveis" label="Torneios Disponíveis" count={tabTotals.disponiveis} />
+        <Tabs.Item value="anteriores" label="Torneios Anteriores" count={tabTotals.anteriores} />
       </Tabs>
 
       {loadError && !loading && (
@@ -370,6 +416,32 @@ export function TournamentPage() {
               );
             })}
           </div>
+        )}
+
+        {!loading && totalPaginas > 1 && (
+          <nav className="flex items-center justify-center gap-3 mb-8" aria-label="Paginação de torneios">
+            <button
+              type="button"
+              onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              disabled={pagina === 1}
+              aria-label="Página anterior"
+              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+            >
+              ←
+            </button>
+            <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+              {pagina} / {totalPaginas}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              disabled={pagina === totalPaginas}
+              aria-label="Próxima página"
+              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+            >
+              →
+            </button>
+          </nav>
         )}
       </section>
     </PageShell>

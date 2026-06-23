@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { solicitarResetSenha } from "../services/backendApi";
 import { MODAL_INPUT_CLASS as inputClass } from "../styles/uiClasses";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const btnPrimary =
     "border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4),0_0_12px_rgba(199,149,255,0.3)] hover:border-[rgba(199,149,255,0.9)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
 
@@ -14,8 +16,17 @@ export function EsqueciSenhaPage() {
     const [isError, setIsError] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
+    const [validationError, setValidationError] = useState("");
+
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setValidationError("");
+
+        if (!EMAIL_PATTERN.test(email.trim())) {
+            setValidationError("Informe um e-mail válido.");
+            return;
+        }
+
         setIsLoading(true);
         setMessage("");
         setIsError(false);
@@ -25,7 +36,10 @@ export function EsqueciSenhaPage() {
             setMessage(response?.mensagem || "Se esse e-mail estiver cadastrado, você receberá um link para redefinir sua senha em breve.");
             setSubmitted(true);
         } catch (error) {
-            if (error?.status === 500 || error?.message?.includes("500") || error?.message?.toLowerCase().includes("servidor")) {
+            if (error?.validationErrors?.length) {
+                setValidationError(error.validationErrors.join(" "));
+                setIsError(true);
+            } else if (error?.status === 500 || error?.message?.includes("500") || error?.message?.toLowerCase().includes("servidor")) {
                 setMessage("Erro interno do servidor. Tente novamente em alguns instantes.");
             } else {
                 setMessage(error.message || "Não foi possível processar a solicitação. Tente novamente.");
@@ -66,6 +80,11 @@ export function EsqueciSenhaPage() {
                                 className={inputClass}
                             />
                         </label>
+                        {validationError && (
+                            <p className="px-3 py-2 rounded-[0.6rem] bg-[rgba(252,88,119,0.1)] border border-[rgba(252,88,119,0.3)] text-[#ffa8b8] text-[0.88rem]">
+                                {validationError}
+                            </p>
+                        )}
                         <button className={btnPrimary} type="submit" disabled={isLoading}>
                             {isLoading ? "Enviando..." : "Enviar link de redefinição"}
                         </button>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { listarDecks, deletarDeck } from "../services/backendApi";
@@ -72,27 +72,29 @@ export function MyDecksPage() {
     [usuario?.id]
   );
 
-  const fetchDecks = useCallback(async () => {
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  const loadDecks = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };
       if (somenteMyDecks && usuario?.id) params.usuarioId = usuario.id;
       if (busca.trim()) params.nome = busca.trim();
-      const data = await listarDecks(token, params);
-      const list = data.decks ?? (Array.isArray(data) ? data : []);
-      setDecks(list);
-      setTotal(data.total ?? list.length);
+      const data = await listarDecks(tokenRef.current, params);
+      setDecks(data.decks);
+      setTotal(data.total);
     } catch (err) {
       setError(err.message || "Erro ao carregar decks.");
     } finally {
       setLoading(false);
     }
-  }, [token, pagina, somenteMyDecks, usuario?.id, busca]);
+  }, [pagina, somenteMyDecks, usuario?.id, busca]);
 
-  useEffect(() => { fetchDecks(); }, [fetchDecks]);
-
-  useEffect(() => { setPagina(1); }, [somenteMyDecks, busca]);
+  useEffect(() => {
+    loadDecks();
+  }, [loadDecks]);
 
   // Carrega imagem da primeira carta de cada deck
   useEffect(() => {
@@ -116,6 +118,7 @@ export function MyDecksPage() {
 
   const handleBusca = (e) => {
     e.preventDefault();
+    setPagina(1);
     setBusca(buscaInput);
   };
 
@@ -148,7 +151,7 @@ export function MyDecksPage() {
     try {
       await deletarDeck(deleteModal.deck.id, token);
       onSuccess?.();
-      await fetchDecks();
+      await loadDecks();
     } catch (err) {
       setDeleteError(err.message || "Erro ao excluir o deck. Tente novamente.");
     } finally {
@@ -239,7 +242,7 @@ export function MyDecksPage() {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setSomenteMyDecks(false)}
+            onClick={() => { setPagina(1); setSomenteMyDecks(false); }}
             className={`px-4 py-[0.45rem] rounded-lg text-[0.82rem] font-semibold border transition-all duration-200 ${
               !somenteMyDecks
                 ? "bg-[rgba(79,70,229,0.3)] border-[rgba(79,70,229,0.7)] text-[#d9d6ff]"
@@ -250,7 +253,7 @@ export function MyDecksPage() {
           </button>
           <button
             type="button"
-            onClick={() => setSomenteMyDecks(true)}
+            onClick={() => { setPagina(1); setSomenteMyDecks(true); }}
             className={`px-4 py-[0.45rem] rounded-lg text-[0.82rem] font-semibold border transition-all duration-200 ${
               somenteMyDecks
                 ? "bg-[rgba(79,70,229,0.3)] border-[rgba(79,70,229,0.7)] text-[#d9d6ff]"
@@ -274,7 +277,7 @@ export function MyDecksPage() {
           action={(
             <button
               type="button"
-              onClick={() => fetchDecks()}
+              onClick={() => loadDecks()}
               className="text-[0.82rem] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-inherit"
             >
               Tentar novamente
