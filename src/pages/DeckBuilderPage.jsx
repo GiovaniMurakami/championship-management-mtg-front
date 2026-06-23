@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
+import { PageShell } from "../components/ui/PageShell";
 import { useAuth } from "../context/AuthContext";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
@@ -129,7 +130,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   };
 
   return (
-    <main className="w-[min(1100px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12">
+    <PageShell className="max-w-[1100px]">
       {originalDeck && (
         <div className="flex flex-wrap items-center gap-3 mb-4 px-1">
           <div className="text-[0.9rem] text-text-soft">
@@ -206,6 +207,6 @@ export function DeckBuilderPage({ isEditMode = false }) {
       </div>
 
       <CardPreviewModal card={previewCard} />
-    </main>
+    </PageShell>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { buscarLiga, getRankingLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
 import { LigaRankingSection } from "../components/liga";
 import {
   STATUS_BADGE_CLASS,
@@ -11,44 +12,57 @@ import {
 } from "../constants/tournament";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
+import { EmptyState } from "../components/ui/EmptyState";
+import { InlineAlert } from "../components/ui/InlineAlert";
 import { logError } from "../utils/logger";
 
 export function LigaDetailPage() {
   const LIMITE_RANKING_TIMES = 10;
   const { id: ligaId } = useParams();
   const { token, isAdmin, usuario } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const [liga, setLiga] = useState(null);
   const [ranking, setRanking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [rankingLoading, setRankingLoading] = useState(false);
+  const [rankingError, setRankingError] = useState("");
   const [abaAtiva, setAbaAtiva] = useState("torneios");
 
   const loadLiga = useCallback(async () => {
     if (!ligaId || !token) return;
     setLoading(true);
+    setLoadError("");
     try {
       const data = await buscarLiga(ligaId, token);
       setLiga(data.liga || data);
     } catch (err) {
       logError("Erro ao carregar liga:", err);
+      const message = "Erro ao carregar liga. Tente novamente.";
+      setLoadError(message);
+      addToast(message, { type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [ligaId, token]);
+  }, [ligaId, token, addToast]);
 
   const loadRanking = useCallback(async () => {
     if (!ligaId || !token) return;
     setRankingLoading(true);
+    setRankingError("");
     try {
       const data = await getRankingLiga(ligaId, token, liga?.tipo === "times" ? { limiteTimes: LIMITE_RANKING_TIMES } : undefined);
       setRanking(data);
     } catch (err) {
       logError("Erro ao carregar ranking:", err);
+      const message = "Erro ao carregar ranking da liga.";
+      setRankingError(message);
+      addToast(message, { type: "error" });
     } finally {
       setRankingLoading(false);
     }
-  }, [liga?.tipo, ligaId, token]);
+  }, [liga?.tipo, ligaId, token, addToast]);
 
   useEffect(() => {
     loadLiga();
@@ -196,11 +210,58 @@ export function LigaDetailPage() {
 
           {/* Ranking tab */}
           {abaAtiva === "ranking" && (
-            <LigaRankingSection ranking={ranking} loading={rankingLoading} usuarioLogado={usuario} />
+            <>
+              {rankingError && (
+                <InlineAlert
+                  type="error"
+                  className="mb-4"
+                  onDismiss={() => setRankingError("")}
+                  action={(
+                    <button
+                      type="button"
+                      onClick={loadRanking}
+                      className="text-[0.82rem] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-inherit"
+                    >
+                      Tentar novamente
+                    </button>
+                  )}
+                >
+                  {rankingError}
+                </InlineAlert>
+              )}
+              <LigaRankingSection ranking={ranking} loading={rankingLoading} usuarioLogado={usuario} />
+            </>
           )}
         </>
+      ) : loadError ? (
+        <InlineAlert
+          type="error"
+          action={(
+            <button
+              type="button"
+              onClick={loadLiga}
+              className="text-[0.82rem] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-inherit"
+            >
+              Tentar novamente
+            </button>
+          )}
+        >
+          {loadError}
+        </InlineAlert>
       ) : (
-        <p className="text-center text-[#888] py-12 text-base">Liga não encontrada.</p>
+        <EmptyState
+          title="Liga não encontrada"
+          description="Esta liga pode ter sido removida ou você não tem permissão para visualizá-la."
+          action={(
+            <button
+              type="button"
+              onClick={() => navigate("/ligas")}
+              className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] font-semibold hover:bg-[#4f46e5] hover:text-white transition-colors"
+            >
+              Voltar para ligas
+            </button>
+          )}
+        />
       )}
     </PageShell>
   );

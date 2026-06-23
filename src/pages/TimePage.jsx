@@ -313,25 +313,29 @@ export function TimePage() {
 
           {/* Paginação */}
           {totalPaginas > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-8">
+            <nav className="flex items-center justify-center gap-3 mt-8" aria-label="Paginação de times">
               <button
+                type="button"
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
+                aria-label="Página anterior"
                 className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 ←
               </button>
-              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center">
+              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
                 {pagina} / {totalPaginas}
               </span>
               <button
+                type="button"
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
+                aria-label="Próxima página"
                 className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 →
               </button>
-            </div>
+            </nav>
           )}
         </>
       )}

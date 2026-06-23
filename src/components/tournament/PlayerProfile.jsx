@@ -110,7 +110,7 @@ export function PlayerProfile({
   const statusLabel = dropped ? "Dropado" : currentPlayer ? "Inscrito" : canLateJoin ? "Entrada tardia" : "Nao inscrito";
 
   return (
-    <section className="rounded-2xl border border-[rgba(217,180,255,0.2)] bg-[linear-gradient(160deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] p-5 shadow-[0_16px_38px_rgba(3,2,8,0.32)] animate-[slide-up_400ms_ease-out]">
+    <section className="rounded-2xl border border-[rgba(217,180,255,0.2)] bg-[linear-gradient(160deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] p-5 shadow-[0_16px_38px_rgba(3,2,8,0.32)] animate-[slide-up_400ms_ease-out] max-md:p-4">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-[#a78bfa]">Minha participacao</p>
