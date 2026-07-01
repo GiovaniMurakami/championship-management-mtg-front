@@ -1,4 +1,14 @@
+import { useSiteEstatisticas, formatSiteStatValue } from "../../hooks/useSiteEstatisticas";
+
 export function Hero({ onOpenAuth, isAuthenticated }) {
+  const { stats, loading } = useSiteEstatisticas();
+
+  const statItems = [
+    { label: "Torneios realizados", value: stats.torneiosRealizados, color: "#c795ff" },
+    { label: "Jogadores ativos", value: stats.jogadoresAtivos, color: "#2ccfb4" },
+    { label: "Formatos suportados", value: stats.formatosSuportados, color: "#f0b429" },
+  ];
+
   return (
     <section className="relative overflow-hidden border border-[rgba(217,180,255,0.18)] rounded-3xl mb-10 bg-[radial-gradient(ellipse_at_75%_0%,rgba(123,34,246,0.45),transparent_45%),radial-gradient(ellipse_at_10%_100%,rgba(81,24,164,0.55),transparent_40%),linear-gradient(145deg,#0f0920,#160c30_50%,#1e1040)]">
 
@@ -72,17 +82,13 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
 
         {/* Stats row */}
         <div className="flex flex-wrap gap-x-6 gap-y-3 mt-7 pt-6 border-t border-[rgba(217,180,255,0.12)]">
-          {[
-            { label: "Torneios realizados", value: "50+", color: "#c795ff" },
-            { label: "Jogadores ativos", value: "200+", color: "#2ccfb4" },
-            { label: "Formatos suportados", value: "6", color: "#f0b429" },
-          ].map((stat) => (
+          {statItems.map((stat) => (
             <div key={stat.label} className="flex flex-col gap-[0.15rem]">
               <span
                 className="font-['Bebas_Neue',sans-serif] text-[1.6rem] leading-none tracking-[0.03em]"
                 style={{ color: stat.color, textShadow: `0 0 12px ${stat.color}55` }}
               >
-                {stat.value}
+                {loading ? "—" : formatSiteStatValue(stat.value)}
               </span>
               <span className="text-[0.75rem] text-[#8b7aab] font-medium tracking-[0.04em] uppercase">
                 {stat.label}

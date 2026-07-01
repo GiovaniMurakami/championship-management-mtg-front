@@ -1,3 +1,4 @@
+export { useSiteEstatisticas } from "./useSiteEstatisticas";
 export { useActionGuard } from "./useActionGuard";
 export { useAuth } from "./useAuth";
 export { useCardPreview } from "./useCardPreview";

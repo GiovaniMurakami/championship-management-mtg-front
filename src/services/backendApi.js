@@ -373,8 +373,16 @@ export const inscreverTardio = (torneioId, token, payload = {}) =>
   });
 
 // Site
+export const buscarEstatisticasSite = () =>
+  httpClient.get("/site/estatisticas");
+
 export const buscarAnuncios = () =>
   httpClient.get("/site/anuncios");
+
+export const buscarAnunciosAdmin = (token) =>
+  httpClient.get("/site/anuncios/admin", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
 export const salvarAnuncios = (anuncios, token) =>
   httpClient.put("/site/anuncios", { anuncios }, {

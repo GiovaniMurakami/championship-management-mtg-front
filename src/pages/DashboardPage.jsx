@@ -3,7 +3,7 @@ import { PageShell } from "../components/ui/PageShell";
 import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
 import { useAuth } from "../context/AuthContext";
-import { buscarAnuncios, salvarAnuncios } from "../services/backendApi";
+import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
 
@@ -196,10 +196,11 @@ export function DashboardPage() {
   const [dragOverPosition, setDragOverPosition] = useState("before");
 
   useEffect(() => {
+    if (!token) return undefined;
     let mounted = true;
     setLoading(true);
 
-    buscarAnuncios()
+    buscarAnunciosAdmin(token)
       .then((data) => {
         if (mounted) setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
       })
@@ -214,7 +215,7 @@ export function DashboardPage() {
       });
 
     return () => { mounted = false; };
-  }, []);
+  }, [token]);
 
   const activeCount = useMemo(() => ads.filter((ad) => ad.ativo).length, [ads]);
   const totalClicks = useMemo(() => ads.reduce((total, ad) => total + (ad.cliques ?? 0), 0), [ads]);
