@@ -16,21 +16,26 @@ import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { SponsorSection } from "../components/ui/SponsorSection";
 import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
+import { useSiteEstatisticas, formatSiteStatValue } from "../hooks/useSiteEstatisticas";
 
 const LIMITE = 20;
 
 function PlatformStats() {
+  const { stats, loading } = useSiteEstatisticas();
+
+  const items = [
+    { value: stats.torneiosRealizados, label: "Torneios realizados" },
+    { value: stats.jogadoresAtivos, label: "Jogadores ativos" },
+    { value: stats.formatosSuportados, label: "Formatos suportados" },
+  ];
+
   return (
     <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-[rgba(217,180,255,0.1)] bg-white/[0.02] max-md:flex-col max-md:items-start max-md:gap-3">
-      {[
-        { value: "50+", label: "Torneios realizados" },
-        { value: "200+", label: "Jogadores ativos" },
-        { value: "7", label: "Formatos suportados" },
-      ].map((stat, i, arr) => (
+      {items.map((stat, i, arr) => (
         <div key={stat.label} className="flex items-center gap-4 max-md:w-full">
           <div className="flex flex-col">
             <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#c795ff] leading-none">
-              {stat.value}
+              {loading ? "—" : formatSiteStatValue(stat.value)}
             </span>
             <span className="text-[#beafd7] text-[0.7rem]">{stat.label}</span>
           </div>
