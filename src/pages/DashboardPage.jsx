@@ -262,7 +262,7 @@ export function DashboardPage() {
   const addAd = () => {
     setAds((current) => [
       ...current,
-      { ...createEmptyAd(), id: `anuncio-${Date.now()}-${current.length}`, ordem: current.length },
+      { ...createEmptyAd(), ordem: current.length },
     ]);
   };
 
