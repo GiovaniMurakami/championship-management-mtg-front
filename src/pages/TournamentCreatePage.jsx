@@ -1,5 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 import { TournamentCreateForm } from "../components";
 import { PageShell } from "../components/ui/PageShell";
 import { toDatetimeLocalBrasilia } from "../utils/brasiliaTime";
@@ -16,6 +18,8 @@ export function TournamentCreatePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = useAuth();
+
+  usePageTitle(PAGE_TITLES.criarTorneio);
 
   const copyFrom = location.state?.copyFrom;
   const initialValues = copyFrom

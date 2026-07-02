@@ -1,10 +1,7 @@
 ﻿import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
+import { TOP8_BACKGROUND_URL } from "../../constants/top8";
 
-const TOP8_PREVIEW_BACKGROUND_URL = "https://fuguete-championship-management.s3.us-east-1.amazonaws.com/imagens/b14080b1-fd2e-4ef8-aa13-acab1d9c9c79/dfcbc07f-6d81-4e14-9b18-0188b3a55339.jpeg";
-const TOP8_EXPORT_BACKGROUND_URL = import.meta.env.DEV
-  ? "/images/top8/fundoTop8.jpeg"
-  : new URL(/* @vite-ignore */ "../images/top8/fundoTop8.jpeg", import.meta.url).href;
 const TOP8_CONTENT_START_RATIO = 0.28;
 
 //  Helpers 
@@ -71,7 +68,7 @@ async function downloadTop8Canvas(players, tournamentName) {
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
-  const backgroundImage = await loadImage(TOP8_EXPORT_BACKGROUND_URL);
+  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
 
   if (!drawCoverImage(ctx, backgroundImage, 0, 0, W, H)) {
     ctx.fillStyle = "#0e091c";
@@ -283,7 +280,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
   const INTRO = 8, PER_P = 7, OUTRO = 22;
   const n = players.length;
   const totalFrames = INTRO + n * PER_P + OUTRO;
-  const backgroundImage = await loadImage(TOP8_EXPORT_BACKGROUND_URL);
+  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
 
   const revealOrder = players
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
@@ -596,7 +593,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
         {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
         <div
           className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center"
-          style={{ backgroundImage: `url(${TOP8_PREVIEW_BACKGROUND_URL})` }}
+          style={{ backgroundImage: `url(${TOP8_BACKGROUND_URL})` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}
           <div className="hidden h-[6px] shrink-0 bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />

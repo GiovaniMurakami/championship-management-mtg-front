@@ -6,6 +6,8 @@ import { useAuth } from "../context/AuthContext";
 import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const inputClass = "w-full rounded-lg border border-[rgba(217,180,255,0.18)] bg-[#120b24] px-3 py-2 text-sm text-[#f5edff] outline-none transition focus:border-[#c795ff] focus:ring-2 focus:ring-[rgba(199,149,255,0.16)]";
 const labelClass = "grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#9f91bd]";
@@ -185,6 +187,9 @@ function DashboardAdsPreview({ ads }) {
 
 export function DashboardPage() {
   const { token } = useAuth();
+
+  usePageTitle(PAGE_TITLES.dashboard);
+
   const [activeTab, setActiveTab] = useState("anuncios");
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);

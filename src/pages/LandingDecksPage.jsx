@@ -1,5 +1,7 @@
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer } from "../components";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const DECKS = [
     { name: "Abzan Sisters", img: "/images/landing/decks/abzan-sisters.jpeg", link: "https://tiagofuguete.com.br/decks/abzan-sisters" },
@@ -61,6 +63,8 @@ const DECKS = [
 ];
 
 export function LandingDecksPage() {
+    usePageTitle(PAGE_TITLES.decks);
+
     return (
         <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}>
             <LandingHeader />

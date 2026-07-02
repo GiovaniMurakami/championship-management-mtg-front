@@ -1,5 +1,7 @@
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer } from "../components";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const GALLERY = [
     "/images/landing/sobre-mim/gallery-1.jpeg",
@@ -14,6 +16,8 @@ const SUPPORTERS = "Adilson Roberto Alves Silva; alexandre queiroz galleti; Ange
 const SUPPORTERS_LIST = SUPPORTERS.split("; ").map(s => s.trim()).filter(Boolean);
 
 export function LandingSobreMimPage() {
+    usePageTitle(PAGE_TITLES.sobreMim);
+
     return (
         <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}>
             <LandingHeader />

@@ -18,6 +18,8 @@ import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
 import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
 import { useSiteEstatisticas, formatSiteStatValue } from "../hooks/useSiteEstatisticas";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const LIMITE = 20;
 
@@ -52,6 +54,9 @@ function PlatformStats() {
 export function TournamentPage() {
   const { token, usuario, isAdmin } = useAuth();
   const { addToast } = useToast();
+
+  usePageTitle(PAGE_TITLES.torneios);
+
   const [torneios, setTorneios] = useState([]);
   const [total, setTotal] = useState(0);
   const [tabTotals, setTabTotals] = useState({ disponiveis: 0, anteriores: 0 });

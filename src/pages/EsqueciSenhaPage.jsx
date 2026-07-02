@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { solicitarResetSenha } from "../services/backendApi";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 import { MODAL_INPUT_CLASS as inputClass } from "../styles/uiClasses";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -10,6 +12,9 @@ const btnPrimary =
 
 export function EsqueciSenhaPage() {
     const navigate = useNavigate();
+
+    usePageTitle(PAGE_TITLES.esqueciSenha);
+
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState("");

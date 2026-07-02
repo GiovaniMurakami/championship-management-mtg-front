@@ -10,6 +10,8 @@ import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarDeck } from "../services/backendApi";
 import { deckHasCardLists, hydrateDeckCards } from "../utils/hydrateDeckCards";
 import { logError } from "../utils/logger";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 export function DeckBuilderPage({ isEditMode = false }) {
   const { token } = useAuth();
@@ -35,6 +37,16 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const tokenRef = useRef(token);
   tokenRef.current = token;
   const deckFromState = location.state?.deck;
+
+  const deckPageTitle = readOnly
+    ? PAGE_TITLES.visualizarDeck
+    : isEditMode
+      ? (deckForm.nome || originalDeck?.nome || PAGE_TITLES.editarDeck)
+      : PAGE_TITLES.criarDeck;
+
+  usePageTitle(deckPageTitle, {
+    loading: isEditMode && deckLoading && !deckForm.nome && !originalDeck?.nome,
+  });
 
   useEffect(() => {
     if (!isEditMode || !id) {

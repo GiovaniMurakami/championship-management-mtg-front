@@ -7,6 +7,8 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const buildTorneiosParams = ({ dataInicio, dataFim }) => {
   const params = new URLSearchParams();
@@ -35,6 +37,11 @@ export function LigaCreatePage({ editMode = false }) {
   const [loadingTorneios, setLoadingTorneios] = useState(false);
   const [error, setError] = useState("");
   const [filterError, setFilterError] = useState("");
+
+  usePageTitle(
+    editMode ? (form.nome || PAGE_TITLES.editarLiga) : PAGE_TITLES.criarLiga,
+    { loading: editMode && loadingData && !form.nome },
+  );
 
   const carregarTorneios = useCallback(async (params) => {
     if (!token) return;

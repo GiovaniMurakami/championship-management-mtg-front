@@ -11,6 +11,8 @@ import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
 import { isValidUuid } from "../utils/validateUuid";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const LIMITE = 12;
 
@@ -21,6 +23,9 @@ export function TimePage() {
   const { token, isAdmin, usuario } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+
+  usePageTitle(PAGE_TITLES.times);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const initialBusca = searchParams.get("nome") || "";
   const initialPagina = Math.max(1, Number(searchParams.get("pagina") || 1));
