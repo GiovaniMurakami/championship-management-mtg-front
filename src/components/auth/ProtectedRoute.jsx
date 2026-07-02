@@ -1,6 +1,9 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../ui/Spinner";
+
+const PUBLIC_AUTH_PATHS = ["/esqueci-senha", "/reset-senha"];
 
 export function ProtectedRoute({ requireAdmin = false, children }) {
   const {
@@ -10,12 +13,14 @@ export function ProtectedRoute({ requireAdmin = false, children }) {
     openAuth,
     showAuthModal,
   } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     if (authInitialized && !isAuthenticated && !showAuthModal) {
+      if (PUBLIC_AUTH_PATHS.includes(location.pathname)) return;
       openAuth("login");
     }
-  }, [authInitialized, isAuthenticated, openAuth, showAuthModal]);
+  }, [authInitialized, isAuthenticated, openAuth, showAuthModal, location.pathname]);
 
   if (!authInitialized) {
     return (
