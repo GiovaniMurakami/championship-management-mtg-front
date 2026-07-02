@@ -197,25 +197,27 @@ Base URL resolvida em `httpClient.js`:
 Auth:     POST /usuario/login, /cadastrar, /refresh-token, /logout
           POST /usuario/reset-senha/solicitar, /confirmar
           PUT  /usuario/atualizar
+          GET  /usuario/listar          (admin — busca usuários para anfitrião)
 
 Decks:    POST /deck/cadastrar
           GET  /deck/listar, /deck/:id
           PUT  /deck/:id
           DELETE /deck/:id
 
-Torneios: POST /torneio/criar, /:id/inscrever, /inscrever-tarde
+Torneios: POST /torneio/criar, /:id/inscrever
           POST /:id/checkin, /deck, /iniciar, /proxima-rodada, /refazer-rodada
           POST /:id/drop, /gerar-link-ingresso
-          POST /ingressar/:token
+          POST /ingressar/:token          (body: { deckId })
           POST /partida/:id/resultado, /confirmar, /contestar
           PUT  /partida/:id/ajustar
           PATCH /partida/:id/mesa
           PUT  /:id/rodada/:rodada/pareamentos
+          PUT  /:id/anfitriao             (admin — define anfitrião do torneio)
           GET  /torneio/listar, /:id, /:id/standings, /:id/partidas, /:id/meu-historico
           PUT  /torneio/:id
           DELETE /torneio/:id
 
-Ligas:    CRUD /liga/* + GET /liga/:id/ranking, /ranking-times
+Ligas:    CRUD /liga/* + GET /liga/:id/ranking
 
 Times:    CRUD /time/* + entrar, sair, convite, solicitar, aprovar, rejeitar
 
@@ -223,6 +225,10 @@ Site:     GET/PUT /site/anuncios, POST /site/anuncios/:id/clique
 
 Imagens:  POST /imagem/upload-url → uploadParaS3 (PUT direto no S3)
 ```
+
+**Fuso horário:** campos `horario`, `criadoEm`, `rodadaIniciadaEm` vêm da API em **Brasília (UTC-3)**. Use `src/utils/brasiliaTime.js` para exibir/formatar no front.
+
+**Permissões no torneio:** dono, admin global ou **anfitrião** (`anfitriaoId`) podem gerenciar o torneio (`canManageTournament` no front).
 
 Erros do backend: campo `mensagem` ou `message`; validação Zod em `errors[]`/`erros[]`.
 
@@ -278,7 +284,8 @@ Limites de deck (`constants/auth.js`):
 
 ### Permissões no torneio
 - `isOwner` = criador do torneio
-- `canManage` = `isOwner || isAdmin`
+- `isAnfitriao` = `anfitriaoId` do torneio
+- `canManageTournament` = `isOwner || isAdmin || isAnfitriao`
 - Painel do organizador: `OwnerControlPanel.jsx`
 
 ### Confirmação de resultados
@@ -392,7 +399,8 @@ npm run preview
 
 | Documento | Conteúdo |
 |---|---|
-| `AI_CONTEXT.md` (este) | Contexto para IA — fonte primária |
+| `AI_CONTEXT.md` (este) | Contexto para IA — fonte primária do frontend |
+| `championship-management-mtg/AI_CONTEXT.md` | Contexto do backend (API REST pareada) |
 | `DOCUMENTATION.md` | Docs detalhadas (parcialmente desatualizadas) |
 | `README.md` | Quick start (desatualizado em rotas/features) |
 | `.env.example` | Variáveis de ambiente |

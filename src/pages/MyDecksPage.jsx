@@ -12,6 +12,8 @@ import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const FORMAT_META = {
   standard: { label: "Standard", color: "#93c5fd", bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.45)" },
@@ -49,6 +51,8 @@ function FormatBadge({ formato }) {
 export function MyDecksPage() {
   const { usuario, token } = useAuth();
   const navigate = useNavigate();
+
+  usePageTitle(PAGE_TITLES.meusDecks);
 
   const [decks, setDecks] = useState([]);
   const [total, setTotal] = useState(0);

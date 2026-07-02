@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { SkeletonBannerCard } from "../ui/Skeleton";
 import { getTournamentFormatLabel } from "../../constants/tournament";
 import { logError } from "../../utils/logger";
+import { formatBrasiliaDate } from "../../utils/brasiliaTime";
 
 const FORMAT_COLORS = {
   modern: "#a78bfa",
@@ -54,8 +55,7 @@ export function TournamentSection() {
     load();
   }, [token]);
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+  const formatDate = (dateString) => formatBrasiliaDate(dateString);
 
   const items = torneios
     .filter((t) => t.status === "inscricoes_abertas" || t.status === "em_andamento")

@@ -6,6 +6,8 @@ import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 export function TimeCreatePage({ editMode = false }) {
   const { id: timeId } = useParams();
@@ -20,6 +22,11 @@ export function TimeCreatePage({ editMode = false }) {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(editMode);
   const [error, setError] = useState("");
+
+  usePageTitle(
+    editMode ? (form.nome || PAGE_TITLES.editarTime) : PAGE_TITLES.criarTime,
+    { loading: editMode && loadingData && !form.nome },
+  );
 
   const loadData = useCallback(async () => {
     if (!token || !editMode || !timeId) return;

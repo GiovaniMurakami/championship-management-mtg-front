@@ -10,6 +10,8 @@ import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { buildTeamInviteExternalUrl } from "../utils/externalNavigation";
 import { logError } from "../utils/logger";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 function getInitials(nome) {
   if (!nome) return "?";
@@ -43,6 +45,8 @@ export function TimeDetailPage() {
   const [conviteCopied, setConviteCopied] = useState(false);
   const [aprovandoId, setAprovandoId] = useState(null);
   const [rejeitandoId, setRejeitandoId] = useState(null);
+
+  usePageTitle(time?.nome, { loading, fallback: "Time" });
 
   const loadTime = useCallback(async () => {
     if (!timeId || !token) return;

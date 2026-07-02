@@ -179,6 +179,7 @@ function AppContent() {
 
   const { pathname } = useLocation();
   const isBare = BARE_ROUTES.includes(pathname);
+  const isPublicAuthRoute = pathname === "/esqueci-senha" || pathname === "/reset-senha";
 
   if (isBare) {
     return (
@@ -211,7 +212,7 @@ function AppContent() {
       </main>
 
       <AuthModal
-        isOpen={showAuthModal}
+        isOpen={showAuthModal && !isPublicAuthRoute}
         onClose={closeAuth}
         activeTab={authTab}
         onTabChange={setAuthTab}

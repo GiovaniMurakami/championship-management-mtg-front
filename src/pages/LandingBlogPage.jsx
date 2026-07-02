@@ -1,5 +1,7 @@
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer } from "../components";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const BLOG_POSTS = [
     {
@@ -41,6 +43,8 @@ const BLOG_POSTS = [
 ];
 
 export function LandingBlogPage() {
+    usePageTitle(PAGE_TITLES.blog);
+
     return (
         <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}>
             <LandingHeader />

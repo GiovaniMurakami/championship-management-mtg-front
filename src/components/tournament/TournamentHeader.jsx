@@ -1,6 +1,7 @@
 import { Skeleton } from "../ui/Skeleton";
 import { getTournamentFormatLabel } from "../../constants/tournament";
 import { ExpandableText } from "./ExpandableText";
+import { formatBrasiliaDateTime } from "../../utils/brasiliaTime";
 
 const STATUS_CONFIG = {
   inscricoes_abertas: {
@@ -43,10 +44,7 @@ const IconViews = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const IconDate = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>;
 
 export function TournamentHeader({ torneio, loading, className = "" }) {
-  const formatDate = (dateString) => {
-    if (!dateString) return "—";
-    return new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
-  };
+  const formatDate = (dateString) => formatBrasiliaDateTime(dateString);
 
   if (loading) {
     return (
@@ -115,6 +113,14 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
 
       {torneio && (
         <div className="flex flex-wrap gap-2 max-md:gap-[0.4rem]">
+          {torneio.anfitriao?.nome && (
+            <StatChip
+              icon={<IconPlayers />}
+              label="Anfitrião"
+              value={torneio.anfitriao.nome}
+              accent="#c795ff"
+            />
+          )}
           {torneio.formato && <StatChip icon={<IconFormat />} label="Formato" value={getTournamentFormatLabel(torneio.formato)} accent="#c795ff" />}
           <StatChip icon={<IconRound />} label="Rodada" value={torneio.totalRodadas ? `${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas}` : `${torneio.rodadaAtual ?? 0} / Sem limite`} accent="#2ccfb4" />
           {torneio.totalInscritos != null && <StatChip icon={<IconPlayers />} label="Inscritos" value={torneio.maxJogadores != null ? `${torneio.totalInscritos} / ${torneio.maxJogadores}` : torneio.totalCheckin != null ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)` : String(torneio.totalInscritos)} accent="#2ccfb4" />}

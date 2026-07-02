@@ -43,7 +43,7 @@ export const DEFAULT_ADS = [
 ];
 
 export const createEmptyAd = () => ({
-  id: `anuncio-${Date.now()}`,
+  id: crypto.randomUUID(),
   tipo: "card",
   tag: "",
   titulo: "",

@@ -1,21 +1,25 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 import { TournamentCreateForm } from "../components";
 import { PageShell } from "../components/ui/PageShell";
+import { toDatetimeLocalBrasilia } from "../utils/brasiliaTime";
 
 function addOneWeek(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return "";
   d.setDate(d.getDate() + 7);
-  // Return datetime-local format: YYYY-MM-DDTHH:mm
-  return d.toISOString().slice(0, 16);
+  return toDatetimeLocalBrasilia(d.toISOString());
 }
 
 export function TournamentCreatePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = useAuth();
+
+  usePageTitle(PAGE_TITLES.criarTorneio);
 
   const copyFrom = location.state?.copyFrom;
   const initialValues = copyFrom

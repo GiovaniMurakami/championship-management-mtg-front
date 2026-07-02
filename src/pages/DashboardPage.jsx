@@ -3,9 +3,11 @@ import { PageShell } from "../components/ui/PageShell";
 import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
 import { useAuth } from "../context/AuthContext";
-import { buscarAnuncios, salvarAnuncios } from "../services/backendApi";
+import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const inputClass = "w-full rounded-lg border border-[rgba(217,180,255,0.18)] bg-[#120b24] px-3 py-2 text-sm text-[#f5edff] outline-none transition focus:border-[#c795ff] focus:ring-2 focus:ring-[rgba(199,149,255,0.16)]";
 const labelClass = "grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#9f91bd]";
@@ -185,6 +187,9 @@ function DashboardAdsPreview({ ads }) {
 
 export function DashboardPage() {
   const { token } = useAuth();
+
+  usePageTitle(PAGE_TITLES.dashboard);
+
   const [activeTab, setActiveTab] = useState("anuncios");
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -196,10 +201,11 @@ export function DashboardPage() {
   const [dragOverPosition, setDragOverPosition] = useState("before");
 
   useEffect(() => {
+    if (!token) return undefined;
     let mounted = true;
     setLoading(true);
 
-    buscarAnuncios()
+    buscarAnunciosAdmin(token)
       .then((data) => {
         if (mounted) setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
       })
@@ -214,7 +220,7 @@ export function DashboardPage() {
       });
 
     return () => { mounted = false; };
-  }, []);
+  }, [token]);
 
   const activeCount = useMemo(() => ads.filter((ad) => ad.ativo).length, [ads]);
   const totalClicks = useMemo(() => ads.reduce((total, ad) => total + (ad.cliques ?? 0), 0), [ads]);
@@ -262,7 +268,7 @@ export function DashboardPage() {
   const addAd = () => {
     setAds((current) => [
       ...current,
-      { ...createEmptyAd(), id: `anuncio-${Date.now()}-${current.length}`, ordem: current.length },
+      { ...createEmptyAd(), ordem: current.length },
     ]);
   };
 

@@ -8,6 +8,8 @@ import { PageShell } from "../components/ui/PageShell";
 import { SkeletonCard } from "../components/ui/Skeleton";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 import { logError } from "../utils/logger";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const LIMITE = 20;
 
@@ -15,6 +17,9 @@ export function LigaPage() {
   const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+
+  usePageTitle(PAGE_TITLES.ligas);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [ligas, setLigas] = useState([]);
   const [total, setTotal] = useState(0);

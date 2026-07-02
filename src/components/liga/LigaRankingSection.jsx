@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { buscarCartaPorNome } from "../../services/scryfallApi";
+import { useState, useCallback, useEffect } from "react";
+import { buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
 import { EmptyState } from "../ui/EmptyState";
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
@@ -98,15 +98,149 @@ function CardPreviewTooltip({ imageUrl, x, y, visible, isLoading }) {
   );
 }
 
-function WinRateBar({ rate }) {
+function WinRateBar({ rate, className = "" }) {
   if (rate === null) return null;
   const style = winRateStyle(rate);
   return (
-    <div className="h-[3px] rounded-full w-full" style={{ background: style.track }}>
+    <div className={`h-[3px] rounded-full w-full ${className}`} style={{ background: style.track }}>
       <div
         className="h-full rounded-full transition-all duration-500"
         style={{ width: `${Math.min(rate, 100)}%`, background: style.color }}
       />
+    </div>
+  );
+}
+
+function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", className = "" }) {
+  const sizes = {
+    sm: "w-[38px] h-[53px] rounded-[5px]",
+    md: "w-[52px] h-[72px] rounded-[6px]",
+    lg: "w-full aspect-[5/7] rounded-[8px]",
+  };
+
+  if (!cardName) return null;
+
+  return (
+    <button
+      type="button"
+      className={`flex-shrink-0 overflow-hidden border border-[rgba(199,149,255,0.25)] bg-[rgba(26,16,50,0.8)] shadow-[0_4px_12px_rgba(0,0,0,0.35)] cursor-default p-0 transition-transform duration-200 hover:scale-[1.04] hover:border-[rgba(199,149,255,0.45)] ${sizes[size]} ${className}`}
+      onMouseEnter={(e) => onHover?.(cardName, e)}
+      onMouseLeave={onLeave}
+      onFocus={(e) => onHover?.(cardName, e)}
+      onBlur={onLeave}
+      aria-label={cardName}
+    >
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt=""
+          className="w-full h-full object-cover object-top block"
+          loading="lazy"
+        />
+      ) : (
+        <div className="w-full h-full animate-pulse bg-[rgba(199,149,255,0.12)]" />
+      )}
+    </button>
+  );
+}
+
+function PopularityBar({ value, max, color = "#c795ff" }) {
+  if (!max || max <= 0) return null;
+  const pct = Math.round((value / max) * 100);
+  return (
+    <div className="h-[3px] rounded-full w-full bg-[rgba(217,180,255,0.08)]">
+      <div
+        className="h-full rounded-full transition-all duration-500"
+        style={{ width: `${pct}%`, background: color }}
+      />
+    </div>
+  );
+}
+
+function RankingOverview({ ranking, jogadores, decks, cartas }) {
+  const lider = jogadores[0];
+  const topDeck = decks[0];
+  const topCarta = cartas[0];
+
+  const chips = [
+    lider && {
+      label: "Líder",
+      value: lider.jogador?.nome || "—",
+      detail: `${lider.pontos ?? 0} pts · ${lider.vitorias ?? 0}V`,
+      accent: "#fbbf24",
+    },
+    topDeck && {
+      label: "Arquétipo #1",
+      value: topDeck.nome || "—",
+      detail: `${topDeck.totalUsos ?? 0} usos · ${topDeck.winrate ?? Math.round(((topDeck.vitorias ?? 0) / Math.max(topDeck.totalUsos ?? 1, 1)) * 100)}% win`,
+      accent: "#7dd3fc",
+    },
+    topCarta && {
+      label: "Carta #1",
+      value: topCarta.nome || topCarta.name || "—",
+      detail: `${topCarta.totalCopias ?? 0} cópias · ${topCarta.totalDecks ?? 0} decks`,
+      accent: "#c795ff",
+    },
+  ].filter(Boolean);
+
+  if (chips.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {chips.map((chip) => (
+        <div
+          key={chip.label}
+          className="rounded-[0.85rem] border border-[rgba(217,180,255,0.12)] bg-white/[0.025] px-4 py-3"
+        >
+          <p
+            className="m-0 text-[0.65rem] uppercase tracking-[0.08em] font-semibold mb-1"
+            style={{ color: chip.accent }}
+          >
+            {chip.label}
+          </p>
+          <p className="m-0 text-[0.92rem] font-semibold text-[#f5edff] truncate">{chip.value}</p>
+          <p className="m-0 mt-[0.25rem] text-[0.72rem] text-[rgba(190,175,215,0.45)]">{chip.detail}</p>
+        </div>
+      ))}
+      {ranking.ligaNome && (
+        <p className="sr-only">Ranking da liga {ranking.ligaNome}</p>
+      )}
+    </div>
+  );
+}
+
+function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent }) {
+  return (
+    <div
+      className="relative rounded-[1rem] border overflow-hidden flex flex-col"
+      style={{
+        borderColor: `${accent}55`,
+        background: `linear-gradient(155deg, ${accent}12 0%, rgba(16,10,32,0.95) 100%)`,
+      }}
+    >
+      <div className="absolute top-3 left-3 z-10">
+        <MedalBadge pos={pos} />
+      </div>
+      <div className="p-4 pt-12 flex flex-col items-center gap-3 flex-1">
+        {cardName && (
+          <div className="w-[88px]">
+            <CardThumbnail
+              cardName={cardName}
+              imageUrl={imageUrl}
+              onHover={onHover}
+              onLeave={onLeave}
+              size="lg"
+            />
+          </div>
+        )}
+        <div className="text-center w-full min-w-0">
+          <p className="m-0 font-semibold text-[#f5edff] text-[0.95rem] truncate">{title}</p>
+          {subtitle && (
+            <p className="m-0 mt-[0.2rem] text-[0.72rem] text-[rgba(190,175,215,0.45)] truncate">{subtitle}</p>
+          )}
+        </div>
+        {stats && <div className="w-full">{stats}</div>}
+      </div>
     </div>
   );
 }
@@ -147,31 +281,44 @@ function MedalBadge({ pos }) {
   );
 }
 
-function CartaRow({ carta, idx, onCardHover, onCardLeave }) {
+function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeave }) {
   const pos = carta.posicao ?? idx + 1;
   const nome = carta.nome || carta.name || "—";
-  const copias = carta.totalCopias ?? "—";
+  const copias = carta.totalCopias ?? 0;
   const totalDecks = carta.totalDecks ?? "—";
+  const isTop3 = pos <= 3;
 
   return (
     <li
       key={carta.id ?? carta.nome ?? idx}
-      className="flex items-center gap-3 px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150"
+      className={`flex items-center gap-3 px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}
     >
       <MedalBadge pos={pos} />
 
-      <button
-        type="button"
-        className="flex-1 min-w-0 text-left group bg-transparent border-none p-0 cursor-default"
-        onMouseEnter={(e) => onCardHover(nome, e)}
-        onMouseLeave={onCardLeave}
-        onFocus={(e) => onCardHover(nome, e)}
-        onBlur={onCardLeave}
-      >
-        <span className="font-semibold text-[0.92rem] text-[#f5edff] group-hover:text-[#c4b5fd] transition-colors duration-150 underline decoration-dotted decoration-[rgba(199,149,255,0.4)] underline-offset-[3px] overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
-          {nome}
-        </span>
-      </button>
+      <CardThumbnail
+        cardName={nome}
+        imageUrl={cardImageUrl}
+        onHover={onCardHover}
+        onLeave={onCardLeave}
+      />
+
+      <div className="flex-1 min-w-0">
+        <button
+          type="button"
+          className="w-full text-left group bg-transparent border-none p-0 cursor-default"
+          onMouseEnter={(e) => onCardHover(nome, e)}
+          onMouseLeave={onCardLeave}
+          onFocus={(e) => onCardHover(nome, e)}
+          onBlur={onCardLeave}
+        >
+          <span className="font-semibold text-[0.92rem] text-[#f5edff] group-hover:text-[#c4b5fd] transition-colors duration-150 overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
+            {nome}
+          </span>
+        </button>
+        <div className="mt-[0.35rem] max-w-[220px] hidden min-[480px]:block">
+          <PopularityBar value={copias} max={maxCopias} />
+        </div>
+      </div>
 
       <div className="flex items-center gap-4 flex-shrink-0">
         <div className="text-right hidden min-[520px]:block">
@@ -211,7 +358,7 @@ function VDEBadges({ vitorias, derrotas, empates }) {
 
 // ── Podium card (top 3 players) ────────────────────────────────────────────────
 
-function PodiumCard({ jogador, idx, isLogado }) {
+function PodiumCard({ jogador, idx, isLogado, elevated = false }) {
   const pos = jogador.posicao;
   const cfg = PODIUM_CFG[pos] ?? PODIUM_CFG[3];
   const nome = jogador.jogador?.nome || "—";
@@ -224,7 +371,7 @@ function PodiumCard({ jogador, idx, isLogado }) {
 
   return (
     <div
-      className={`relative rounded-[1rem] border ${cfg.border} ${cfg.bg} ${cfg.shadow} p-5 flex flex-col items-center gap-3 transition-all duration-200 hover:scale-[1.015] hover:brightness-110`}
+      className={`relative rounded-[1rem] border ${cfg.border} ${cfg.bg} ${cfg.shadow} p-5 flex flex-col items-center gap-3 transition-all duration-200 hover:scale-[1.015] hover:brightness-110 ${elevated ? "sm:-translate-y-3" : "sm:translate-y-2"}`}
     >
       {/* Logged-in user indicator */}
       {isLogado && (
@@ -335,14 +482,14 @@ function PlayerRow({ jogador, idx, isLogado }) {
         </span>
       </div>
 
-      {/* Win rate % */}
+      {/* Win rate */}
       {winRate !== null && (
-        <span
-          className="hidden min-[600px]:block text-[0.75rem] font-semibold flex-shrink-0 w-[3.2rem] text-right"
-          style={{ color: wr.color }}
-        >
-          {winRate}%
-        </span>
+        <div className="hidden min-[480px]:flex flex-col flex-shrink-0 w-[4.5rem] gap-[0.25rem]">
+          <span className="text-[0.75rem] font-semibold text-right" style={{ color: wr.color }}>
+            {winRate}%
+          </span>
+          <WinRateBar rate={winRate} />
+        </div>
       )}
 
       {/* Points */}
@@ -355,24 +502,47 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
 // ── Deck list row ──────────────────────────────────────────────────────────────
 
-function DeckRow({ deck }) {
+function DeckRow({ deck, cardImageUrl, maxUsos, onCardHover, onCardLeave }) {
   const pos = deck.posicao;
   const nome = deck.nome || "—";
+  const cartaPrincipal = deck.cartaPrincipal;
   const usos = deck.totalUsos ?? 0;
   const wins = deck.vitorias ?? 0;
   const losses = deck.derrotas ?? 0;
-  const winRate = usos > 0 ? Math.round((wins / usos) * 100) : null;
-  const lossRate = usos > 0 ? Math.round((losses / usos) * 100) : null;
-  const wr = winRateStyle(winRate);
+  const winRate = deck.winrate ?? (usos > 0 ? Math.round((wins / usos) * 1000) / 10 : null);
+  const wr = winRateStyle(typeof winRate === "number" ? Math.round(winRate) : null);
+  const isTop3 = pos <= 3;
 
   return (
-    <li className="flex items-center gap-3 px-5 py-[0.9rem] hover:bg-white/[0.02] transition-colors duration-150">
+    <li className={`flex items-center gap-3 px-5 py-[0.9rem] hover:bg-white/[0.02] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}>
       <MedalBadge pos={pos} />
 
-      {/* Deck name */}
-      <span className="flex-1 min-w-0 font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#f5edff]">
-        {nome}
-      </span>
+      {cartaPrincipal ? (
+        <CardThumbnail
+          cardName={cartaPrincipal}
+          imageUrl={cardImageUrl}
+          onHover={onCardHover}
+          onLeave={onCardLeave}
+        />
+      ) : (
+        <span className="flex-shrink-0 w-[38px] h-[53px] rounded-[5px] border border-[rgba(217,180,255,0.15)] bg-[rgba(26,16,50,0.5)] flex items-center justify-center text-[1.1rem] opacity-40">
+          🃏
+        </span>
+      )}
+
+      <div className="flex-1 min-w-0">
+        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#f5edff] block">
+          {nome}
+        </span>
+        {cartaPrincipal && (
+          <p className="m-0 mt-[0.15rem] text-[0.72rem] text-[rgba(190,175,215,0.45)] truncate">
+            {cartaPrincipal}
+          </p>
+        )}
+        <div className="mt-[0.35rem] max-w-[180px] hidden min-[560px]:block">
+          <PopularityBar value={usos} max={maxUsos} color="#7dd3fc" />
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="flex items-center gap-4 flex-shrink-0">
@@ -393,22 +563,12 @@ function DeckRow({ deck }) {
           </p>
         </div>
         {winRate !== null && (
-          <div className="text-right">
+          <div className="text-right min-w-[3.5rem]">
             <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
               Win%
             </p>
             <p className="m-0 text-[0.88rem] font-semibold" style={{ color: wr.color }}>
-              {winRate}%
-            </p>
-          </div>
-        )}
-        {lossRate !== null && (
-          <div className="text-right hidden min-[680px]:block">
-            <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
-              Loss%
-            </p>
-            <p className="m-0 text-[0.88rem] font-semibold text-[#ef4444]">
-              {lossRate}%
+              {typeof winRate === "number" ? `${winRate % 1 === 0 ? winRate : winRate.toFixed(1)}%` : "—"}
             </p>
           </div>
         )}
@@ -529,6 +689,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const [subAba, setSubAba] = useState("jogadores");
   const [jogadoresPage, setJogadoresPage] = useState(1);
   const [decksPage, setDecksPage] = useState(1);
+  const [cardImages, setCardImages] = useState({});
   const [cardPreview, setCardPreview] = useState({
     visible: false,
     imageUrl: null,
@@ -564,6 +725,42 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const handleCardLeave = useCallback(() => {
     setCardPreview({ visible: false, imageUrl: null, x: 0, y: 0, isLoading: false });
   }, []);
+
+  useEffect(() => {
+    if (!ranking) return;
+
+    const deckList = ranking.rankingDecks || ranking.decks || [];
+    const cartaList = ranking.rankingCartas || ranking.cartas || ranking.cards || [];
+    const cardNames = [
+      ...deckList.map((deck) => deck.cartaPrincipal),
+      ...cartaList.map((carta) => carta.nome || carta.name),
+    ].filter(Boolean);
+
+    if (cardNames.length === 0) return;
+
+    let cancelled = false;
+
+    const loadImages = async () => {
+      const cards = await buscarCartasPorNome(cardNames);
+      if (cancelled) return;
+
+      const images = {};
+      cardNames.forEach((name, index) => {
+        const imagem = cards[index]?.imagem;
+        if (imagem) {
+          images[name] = imagem;
+          _imgCache.set(name, imagem);
+        }
+      });
+      setCardImages(images);
+    };
+
+    loadImages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ranking]);
 
   if (loading) return <LoadingSkeleton />;
 
@@ -611,16 +808,32 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const decksPage_ = decksAll.slice((decksClamped - 1) * PAGE_SIZE, decksClamped * PAGE_SIZE);
   const userId = usuarioLogado?.id;
 
+  const maxCopias = cartas[0]?.totalCopias ?? 1;
+  const maxUsos = decks[0]?.totalUsos ?? 1;
+  const topDecks = decks.slice(0, Math.min(3, decks.length));
+  const topCartas = cartas.slice(0, Math.min(3, cartas.length));
+
+  const meuRanking = userId ? jogadores.find((j) => j.jogador?.id === userId) : null;
+
+  const podiumDisplay =
+    top3.length === 3
+      ? [
+          { jogador: top3[1], idx: 1, elevated: false },
+          { jogador: top3[0], idx: 0, elevated: true },
+          { jogador: top3[2], idx: 2, elevated: false },
+        ]
+      : top3.map((jogador, idx) => ({ jogador, idx, elevated: false }));
+
   const cardClass =
     "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden";
 
-  // Podium grid: 1 col → max-w-xs centered; 2 cols → max-w-sm centered; 3 cols → full responsive
+  // Podium grid: classic 2-1-3 on desktop
   const podiumGridClass =
     top3.length === 1
       ? "grid grid-cols-1 max-w-[240px] mx-auto"
       : top3.length === 2
         ? "grid grid-cols-2 max-w-sm mx-auto gap-3"
-        : "grid grid-cols-1 sm:grid-cols-3 gap-3";
+        : "grid grid-cols-1 sm:grid-cols-3 gap-3 items-end";
   const teamRankingSection = isTeamLeague ? (
     <section className="space-y-3" aria-label="Ranking coletivo">
       <div>
@@ -636,6 +849,9 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   return (
     <div className="space-y-6">
       <CardPreviewTooltip {...cardPreview} />
+
+      <RankingOverview ranking={ranking} jogadores={jogadores} decks={decks} cartas={cartas} />
+
       {teamRankingSection}
 
       {/* ── Sub-tabs ── */}
@@ -671,12 +887,13 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
           {/* Podium */}
           {top3.length > 0 && (
             <div className={podiumGridClass}>
-              {top3.map((j, idx) => (
+              {podiumDisplay.map(({ jogador, idx, elevated }) => (
                 <PodiumCard
-                  key={j.jogador?.id ?? idx}
-                  jogador={j}
+                  key={jogador.jogador?.id ?? idx}
+                  jogador={jogador}
                   idx={idx}
-                  isLogado={Boolean(userId && j.jogador?.id === userId)}
+                  elevated={elevated}
+                  isLogado={Boolean(userId && jogador.jogador?.id === userId)}
                 />
               ))}
             </div>
@@ -726,6 +943,24 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
             </div>
           )}
 
+          {meuRanking && meuRanking.posicao > 3 && !resto.some((j) => j.jogador?.id === userId) && (
+            <div className="rounded-[0.85rem] border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <MedalBadge pos={meuRanking.posicao} />
+                <div className="min-w-0">
+                  <p className="m-0 text-[0.78rem] text-[rgba(190,175,215,0.5)]">Sua posição</p>
+                  <p className="m-0 font-semibold text-[#c4b5fd] truncate">{meuRanking.jogador?.nome}</p>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="m-0 font-['Bebas_Neue',sans-serif] text-[1.4rem] text-[rgba(240,180,41,0.85)] leading-none">
+                  {meuRanking.pontos ?? 0}
+                </p>
+                <p className="m-0 text-[0.65rem] text-[rgba(190,175,215,0.4)] uppercase tracking-[0.07em]">pontos</p>
+              </div>
+            </div>
+          )}
+
           {/* Edge case: user has 0 games and is not in ranking at all */}
           {userId &&
             !jogadores.some((j) => j.jogador?.id === userId) &&
@@ -739,15 +974,52 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
       {/* ── Arquétipos ── */}
       {activeTab === "decks" && (
-        <div className={cardClass}>
+        <div className="space-y-4">
+          {topDecks.length > 0 && (
+            <div className={`grid gap-3 ${topDecks.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topDecks.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+              {topDecks.map((deck) => {
+                const wr = deck.winrate ?? (deck.totalUsos > 0 ? Math.round((deck.vitorias / deck.totalUsos) * 1000) / 10 : 0);
+                return (
+                  <SpotlightCard
+                    key={deck.nome}
+                    pos={deck.posicao}
+                    title={deck.nome}
+                    subtitle={deck.cartaPrincipal}
+                    cardName={deck.cartaPrincipal}
+                    imageUrl={deck.cartaPrincipal ? cardImages[deck.cartaPrincipal] : null}
+                    accent="#7dd3fc"
+                    onHover={handleCardHover}
+                    onLeave={handleCardLeave}
+                    stats={
+                      <div className="flex items-center justify-between w-full text-[0.72rem]">
+                        <span className="text-[#7dd3fc]">{deck.totalUsos ?? 0} usos</span>
+                        <span className="font-semibold" style={{ color: winRateStyle(Math.round(wr)).color }}>
+                          {wr % 1 === 0 ? wr : wr.toFixed(1)}% win
+                        </span>
+                      </div>
+                    }
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          <div className={cardClass}>
           <SectionInfo
             count={decksTotal}
             label={`arquétipo${decksTotal !== 1 ? "s" : ""}`}
-            hint="ordenado por usos"
+            hint="ordenado por usos · passe o mouse na carta para ampliar"
           />
           <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
             {decksPage_.map((d, idx) => (
-              <DeckRow key={d.nome ?? idx} deck={d} />
+              <DeckRow
+                key={d.nome ?? idx}
+                deck={d}
+                cardImageUrl={d.cartaPrincipal ? cardImages[d.cartaPrincipal] : null}
+                maxUsos={maxUsos}
+                onCardHover={handleCardHover}
+                onCardLeave={handleCardLeave}
+              />
             ))}
           </ul>
           {decksPages > 1 && (
@@ -773,28 +1045,57 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               </button>
             </div>
           )}
+          </div>
         </div>
       )}
 
       {/* ── Cartas ── */}
       {activeTab === "cartas" && (
-        <div className={cardClass}>
+        <div className="space-y-4">
+          {topCartas.length > 0 && (
+            <div className={`grid gap-3 ${topCartas.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topCartas.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+              {topCartas.map((carta) => {
+                const nome = carta.nome || carta.name;
+                return (
+                  <SpotlightCard
+                    key={nome}
+                    pos={carta.posicao}
+                    title={nome}
+                    subtitle={`${carta.totalCopias ?? 0} cópias em ${carta.totalDecks ?? 0} decks`}
+                    cardName={nome}
+                    imageUrl={cardImages[nome]}
+                    accent="#c795ff"
+                    onHover={handleCardHover}
+                    onLeave={handleCardLeave}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          <div className={cardClass}>
           <SectionInfo
             count={cartas.length}
             label={`carta${cartas.length !== 1 ? "s" : ""} mais usadas`}
-            hint="passe o mouse para ver a carta"
+            hint="basic lands excluídas · passe o mouse para ampliar"
           />
           <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
-            {cartas.map((c, idx) => (
-              <CartaRow
-                key={c.id ?? c.nome ?? idx}
-                carta={c}
-                idx={idx}
-                onCardHover={handleCardHover}
-                onCardLeave={handleCardLeave}
-              />
-            ))}
+            {cartas.map((c, idx) => {
+              const nome = c.nome || c.name;
+              return (
+                <CartaRow
+                  key={c.id ?? nome ?? idx}
+                  carta={c}
+                  idx={idx}
+                  maxCopias={maxCopias}
+                  cardImageUrl={cardImages[nome]}
+                  onCardHover={handleCardHover}
+                  onCardLeave={handleCardLeave}
+                />
+              );
+            })}
           </ul>
+          </div>
         </div>
       )}
     </div>

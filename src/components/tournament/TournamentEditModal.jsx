@@ -2,19 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { calculateAutomaticSwissRounds, calculateSwissRounds } from "../../utils/tournamentFlow";
 import { sanitizeText } from "../../utils/sanitize";
+import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 import { SelectField } from "../ui";
+import { RoundSoundPicker } from "./RoundSoundPicker";
 
 function toDatetimeLocal(dateStr) {
-  if (!dateStr) return "";
-  try {
-    const date = new Date(dateStr);
-    const pad = (value) => String(value).padStart(2, "0");
-    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
-  } catch {
-    return "";
-  }
+  return toDatetimeLocalBrasilia(dateStr);
 }
 
 const TEXTAREA_CLASS = `${TOURNAMENT_INPUT_CLASS} min-h-[120px] resize-y`;
@@ -260,7 +255,15 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             )}
 
             <input name="linkBanner" type="url" placeholder="Link do banner" value={form.linkBanner} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-            <input name="somRodada" type="url" placeholder="Som de nova rodada" value={form.somRodada} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
+            <div className="flex flex-col gap-2">
+              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Som de nova rodada</label>
+              <RoundSoundPicker
+                idPrefix="edit-som-rodada"
+                value={form.somRodada}
+                onChange={(somRodada) => setForm((prev) => ({ ...prev, somRodada }))}
+                disabled={isDisabled}
+              />
+            </div>
             <input name="linkLive" type="url" placeholder="Live no YouTube" value={form.linkLive} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
           </div>
 

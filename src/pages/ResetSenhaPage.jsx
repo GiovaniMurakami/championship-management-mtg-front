@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { confirmarResetSenha } from "../services/backendApi";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 import { MODAL_INPUT_CLASS as inputClass } from "../styles/uiClasses";
 
 const TOKEN_ERROR_HINTS = /token|link|expirad|inválid|invalid/i;
@@ -12,6 +14,8 @@ export function ResetSenhaPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
+
+    usePageTitle(PAGE_TITLES.resetSenha);
 
     const [form, setForm] = useState({ novaSenha: "", confirmarSenha: "" });
     const [isLoading, setIsLoading] = useState(false);

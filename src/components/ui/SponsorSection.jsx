@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { isValidUuid } from "../../utils/validateUuid";
 import { buscarAnuncios, registrarCliqueAnuncio } from "../../services/backendApi";
 import { DEFAULT_ADS, normalizeAds } from "../../constants/ads";
 import { SkeletonSponsorSection } from "./Skeleton";
@@ -29,7 +30,7 @@ export function SponsorSection() {
   };
 
   const trackClick = (ad) => {
-    if (!ad?.id || !ad?.link) return;
+    if (!ad?.id || !ad?.link || !isValidUuid(ad.id)) return;
     registrarCliqueAnuncio(ad.id).catch(() => {});
   };
 

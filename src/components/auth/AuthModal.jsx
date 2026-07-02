@@ -19,7 +19,6 @@ export function AuthModal({
   onLoginSubmit,
   onRegisterSubmit,
   loginLockout,
-  onForgotPassword,
 }) {
   const navigate = useNavigate();
 
@@ -93,7 +92,10 @@ export function AuthModal({
             <button
               type="button"
               className="text-[#beafd7] text-[0.85rem] text-center underline underline-offset-2 cursor-pointer bg-transparent border-none p-0 hover:text-[#c795ff] transition-colors duration-200"
-              onClick={() => { onClose(); if (onForgotPassword) onForgotPassword(); else navigate("/esqueci-senha"); }}
+              onClick={() => {
+                navigate("/esqueci-senha");
+                onClose();
+              }}
             >
               Esqueci minha senha
             </button>

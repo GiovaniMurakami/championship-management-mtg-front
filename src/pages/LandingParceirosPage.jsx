@@ -1,6 +1,8 @@
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer } from "../components";
 import { Tooltip } from "../components/ui/Tooltip";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 const PARTNERS = [
     { name: "Bandeira Cards", img: "/images/landing/parceiros/bandeira-cards.png", link: "https://www.bandeiracards.com.br/" },
@@ -19,6 +21,8 @@ const PARTNERS = [
 ];
 
 export function LandingParceirosPage() {
+    usePageTitle(PAGE_TITLES.parceiros);
+
     return (
         <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}>
             <LandingHeader />

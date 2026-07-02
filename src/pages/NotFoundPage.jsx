@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 export function NotFoundPage() {
   const navigate = useNavigate();
+
+  usePageTitle(PAGE_TITLES.naoEncontrada);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 text-center">

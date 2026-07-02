@@ -15,6 +15,8 @@ import { Tabs } from "../components/ui/Tabs";
 import { EmptyState } from "../components/ui/EmptyState";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { logError } from "../utils/logger";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { PAGE_TITLES } from "../constants/pageTitles";
 
 export function LigaDetailPage() {
   const LIMITE_RANKING_TIMES = 10;
@@ -29,6 +31,8 @@ export function LigaDetailPage() {
   const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingError, setRankingError] = useState("");
   const [abaAtiva, setAbaAtiva] = useState("torneios");
+
+  usePageTitle(liga?.nome, { loading, fallback: "Liga" });
 
   const loadLiga = useCallback(async () => {
     if (!ligaId || !token) return;

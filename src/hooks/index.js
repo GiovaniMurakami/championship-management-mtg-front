@@ -1,3 +1,4 @@
+export { useSiteEstatisticas } from "./useSiteEstatisticas";
 export { useActionGuard } from "./useActionGuard";
 export { useAuth } from "./useAuth";
 export { useCardPreview } from "./useCardPreview";
@@ -6,4 +7,5 @@ export { useDeckBuilder } from "./useDeckBuilder";
 export { useDebouncedValue } from "./useDebouncedValue";
 export { useMyDecks } from "./useMyDecks";
 export { useTournamentDetail } from "./useTournamentDetail";
+export { usePageTitle } from "./usePageTitle";
 export { useYouTubeVideos } from "./useYouTubeVideos";
