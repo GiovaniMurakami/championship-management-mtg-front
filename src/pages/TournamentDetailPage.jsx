@@ -11,6 +11,7 @@ import {
   OwnerControlPanel,
   RoundTimer,
   TournamentEditModal,
+  TournamentHostModal,
 } from "../components/tournament";
 import { SkeletonTournamentDetail } from "../components";
 import { PageShell } from "../components/ui/PageShell";
@@ -20,6 +21,7 @@ import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 export function TournamentDetailPage() {
   const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showHostModal, setShowHostModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const {
     torneio,
@@ -31,6 +33,7 @@ export function TournamentDetailPage() {
     error,
     successMsg,
     isOwner,
+    isAnfitriao,
     isAdmin,
     canManageTournament,
     pendingCheckinPlayers,
@@ -54,6 +57,7 @@ export function TournamentDetailPage() {
     handleBulkDropPlayers,
     handleDropPlayer,
     handleEditTorneio,
+    handleDefinirAnfitriao,
     handleDeleteTorneio,
     handleInscreverTarde,
     times,
@@ -71,7 +75,7 @@ export function TournamentDetailPage() {
   const isFinished = torneio?.status === "finalizado";
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
-  const canManage = (isOwner || isAdmin) && isRegistrationOpen;
+  const canManage = canManageTournament && isRegistrationOpen;
 
   useEffect(() => {
     if (!torneio) return;
@@ -105,6 +109,11 @@ export function TournamentDetailPage() {
     };
   }, [torneio]);
 
+  const handleHostSubmit = async (anfitriaoId) => {
+    const ok = await handleDefinirAnfitriao(anfitriaoId);
+    if (ok) setShowHostModal(false);
+  };
+
   const handleEditSubmit = async (payload) => {
     await handleEditTorneio(payload);
     setShowEditModal(false);
@@ -128,7 +137,15 @@ export function TournamentDetailPage() {
           ← Voltar para torneios
         </button>
         {canManage && (
-          <div className="flex gap-2 max-md:w-full">
+          <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
+            {isAdmin && (
+              <button
+                className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
+                onClick={() => setShowHostModal(true)}
+              >
+                {torneio?.anfitriao ? "Alterar anfitrião" : "Definir anfitrião"}
+              </button>
+            )}
             <button
               className="px-4 py-2 border border-[#4f46e5] rounded-lg bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:flex-1"
               onClick={() => setShowEditModal(true)}
@@ -244,7 +261,7 @@ export function TournamentDetailPage() {
             onConfirmResult={handleConfirmResult}
             actionLoading={actionLoading}
             torneio={torneio}
-            isOwner={isOwner}
+            isOwner={canManageTournament}
             currentPlayer={currentPlayer}
             onCheckin={handleCheckin}
           />
@@ -278,6 +295,8 @@ export function TournamentDetailPage() {
             token={token}
             isOwner={isOwner}
             isAdmin={isAdmin}
+            isAnfitriao={isAnfitriao}
+            canManageTournament={canManageTournament}
             torneioNome={torneio?.nome}
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
@@ -292,7 +311,7 @@ export function TournamentDetailPage() {
               torneio={torneio}
               partidas={partidas}
               usuarioId={usuario?.id}
-              isOwner={isOwner}
+              isOwner={canManageTournament}
               token={token}
               onPartidasUpdate={loadPartidas}
             />
@@ -395,6 +414,15 @@ export function TournamentDetailPage() {
         onSubmit={handleEditSubmit}
         loading={actionLoading}
         token={token}
+      />
+
+      <TournamentHostModal
+        isOpen={showHostModal}
+        onClose={() => setShowHostModal(false)}
+        torneio={torneio}
+        token={token}
+        onSubmit={handleHostSubmit}
+        loading={actionLoading}
       />
 
       <DeleteConfirmModal

@@ -92,6 +92,12 @@ export const atualizarUsuario = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const listarUsuarios = (token, params = {}) =>
+  httpClient.get("/usuario/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+    params,
+  });
+
 // Atualizar Deck
 export const atualizarDeck = (deckId, payload, token) =>
   httpClient.put(`/deck/${deckId}`, payload, {
@@ -246,6 +252,11 @@ export const atualizarTorneio = (torneioId, payload, token) =>
 
 export const deletarTorneio = (torneioId, token) =>
   httpClient.delete(`/torneio/${torneioId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const definirAnfitriaoTorneio = (torneioId, anfitriaoId, token) =>
+  httpClient.put(`/torneio/${torneioId}/anfitriao`, { anfitriaoId }, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

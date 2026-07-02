@@ -17,6 +17,7 @@ import {
     dropJogador,
     atualizarTorneio,
     deletarTorneio,
+    definirAnfitriaoTorneio,
 } from "../services/backendApi";
 import {
     subscribeToTournament,
@@ -36,6 +37,8 @@ import {
     normalizeStandingsPayload,
     useTournamentQueries,
 } from "./useTournamentQueries";
+import { normalizeRoundSoundUrl } from "../constants/roundSounds";
+import { playRoundSound, unlockRoundSoundPlayer } from "../utils/roundSoundPlayer";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin } = useAuth();
@@ -45,6 +48,22 @@ export function useTournamentDetail() {
     const [torneio, setTorneio] = useState(null);
     const somRodadaRef = useRef(null);
     somRodadaRef.current = torneio?.somRodada ?? null;
+
+    const playTorneioRoundSound = useCallback((somUrl) => {
+        const url = normalizeRoundSoundUrl(somUrl);
+        if (!url) return;
+        playRoundSound(url);
+    }, []);
+
+    useEffect(() => {
+        const unlock = () => { unlockRoundSoundPlayer(); };
+        window.addEventListener("pointerdown", unlock, { once: true });
+        window.addEventListener("keydown", unlock, { once: true });
+        return () => {
+            window.removeEventListener("pointerdown", unlock);
+            window.removeEventListener("keydown", unlock);
+        };
+    }, []);
     const [standings, setStandings] = useState([]);
     const [partidas, setPartidas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -256,13 +275,7 @@ export function useTournamentDetail() {
                 loadStandings();
                 loadPartidas();
                 const somUrl = data.somRodada || somRodadaRef.current;
-                if (somUrl) {
-                    try {
-                        const audio = new Audio(somUrl);
-                        audio.volume = 0.7;
-                        audio.play().catch(() => { /* autoplay blocked */ });
-                    } catch { /* ignore audio errors */ }
-                }
+                playTorneioRoundSound(somUrl);
             },
             onResultadoRegistrado: (msg) => {
                 const partidaAtualizada = msg?.data?.partida || msg?.data;
@@ -473,9 +486,14 @@ export function useTournamentDetail() {
         [torneio?.donoId, usuario?.id],
     );
 
+    const isAnfitriao = useMemo(
+        () => Boolean(torneio?.anfitriaoId) && normalizeId(torneio?.anfitriaoId) === normalizeId(usuario?.id),
+        [torneio?.anfitriaoId, usuario?.id],
+    );
+
     const canManageTournament = useMemo(
-        () => isOwner || isAdmin,
-        [isOwner, isAdmin],
+        () => isOwner || isAdmin || isAnfitriao,
+        [isOwner, isAdmin, isAnfitriao],
     );
 
     const pendingCheckinPlayers = useMemo(() => {
@@ -790,7 +808,16 @@ export function useTournamentDetail() {
             } else if (actionBeforeRequest === "advance-top-cut") {
                 setSuccessMsg("Fase eliminatória avançada com sucesso!");
             } else {
+                if (data?.rodadaIniciadaEm) {
+                    setTorneio((prev) => prev ? {
+                        ...prev,
+                        rodadaAtual: data.rodadaAtual ?? prev.rodadaAtual,
+                        emCorte: data.emCorte ?? prev.emCorte,
+                        rodadaIniciadaEm: data.rodadaIniciadaEm,
+                    } : prev);
+                }
                 setSuccessMsg(`Rodada ${data?.rodadaAtual || "seguinte"} iniciada!`);
+                playTorneioRoundSound(somRodadaRef.current);
             }
             await loadTournament();
             await loadStandings();
@@ -842,8 +869,12 @@ export function useTournamentDetail() {
         setAdminActionKey("start-tournament");
         setError("");
         try {
-            await iniciarTorneio(torneioId, token);
+            const data = await iniciarTorneio(torneioId, token);
+            if (data?.rodadaIniciadaEm) {
+                setTorneio((prev) => prev ? { ...prev, rodadaIniciadaEm: data.rodadaIniciadaEm, status: "em_andamento" } : prev);
+            }
             setSuccessMsg("Torneio iniciado com sucesso!");
+            playTorneioRoundSound(somRodadaRef.current);
             await loadTournament();
             await loadStandings();
             await loadPartidas();
@@ -972,6 +1003,29 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleDefinirAnfitriao = async (anfitriaoId) => {
+        if (!torneioId) return;
+        setActionLoading(true);
+        setError("");
+        try {
+            const resultado = await definirAnfitriaoTorneio(torneioId, anfitriaoId, token);
+            setTorneio((prev) => prev ? {
+                ...prev,
+                anfitriaoId: resultado.anfitriaoId,
+                anfitriao: resultado.anfitriao ?? null,
+            } : prev);
+            setSuccessMsg(anfitriaoId ? "Anfitrião definido com sucesso!" : "Anfitrião removido com sucesso!");
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao definir anfitrião.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     return {
         torneio,
         standings,
@@ -983,6 +1037,7 @@ export function useTournamentDetail() {
         error,
         successMsg,
         isOwner,
+        isAnfitriao,
         canManageTournament,
         pendingCheckinPlayers,
         requiresNextRoundCheckin,
@@ -1011,6 +1066,7 @@ export function useTournamentDetail() {
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayer: guard(handleDropPlayer),
         handleEditTorneio: guard(handleEditTorneio),
+        handleDefinirAnfitriao: guard(handleDefinirAnfitriao),
         handleDeleteTorneio: guard(handleDeleteTorneio),
         loadPartidas,
         realtimeToast,

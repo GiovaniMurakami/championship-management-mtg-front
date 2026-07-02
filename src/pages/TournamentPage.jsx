@@ -16,6 +16,7 @@ import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { SponsorSection } from "../components/ui/SponsorSection";
 import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
+import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
 import { useSiteEstatisticas, formatSiteStatValue } from "../hooks/useSiteEstatisticas";
 
 const LIMITE = 20;
@@ -213,8 +214,7 @@ export function TournamentPage() {
 
   const handleViewTournament = (torneioId) => navigate(`/torneios/${torneioId}`);
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleString("pt-BR", { timeZone: "UTC" });
+  const formatDate = (dateString) => formatBrasiliaDateTime(dateString);
 
   const isInscrito = (torneio) => {
     if (!usuario?.id) return false;

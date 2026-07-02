@@ -5,6 +5,7 @@ import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 import { SelectField } from "../ui";
+import { RoundSoundPicker } from "./RoundSoundPicker";
 
 const INITIAL_FORM = {
   nome: "",
@@ -170,7 +171,10 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="horario" className="text-[#e0e0e0] font-medium text-[0.95rem]">Data e Hora</label>
+              <label htmlFor="horario" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                Data e Hora
+                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Horário de Brasília (UTC-3)</span>
+              </label>
               <input id="horario" name="horario" type="datetime-local" value={createForm.horario} onChange={handleChange} required disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
             </div>
 
@@ -284,8 +288,15 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             <SectionTitle>Midia</SectionTitle>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="somRodada" className="text-[#e0e0e0] font-medium text-[0.95rem]">Som de Nova Rodada <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
-              <input id="somRodada" name="somRodada" type="url" placeholder="https://.../som.mp3" value={createForm.somRodada} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
+              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                Som de Nova Rodada <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
+              </label>
+              <RoundSoundPicker
+                idPrefix="create-som-rodada"
+                value={createForm.somRodada}
+                onChange={(somRodada) => setCreateForm((prev) => ({ ...prev, somRodada }))}
+                disabled={isSubmitting}
+              />
             </div>
 
             <div className="flex flex-col gap-2">

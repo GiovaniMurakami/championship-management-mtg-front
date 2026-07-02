@@ -11,4 +11,6 @@ export { ReviewRoundModal } from "./ReviewRoundModal";
 export { TournamentCreateForm } from "./TournamentCreateForm";
 export { TournamentSection } from "./TournamentSection";
 export { TournamentEditModal } from "./TournamentEditModal";
+export { TournamentHostModal } from "./TournamentHostModal";
+export { RoundSoundPicker } from "./RoundSoundPicker";
 export { ExpandableText } from "./ExpandableText";
