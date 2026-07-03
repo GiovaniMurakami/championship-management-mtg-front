@@ -20,7 +20,12 @@ export function AuthProvider({ children }) {
   const [authInitialized, setAuthInitialized] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: "", senha: "" });
-  const [registerForm, setRegisterForm] = useState({ nome: "", email: "", senha: "" });
+  const [registerForm, setRegisterForm] = useState({
+    nome: "",
+    email: "",
+    senha: "",
+    aceiteTermos: false,
+  });
 
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [editProfileForm, setEditProfileForm] = useState({
@@ -133,13 +138,25 @@ export function AuthProvider({ children }) {
     event.preventDefault();
     setAuthLoading(true);
     setAuthMessage("");
+
+    if (!registerForm.aceiteTermos) {
+      setAuthMessage("Você precisa aceitar os Termos de Uso para criar uma conta.");
+      setAuthLoading(false);
+      return;
+    }
+
     try {
-      await cadastrarUsuario(registerForm);
+      await cadastrarUsuario({
+        nome: registerForm.nome,
+        email: registerForm.email,
+        senha: registerForm.senha,
+        aceiteTermos: true,
+      });
       const authData = await loginUsuario({ email: registerForm.email, senha: registerForm.senha });
       saveAuth(authData);
       setAuthMessage("Conta criada com sucesso! Um e-mail de boas-vindas foi enviado para você.");
       setShowAuthModal(false);
-      setRegisterForm({ nome: "", email: "", senha: "" });
+      setRegisterForm({ nome: "", email: "", senha: "", aceiteTermos: false });
     } catch (error) {
       setAuthMessage(error.message);
     } finally {

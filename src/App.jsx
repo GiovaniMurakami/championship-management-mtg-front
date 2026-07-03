@@ -179,7 +179,9 @@ function AppContent() {
 
   const { pathname } = useLocation();
   const isBare = BARE_ROUTES.includes(pathname);
-  const isPublicAuthRoute = pathname === "/esqueci-senha" || pathname === "/reset-senha";
+  const isPublicAuthRoute = pathname === "/esqueci-senha"
+    || pathname === "/reset-senha"
+    || pathname === "/termos-de-uso";
 
   if (isBare) {
     return (

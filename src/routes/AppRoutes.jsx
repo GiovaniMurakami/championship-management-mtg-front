@@ -16,6 +16,7 @@ const LigaDetailPage      = lazy(() => import("../pages/LigaDetailPage").then(m 
 const LigaCreatePage      = lazy(() => import("../pages/LigaCreatePage").then(m => ({ default: m.LigaCreatePage })));
 const EsqueciSenhaPage    = lazy(() => import("../pages/EsqueciSenhaPage").then(m => ({ default: m.EsqueciSenhaPage })));
 const ResetSenhaPage      = lazy(() => import("../pages/ResetSenhaPage").then(m => ({ default: m.ResetSenhaPage })));
+const TermosDeUsoPage     = lazy(() => import("../pages/TermosDeUsoPage").then(m => ({ default: m.TermosDeUsoPage })));
 const LandingPage         = lazy(() => import("../pages/LandingPage").then(m => ({ default: m.LandingPage })));
 const LandingBlogPage     = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
 const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
@@ -111,6 +112,7 @@ export function AppRoutes() {
 
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
+        <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
         <Route path="/blog" element={<LandingBlogPage />} />
         <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
         <Route path="/parceiros" element={<LandingParceirosPage />} />

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { BaseModal } from "../ui/BaseModal";
+import { TermsAcceptanceField } from "./TermsAcceptanceField";
 import { MODAL_INPUT_CLASS } from "../../styles/uiClasses";
 
 const btnPrimary =
@@ -137,7 +138,13 @@ export function AuthModal({
                 className={MODAL_INPUT_CLASS}
               />
             </label>
-            <button className={btnPrimary} disabled={isLoading} type="submit">
+            <TermsAcceptanceField
+              checked={Boolean(registerForm.aceiteTermos)}
+              onChange={(aceiteTermos) =>
+                onRegisterFormChange((current) => ({ ...current, aceiteTermos }))
+              }
+            />
+            <button className={btnPrimary} disabled={isLoading || !registerForm.aceiteTermos} type="submit">
               {isLoading ? "Criando..." : "Criar conta"}
             </button>
           </form>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { TermsAcceptanceField } from "../components/auth/TermsAcceptanceField";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { ingressarComToken } from "../services/backendApi";
@@ -181,12 +182,19 @@ export function TournamentJoinPage() {
                                     value={registerForm.senha}
                                     onChange={(e) => setRegisterForm((f) => ({ ...f, senha: e.target.value }))}
                                 />
+                                <TermsAcceptanceField
+                                    id="aceite-termos-ingressar"
+                                    checked={Boolean(registerForm.aceiteTermos)}
+                                    onChange={(aceiteTermos) =>
+                                        setRegisterForm((f) => ({ ...f, aceiteTermos }))
+                                    }
+                                />
                                 {authMessage && (
                                     <p className={`text-[0.82rem] text-center ${authMessage.includes("sucesso") ? "text-[#5eead4]" : "text-[#f87171]"}`}>{authMessage}</p>
                                 )}
                                 <button
                                     type="submit"
-                                    disabled={authLoading}
+                                    disabled={authLoading || !registerForm.aceiteTermos}
                                     className="mt-1 border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     {authLoading ? "Criando conta..." : "Criar conta e ingressar"}

@@ -17,6 +17,7 @@ export const PAGE_TITLES = {
   editarLiga: "Editar Liga",
   esqueciSenha: "Esqueci minha senha",
   resetSenha: "Redefinir senha",
+  termosDeUso: "Termos de Uso",
   blog: "Blog",
   decks: "Decks",
   sobreMim: "Sobre mim",
