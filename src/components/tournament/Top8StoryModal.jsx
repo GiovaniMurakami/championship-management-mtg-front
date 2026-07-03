@@ -27,7 +27,10 @@ function easeOutQuart(t) {
 function loadImage(src) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    // Asset local do build: mesma origem, sem CORS. URLs externas usam anonymous.
+    if (!src.startsWith("/") && !src.startsWith(window.location.origin)) {
+      img.crossOrigin = "anonymous";
+    }
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;

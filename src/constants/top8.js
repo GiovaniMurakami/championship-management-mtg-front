@@ -1,2 +1,4 @@
-export const TOP8_BACKGROUND_URL =
-  "https://fuguete-championship-management.s3.us-east-1.amazonaws.com/imagens/b14080b1-fd2e-4ef8-aa13-acab1d9c9c79/75c57035-0ae8-45e0-8a66-b52669d44c4a.jpeg";
+import top8Background from "../assets/top8/fundoTop8.jpeg";
+
+/** URL do fundo do story Top8 (asset empacotado no build — sem depender de CORS do S3). */
+export const TOP8_BACKGROUND_URL = top8Background;
