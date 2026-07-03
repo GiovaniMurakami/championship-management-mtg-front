@@ -127,8 +127,8 @@
   animation: storySlideIn 0.38s ease both;
 }
 
-/* Base styles for inputs/selects */
-input,
+/* Base styles for text-like inputs/selects (exclude checkbox/radio/file) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 select {
   border: 1px solid rgba(217, 180, 255, 0.2);
   border-radius: 0.7rem;
@@ -138,13 +138,13 @@ select {
   transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
 }
 
-input:hover,
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
 select:hover {
   border-color: rgba(199, 149, 255, 0.5);
   background-color: rgba(255, 255, 255, 0.045);
 }
 
-input:focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
 select:focus {
   outline: none;
   border-color: rgba(199, 149, 255, 0.92);
