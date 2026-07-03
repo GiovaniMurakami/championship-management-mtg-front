@@ -19,13 +19,10 @@ export function TermsAcceptanceField({ checked, onChange, id = "aceite-termos" }
           </label>
           <Link
             to="/termos-de-uso"
-            target="_blank"
-            rel="noopener noreferrer"
             className="font-semibold text-[#c795ff] underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
           >
             Termos de Uso
           </Link>
-          <span className="text-[#8f82ad]"> (abre em nova aba)</span>
         </p>
       </div>
     </div>

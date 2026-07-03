@@ -153,6 +153,8 @@ export function resolveExternalNavigationTarget(locationLike) {
       return withSearch("/esqueci-senha", searchParams);
     case "reset-senha":
       return withSearch("/reset-senha", searchParams);
+    case "termos-de-uso":
+      return withSearch("/termos-de-uso", searchParams);
     default:
       return null;
   }

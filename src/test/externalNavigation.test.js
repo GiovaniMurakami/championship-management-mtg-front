@@ -68,6 +68,18 @@ describe("resolveExternalNavigationTarget", () => {
     });
   });
 
+  it("redireciona rota externa de termos de uso", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?rota=termos-de-uso",
+    });
+
+    expect(target).toEqual({
+      pathname: "/termos-de-uso",
+      search: "",
+    });
+  });
+
   it("redireciona appPath para uma rota interna preservando parametros extras", () => {
     const target = resolveExternalNavigationTarget({
       pathname: "/",
@@ -112,6 +124,12 @@ describe("build external wordpress urls", () => {
   it("gera url externa dinamica para a rota atual do app", () => {
     expect(buildExternalAppUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
       "https://www.tiagofuguete.com.br/app-torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
+    );
+  });
+
+  it("gera url externa para termos de uso", () => {
+    expect(buildExternalAppUrlForPath("/termos-de-uso")).toBe(
+      "https://www.tiagofuguete.com.br/app-torneios?appPath=%2Ftermos-de-uso",
     );
   });
 });
