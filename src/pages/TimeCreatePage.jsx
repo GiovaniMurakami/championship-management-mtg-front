@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { criarTime, atualizarTime, buscarTime } from "../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
 import { useAuth } from "../hooks/useAuth";
-import { PageShell } from "../components/ui/PageShell";
-import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { BackButton, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
+import { BTN_SUBMIT, FORM_PAGE_SHELL_CLASS, FORM_PAGE_TITLE_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -108,59 +108,45 @@ export function TimeCreatePage({ editMode = false }) {
 
   return (
     <PageShell>
-      <button
-        className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
-        type="button"
+      <BackButton
+        className="mb-6"
         onClick={() => navigate(editMode && timeId ? `/times/${timeId}` : "/times")}
-      >
-        ← Voltar
-      </button>
+      />
 
-      <section className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] p-8 mb-8 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] max-[768px]:p-6">
+      <section className={FORM_PAGE_SHELL_CLASS}>
         <div className="max-w-[600px] mx-auto">
-          <h2 className="text-white text-center mb-8 text-[1.8rem] font-semibold max-[768px]:text-[1.5rem]">
+          <h2 className={FORM_PAGE_TITLE_CLASS}>
             {editMode ? "Editar Time" : "Criar Novo Time"}
           </h2>
           <form onSubmit={handleSubmit} className="grid gap-6">
-            <div className="flex flex-col gap-4 p-5 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-              <h3 className="text-[0.78rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 mb-1 pb-2 border-b border-[rgba(79,70,229,0.18)]">
-                Informações
-              </h3>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="time-nome" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                  Nome do Time
-                </label>
-                <input
-                  id="time-nome"
-                  name="nome"
-                  type="text"
-                  placeholder="Ex: Os Dragões"
-                  value={form.nome}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                  className={TOURNAMENT_INPUT_CLASS}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="time-descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                  Descrição <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
-                </label>
-                <textarea
-                  id="time-descricao"
-                  name="descricao"
-                  placeholder="Descreva o time..."
-                  value={form.descricao}
-                  onChange={handleChange}
-                  rows={3}
-                  disabled={loading}
-                  className={`${TOURNAMENT_INPUT_CLASS} resize-y min-h-[80px]`}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                  Imagem do Time <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
-                </label>
+            <FormSection title="Informações">
+              <FormField
+                id="time-nome"
+                name="nome"
+                label="Nome do Time"
+                size="page"
+                placeholder="Ex: Os Dragões"
+                value={form.nome}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+              <FormField
+                id="time-descricao"
+                name="descricao"
+                label="Descrição (opcional)"
+                size="page"
+                multiline
+                rows={3}
+                placeholder="Descreva o time..."
+                value={form.descricao}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              <div className="grid gap-2">
+                <span className="text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#9f91bd]">
+                  Imagem do Time <span className="normal-case tracking-normal font-normal text-[#8f82ad]">(opcional)</span>
+                </span>
                 {imagemPreview ? (
                   <div className="flex items-center gap-4">
                     <img
@@ -197,25 +183,17 @@ export function TimeCreatePage({ editMode = false }) {
                 {loading && imagemFile && uploadProgress > 0 && (
                   <div className="h-1 w-full bg-white/[0.06] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-all duration-200"
+                      className="h-full bg-gradient-to-r from-[#8e39ed] to-[#5f23b3] transition-all duration-200"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
                 )}
               </div>
-            </div>
+            </FormSection>
 
-            {error && (
-              <div className="bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-3 rounded-[6px] text-[0.9rem] text-center">
-                {error}
-              </div>
-            )}
+            {error ? <FormFeedback message={error} variant="error" /> : null}
 
-            <button
-              type="submit"
-              className="bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white border-none px-8 py-4 rounded-lg text-[1.1rem] font-semibold cursor-pointer transition-all duration-300 mt-2 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(79,70,229,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:!transform-none"
-              disabled={loading}
-            >
+            <button type="submit" className={BTN_SUBMIT} disabled={loading}>
               {loading
                 ? editMode ? "Salvando..." : "Criando..."
                 : editMode ? "Salvar Alterações" : "Criar Time"}

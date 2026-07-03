@@ -1,4 +1,5 @@
 import httpClient from "./httpClient";
+import { LOGIN_REQUEST_TIMEOUT_MS } from "../constants/auth";
 import { clampLimite, clampOffset } from "../utils/pagination";
 import {
   normalizeListarDecksResponse,
@@ -53,10 +54,10 @@ export const normalizeLigaRankingResponse = (payload) => {
 
 // Autenticação
 export const loginUsuario = (payload) =>
-  httpClient.post("/usuario/login", payload);
+  httpClient.post("/usuario/login", payload, { timeout: LOGIN_REQUEST_TIMEOUT_MS });
 
 export const cadastrarUsuario = (payload) =>
-  httpClient.post("/usuario/cadastrar", payload);
+  httpClient.post("/usuario/cadastrar", payload, { timeout: LOGIN_REQUEST_TIMEOUT_MS });
 
 export const solicitarResetSenha = (email) =>
   httpClient.post("/usuario/reset-senha/solicitar", { email });

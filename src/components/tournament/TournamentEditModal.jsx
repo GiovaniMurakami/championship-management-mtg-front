@@ -4,16 +4,15 @@ import { calculateAutomaticSwissRounds, calculateSwissRounds } from "../../utils
 import { sanitizeText } from "../../utils/sanitize";
 import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
-import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
-import { SelectField } from "../ui";
+import { BTN_GHOST, BTN_PRIMARY, FORM_COUNTER_CLASS, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
+import { FormFeedback, FormSection, SelectField } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
 
 function toDatetimeLocal(dateStr) {
   return toDatetimeLocalBrasilia(dateStr);
 }
 
-const TEXTAREA_CLASS = `${TOURNAMENT_INPUT_CLASS} min-h-[120px] resize-y`;
-const COUNTER_CLASS = "text-[0.78rem] text-[#8ea0c7] text-right";
+const TEXTAREA_CLASS = `${FORM_TEXTAREA_CLASS} min-h-[120px]`;
 const TOURNAMENT_SELECT_CLASS = `${TOURNAMENT_INPUT_CLASS} pr-10`;
 
 const optionalTrimmed = (value) => {
@@ -156,11 +155,10 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 grid gap-5">
-          <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-            <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Informacoes Basicas</h3>
+          <FormSection title="Informacoes Basicas">
             <input name="nome" type="text" value={form.nome} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
             <div className="flex items-center gap-3 py-1">
-              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer" />
+              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded accent-[#8e39ed] cursor-pointer" />
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Nao aparece em listagens publicas; compartilhe o link diretamente.</span>
@@ -175,7 +173,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 onChange={handleChange}
                 disabled={isDisabled}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#a5b4fc]"
+                iconClassName="text-[#c795ff]"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
@@ -190,20 +188,19 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               onChange={handleChange}
               disabled={isDisabled}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#a5b4fc]"
+              iconClassName="text-[#c795ff]"
               options={TOURNAMENT_FORMATS.map((item) => ({
                 value: item.value,
                 label: item.label,
               }))}
             />
             <textarea name="descricao" rows="4" maxLength={4000} value={form.descricao} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Resumo do torneio, premiacao e informacoes importantes..." />
-            <span className={COUNTER_CLASS}>{form.descricao.length}/4000</span>
+            <span className={FORM_COUNTER_CLASS}>{form.descricao.length}/4000</span>
             <textarea name="regras" rows="5" maxLength={4000} value={form.regras} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Tempo de rodada, regras da casa, orientacoes e excecoes..." />
-            <span className={COUNTER_CLASS}>{form.regras.length}/4000</span>
-          </div>
+            <span className={FORM_COUNTER_CLASS}>{form.regras.length}/4000</span>
+          </FormSection>
 
-          <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-            <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Estrutura</h3>
+          <FormSection title="Estrutura">
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <input name="maxJogadores" type="number" min="2" value={form.maxJogadores} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} placeholder="Max. jogadores" />
               <div className="grid gap-1.5">
@@ -218,16 +215,15 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               onChange={handleChange}
               disabled={isDisabled}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#a5b4fc]"
+              iconClassName="text-[#c795ff]"
               options={TOP_CUT_OPTIONS.map((option) => ({
                 value: option.value,
                 label: option.label,
               }))}
             />
-          </div>
+          </FormSection>
 
-          <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-            <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Midia</h3>
+          <FormSection title="Midia">
 
             {bannerPreview ? (
               <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
@@ -241,7 +237,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             )}
 
             <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={handleBannerFileChange} disabled={isDisabled} />
-            {bannerError && <small className="text-[#fca5a5] text-[0.8rem]">{bannerError}</small>}
+            {bannerError ? <FormFeedback message={bannerError} variant="error" /> : null}
             {isUploading && (
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between text-[0.75rem] text-[#a5b4fc]">
@@ -249,7 +245,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-[width] duration-200" style={{ width: `${uploadProgress}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#8e39ed] to-[#5f23b3] transition-[width] duration-200" style={{ width: `${uploadProgress}%` }} />
                 </div>
               </div>
             )}
@@ -265,11 +261,11 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               />
             </div>
             <input name="linkLive" type="url" placeholder="Live no YouTube" value={form.linkLive} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-          </div>
+          </FormSection>
 
           <div className="flex gap-3 justify-end">
-            <button type="button" onClick={onClose} disabled={isDisabled} className="px-5 py-2.5 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] bg-transparent cursor-pointer font-medium text-[0.9rem] transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.4)] hover:bg-white/[0.05] disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isDisabled} className="px-5 py-2.5 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white border-none rounded-lg font-semibold text-[0.9rem] cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)] disabled:opacity-60 disabled:cursor-not-allowed disabled:!transform-none">
+            <button type="button" onClick={onClose} disabled={isDisabled} className={BTN_GHOST}>Cancelar</button>
+            <button type="submit" disabled={isDisabled} className={BTN_PRIMARY}>
               {isUploading ? "Enviando banner..." : loading ? "Salvando..." : "Salvar Alteracoes"}
             </button>
           </div>

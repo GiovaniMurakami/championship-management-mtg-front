@@ -76,7 +76,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
         ]);
         setDeck({ ...data, maindeck: resolvedMain, sideboard: resolvedSide });
       })
-      .catch(() => setError("Não foi possível carregar o deck."))
+      .catch((err) => setError(err?.message || "Não foi possível carregar o deck."))
       .finally(() => setLoading(false));
   }, [deckId, token]);
 

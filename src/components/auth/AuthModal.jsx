@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { BaseModal } from "../ui/BaseModal";
+import { AuthFeedback } from "./AuthFeedback";
+import { AuthFormField } from "./AuthFormField";
 import { TermsAcceptanceField } from "./TermsAcceptanceField";
-import { MODAL_INPUT_CLASS } from "../../styles/uiClasses";
-
-const btnPrimary =
-  "border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4),0_0_12px_rgba(199,149,255,0.3)] hover:border-[rgba(199,149,255,0.9)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
+import { AUTH_TABS_CLASS, BTN_PRIMARY, BTN_GHOST, authTabClass } from "../../styles/uiClasses";
 
 export function AuthModal({
   isOpen,
@@ -22,139 +21,145 @@ export function AuthModal({
   loginLockout,
 }) {
   const navigate = useNavigate();
+  const isLogin = activeTab === "login";
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
-        {/* Tabs */}
-        <div
-          role="tablist"
-          aria-label="Autenticação"
-          className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-4"
+      <div className="mb-5 text-center">
+        <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+          Tiago Fuguete · Torneios MTG
+        </p>
+        <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-[#f5edff]">
+          {isLogin ? "Entrar na plataforma" : "Criar conta"}
+        </h2>
+        <p className="mt-1 text-[0.88rem] text-[#9f91bd]">
+          {isLogin
+            ? "Use seu e-mail e senha para acessar decks e torneios."
+            : "Preencha os dados abaixo para participar dos eventos."}
+        </p>
+      </div>
+
+      <div role="tablist" aria-label="Autenticação" className={`${AUTH_TABS_CLASS} mb-5`}>
+        <button
+          type="button"
+          role="tab"
+          id="auth-tab-login"
+          aria-selected={isLogin}
+          aria-controls="auth-panel-login"
+          className={authTabClass(isLogin)}
+          onClick={() => onTabChange("login")}
         >
-          <button
-            type="button"
-            role="tab"
-            id="auth-tab-login"
-            aria-selected={activeTab === "login"}
-            aria-controls="auth-panel-login"
-            className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "login"
-              ? "bg-[rgba(167,79,255,0.2)] text-white"
-              : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
-              }`}
-            onClick={() => onTabChange("login")}
-          >
-            Login
+          Login
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="auth-tab-register"
+          aria-selected={!isLogin}
+          aria-controls="auth-panel-register"
+          className={authTabClass(!isLogin)}
+          onClick={() => onTabChange("register")}
+        >
+          Cadastro
+        </button>
+      </div>
+
+      {isLogin ? (
+        <form id="auth-panel-login" role="tabpanel" aria-labelledby="auth-tab-login" className="grid gap-4" onSubmit={onLoginSubmit}>
+          <AuthFormField
+            id="auth-login-email"
+            label="E-mail"
+            type="email"
+            autoComplete="email"
+            value={loginForm.email}
+            onChange={(event) =>
+              onLoginFormChange((current) => ({ ...current, email: event.target.value }))
+            }
+            required
+          />
+          <AuthFormField
+            id="auth-login-senha"
+            label="Senha"
+            type="password"
+            autoComplete="current-password"
+            value={loginForm.senha}
+            onChange={(event) =>
+              onLoginFormChange((current) => ({ ...current, senha: event.target.value }))
+            }
+            required
+          />
+          {message ? <AuthFeedback message={message} /> : null}
+          <button className={`w-full ${BTN_PRIMARY}`} disabled={isLoading || loginLockout} type="submit">
+            {loginLockout ? "Conta bloqueada temporariamente" : isLoading ? "Entrando..." : "Entrar"}
           </button>
           <button
             type="button"
-            role="tab"
-            id="auth-tab-register"
-            aria-selected={activeTab === "register"}
-            aria-controls="auth-panel-register"
-            className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 ${activeTab === "register"
-              ? "bg-[rgba(167,79,255,0.2)] text-white"
-              : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"
-              }`}
-            onClick={() => onTabChange("register")}
+            className={`w-full ${BTN_GHOST} text-[0.85rem] underline underline-offset-2`}
+            onClick={() => {
+              navigate("/esqueci-senha");
+              onClose();
+            }}
           >
-            Cadastro
+            Esqueci minha senha
           </button>
-        </div>
-
-        {activeTab === "login" ? (
-          <form id="auth-panel-login" role="tabpanel" aria-labelledby="auth-tab-login" className="grid gap-[0.85rem]" onSubmit={onLoginSubmit}>
-            <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-              E-mail
-              <input
-                type="email"
-                value={loginForm.email}
-                onChange={(event) =>
-                  onLoginFormChange((current) => ({ ...current, email: event.target.value }))
-                }
-                required
-                className={MODAL_INPUT_CLASS}
-              />
-            </label>
-            <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-              Senha
-              <input
-                type="password"
-                value={loginForm.senha}
-                onChange={(event) =>
-                  onLoginFormChange((current) => ({ ...current, senha: event.target.value }))
-                }
-                required
-                className={MODAL_INPUT_CLASS}
-              />
-            </label>
-            <button className={btnPrimary} disabled={isLoading || loginLockout} type="submit">
-              {loginLockout ? "Conta bloqueada temporariamente" : isLoading ? "Entrando..." : "Entrar"}
-            </button>
-            <button
-              type="button"
-              className="text-[#beafd7] text-[0.85rem] text-center underline underline-offset-2 cursor-pointer bg-transparent border-none p-0 hover:text-[#c795ff] transition-colors duration-200"
-              onClick={() => {
-                navigate("/esqueci-senha");
-                onClose();
-              }}
-            >
-              Esqueci minha senha
-            </button>
-          </form>
-        ) : (
-          <form id="auth-panel-register" role="tabpanel" aria-labelledby="auth-tab-register" className="grid gap-[0.85rem]" onSubmit={onRegisterSubmit}>
-            <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-              Nome
-              <input
-                value={registerForm.nome}
-                onChange={(event) =>
-                  onRegisterFormChange((current) => ({ ...current, nome: event.target.value }))
-                }
-                required
-                className={MODAL_INPUT_CLASS}
-              />
-            </label>
-            <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-              E-mail
-              <input
-                type="email"
-                value={registerForm.email}
-                onChange={(event) =>
-                  onRegisterFormChange((current) => ({ ...current, email: event.target.value }))
-                }
-                required
-                className={MODAL_INPUT_CLASS}
-              />
-            </label>
-            <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-              Senha
-              <input
-                type="password"
-                value={registerForm.senha}
-                onChange={(event) =>
-                  onRegisterFormChange((current) => ({ ...current, senha: event.target.value }))
-                }
-                required
-                className={MODAL_INPUT_CLASS}
-              />
-            </label>
-            <TermsAcceptanceField
-              checked={Boolean(registerForm.aceiteTermos)}
-              onChange={(aceiteTermos) =>
-                onRegisterFormChange((current) => ({ ...current, aceiteTermos }))
-              }
-            />
-            <button className={btnPrimary} disabled={isLoading || !registerForm.aceiteTermos} type="submit">
-              {isLoading ? "Criando..." : "Criar conta"}
-            </button>
-          </form>
-        )}
-
-        {message && (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(44,207,180,0.1)] border border-[rgba(44,207,180,0.25)] text-[#5eead4] text-[0.9rem] animate-[slide-up_300ms_ease-out,fade-in_300ms_ease-out]">
-            {message}
-          </p>
-        )}
+        </form>
+      ) : (
+        <form id="auth-panel-register" role="tabpanel" aria-labelledby="auth-tab-register" className="grid gap-4" onSubmit={onRegisterSubmit}>
+          <AuthFormField
+            id="auth-register-nome"
+            label="Nome"
+            autoComplete="name"
+            value={registerForm.nome}
+            onChange={(event) =>
+              onRegisterFormChange((current) => ({ ...current, nome: event.target.value }))
+            }
+            required
+          />
+          <AuthFormField
+            id="auth-register-email"
+            label="E-mail"
+            type="email"
+            autoComplete="email"
+            value={registerForm.email}
+            onChange={(event) =>
+              onRegisterFormChange((current) => ({ ...current, email: event.target.value }))
+            }
+            required
+          />
+          <AuthFormField
+            id="auth-register-senha"
+            label="Senha"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            hint="Mínimo de 8 caracteres."
+            value={registerForm.senha}
+            onChange={(event) =>
+              onRegisterFormChange((current) => ({ ...current, senha: event.target.value }))
+            }
+            required
+          />
+          <TermsAcceptanceField
+            checked={Boolean(registerForm.aceiteTermos)}
+            onChange={(aceiteTermos) =>
+              onRegisterFormChange((current) => ({ ...current, aceiteTermos }))
+            }
+          />
+          {message ? <AuthFeedback message={message} /> : null}
+          <button
+            className={`w-full ${BTN_PRIMARY}`}
+            disabled={isLoading || !registerForm.aceiteTermos}
+            type="submit"
+          >
+            {isLoading ? "Criando conta..." : "Criar conta"}
+          </button>
+          {!registerForm.aceiteTermos ? (
+            <p className="m-0 text-center text-[0.78rem] text-[#8f82ad]">
+              Marque o aceite dos termos para habilitar o cadastro.
+            </p>
+          ) : null}
+        </form>
+      )}
     </BaseModal>
   );
 }

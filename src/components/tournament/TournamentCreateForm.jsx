@@ -3,9 +3,17 @@ import { criarTorneio } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
-import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
-import { SelectField } from "../ui";
+import { SelectField, FormFeedback, FormSection } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
+import {
+  BTN_SUBMIT,
+  FORM_COUNTER_CLASS,
+  FORM_LABEL_CLASS,
+  FORM_PAGE_SHELL_CLASS,
+  FORM_PAGE_TITLE_CLASS,
+  FORM_TEXTAREA_CLASS,
+  TOURNAMENT_INPUT_CLASS,
+} from "../../styles/uiClasses";
 
 const INITIAL_FORM = {
   nome: "",
@@ -23,9 +31,7 @@ const INITIAL_FORM = {
   exibirNomeJogador: "nome",
 };
 
-const SECTION_CLASS = "flex flex-col gap-4 p-5 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)] max-[480px]:p-4";
-const TEXTAREA_CLASS = `${TOURNAMENT_INPUT_CLASS} min-h-[120px] resize-y`;
-const COUNTER_CLASS = "text-[0.78rem] text-[#8ea0c7] text-right";
+const TEXTAREA_CLASS = `${FORM_TEXTAREA_CLASS} min-h-[120px]`;
 const TOURNAMENT_SELECT_CLASS = `${TOURNAMENT_INPUT_CLASS} pr-10`;
 
 const optionalTrimmed = (value) => {
@@ -33,11 +39,12 @@ const optionalTrimmed = (value) => {
   return trimmed || undefined;
 };
 
-function SectionTitle({ children }) {
+function FieldLabel({ htmlFor, children, hint }) {
   return (
-    <h3 className="text-[0.78rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 mb-1 pb-2 border-b border-[rgba(79,70,229,0.18)]">
+    <label htmlFor={htmlFor} className={FORM_LABEL_CLASS}>
       {children}
-    </h3>
+      {hint ? <span className="font-normal normal-case tracking-normal text-[#8f82ad]"> {hint}</span> : null}
+    </label>
   );
 }
 
@@ -130,23 +137,20 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
   };
 
   return (
-    <section className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] p-8 mb-8 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] max-[768px]:p-6 max-[480px]:p-4">
+    <section className={`${FORM_PAGE_SHELL_CLASS} max-[480px]:p-4`}>
       <div className="max-w-[700px] mx-auto">
-        <h2 className="text-white text-center mb-8 text-[1.8rem] font-semibold max-[768px]:text-[1.5rem] max-[480px]:text-[1.3rem] max-[480px]:mb-6">
-          Criar Novo Torneio
-        </h2>
+        <h2 className={`${FORM_PAGE_TITLE_CLASS} max-[480px]:text-[1.5rem]`}>Criar Novo Torneio</h2>
 
         <form onSubmit={handleSubmit} className="grid gap-6 max-[768px]:gap-5 max-[480px]:gap-4">
-          <div className={SECTION_CLASS}>
-            <SectionTitle>Informacoes Basicas</SectionTitle>
+          <FormSection title="Informacoes Basicas">
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="nome" className="text-[#e0e0e0] font-medium text-[0.95rem]">Nome do Torneio</label>
+            <div className="grid gap-2">
+              <FieldLabel htmlFor="nome">Nome do Torneio</FieldLabel>
               <input id="nome" name="nome" type="text" placeholder="Ex: FNM Standard" value={createForm.nome} onChange={handleChange} required disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
             </div>
 
             <div className="flex items-center gap-3 py-1">
-              <input id="secreto" name="secreto" type="checkbox" checked={createForm.secreto} onChange={handleChange} disabled={isSubmitting} className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer" />
+              <input id="secreto" name="secreto" type="checkbox" checked={createForm.secreto} onChange={handleChange} disabled={isSubmitting} className="w-4 h-4 rounded accent-[#8e39ed] cursor-pointer" />
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Nao aparece em listagens publicas; compartilhe o link diretamente.</span>
@@ -161,7 +165,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#a5b4fc]"
+                iconClassName="text-[#c795ff]"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
@@ -187,7 +191,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#a5b4fc]"
+                iconClassName="text-[#c795ff]"
                 options={TOURNAMENT_FORMATS.map((formato) => ({
                   value: formato.value,
                   label: formato.label,
@@ -198,18 +202,17 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             <div className="flex flex-col gap-2">
               <label htmlFor="descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">Descricao <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
               <textarea id="descricao" name="descricao" rows="4" maxLength={4000} placeholder="Resumo do torneio, premiacao e informacoes importantes..." value={createForm.descricao} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
-              <span className={COUNTER_CLASS}>{createForm.descricao.length}/4000</span>
+              <span className={FORM_COUNTER_CLASS}>{createForm.descricao.length}/4000</span>
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="regras" className="text-[#e0e0e0] font-medium text-[0.95rem]">Regras do Torneio <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
               <textarea id="regras" name="regras" rows="5" maxLength={4000} placeholder="Tempo de rodada, regras da casa, orientacoes e excecoes..." value={createForm.regras} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
-              <span className={COUNTER_CLASS}>{createForm.regras.length}/4000</span>
+              <span className={FORM_COUNTER_CLASS}>{createForm.regras.length}/4000</span>
             </div>
-          </div>
+          </FormSection>
 
-          <div className={SECTION_CLASS}>
-            <SectionTitle>Estrutura</SectionTitle>
+          <FormSection title="Estrutura">
 
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <div className="flex flex-col gap-2">
@@ -233,17 +236,16 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#a5b4fc]"
+                iconClassName="text-[#c795ff]"
                 options={TOP_CUT_OPTIONS.map((option) => ({
                   value: option.value,
                   label: option.label,
                 }))}
               />
             </div>
-          </div>
+          </FormSection>
 
-          <div className={SECTION_CLASS}>
-            <SectionTitle>Banner</SectionTitle>
+          <FormSection title="Banner">
 
             <div className="flex flex-col gap-2">
               <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Imagem do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
@@ -263,7 +265,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
               <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={handleBannerFileChange} disabled={isSubmitting} />
 
-              {bannerError && <small className="text-[#fca5a5] text-[0.8rem]">{bannerError}</small>}
+              {bannerError ? <FormFeedback message={bannerError} variant="error" /> : null}
 
               {uploadingBanner && (
                 <div className="flex flex-col gap-1.5">
@@ -282,10 +284,9 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               <label htmlFor="linkBanner" className="text-[#e0e0e0] font-medium text-[0.95rem]">Link do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
               <input id="linkBanner" name="linkBanner" type="url" placeholder="https://..." value={createForm.linkBanner} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
             </div>
-          </div>
+          </FormSection>
 
-          <div className={SECTION_CLASS}>
-            <SectionTitle>Midia</SectionTitle>
+          <FormSection title="Midia">
 
             <div className="flex flex-col gap-2">
               <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
@@ -303,15 +304,11 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               <label htmlFor="linkLive" className="text-[#e0e0e0] font-medium text-[0.95rem]">Live no YouTube <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
               <input id="linkLive" name="linkLive" type="url" placeholder="https://youtube.com/watch?v=..." value={createForm.linkLive} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
             </div>
-          </div>
+          </FormSection>
 
-          {error && (
-            <div className="bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-3 rounded-[6px] text-[0.9rem] text-center">
-              {error}
-            </div>
-          )}
+          {error ? <FormFeedback message={error} variant="error" /> : null}
 
-          <button type="submit" className="bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white border-none px-8 py-4 rounded-lg text-[1.1rem] font-semibold cursor-pointer transition-all duration-300 mt-2 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(79,70,229,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:!transform-none max-[768px]:py-[0.875rem] max-[768px]:text-base" disabled={isSubmitting}>
+          <button type="submit" className={BTN_SUBMIT} disabled={isSubmitting}>
             {uploadingBanner ? "Enviando banner..." : loading ? "Criando..." : "Criar Torneio"}
           </button>
         </form>

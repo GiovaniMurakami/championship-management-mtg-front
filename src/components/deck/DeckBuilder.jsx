@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { CardSearch } from "./CardSearch";
 import { DeckList } from "./DeckList";
 import { SelectField } from "../ui";
+import { FORM_LABEL_CLASS, MODAL_INPUT_CLASS } from "../../styles/uiClasses";
 
 const FORMATS = [
   { value: "standard", label: "Standard" },
@@ -354,17 +355,17 @@ export function DeckBuilder({
           {/* form-label for nome — field-invalid + shake-field applied conditionally */}
           <label
             className={`
-              grid gap-[0.45rem] text-[0.95rem]
+              ${FORM_LABEL_CLASS}
               ${invalidFields.nome
                 ? "text-[#ffb5c3] [&_input]:border-[rgba(255,98,124,0.95)] [&_input]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
-                : "text-text-soft"
+                : ""
               }
               ${shakeFields.nome ? "animate-[field-shake_420ms_ease]" : ""}
             `}
           >
             Nome do deck
             <input
-              className="border border-line rounded-[0.7rem] bg-white/[0.03] text-text-main px-[0.7rem] py-[0.65rem] w-full focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)]"
+              className={MODAL_INPUT_CLASS}
               value={deckForm.nome}
               onChange={(event) => {
                 onDeckFormChange((current) => ({ ...current, nome: event.target.value }));
@@ -379,7 +380,7 @@ export function DeckBuilder({
           {/* form-label for formato — field-invalid + shake-field applied conditionally */}
           <label
             className={`
-              grid gap-[0.45rem] text-[0.95rem]
+              ${FORM_LABEL_CLASS}
               ${invalidFields.formato
                 ? "text-[#ffb5c3] [&_.format-select-wrapper]:border-[rgba(255,98,124,0.95)] [&_.format-select-wrapper]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
                 : "text-text-soft"

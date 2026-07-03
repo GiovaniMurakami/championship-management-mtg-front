@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { AuthFeedback } from "../components/auth/AuthFeedback";
+import { JoinFlowSteps } from "../components/auth/JoinFlowSteps";
 import { TermsAcceptanceField } from "../components/auth/TermsAcceptanceField";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -8,9 +10,16 @@ import { ingressarComToken } from "../services/backendApi";
 import { useMyDecks } from "../hooks/useMyDecks";
 import { Spinner } from "../components/ui/Spinner";
 import { SelectField } from "../components/ui";
-
-const inputClass =
-    "border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-[0.7rem] py-[0.65rem] w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]";
+import {
+  AUTH_TABS_CLASS,
+  BTN_GHOST,
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  FORM_LABEL_CLASS,
+  MODAL_INPUT_CLASS,
+  FORM_WIDE_CARD_CLASS,
+  authTabClass,
+} from "../styles/uiClasses";
 
 export function TournamentJoinPage() {
     const { token: joinToken } = useParams();
@@ -84,7 +93,7 @@ export function TournamentJoinPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#0d0b1a]">
-            <div className="w-full max-w-[480px] bg-[linear-gradient(155deg,rgba(34,19,69,0.7),rgba(15,10,29,0.9))] border border-[rgba(217,180,255,0.2)] rounded-2xl p-8 shadow-[0_24px_64px_rgba(0,0,0,0.5)] animate-[fade-in_400ms_ease-out]">
+            <div className={`${FORM_WIDE_CARD_CLASS} animate-[fade-in_400ms_ease-out]`}>
 
                 {!authInitialized && (
                     <div className="flex justify-center py-6">
@@ -94,26 +103,27 @@ export function TournamentJoinPage() {
 
                 {authInitialized && !isAuthenticated && (
                     <div>
+                        <JoinFlowSteps currentStep={1} />
                         <div className="text-center mb-5">
-                            <div className="flex justify-center mb-4">
-                                <span className="text-[2.5rem]" role="img" aria-label="Torneio">⚔️</span>
-                            </div>
-                            <h2 className="text-white font-semibold text-[1.3rem] mb-1">Ingressar no torneio</h2>
-                            <p className="text-[#beafd7] text-[0.85rem]">Faça login ou crie uma conta para continuar.</p>
+                            <h2 className="text-white font-semibold text-[1.25rem] mb-1">Passo 1 · Sua conta</h2>
+                            <p className="text-[#9f91bd] text-[0.88rem]">
+                                Entre ou crie uma conta para continuar o ingresso.
+                            </p>
                         </div>
 
-                        {/* Tabs */}
-                        <div className="grid grid-cols-2 border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] overflow-hidden mb-5">
+                        <div role="tablist" aria-label="Autenticação" className={`${AUTH_TABS_CLASS} mb-5`}>
                             <button
                                 type="button"
-                                className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 text-[0.9rem] font-semibold ${authTab === "login" ? "bg-[rgba(167,79,255,0.2)] text-white" : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"}`}
+                                role="tab"
+                                className={authTabClass(authTab === "login")}
                                 onClick={() => setAuthTab("login")}
                             >
                                 Entrar
                             </button>
                             <button
                                 type="button"
-                                className={`border-none py-[0.7rem] cursor-pointer transition-all duration-200 text-[0.9rem] font-semibold ${authTab === "register" ? "bg-[rgba(167,79,255,0.2)] text-white" : "bg-transparent text-[#beafd7] hover:bg-[rgba(167,79,255,0.08)] hover:text-white/70"}`}
+                                role="tab"
+                                className={authTabClass(authTab === "register")}
                                 onClick={() => setAuthTab("register")}
                             >
                                 Criar conta
@@ -121,67 +131,79 @@ export function TournamentJoinPage() {
                         </div>
 
                         {authTab === "login" && (
-                            <form onSubmit={handleLogin} className="flex flex-col gap-3">
-                                <input
-                                    type="email"
-                                    placeholder="E-mail"
-                                    autoComplete="email"
-                                    required
-                                    className={inputClass}
-                                    value={loginForm.email}
-                                    onChange={(e) => setLoginForm((f) => ({ ...f, email: e.target.value }))}
-                                />
-                                <input
-                                    type="password"
-                                    placeholder="Senha"
-                                    autoComplete="current-password"
-                                    required
-                                    className={inputClass}
-                                    value={loginForm.senha}
-                                    onChange={(e) => setLoginForm((f) => ({ ...f, senha: e.target.value }))}
-                                />
-                                {authMessage && (
-                                    <p className={`text-[0.82rem] text-center ${authMessage.includes("sucesso") ? "text-[#5eead4]" : "text-[#f87171]"}`}>{authMessage}</p>
-                                )}
+                            <form onSubmit={handleLogin} className="grid gap-3">
+                                <label className={FORM_LABEL_CLASS}>
+                                    E-mail
+                                    <input
+                                        type="email"
+                                        autoComplete="email"
+                                        required
+                                        className={MODAL_INPUT_CLASS}
+                                        value={loginForm.email}
+                                        onChange={(e) => setLoginForm((f) => ({ ...f, email: e.target.value }))}
+                                    />
+                                </label>
+                                <label className={FORM_LABEL_CLASS}>
+                                    Senha
+                                    <input
+                                        type="password"
+                                        autoComplete="current-password"
+                                        required
+                                        className={MODAL_INPUT_CLASS}
+                                        value={loginForm.senha}
+                                        onChange={(e) => setLoginForm((f) => ({ ...f, senha: e.target.value }))}
+                                    />
+                                </label>
+                                {authMessage ? <AuthFeedback message={authMessage} /> : null}
                                 <button
                                     type="submit"
                                     disabled={authLoading || loginLockout}
-                                    className="mt-1 border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className={`w-full ${BTN_PRIMARY}`}
                                 >
-                                    {authLoading ? "Entrando..." : "Entrar"}
+                                    {authLoading ? "Entrando..." : "Entrar e continuar"}
                                 </button>
+                                <Link to="/esqueci-senha" className={`text-center ${BTN_GHOST} text-[0.85rem] underline underline-offset-2`}>
+                                    Esqueci minha senha
+                                </Link>
                             </form>
                         )}
 
                         {authTab === "register" && (
-                            <form onSubmit={handleRegister} className="flex flex-col gap-3">
-                                <input
-                                    type="text"
-                                    placeholder="Nome completo"
-                                    autoComplete="name"
-                                    required
-                                    className={inputClass}
-                                    value={registerForm.nome}
-                                    onChange={(e) => setRegisterForm((f) => ({ ...f, nome: e.target.value }))}
-                                />
-                                <input
-                                    type="email"
-                                    placeholder="E-mail"
-                                    autoComplete="email"
-                                    required
-                                    className={inputClass}
-                                    value={registerForm.email}
-                                    onChange={(e) => setRegisterForm((f) => ({ ...f, email: e.target.value }))}
-                                />
-                                <input
-                                    type="password"
-                                    placeholder="Senha"
-                                    autoComplete="new-password"
-                                    required
-                                    className={inputClass}
-                                    value={registerForm.senha}
-                                    onChange={(e) => setRegisterForm((f) => ({ ...f, senha: e.target.value }))}
-                                />
+                            <form onSubmit={handleRegister} className="grid gap-3">
+                                <label className={FORM_LABEL_CLASS}>
+                                    Nome completo
+                                    <input
+                                        type="text"
+                                        autoComplete="name"
+                                        required
+                                        className={MODAL_INPUT_CLASS}
+                                        value={registerForm.nome}
+                                        onChange={(e) => setRegisterForm((f) => ({ ...f, nome: e.target.value }))}
+                                    />
+                                </label>
+                                <label className={FORM_LABEL_CLASS}>
+                                    E-mail
+                                    <input
+                                        type="email"
+                                        autoComplete="email"
+                                        required
+                                        className={MODAL_INPUT_CLASS}
+                                        value={registerForm.email}
+                                        onChange={(e) => setRegisterForm((f) => ({ ...f, email: e.target.value }))}
+                                    />
+                                </label>
+                                <label className={FORM_LABEL_CLASS}>
+                                    Senha
+                                    <input
+                                        type="password"
+                                        autoComplete="new-password"
+                                        minLength={8}
+                                        required
+                                        className={MODAL_INPUT_CLASS}
+                                        value={registerForm.senha}
+                                        onChange={(e) => setRegisterForm((f) => ({ ...f, senha: e.target.value }))}
+                                    />
+                                </label>
                                 <TermsAcceptanceField
                                     id="aceite-termos-ingressar"
                                     checked={Boolean(registerForm.aceiteTermos)}
@@ -189,15 +211,13 @@ export function TournamentJoinPage() {
                                         setRegisterForm((f) => ({ ...f, aceiteTermos }))
                                     }
                                 />
-                                {authMessage && (
-                                    <p className={`text-[0.82rem] text-center ${authMessage.includes("sucesso") ? "text-[#5eead4]" : "text-[#f87171]"}`}>{authMessage}</p>
-                                )}
+                                {authMessage ? <AuthFeedback message={authMessage} /> : null}
                                 <button
                                     type="submit"
                                     disabled={authLoading || !registerForm.aceiteTermos}
-                                    className="mt-1 border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className={`w-full ${BTN_PRIMARY}`}
                                 >
-                                    {authLoading ? "Criando conta..." : "Criar conta e ingressar"}
+                                    {authLoading ? "Criando conta..." : "Criar conta e continuar"}
                                 </button>
                             </form>
                         )}
@@ -208,23 +228,25 @@ export function TournamentJoinPage() {
                     <>
                         {status === "select-deck" && (
                             <div>
+                                <JoinFlowSteps currentStep={2} />
                                 <div className="text-center mb-5">
-                                    <div className="flex justify-center mb-4">
-                                        <span className="text-[2.5rem]" role="img" aria-label="Deck">🃏</span>
-                                    </div>
-                                    <h2 className="text-white font-semibold text-[1.3rem] mb-1">Escolha seu deck para ingressar</h2>
-                                    <p className="text-[#beafd7] text-[0.85rem]">Selecione o deck que deseja usar neste torneio.</p>
+                                    <h2 className="text-white font-semibold text-[1.25rem] mb-1">Passo 2 · Escolha o deck</h2>
+                                    <p className="text-[#9f91bd] text-[0.88rem]">
+                                        Selecione o deck que você usará neste torneio.
+                                    </p>
                                 </div>
 
                                 {decks.length === 0 ? (
-                                    <div className="text-center">
-                                        <p className="text-[0.82rem] text-[#beafd7] mb-4">
-                                            Você não tem decks cadastrados.{" "}
-                                            <a href="/decks/criar" className="text-[#c795ff] underline">Criar deck</a>
+                                    <div className="rounded-xl border border-[rgba(217,180,255,0.16)] bg-[rgba(255,255,255,0.02)] p-5 text-center">
+                                        <p className="text-[0.88rem] text-[#beafd7] mb-4">
+                                            Você ainda não tem decks cadastrados.
                                         </p>
+                                        <Link to="/decks/criar" className={`inline-flex ${BTN_PRIMARY}`}>
+                                            Criar deck
+                                        </Link>
                                         <button
                                             type="button"
-                                            className="inline-flex items-center justify-center px-5 py-[0.65rem] border border-[rgba(217,180,255,0.3)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#beafd7] bg-transparent hover:bg-white/[0.06] hover:text-white"
+                                            className={`mt-3 w-full ${BTN_SECONDARY}`}
                                             onClick={() => navigate("/")}
                                         >
                                             Voltar para torneios
@@ -232,9 +254,10 @@ export function TournamentJoinPage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="mb-4">
+                                        <label className={`${FORM_LABEL_CLASS} mb-4 block`}>
+                                            Deck do torneio
                                             <SelectField
-                                                className={inputClass}
+                                                className={MODAL_INPUT_CLASS}
                                                 value={selectedDeckId}
                                                 onChange={(e) => setSelectedDeckId(e.target.value)}
                                                 aria-label="Selecionar deck"
@@ -248,15 +271,15 @@ export function TournamentJoinPage() {
                                                     </option>
                                                 ))}
                                             </SelectField>
-                                        </div>
+                                        </label>
 
                                         <button
                                             type="button"
                                             disabled={!selectedDeckId}
-                                            className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-200 text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                                            className={`w-full ${BTN_PRIMARY}`}
                                             onClick={handleJoin}
                                         >
-                                            {selectedDeck ? `Ingressar com "${selectedDeck.nome}"` : "Selecione um deck"}
+                                            {selectedDeck ? `Confirmar deck "${selectedDeck.nome}"` : "Selecione um deck para continuar"}
                                         </button>
                                     </>
                                 )}
@@ -291,11 +314,10 @@ export function TournamentJoinPage() {
 
                         {status === "success" && (
                             <>
+                                <JoinFlowSteps currentStep={3} />
                                 <div className="text-center mb-5">
-                                    <div className="flex justify-center mb-4">
-                                        <span className="text-[2.5rem]" role="img" aria-label="Sucesso">✅</span>
-                                    </div>
-                                    <h2 className="text-white font-semibold text-[1.3rem] mb-1">Você ingressou no torneio!</h2>
+                                    <h2 className="text-white font-semibold text-[1.25rem] mb-1">Passo 3 · Ingresso confirmado</h2>
+                                    <p className="text-[#5eead4] text-[0.88rem]">Você entrou no torneio com sucesso.</p>
                                 </div>
 
                                 {matchData && (
@@ -337,7 +359,7 @@ export function TournamentJoinPage() {
 
                                 <button
                                     type="button"
-                                    className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer transition-all duration-200 text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                                    className={`w-full ${BTN_PRIMARY}`}
                                     onClick={handleGoToTournament}
                                 >
                                     Ir para o torneio

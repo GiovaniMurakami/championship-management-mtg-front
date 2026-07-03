@@ -8,10 +8,9 @@ import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { MODAL_INPUT_CLASS, FORM_LABEL_CLASS, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
 
-const inputClass = "w-full rounded-lg border border-[rgba(217,180,255,0.18)] bg-[#120b24] px-3 py-2 text-sm text-[#f5edff] outline-none transition focus:border-[#c795ff] focus:ring-2 focus:ring-[rgba(199,149,255,0.16)]";
-const labelClass = "grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#9f91bd]";
-const subtleButtonClass = "rounded-lg border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm font-bold text-[#e8dfff] transition hover:border-[rgba(199,149,255,0.5)] hover:bg-[rgba(167,79,255,0.14)] disabled:cursor-not-allowed disabled:opacity-50";
+const subtleButtonClass = BTN_SECONDARY;
 
 function prepareAds(anuncios) {
   return anuncios.map((ad, index) => ({
@@ -476,48 +475,48 @@ export function DashboardPage() {
                     </div>
 
                     <div className={`grid gap-4 ${ad.tipo === "card" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Tipo
-                        <select className={inputClass} value={ad.tipo} onChange={(event) => updateAd(ad.id, { tipo: event.target.value })}>
+                        <select className={MODAL_INPUT_CLASS} value={ad.tipo} onChange={(event) => updateAd(ad.id, { tipo: event.target.value })}>
                           <option value="card">Titulo, texto, botao e imagem</option>
                           <option value="banner">Apenas banner com link</option>
                         </select>
                       </label>
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Tag
-                        <input className={inputClass} value={ad.tag} onChange={(event) => updateAd(ad.id, { tag: event.target.value })} />
+                        <input className={MODAL_INPUT_CLASS} value={ad.tag} onChange={(event) => updateAd(ad.id, { tag: event.target.value })} />
                       </label>
                       {ad.tipo === "card" && (
-                        <label className={labelClass}>
+                        <label className={FORM_LABEL_CLASS}>
                           Titulo
-                          <input className={inputClass} value={ad.titulo} onChange={(event) => updateAd(ad.id, { titulo: event.target.value })} />
+                          <input className={MODAL_INPUT_CLASS} value={ad.titulo} onChange={(event) => updateAd(ad.id, { titulo: event.target.value })} />
                         </label>
                       )}
                     </div>
 
                     {ad.tipo === "card" && (
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Texto
-                        <textarea className={`${inputClass} min-h-24 resize-y`} value={ad.texto} onChange={(event) => updateAd(ad.id, { texto: event.target.value })} />
+                        <textarea className={`${MODAL_INPUT_CLASS} min-h-24 resize-y`} value={ad.texto} onChange={(event) => updateAd(ad.id, { texto: event.target.value })} />
                       </label>
                     )}
 
                     <div className={`grid gap-4 ${ad.tipo === "card" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
                       {ad.tipo === "card" && (
-                        <label className={labelClass}>
+                        <label className={FORM_LABEL_CLASS}>
                           Texto do botao
-                          <input className={inputClass} value={ad.botaoTexto} onChange={(event) => updateAd(ad.id, { botaoTexto: event.target.value })} />
+                          <input className={MODAL_INPUT_CLASS} value={ad.botaoTexto} onChange={(event) => updateAd(ad.id, { botaoTexto: event.target.value })} />
                         </label>
                       )}
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Link
-                        <input className={inputClass} value={ad.link} onChange={(event) => updateAd(ad.id, { link: event.target.value })} />
+                        <input className={MODAL_INPUT_CLASS} value={ad.link} onChange={(event) => updateAd(ad.id, { link: event.target.value })} />
                       </label>
-                      <div className={labelClass}>
+                      <div className={FORM_LABEL_CLASS}>
                         URL da imagem
                         <div className="flex gap-2">
                           <input
-                            className={inputClass}
+                            className={MODAL_INPUT_CLASS}
                             value={ad.imagemUrl}
                             onChange={(event) => updateAd(ad.id, { imagemUrl: event.target.value })}
                           />
