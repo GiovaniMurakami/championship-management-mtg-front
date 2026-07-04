@@ -12,7 +12,13 @@ import {
   WORDPRESS_APP_URL,
 } from "./utils/externalNavigation";
 
-const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
+const BARE_ROUTES = ["/landing-page", "/blog", "/sobre-mim", "/parceiros"];
+
+function isBareRoute(pathname) {
+  if (BARE_ROUTES.includes(pathname)) return true;
+  if (pathname.startsWith("/blog/")) return true;
+  return pathname.startsWith("/landing/admin");
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -178,7 +184,7 @@ function AppContent() {
   } = useAuth();
 
   const { pathname } = useLocation();
-  const isBare = BARE_ROUTES.includes(pathname);
+  const isBare = isBareRoute(pathname);
   const isPublicAuthRoute = pathname === "/esqueci-senha"
     || pathname === "/reset-senha"
     || pathname === "/termos-de-uso";

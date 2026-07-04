@@ -1,7 +1,13 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer } from "../components";
+import { Spinner } from "../components/ui/Spinner";
+import { useAuth } from "../hooks/useAuth";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { listarApoiadores } from "../services/backendApi";
+import { APOIADORES_FALLBACK_LIST } from "../constants/landingFallbacks";
 
 const GALLERY = [
     "/images/landing/sobre-mim/gallery-1.jpeg",
@@ -11,12 +17,35 @@ const GALLERY = [
     "/images/landing/sobre-mim/gallery-6.jpeg",
 ];
 
-const SUPPORTERS = "Adilson Roberto Alves Silva; alexandre queiroz galleti; Angelo Graper; Antonio Sérgio Ribeiro Junior; Augusto Alves; Bruno Campitelli Belchior; Bruno Costa Castro Alves; Carlos Eduardo de Aguiar Nogueira Gomes; Cesar Fabricio Klemes da Cruz; Daniel Ruiz Dias; Daniel Seether; DERLI TIAGO CASTILHO DE GODOIS SCHLICK; Diego Nogueira; Dionatan silvestre da silva; Edson Henrique Medeiros Silva; Fabio Lima; FABIO OLIVEIRA COSTA; Fagner Ferreira Barbosa; Felipe José do Nascimento Henrique; Felipe Lapena Barreto; Felipe Pedroso Camargo; Felipe Ramos; Felipe Tavares Batista; Filipe Silqueira Reis; Flavio Augusto de Carvalho Fialho; flavio sarto; FREDERICO ROCHA BAUMGRATZ; isaque angelo de oliveira saboia; João Prado; JORGE FERNANDO KIKUTA; José Rauryson Alves Bezerra; Julio Thibes; LEANDRO FLORESTA DOS SANTOS; Leandro Sanches Bermudes; Luan Kupka; Lucas Ribeiro; Lucas Stamford; Luiz Paulo Feliciano Guedes Pinto; Marcelo Miziara; Marcelo Shanks; Marcos Tadeu Secol Felix; Max Diávila Machado; Miguel Filipe Rodriguez Moure; PAULO GONÇALVES PEREIRA; PEDRO HENRIQUE MANZONI DE LIMA; Regis Lima Claus; Renan Carvalho; Roberto Borzuk Kneip Salimena; robson pereira; Rodrigo Flores; Serra Leno; Thais Vieira Oliveira; THIAGO HENRIQUE DE MATTOS; Vat Alexsandro; Vinicius Santos; VITOR V MORGADO; Yago Busatto Leal";
-
-const SUPPORTERS_LIST = SUPPORTERS.split("; ").map(s => s.trim()).filter(Boolean);
-
 export function LandingSobreMimPage() {
     usePageTitle(PAGE_TITLES.sobreMim);
+    const { isAdmin } = useAuth();
+    const [supporters, setSupporters] = useState([]);
+    const [loadingSupporters, setLoadingSupporters] = useState(true);
+
+    useEffect(() => {
+        let active = true;
+        listarApoiadores()
+            .then((data) => {
+                if (!active) return;
+                setSupporters(
+                  (data.apoiadores || []).length
+                    ? data.apoiadores.map((item) => item.nome)
+                    : APOIADORES_FALLBACK_LIST,
+                );
+            })
+            .catch(() => {
+                if (!active) return;
+                setSupporters(APOIADORES_FALLBACK_LIST);
+            })
+            .finally(() => {
+                if (active) setLoadingSupporters(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}>
@@ -24,6 +53,16 @@ export function LandingSobreMimPage() {
 
             {/* Hero / Story */}
             <section className="max-w-5xl mx-auto px-4 pt-28 pb-12">
+                {isAdmin ? (
+                    <div className="mb-6 flex justify-center">
+                        <Link
+                            to="/landing/admin"
+                            className="rounded-xl border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.12)] px-4 py-2 text-sm font-semibold text-[#e8dfff] no-underline transition hover:bg-[rgba(167,79,255,0.2)]"
+                        >
+                            Gerenciar parceiros e apoiadores
+                        </Link>
+                    </div>
+                ) : null}
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">Minha história no Magic</h1>
 
                 <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -98,8 +137,12 @@ export function LandingSobreMimPage() {
                 <div className="max-w-5xl mx-auto px-4 text-center">
                     <h2 className="text-2xl md:text-3xl font-bold mb-2">Obrigado! 🙏</h2>
                     <p className="text-[#9b8dc0] mb-10 text-sm">Esse projeto existe graças a cada um de vocês</p>
+                    {loadingSupporters ? <Spinner text="Carregando apoiadores..." /> : null}
+                    {!loadingSupporters && supporters.length === 0 ? (
+                        <p className="text-[#9b8dc0]">Nenhum apoiador cadastrado ainda.</p>
+                    ) : null}
                     <div className="flex flex-wrap justify-center gap-2">
-                        {SUPPORTERS_LIST.map((name) => (
+                        {supporters.map((name) => (
                             <span
                                 key={name}
                                 className="inline-block px-3 py-1 rounded-full border border-[rgba(217,180,255,0.15)] bg-[rgba(167,79,255,0.08)] text-[#beafd7] text-xs hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff] transition-all duration-200 cursor-default"

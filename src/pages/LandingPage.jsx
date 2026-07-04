@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Footer } from "../components";
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { useYouTubeVideos } from "../hooks/useYouTubeVideos";
+import { listarPostsBlog, listarParceiros } from "../services/backendApi";
 
 const SLIDES = [
     {
@@ -34,33 +36,63 @@ const SLIDES = [
     },
 ];
 
-const BLOG_POSTS = [
-    {
-        title: "O SONHO DO DOWNSHIFT: Cartas Incomuns para o Pauper",
-        img: "https://tiagofuguete.com.br/wp-content/uploads/2026/02/04-Artigo-Cartas-Incomuns-para-o-Pauper-300x200.png",
-        link: "https://tiagofuguete.com.br/2026/02/10/o-sonho-do-downshift-cartas-incomuns-para-o-pauper/",
-    },
-    {
-        title: "Guia de side: Rakdos Madness",
-        img: "https://tiagofuguete.com.br/wp-content/uploads/2026/02/03-Artigo-Rakdos-Madness-300x200.png",
-        link: "https://tiagofuguete.com.br/2026/02/06/guia-de-side-rakdos-madness/",
-    },
-    {
-        title: "Melhores Cartas de Side do Pauper",
-        img: "https://tiagofuguete.com.br/wp-content/uploads/2026/02/Mono-Blue-Terror-gameplay-Pauper-TiagoFuguete-EXCLUSIVO-300x169.jpg",
-        link: "https://tiagofuguete.com.br/2026/02/03/melhores-cartas-de-side-do-pauper/",
-    },
-    {
-        title: "Guia de side: BG PESTILÊNCIA Pauper",
-        img: "https://tiagofuguete.com.br/wp-content/uploads/2026/01/ChatGPT-Image-22-de-jan.-de-2026-22_43_04-300x200.png",
-        link: "https://tiagofuguete.com.br/2026/01/23/guia-de-side-bg-pestilencia-pauper/",
-    },
-    {
-        title: "SuperCup 2025, o seu Torneio Pauper de Times",
-        img: "https://tiagofuguete.com.br/wp-content/uploads/2025/07/SUPERCUP-246x300.png",
-        link: "https://tiagofuguete.com.br/2025/07/21/fui-campeao-do-pauper-challenge-de-jund-wildfire/",
-    },
-];
+function BlogPostsSection() {
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+        listarPostsBlog({ limite: 6 })
+            .then((data) => {
+                if (active) setPosts(data.posts || []);
+            })
+            .catch(() => {
+                if (active) setPosts([]);
+            });
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    return (
+        <section className="max-w-7xl mx-auto px-4 py-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">Veja as novidades</h2>
+            <p className="text-center text-[#9b8dc0] mb-8 max-w-3xl mx-auto">
+                Além dos torneios, você pode acessar conteúdos educativos, deck techs, dicas de gameplay e muito mais.
+                O objetivo é simples: fazer você se divertir e melhorar como jogador de Magic: The Gathering no formato Pauper.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posts.map((post) => (
+                    <Link
+                        key={post.id}
+                        to={`/blog/${post.slug}`}
+                        className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.3)] transition-all no-underline"
+                    >
+                        <div className="overflow-hidden">
+                            {post.imagemCapaUrl ? (
+                                <img
+                                    src={post.imagemCapaUrl}
+                                    alt={post.titulo}
+                                    className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
+                                />
+                            ) : (
+                                <div className="flex h-44 items-center justify-center bg-[rgba(167,79,255,0.08)] text-sm text-[#8f82ad]">
+                                    Sem imagem de capa
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-4">
+                            <h3 className="font-semibold text-[#e8dfff] mb-2 line-clamp-2 group-hover:text-[#c795ff] transition-colors">
+                                {post.titulo}
+                            </h3>
+                            <span className="text-[#c795ff] text-sm font-medium">Ler mais &gt;&gt;</span>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+        </section>
+    );
+}
 
 const PARTNERS = [
     { src: "https://tiagofuguete.com.br/wp-content/uploads/2025/06/mineral.png", alt: "mineral" },
@@ -220,7 +252,27 @@ function HeroCarousel() {
 
 /* ── Partners Carousel ── */
 function PartnersCarousel() {
+    const [partners, setPartners] = useState(PARTNERS);
     const [offset, setOffset] = useState(0);
+
+    useEffect(() => {
+        let active = true;
+        listarParceiros()
+            .then((data) => {
+                if (!active) return;
+                const fromApi = (data.parceiros || []).map((parceiro) => ({
+                    src: parceiro.imagemUrl,
+                    alt: parceiro.nome,
+                }));
+                if (fromApi.length) setPartners(fromApi);
+            })
+            .catch(() => {
+                // Mantém fallback estático se a API falhar.
+            });
+        return () => {
+            active = false;
+        };
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => setOffset((o) => o + 1), 2500);
@@ -228,16 +280,16 @@ function PartnersCarousel() {
     }, []);
 
     const visible = 5;
-    const items = [...PARTNERS, ...PARTNERS];
+    const items = [...partners, ...partners];
 
     return (
         <div className="overflow-hidden">
             <div
                 className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${(offset % PARTNERS.length) * (100 / visible)}%)` }}
+                style={{ transform: `translateX(-${(offset % partners.length) * (100 / visible)}%)` }}
             >
                 {items.map((p, i) => (
-                    <div key={i} className="flex-shrink-0 flex items-center justify-center px-4" style={{ width: `${100 / visible}%` }}>
+                    <div key={`${p.alt}-${i}`} className="flex-shrink-0 flex items-center justify-center px-4" style={{ width: `${100 / visible}%` }}>
                         <img src={p.src} alt={p.alt} className="max-h-20 md:max-h-24 object-contain opacity-80 hover:opacity-100 transition-opacity" loading="lazy" />
                     </div>
                 ))}
@@ -279,40 +331,7 @@ export function LandingPage() {
                 </div>
             </section>
 
-            {/* ─── Blog Posts ─── */}
-            <section className="max-w-7xl mx-auto px-4 py-12">
-                <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">Veja as novidades</h2>
-                <p className="text-center text-[#9b8dc0] mb-8 max-w-3xl mx-auto">
-                    Além dos torneios, você pode acessar conteúdos educativos, deck techs, dicas de gameplay e muito mais.
-                    O objetivo é simples: fazer você se divertir e melhorar como jogador de Magic: The Gathering no formato Pauper.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {BLOG_POSTS.map((post) => (
-                        <a
-                            key={post.title}
-                            href={post.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.3)] transition-all"
-                        >
-                            <div className="overflow-hidden">
-                                <img
-                                    src={post.img}
-                                    alt={post.title}
-                                    className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
-                                    loading="lazy"
-                                />
-                            </div>
-                            <div className="p-4">
-                                <h3 className="font-semibold text-[#e8dfff] mb-2 line-clamp-2 group-hover:text-[#c795ff] transition-colors">
-                                    {post.title}
-                                </h3>
-                                <span className="text-[#c795ff] text-sm font-medium">Ler mais &gt;&gt;</span>
-                            </div>
-                        </a>
-                    ))}
-                </div>
-            </section>
+            <BlogPostsSection />
 
             {/* ─── Partners ─── */}
             <section className="bg-[#080514] py-12 border-t border-[rgba(217,180,255,0.12)]">

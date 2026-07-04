@@ -129,6 +129,8 @@ export function resolveExternalNavigationTarget(locationLike) {
     case "torneios":
     case "home":
       return withSearch("/", searchParams);
+    case "landing-page":
+      return withSearch("/landing-page", searchParams);
     case "criar-torneio":
       return withSearch("/torneios/criar", searchParams);
     case "decks":
@@ -145,6 +147,10 @@ export function resolveExternalNavigationTarget(locationLike) {
       return withSearch("/ligas/criar", searchParams);
     case "blog":
       return withSearch("/blog", searchParams);
+    case "criar-post-blog":
+      return withSearch("/blog/admin/criar", searchParams);
+    case "gerenciar-blog":
+      return withSearch("/blog/admin", searchParams);
     case "sobre-mim":
       return withSearch("/sobre-mim", searchParams);
     case "parceiros":

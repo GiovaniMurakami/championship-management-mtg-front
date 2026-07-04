@@ -19,8 +19,14 @@ const ResetSenhaPage      = lazy(() => import("../pages/ResetSenhaPage").then(m 
 const TermosDeUsoPage     = lazy(() => import("../pages/TermosDeUsoPage").then(m => ({ default: m.TermosDeUsoPage })));
 const LandingPage         = lazy(() => import("../pages/LandingPage").then(m => ({ default: m.LandingPage })));
 const LandingBlogPage     = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
+const BlogPostPage        = lazy(() => import("../pages/BlogPostPage").then(m => ({ default: m.BlogPostPage })));
+const BlogAdminPage       = lazy(() => import("../pages/BlogAdminPage").then(m => ({ default: m.BlogAdminPage })));
+const BlogEditorPage      = lazy(() => import("../pages/BlogEditorPage").then(m => ({ default: m.BlogEditorPage })));
 const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
-const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
+const LandingParceirosPage  = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
+const LandingSiteAdminPage = lazy(() => import("../pages/LandingSiteAdminPage").then(m => ({ default: m.LandingSiteAdminPage })));
+const ParceirosAdminPage   = lazy(() => import("../pages/ParceirosAdminPage").then(m => ({ default: m.ParceirosAdminPage })));
+const ApoiadoresAdminPage  = lazy(() => import("../pages/ApoiadoresAdminPage").then(m => ({ default: m.ApoiadoresAdminPage })));
 const DashboardPage       = lazy(() => import("../pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
@@ -113,12 +119,35 @@ export function AppRoutes() {
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
+        <Route path="/landing/admin/parceiros" element={
+          <ProtectedRoute requireAdmin><ParceirosAdminPage /></ProtectedRoute>
+        } />
+        <Route path="/landing/admin/apoiadores" element={
+          <ProtectedRoute requireAdmin><ApoiadoresAdminPage /></ProtectedRoute>
+        } />
+        <Route path="/landing/admin" element={
+          <ProtectedRoute requireAdmin><LandingSiteAdminPage /></ProtectedRoute>
+        } />
+
+        <Route path="/blog/admin/criar" element={
+          <ProtectedRoute requireAdmin><BlogEditorPage editMode={false} /></ProtectedRoute>
+        } />
+        <Route path="/blog/admin/:id/editar" element={
+          <ProtectedRoute requireAdmin>
+            <UuidParamGuard param="id">
+              <BlogEditorPage editMode={true} />
+            </UuidParamGuard>
+          </ProtectedRoute>
+        } />
+        <Route path="/blog/admin" element={
+          <ProtectedRoute requireAdmin><BlogAdminPage /></ProtectedRoute>
+        } />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/blog" element={<LandingBlogPage />} />
         <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
         <Route path="/parceiros" element={<LandingParceirosPage />} />
 
-        {/* Redirects de rotas antigas */}
-        <Route path="/landing-page" element={<Navigate to="/" replace />} />
+        <Route path="/landing-page" element={<LandingPage />} />
         <Route path="/landing-page/blog" element={<Navigate to="/blog" replace />} />
         <Route path="/landing-page/sobre-mim" element={<Navigate to="/sobre-mim" replace />} />
         <Route path="/landing-page/parceiros" element={<Navigate to="/parceiros" replace />} />

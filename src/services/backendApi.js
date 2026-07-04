@@ -404,6 +404,91 @@ export const salvarAnuncios = (anuncios, token) =>
 export const registrarCliqueAnuncio = (anuncioId) =>
   httpClient.post(`/site/anuncios/${encodeURIComponent(anuncioId)}/clique`, {});
 
+// Blog
+export const listarPostsBlog = (params = {}) =>
+  httpClient.get("/blog/posts", { params });
+
+export const buscarPostBlog = (slug) =>
+  httpClient.get(`/blog/posts/${encodeURIComponent(slug)}`);
+
+export const listarPostsBlogAdmin = (token, params = {}) =>
+  httpClient.get("/blog/posts/admin/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+    params,
+  });
+
+export const buscarPostBlogAdmin = (id, token) =>
+  httpClient.get(`/blog/posts/admin/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const criarPostBlog = (payload, token) =>
+  httpClient.post("/blog/posts", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const alterarPostBlog = (id, payload, token) =>
+  httpClient.put(`/blog/posts/${encodeURIComponent(id)}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirPostBlog = (id, token) =>
+  httpClient.delete(`/blog/posts/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const importarPostsWordpress = (token) =>
+  httpClient.post("/blog/posts/importar-wordpress", {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// Parceiros e apoiadores (landing)
+export const listarParceiros = () =>
+  httpClient.get("/site/parceiros");
+
+export const listarParceirosAdmin = (token) =>
+  httpClient.get("/site/parceiros/admin/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const criarParceiro = (payload, token) =>
+  httpClient.post("/site/parceiros", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const alterarParceiro = (id, payload, token) =>
+  httpClient.put(`/site/parceiros/${encodeURIComponent(id)}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirParceiro = (id, token) =>
+  httpClient.delete(`/site/parceiros/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const listarApoiadores = () =>
+  httpClient.get("/site/apoiadores");
+
+export const listarApoiadoresAdmin = (token) =>
+  httpClient.get("/site/apoiadores/admin/listar", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const criarApoiador = (payload, token) =>
+  httpClient.post("/site/apoiadores", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const alterarApoiador = (id, payload, token) =>
+  httpClient.put(`/site/apoiadores/${encodeURIComponent(id)}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirApoiador = (id, token) =>
+  httpClient.delete(`/site/apoiadores/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 // Imagens
 export const obterPresignedUrl = (payload, token) =>
   httpClient.post("/imagem/upload-url", payload, {

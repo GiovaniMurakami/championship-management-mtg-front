@@ -58,6 +58,10 @@ export function authTabClass(isActive) {
   ].join(" ");
 }
 
+/** Wide card for blog editor and similar full-width forms. */
+export const BLOG_EDITOR_CARD_CLASS =
+  "w-full border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-6 lg:p-8 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)]";
+
 /** Centered narrow card for auth / password flows. */
 export const FORM_CARD_CLASS =
   "w-[min(440px,100%)] border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[#160e2d] p-6 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)]";
