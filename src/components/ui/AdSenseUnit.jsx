@@ -15,7 +15,7 @@ function getUnitStyle(config) {
   if (config.layout === "in-article") {
     return { display: "block", textAlign: "center" };
   }
-  return { display: "block" };
+  return { display: "block", textAlign: "center", marginInline: "auto" };
 }
 
 export function AdSenseUnit({ unit = "topBanner", className = "" }) {

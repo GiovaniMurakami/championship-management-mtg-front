@@ -20,7 +20,7 @@ export function TermosDeUsoPage() {
   usePageTitle(PAGE_TITLES.termosDeUso);
 
   return (
-    <main className="w-[min(920px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12 px-4">
+    <main className="w-full max-w-[920px] mx-auto">
       <div className="rounded-2xl border border-[rgba(217,180,255,0.18)] bg-[linear-gradient(160deg,rgba(34,19,69,0.35),rgba(15,10,29,0.55))] p-6 md:p-8">
         <header className="mb-8 border-b border-[rgba(217,180,255,0.12)] pb-6">
           <p className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">

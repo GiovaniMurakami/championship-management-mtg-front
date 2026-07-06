@@ -18,7 +18,7 @@ export function Home({ onOpenAuth, isAuthenticated }) {
   }, [searchParams.get("resetSenha"), setSearchParams]);
 
   return (
-    <main className="w-[min(1100px,calc(100vw-2rem))] mx-auto pt-[7.5rem] pb-12">
+    <main className="w-full">
       {successMsg && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl border border-[rgba(44,207,180,0.4)] bg-[rgba(30,15,45,0.95)] backdrop-blur-md text-[#5eead4] text-[0.9rem] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-[slide-up_300ms_ease-out] max-w-[min(480px,calc(100vw-2rem))] text-center">
           {successMsg}
