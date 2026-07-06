@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { ADSENSE_CLIENT, ADSENSE_UNITS, isAdSenseEnabled } from "../../constants/adsense";
+import { loadAdSenseScript } from "../../utils/adsenseScript";
 
 const BASE_CLASS = "overflow-hidden";
 
@@ -8,14 +9,6 @@ function getUnitStyle(config) {
     return { display: "block", textAlign: "center" };
   }
   return { display: "block" };
-}
-
-function pushAd() {
-  try {
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
-  } catch {
-    // AdSense pode falhar em dev ou com bloqueadores de anúncio.
-  }
 }
 
 export function AdSenseUnit({ unit = "horizontal", className = "" }) {
@@ -30,19 +23,32 @@ export function AdSenseUnit({ unit = "horizontal", className = "" }) {
     const container = containerRef.current;
     if (!container) return undefined;
 
-    const tryPush = () => {
-      if (pushed.current || container.offsetWidth <= 0) return;
+    let cancelled = false;
+
+    const tryPush = async () => {
+      if (pushed.current || cancelled || container.offsetWidth <= 0) return;
+
+      const loaded = await loadAdSenseScript();
+      if (!loaded || cancelled || pushed.current || container.offsetWidth <= 0) return;
+
       pushed.current = true;
-      pushAd();
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch {
+        pushed.current = false;
+      }
     };
 
     tryPush();
 
-    if (pushed.current || typeof ResizeObserver === "undefined") return undefined;
+    if (typeof ResizeObserver === "undefined") return () => { cancelled = true; };
 
-    const observer = new ResizeObserver(() => tryPush());
+    const observer = new ResizeObserver(() => { tryPush(); });
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, [config, enabled]);
 
   if (!config || !enabled) return null;
