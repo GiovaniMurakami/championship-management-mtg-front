@@ -296,10 +296,15 @@ Limites de deck (`constants/auth.js`):
 
 ## 12. WordPress / navegação externa
 
+Arquitetura:
+- **WordPress** (`tiagofuguete.com.br`) — site principal; embute o app em iframe
+- **Este front** (`app.tiagofuguete.com.br`) — SPA React deste repositório
+
 `src/utils/externalNavigation.js`:
-- App embutida em iframe no WordPress (`VITE_WORDPRESS_APP_URL`, default `tiagofuguete.com.br/app-torneios`)
-- Query params na `/` são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
-- `App.jsx` sincroniza rotas via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
+- `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados e acesso direto ao app
+- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/app-torneios`)
+- Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
+- `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
 
 Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalNavigationTarget()`.
 
@@ -317,7 +322,8 @@ VITE_ABLY_API_KEY=...           # dev fallback
 VITE_YOUTUBE_CHANNEL_ID=...
 VITE_YOUTUBE_API_KEY=...
 VITE_SITE_PASSWORD=...          # gate opcional
-VITE_WORDPRESS_APP_URL=...      # URL do embed WordPress
+VITE_APP_URL=...                # URL publica do front (default app.tiagofuguete.com.br)
+VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/app-torneios)
 ```
 
 Copiar de `.env.example`. **Nunca commitar `.env`.**

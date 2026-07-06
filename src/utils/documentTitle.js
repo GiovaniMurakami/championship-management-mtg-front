@@ -1,30 +1,10 @@
 import { SITE_TITLE, formatPageTitle } from "../constants/pageTitles";
-import { WORDPRESS_APP_URL } from "./externalNavigation";
-
-function getWordpressAllowedOrigins() {
-  const origins = new Set();
-
-  try {
-    origins.add(new URL(WORDPRESS_APP_URL).origin);
-  } catch {
-    // URL do WordPress inválida ou ausente.
-  }
-
-  try {
-    if (document.referrer) {
-      origins.add(new URL(document.referrer).origin);
-    }
-  } catch {
-    // Referrer ausente ou malformado.
-  }
-
-  return origins;
-}
+import { getWordpressEmbedOrigins } from "./externalNavigation";
 
 function notifyParentPageTitle(title) {
   if (window.parent === window) return;
 
-  const origins = getWordpressAllowedOrigins();
+  const origins = getWordpressEmbedOrigins();
   if (origins.size === 0) return;
 
   const message = {

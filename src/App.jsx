@@ -7,9 +7,10 @@ import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import {
-  buildExternalAppUrlForPath,
+  buildWordpressEmbedUrlForPath,
+  getWordpressEmbedOrigins,
   resolveExternalNavigationTarget,
-  WORDPRESS_APP_URL,
+  WORDPRESS_EMBED_URL,
 } from "./utils/externalNavigation";
 
 const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
@@ -54,28 +55,6 @@ function ExternalRouteSync() {
   return null;
 }
 
-function getWordpressTargetOrigin() {
-  try {
-    return new URL(WORDPRESS_APP_URL).origin;
-  } catch {
-    return null;
-  }
-}
-
-function getWordpressAllowedOrigins() {
-  const origins = new Set();
-  const configuredOrigin = getWordpressTargetOrigin();
-  if (configuredOrigin) origins.add(configuredOrigin);
-
-  try {
-    if (document.referrer) origins.add(new URL(document.referrer).origin);
-  } catch {
-    // Referrer may be absent or malformed; the configured origin remains enough.
-  }
-
-  return origins;
-}
-
 function getNavigationValueFromMessage(data) {
   if (!data) return "";
   if (typeof data === "string") return data;
@@ -89,7 +68,7 @@ function resolveWordpressMessageTarget(data) {
   if (!navigationValue) return null;
 
   try {
-    const wordpressUrl = new URL(WORDPRESS_APP_URL);
+    const wordpressUrl = new URL(WORDPRESS_EMBED_URL);
     const nextUrl = new URL(navigationValue, wordpressUrl.origin);
 
     if (nextUrl.pathname === wordpressUrl.pathname) {
@@ -114,7 +93,7 @@ function WordpressRouteBridge() {
   useEffect(() => {
     if (window.parent === window) return;
 
-    const allowedOrigins = getWordpressAllowedOrigins();
+    const allowedOrigins = getWordpressEmbedOrigins();
     if (allowedOrigins.size === 0) return;
 
     const handleMessage = (event) => {
@@ -147,11 +126,11 @@ function WordpressRouteBridge() {
   useEffect(() => {
     if (window.parent === window) return;
 
-    const allowedOrigins = getWordpressAllowedOrigins();
+    const allowedOrigins = getWordpressEmbedOrigins();
     if (allowedOrigins.size === 0) return;
 
     const path = `${location.pathname}${location.search}`;
-    const url = buildExternalAppUrlForPath(path);
+    const url = buildWordpressEmbedUrlForPath(path);
     const message = {
       type: "APP_ROUTE_CHANGED",
       source: "championship-management-mtg-front",
