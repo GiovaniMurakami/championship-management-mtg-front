@@ -5,6 +5,13 @@ import { loadAdSenseScript } from "../../utils/adsenseScript";
 const BASE_CLASS = "overflow-hidden";
 
 function getUnitStyle(config) {
+  if (config.fixedSize) {
+    return {
+      display: "inline-block",
+      width: `${config.fixedSize.width}px`,
+      height: `${config.fixedSize.height}px`,
+    };
+  }
   if (config.layout === "in-article") {
     return { display: "block", textAlign: "center" };
   }
@@ -53,6 +60,8 @@ export function AdSenseUnit({ unit = "horizontal", className = "" }) {
 
   if (!config || !enabled) return null;
 
+  const useResponsive = config.fullWidthResponsive && !config.fixedSize;
+
   return (
     <div ref={containerRef} className={`${BASE_CLASS} ${className}`.trim()} aria-hidden="true">
       <ins
@@ -62,7 +71,7 @@ export function AdSenseUnit({ unit = "horizontal", className = "" }) {
         data-ad-slot={config.slot}
         data-ad-format={config.format}
         {...(config.layout ? { "data-ad-layout": config.layout } : {})}
-        {...(config.fullWidthResponsive ? { "data-full-width-responsive": "true" } : {})}
+        {...(useResponsive ? { "data-full-width-responsive": "true" } : {})}
       />
     </div>
   );

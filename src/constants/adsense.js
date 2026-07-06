@@ -18,6 +18,16 @@ export const ADSENSE_UNITS = {
     format: "auto",
     fullWidthResponsive: true,
   },
+  skyscraper: {
+    slot: "7521736447",
+    format: "auto",
+    fixedSize: { width: 120, height: 600 },
+  },
+  mobileBanner: {
+    slot: "7521736447",
+    format: "horizontal",
+    fixedSize: { width: 320, height: 50 },
+  },
 };
 
 export function getConfiguredAdSenseHost() {

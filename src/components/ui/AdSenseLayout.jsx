@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { isAdSenseEnabled } from "../../constants/adsense";
 import { AdSenseUnit } from "./AdSenseUnit";
 
-const WIDE_LAYOUT_QUERY = "(min-width: 1536px)";
+/** Laterais só em telas bem largas; abaixo disso usa banner compacto no fluxo. */
+const WIDE_LAYOUT_QUERY = "(min-width: 1400px)";
 
-const RAIL_CLASS = "w-[132px] shrink-0";
-const RAIL_INNER = "sticky top-28 rounded-xl border border-[rgba(217,180,255,0.1)] bg-[rgba(14,9,28,0.35)] p-1.5 overflow-hidden";
+const RAIL_CLASS = "w-[128px] shrink-0";
+const RAIL_INNER = "sticky top-28 rounded-xl border border-[rgba(217,180,255,0.1)] bg-[rgba(14,9,28,0.35)] p-1 overflow-hidden";
 
 function useWideLayout() {
   const [isWide, setIsWide] = useState(() => {
@@ -24,29 +25,24 @@ function useWideLayout() {
   return isWide;
 }
 
-function AdSenseRail({ unit, className = "" }) {
+function AdSenseRail() {
   return (
     <aside className={RAIL_CLASS} aria-hidden="true">
       <div className={RAIL_INNER}>
-        <AdSenseUnit
-          unit={unit}
-          className={`my-0 min-h-[280px] ${className}`.trim()}
-        />
+        <AdSenseUnit unit="skyscraper" className="my-0 flex justify-center" />
       </div>
     </aside>
   );
 }
 
-function AdSenseMobileStrip() {
+/** Banner compacto no fluxo do conteúdo (sem sticky). */
+function AdSenseInlineBanner() {
   return (
     <div
-      className="sticky top-[5.25rem] z-30 mx-3 -mb-2 px-2 py-2 rounded-xl border border-[rgba(217,180,255,0.1)] bg-[rgba(14,9,28,0.72)] backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+      className="flex justify-center my-3 px-2 overflow-hidden"
       aria-hidden="true"
     >
-      <AdSenseUnit
-        unit="horizontal"
-        className="my-0 min-h-[50px] max-h-[90px] overflow-hidden rounded-lg"
-      />
+      <AdSenseUnit unit="mobileBanner" className="my-0 max-w-full" />
     </div>
   );
 }
@@ -54,16 +50,16 @@ function AdSenseMobileStrip() {
 function AdSenseMobileFooter() {
   return (
     <div
-      className="mx-3 mt-6 mb-2 rounded-xl border border-[rgba(217,180,255,0.1)] bg-[rgba(14,9,28,0.35)] p-2 overflow-hidden"
+      className="flex justify-center mx-3 mt-4 mb-2 overflow-hidden"
       aria-hidden="true"
     >
-      <AdSenseUnit unit="pageEnd" className="my-0 min-h-[60px] max-h-[120px]" />
+      <AdSenseUnit unit="pageEnd" className="my-0 w-full max-w-[728px] max-h-[90px]" />
     </div>
   );
 }
 
 /**
- * Layout global de anúncios: laterais fixas no desktop, faixas discretas no mobile.
+ * Layout global de anúncios: lateral no desktop largo, banners compactos no fluxo em telas menores.
  */
 export function AdSenseLayout({ children }) {
   const isWide = useWideLayout();
@@ -72,16 +68,13 @@ export function AdSenseLayout({ children }) {
 
   return (
     <div className="w-full">
-      {!isWide && <AdSenseMobileStrip />}
-
-      <div className="flex justify-center gap-5 w-full max-w-[1520px] mx-auto 2xl:px-3">
-        {isWide && <AdSenseRail unit="inArticle" />}
+      <div className="flex justify-center gap-4 w-full max-w-[1520px] mx-auto xl:px-3">
+        {isWide && <AdSenseRail />}
 
         <div className="flex-1 min-w-0 w-full">
+          {!isWide && <AdSenseInlineBanner />}
           {children}
         </div>
-
-        {isWide && <AdSenseRail unit="horizontal" />}
       </div>
 
       {!isWide && <AdSenseMobileFooter />}
