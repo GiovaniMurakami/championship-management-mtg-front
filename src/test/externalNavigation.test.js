@@ -145,6 +145,23 @@ describe("build public app urls", () => {
   });
 });
 
+describe("getWordpressEmbedOrigins", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("inclui variantes com e sem www do WordPress", async () => {
+    vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "https://www.tiagofuguete.com.br/app-torneios");
+    vi.resetModules();
+
+    const { getWordpressEmbedOrigins } = await import("../utils/externalNavigation");
+    const origins = getWordpressEmbedOrigins();
+
+    expect(origins.has("https://www.tiagofuguete.com.br")).toBe(true);
+    expect(origins.has("https://tiagofuguete.com.br")).toBe(true);
+  });
+});
+
 describe("build wordpress embed urls", () => {
   beforeEach(() => {
     vi.unstubAllEnvs();

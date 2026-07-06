@@ -33,21 +33,30 @@ export const WORDPRESS_EMBED_URL = normalizeBaseUrl(
 /** @deprecated Use APP_PUBLIC_URL ou WORDPRESS_EMBED_URL conforme o caso. */
 export const WORDPRESS_APP_URL = APP_PUBLIC_URL;
 
+const addOriginWithWwwVariants = (origins, value) => {
+  try {
+    const url = new URL(value);
+    origins.add(url.origin);
+
+    const { protocol, hostname } = url;
+    if (hostname.startsWith("www.")) {
+      origins.add(`${protocol}//${hostname.slice(4)}`);
+      return;
+    }
+
+    origins.add(`${protocol}//www.${hostname}`);
+  } catch {
+    // URL invalida ou ausente.
+  }
+};
+
 export function getWordpressEmbedOrigins() {
   const origins = new Set();
 
-  try {
-    origins.add(new URL(WORDPRESS_EMBED_URL).origin);
-  } catch {
-    // URL do WordPress invalida ou ausente.
-  }
+  addOriginWithWwwVariants(origins, WORDPRESS_EMBED_URL);
 
-  try {
-    if (document.referrer) {
-      origins.add(new URL(document.referrer).origin);
-    }
-  } catch {
-    // Referrer ausente ou malformado.
+  if (document.referrer) {
+    addOriginWithWwwVariants(origins, document.referrer);
   }
 
   return origins;
