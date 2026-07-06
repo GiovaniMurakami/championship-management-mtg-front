@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import {
@@ -187,9 +187,11 @@ function AppContent() {
       />
 
       <main className="flex-1 min-w-0 overflow-x-clip">
-        <ErrorBoundary>
-          <AppRoutes />
-        </ErrorBoundary>
+        <AdSenseLayout>
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
+        </AdSenseLayout>
       </main>
 
       <AuthModal

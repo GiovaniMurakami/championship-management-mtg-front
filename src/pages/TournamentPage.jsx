@@ -13,7 +13,7 @@ import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
 import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
-import { SponsorSection } from "../components/ui/SponsorSection";
+import { SponsorSection } from "../components";
 import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
 import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
