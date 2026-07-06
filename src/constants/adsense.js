@@ -4,20 +4,17 @@ export const DEFAULT_ADSENSE_HOST = "app.tiagofuguete.com.br";
 
 /** Cada unidade usa um slot distinto — reutilizar slot na mesma pagina impede o segundo anuncio. */
 export const ADSENSE_UNITS = {
-  /** Banner horizontal responsivo (topo em telas menores). */
-  mobileBanner: {
+  topBanner: {
     slot: "7521736447",
     format: "auto",
     fullWidthResponsive: true,
   },
-  /** Lateral em telas largas — fluid exige ~250px de largura. */
-  sideRail: {
+  inArticle: {
     slot: "2769325376",
     layout: "in-article",
     format: "fluid",
   },
-  /** Rodape / segundo banner em telas menores. */
-  pageEnd: {
+  bottomBanner: {
     slot: "8904290240",
     format: "auto",
     fullWidthResponsive: true,

@@ -18,7 +18,7 @@ function getUnitStyle(config) {
   return { display: "block" };
 }
 
-export function AdSenseUnit({ unit = "mobileBanner", className = "" }) {
+export function AdSenseUnit({ unit = "topBanner", className = "" }) {
   const config = ADSENSE_UNITS[unit];
   const containerRef = useRef(null);
   const pushed = useRef(false);
@@ -82,18 +82,18 @@ export function AdSenseUnit({ unit = "mobileBanner", className = "" }) {
 }
 
 export function AdSenseHorizontal(props) {
-  return <AdSenseUnit unit="mobileBanner" {...props} />;
+  return <AdSenseUnit unit="topBanner" {...props} />;
 }
 
 export function AdSenseInArticle(props) {
-  return <AdSenseUnit unit="sideRail" {...props} />;
+  return <AdSenseUnit unit="inArticle" {...props} />;
 }
 
 export function AdSensePageEnd({ className = "", ...props }) {
   return (
     <AdSenseUnit
-      unit="pageEnd"
-      className={`border-t border-[rgba(217,180,255,0.08)] pt-6 ${className}`.trim()}
+      unit="bottomBanner"
+      className={className}
       {...props}
     />
   );
