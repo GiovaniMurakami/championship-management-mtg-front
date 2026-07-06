@@ -18,22 +18,26 @@ function getUnitStyle(config) {
   return { display: "block" };
 }
 
-export function AdSenseUnit({ unit = "horizontal", className = "" }) {
+export function AdSenseUnit({ unit = "mobileBanner", className = "" }) {
   const config = ADSENSE_UNITS[unit];
   const containerRef = useRef(null);
   const pushed = useRef(false);
   const enabled = isAdSenseEnabled();
 
   useEffect(() => {
-    if (!config || !enabled || pushed.current) return undefined;
+    if (!config || !enabled) return undefined;
 
     const container = containerRef.current;
     if (!container) return undefined;
 
+    pushed.current = false;
     let cancelled = false;
 
     const tryPush = async () => {
       if (pushed.current || cancelled || container.offsetWidth <= 0) return;
+
+      const ins = container.querySelector("ins.adsbygoogle");
+      if (ins?.getAttribute("data-adsbygoogle-status")) return;
 
       const loaded = await loadAdSenseScript();
       if (!loaded || cancelled || pushed.current || container.offsetWidth <= 0) return;
@@ -56,7 +60,7 @@ export function AdSenseUnit({ unit = "horizontal", className = "" }) {
       cancelled = true;
       observer.disconnect();
     };
-  }, [config, enabled]);
+  }, [config, enabled, unit]);
 
   if (!config || !enabled) return null;
 
@@ -78,11 +82,11 @@ export function AdSenseUnit({ unit = "horizontal", className = "" }) {
 }
 
 export function AdSenseHorizontal(props) {
-  return <AdSenseUnit unit="horizontal" {...props} />;
+  return <AdSenseUnit unit="mobileBanner" {...props} />;
 }
 
 export function AdSenseInArticle(props) {
-  return <AdSenseUnit unit="inArticle" {...props} />;
+  return <AdSenseUnit unit="sideRail" {...props} />;
 }
 
 export function AdSensePageEnd({ className = "", ...props }) {
