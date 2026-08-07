@@ -281,7 +281,7 @@ export function useTournamentDetail() {
                 const partidaAtualizada = msg?.data?.partida || msg?.data;
                 const updated = mergePartidaState(partidaAtualizada);
                 if (!updated) loadPartidas();
-                loadStandings();
+                // Standings são materializados só ao encerrar a rodada — não refetch a cada resultado.
             },
             onResultadoContestado: (msg) => {
                 const partidaContestada = msg?.data?.partida || msg?.data;
@@ -293,9 +293,15 @@ export function useTournamentDetail() {
                     vitoriasJogador2: 0,
                 });
                 if (!updated) loadPartidas();
+            },
+            onStandingsAtualizados: (msg) => {
+                const data = msg?.data;
+                if (Array.isArray(data?.standings)) {
+                    setStandings(normalizeStandingsPayload(data));
+                    return;
+                }
                 loadStandings();
             },
-            onStandingsAtualizados: () => loadStandings(),
             onTorneioFinalizado: () => {
                 setTorneio((prev) => (prev ? { ...prev, status: "finalizado" } : prev));
                 loadTournament();
