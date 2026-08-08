@@ -469,7 +469,7 @@ function pxToPercent(value, total) {
 export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {}, onClose }) {
   const allPlayers = (standings || []).map((p) => ({
     ...p,
-    deckNome: deckNameOverrides[p.deckId] || p.deckNome || p.deck?.nome || "",
+    deckNome: deckNameOverrides[p.deckId] || p.deckNome || p.deck?.nome || "—",
   }));
 
   const topNOptions = getTopNOptions(allPlayers.length);

@@ -261,6 +261,7 @@ export function TournamentDetailPage() {
             times={times}
             selectedTimeId={selectedTimeId}
             onTimeChange={setSelectedTimeId}
+            token={token}
           />
         );
 

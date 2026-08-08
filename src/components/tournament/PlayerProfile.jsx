@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { buscarDeck } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -64,8 +65,10 @@ export function PlayerProfile({
   times = [],
   selectedTimeId,
   onTimeChange,
+  token,
 }) {
   const [deckSort, setDeckSort] = useState("recente");
+  const [confirmedDeckName, setConfirmedDeckName] = useState(null);
 
   const canEditDeck = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
@@ -77,8 +80,8 @@ export function PlayerProfile({
 
   const checkinRound = currentPlayer?.checkinRodada ?? currentPlayer?.checkInRodada ?? -1;
   const isCheckedIn = checkinRound >= 0;
-  const deckName = currentPlayer?.deckNome || currentPlayer?.deck?.nome || null;
-  const isDeckConfirmed = Boolean(currentPlayer?.deckConfirmado || deckName || currentPlayer?.deckId || currentPlayer?.deck?.id);
+  const confirmedDeckId = currentPlayer?.deckId || currentPlayer?.deck?.id || null;
+  const isDeckConfirmed = Boolean(currentPlayer?.deckConfirmado || currentPlayer?.deckNome || confirmedDeckId);
   const displayName =
     currentPlayer?.nome ||
     currentPlayer?.username ||
@@ -104,6 +107,40 @@ export function PlayerProfile({
     }));
 
   const selectedDeck = deckOptions.find((deck) => String(deck.id) === String(selectedDeckId));
+
+  // Só aqui: mostrar o nome digitado pelo usuário, não o arquétipo consolidado dos standings
+  useEffect(() => {
+    if (!confirmedDeckId) {
+      setConfirmedDeckName(null);
+      return;
+    }
+
+    const fromUserDecks = decks.find((deck) => String(deck.id) === String(confirmedDeckId));
+    if (fromUserDecks?.nome) {
+      setConfirmedDeckName(fromUserDecks.nome);
+      return;
+    }
+
+    if (!token) {
+      setConfirmedDeckName(null);
+      return;
+    }
+
+    let cancelled = false;
+    buscarDeck(confirmedDeckId, token)
+      .then((deck) => {
+        if (!cancelled) setConfirmedDeckName(deck?.nome || null);
+      })
+      .catch(() => {
+        if (!cancelled) setConfirmedDeckName(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmedDeckId, decks, token]);
+
+  const deckName = confirmedDeckName || selectedDeck?.nome || null;
 
   const selectedTeam = times.find((time) => String(time.id) === String(currentPlayer?.timeId));
   const statusTone = dropped ? "danger" : currentPlayer ? "success" : canLateJoin ? "warning" : "neutral";
