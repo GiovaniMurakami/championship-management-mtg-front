@@ -24,17 +24,30 @@ function easeOutQuart(t) {
   return 1 - Math.pow(1 - t, 4);
 }
 
-function loadImage(src) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    // Asset local do build: mesma origem, sem CORS. URLs externas usam anonymous.
-    if (!src.startsWith("/") && !src.startsWith(window.location.origin)) {
-      img.crossOrigin = "anonymous";
-    }
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
+async function loadImage(src) {
+  if (!src) return null;
+
+  // data: (inline) e blob: nunca contaminam o canvas
+  if (src.startsWith("data:") || src.startsWith("blob:")) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  try {
+    const absolute = new URL(src, window.location.href).href;
+    const res = await fetch(absolute, { mode: "cors", credentials: "omit" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    // Amplify SPA rewrite devolve index.html com 200 — não usar como imagem
+    if (blob.type.includes("html") || blob.type.includes("text/")) return null;
+    return await createImageBitmap(blob);
+  } catch {
+    return null;
+  }
 }
 
 function drawCoverImage(ctx, img, x, y, w, h) {
