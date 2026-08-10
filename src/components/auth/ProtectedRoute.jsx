@@ -9,6 +9,7 @@ export function ProtectedRoute({ requireAdmin = false, children }) {
   const {
     isAuthenticated,
     authInitialized,
+    authRefreshing,
     isAdmin,
     openAuth,
     showAuthModal,
@@ -16,13 +17,14 @@ export function ProtectedRoute({ requireAdmin = false, children }) {
   const location = useLocation();
 
   useEffect(() => {
-    if (authInitialized && !isAuthenticated && !showAuthModal) {
+    // Não abre a modal enquanto um refresh ainda pode recuperar a sessão
+    if (authInitialized && !authRefreshing && !isAuthenticated && !showAuthModal) {
       if (PUBLIC_AUTH_PATHS.includes(location.pathname)) return;
       openAuth("login");
     }
-  }, [authInitialized, isAuthenticated, openAuth, showAuthModal, location.pathname]);
+  }, [authInitialized, authRefreshing, isAuthenticated, openAuth, showAuthModal, location.pathname]);
 
-  if (!authInitialized) {
+  if (!authInitialized || (authRefreshing && !isAuthenticated)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner size={44} text="Verificando sessão..." />
