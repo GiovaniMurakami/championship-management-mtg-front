@@ -388,24 +388,8 @@ function DeckNameEditPopover({ deckId, currentName, currentNomeConsolidado, toke
     setLoading(true);
     setError("");
     try {
-      const deck = await buscarDeck(deckId, token);
-      await atualizarDeck(
-        deckId,
-        {
-          nome: deck.nome,
-          nomeConsolidado: name.trim(),
-          formato: deck.formato,
-          linkLigaMagic: deck.linkLigaMagic,
-          maindeck: (deck.maindeck || []).map((c) => ({ nome: c.nome, quantidade: c.quantidade })),
-          sideboard: (deck.sideboard || []).map((c) => ({ nome: c.nome, quantidade: c.quantidade })),
-          commander: Array.isArray(deck.commander)
-            ? deck.commander.map((c) => ({ nome: c.nome, quantidade: c.quantidade }))
-            : deck.commander
-              ? [{ nome: deck.commander.nome, quantidade: deck.commander.quantidade }]
-              : [],
-        },
-        token
-      );
+      // Cópia travada do torneio: back aceita só nomeConsolidado (sem GET prévio).
+      await atualizarDeck(deckId, { nomeConsolidado: name.trim() }, token);
       onSave(name.trim());
     } catch {
       setError("Erro ao salvar. Tente novamente.");
