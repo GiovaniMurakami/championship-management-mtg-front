@@ -440,11 +440,11 @@ export function DeckViewButton({ player, token, isOwner, deckNameOverride, onDec
   if (!deckId) return <span className="text-[#beafd7]">—</span>;
 
   return (
-    <div className="relative inline-flex items-center gap-1.5">
-      <Tooltip content={deckNome || "Ver deck"} focusable={false}>
+    <div className="relative flex w-full min-w-0 items-center justify-between gap-1.5">
+      <Tooltip content={deckNome || "Ver deck"} focusable={false} className="min-w-0 flex-1 !cursor-pointer">
       <button
         type="button"
-        className="inline-flex items-center gap-[0.3rem] px-[0.6rem] py-[0.22rem] border border-[rgba(199,149,255,0.4)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.74rem] font-semibold font-['inherit'] cursor-pointer max-w-[180px] min-w-0 transition-[background,border-color] duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.6)]"
+        className="inline-flex w-full min-w-0 items-center gap-[0.3rem] px-[0.6rem] py-[0.22rem] border border-[rgba(199,149,255,0.4)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.74rem] font-semibold font-['inherit'] cursor-pointer transition-[background,border-color] duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.6)]"
         onClick={() => { setOpen(true); setEditing(false); }}
         aria-label={deckNome || "Ver deck"}
       >

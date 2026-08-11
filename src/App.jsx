@@ -154,13 +154,13 @@ function AppContent() {
     loginForm, setLoginForm, registerForm, setRegisterForm, handleLogin,
     handleRegister, loginLockout, showEditProfileModal, closeEditProfileModal,
     editProfileForm, setEditProfileForm, handleUpdateProfile,
+    handleDeleteAccount, deleteAccountLoading, deleteAccountError,
   } = useAuth();
 
   const { pathname } = useLocation();
   const isBare = BARE_ROUTES.includes(pathname);
   const isPublicAuthRoute = pathname === "/esqueci-senha"
-    || pathname === "/reset-senha"
-    || pathname === "/termos-de-uso";
+    || pathname === "/reset-senha";
 
   if (isBare) {
     return (
@@ -186,7 +186,7 @@ function AppContent() {
         onOpenEditProfile={openEditProfileModal}
       />
 
-      <main className="flex-1 min-w-0 overflow-x-clip">
+      <main className="flex-1 min-w-0">
         <AdSenseLayout>
           <ErrorBoundary>
             <AppRoutes />
@@ -218,6 +218,10 @@ function AppContent() {
         form={editProfileForm}
         onFormChange={setEditProfileForm}
         onSubmit={handleUpdateProfile}
+        usuarioNome={usuario?.nome || ""}
+        onDeleteAccount={handleDeleteAccount}
+        deleteLoading={deleteAccountLoading}
+        deleteError={deleteAccountError}
       />
 
       <Footer />

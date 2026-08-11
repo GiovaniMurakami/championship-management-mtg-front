@@ -3,6 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { PageShell } from "../components/ui/PageShell";
+import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { useAuth } from "../context/AuthContext";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
@@ -12,12 +13,17 @@ import { deckHasCardLists, hydrateDeckCards } from "../utils/hydrateDeckCards";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { normalizeId } from "../utils/normalizeId";
 
 export function DeckBuilderPage({ isEditMode = false }) {
-  const { token } = useAuth();
+  const { token, usuario, isAdmin } = useAuth();
   const { id } = useParams();
   const location = useLocation();
-  const readOnly = location.state?.readOnly || new URLSearchParams(location.search).get("modo") === "visualizar";
+  const modoVisualizar = Boolean(
+    location.state?.readOnly || new URLSearchParams(location.search).get("modo") === "visualizar"
+  );
+  const [forcedReadOnly, setForcedReadOnly] = useState(false);
+  const readOnly = modoVisualizar || forcedReadOnly;
   const [analysisTab, setAnalysisTab] = useState("mao");
   const [originalDeck, setOriginalDeck] = useState(location.state?.deck ?? null);
 
@@ -26,6 +32,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
     deckLoading, deckMessage, cardLimitMessage, illegalCardMessage,
     importLoading, importMessage, totalMain, totalSide, totalCommander,
     addCardToDeck, updateCardQuantity, removeCard, handleCreateDeck, importDeckFromTxt,
+    importDeckFromPaste,
   } = useDeckBuilder();
 
   const {
@@ -56,18 +63,26 @@ export function DeckBuilderPage({ isEditMode = false }) {
     let cancelled = false;
     const isCancelled = () => cancelled;
 
-    const applyDeck = (deck) => hydrateDeckCards(deck, {
-      setOriginalDeck,
-      setDeckForm,
-      setMainDeck,
-      setSideboard,
-      setCommander,
-      isCancelled,
-    });
+    const applyDeck = (deck) => {
+      const ownerId = normalizeId(deck?.usuario?.id ?? deck?.usuarioId);
+      const currentUserId = normalizeId(usuario?.id);
+      const canEdit = Boolean(isAdmin || (ownerId && currentUserId && ownerId === currentUserId));
+      setForcedReadOnly(isEditMode && !canEdit);
+
+      return hydrateDeckCards(deck, {
+        setOriginalDeck,
+        setDeckForm,
+        setMainDeck,
+        setSideboard,
+        setCommander,
+        isCancelled,
+      });
+    };
 
     const loadDeckCards = async () => {
       try {
-        if (deckHasCardLists(deckFromState, id)) {
+        // Em modo visualizar, sempre busca na API para trazer estatísticas (win rate).
+        if (!modoVisualizar && deckHasCardLists(deckFromState, id)) {
           await applyDeck(deckFromState);
           return;
         }
@@ -85,7 +100,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
     return () => {
       cancelled = true;
     };
-  }, [id, isEditMode, location.key, deckFromState, setCommander, setDeckForm, setMainDeck, setSideboard]);
+  }, [id, isEditMode, location.key, deckFromState, setCommander, setDeckForm, setMainDeck, setSideboard, usuario?.id, isAdmin, modoVisualizar]);
 
   useEffect(() => {
     return () => closeCardPreview();
@@ -105,11 +120,24 @@ export function DeckBuilderPage({ isEditMode = false }) {
       {originalDeck && (
         <div className="flex flex-wrap items-center gap-3 mb-4 px-1">
           <div className="text-[0.9rem] text-text-soft">
-            {originalDeck.visualizacoes != null ? `${originalDeck.visualizacoes} visualizacoes` : ""}
+            {originalDeck.visualizacoes != null ? `${originalDeck.visualizacoes} visualizações` : ""}
           </div>
           {originalDeck.usuario?.nome && (
             <div className="text-[0.9rem] text-text-soft">
-              por <span className="text-text-main">{originalDeck.usuario.nome}</span>
+              por{" "}
+              <span className="text-text-main">
+                <UsuarioNomeExibicao
+                  nome={originalDeck.usuario.nome}
+                  excluido={originalDeck.usuario.excluido}
+                />
+              </span>
+            </div>
+          )}
+          {readOnly && originalDeck.estatisticas && (
+            <div className="text-[0.9rem] text-[#86efac]" title="Win rate em torneios (cópias travadas)">
+              {originalDeck.estatisticas.totalPartidas > 0
+                ? `${originalDeck.estatisticas.winrate}% (${originalDeck.estatisticas.vitorias}–${originalDeck.estatisticas.derrotas}–${originalDeck.estatisticas.empates})`
+                : "Sem partidas registradas"}
             </div>
           )}
         </div>
@@ -146,6 +174,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
         importLoading={importLoading}
         importMessage={importMessage}
         onImportDeck={importDeckFromTxt}
+        onImportPaste={importDeckFromPaste}
         onSubmit={readOnly ? null : handleSubmit}
         isEditMode={isEditMode}
         readOnly={readOnly}

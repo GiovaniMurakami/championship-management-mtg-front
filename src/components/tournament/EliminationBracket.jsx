@@ -1,4 +1,5 @@
-import { getMatchPlayerName } from "../../utils/matchDisplay";
+import { getMatchPlayerName, isMatchPlayerExcluido } from "../../utils/matchDisplay";
+import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 
 function getFirstCutRound(torneio) {
   const corteTop = Number(torneio?.corteTop || 0);
@@ -26,14 +27,16 @@ function getWinnerId(partida) {
   return null;
 }
 
-function BracketPlayer({ name, score, isWinner, isBye }) {
+function BracketPlayer({ name, score, isWinner, isBye, excluido = false }) {
   return (
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
       isWinner
         ? "border-[rgba(250,204,21,0.48)] bg-[rgba(250,204,21,0.12)] text-[#fef3c7]"
         : "border-[rgba(217,180,255,0.12)] bg-[rgba(255,255,255,0.04)] text-[#d8cfee]"
     } ${isBye ? "opacity-55" : ""}`}>
-      <span className="min-w-0 truncate text-sm font-semibold">{name}</span>
+      <span className="min-w-0 truncate text-sm font-semibold">
+        {isBye ? name : <UsuarioNomeExibicao nome={name} excluido={excluido} />}
+      </span>
       <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-[#beafd7]"}`}>
         {score}
       </span>
@@ -68,12 +71,14 @@ function BracketMatch({ partida, matchIndex }) {
           name={getMatchPlayerName(partida, 1)}
           score={score1}
           isWinner={winnerId === jogador1Id}
+          excluido={isMatchPlayerExcluido(partida, 1)}
         />
         <BracketPlayer
           name={isBye ? "BYE" : getMatchPlayerName(partida, 2)}
           score={score2}
           isWinner={winnerId === jogador2Id}
           isBye={isBye}
+          excluido={!isBye && isMatchPlayerExcluido(partida, 2)}
         />
       </div>
     </article>
@@ -116,7 +121,7 @@ export function EliminationBracket({ torneio, partidas }) {
         <div>
           <p className="m-0 text-xs font-black uppercase tracking-[0.12em] text-[#facc15]">Corte Top {corteTop}</p>
           <h2 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.05em] text-[#f5edff] max-md:text-[1.45rem]">
-            Chaveamento eliminatorio
+            Chaveamento eliminatório
           </h2>
         </div>
         <div className="rounded-lg border border-[rgba(250,204,21,0.28)] bg-[rgba(250,204,21,0.1)] px-3 py-2 text-right max-md:text-left">

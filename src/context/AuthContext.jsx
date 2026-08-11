@@ -4,6 +4,7 @@ import {
   loginUsuario,
   cadastrarUsuario,
   atualizarUsuario,
+  excluirConta,
   logoutUsuario,
 } from "../services/backendApi";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
@@ -39,6 +40,8 @@ export function AuthProvider({ children }) {
     nickMTGO: "",
     nickArena: "",
   });
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState("");
 
   const [loginLockout, setLoginLockout] = useState(false);
   const [rateLimitMsg, setRateLimitMsg] = useState("");
@@ -262,6 +265,7 @@ export function AuthProvider({ children }) {
   const closeEditProfileModal = () => {
     setShowEditProfileModal(false);
     setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "" });
+    setDeleteAccountError("");
   };
 
   const handleUpdateProfile = async (event) => {
@@ -283,6 +287,28 @@ export function AuthProvider({ children }) {
       setAuthMessage(error.message);
     } finally {
       setAuthLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async (confirmName, onSuccess) => {
+    if (!usuario?.nome || confirmName !== usuario.nome) {
+      setDeleteAccountError("O nome não corresponde. Digite exatamente como está no perfil.");
+      return;
+    }
+
+    setDeleteAccountLoading(true);
+    setDeleteAccountError("");
+    try {
+      await excluirConta({ confirmacao: confirmName }, token);
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      setToken("");
+      setUsuario(null);
+      setShowEditProfileModal(false);
+      onSuccess?.();
+    } catch (error) {
+      setDeleteAccountError(error.message || "Não foi possível excluir a conta.");
+    } finally {
+      setDeleteAccountLoading(false);
     }
   };
 
@@ -318,6 +344,9 @@ export function AuthProvider({ children }) {
     openEditProfileModal,
     closeEditProfileModal,
     handleUpdateProfile,
+    handleDeleteAccount,
+    deleteAccountLoading,
+    deleteAccountError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

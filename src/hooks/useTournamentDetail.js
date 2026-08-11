@@ -13,6 +13,7 @@ import {
     ajustarResultado,
     gerarLinkIngresso,
     proximaRodada,
+    encerrarTorneio,
     refazerRodada,
     dropJogador,
     atualizarTorneio,
@@ -35,6 +36,7 @@ import {
 import {
     normalizeMatchesPayload,
     normalizeStandingsPayload,
+    pickTorneioFieldsFromStandings,
     useTournamentQueries,
 } from "./useTournamentQueries";
 import { normalizeRoundSoundUrl } from "../constants/roundSounds";
@@ -176,12 +178,7 @@ export function useTournamentDetail() {
             setPartidas(data.partidas || data.rodadaAtualPartidas || []);
         }
         setTorneio((prev) => {
-            const patch = {};
-            if (data.nome || data.torneioNome) Object.assign(patch, data);
-            if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
-            if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
-            if (data.status !== undefined) patch.status = data.status;
-            if (data.totalInscritos !== undefined) patch.totalInscritos = data.totalInscritos;
+            const patch = pickTorneioFieldsFromStandings(data);
             if (!Object.keys(patch).length) return prev;
             return prev ? { ...prev, ...patch } : patch;
         });
@@ -246,12 +243,7 @@ export function useTournamentDetail() {
             }
             // Merge tournament-level fields returned alongside standings
             setTorneio((prev) => {
-                const patch = {};
-                if (data.nome || data.torneioNome) Object.assign(patch, data);
-                if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
-                if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
-                if (data.status !== undefined) patch.status = data.status;
-                if (data.totalInscritos !== undefined) patch.totalInscritos = data.totalInscritos;
+                const patch = pickTorneioFieldsFromStandings(data);
                 if (!Object.keys(patch).length) return prev;
                 return prev ? { ...prev, ...patch } : patch;
             });
@@ -267,9 +259,14 @@ export function useTournamentDetail() {
         const channel = subscribeToTournament(torneioId, {
             onRodadaIniciada: (msg) => {
                 const data = msg?.data || {};
-                if (data.emCorte) {
-                    setTorneio((prev) => prev ? { ...prev, emCorte: true } : prev);
-                }
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    ...(data.emCorte ? { emCorte: true } : {}),
+                    ...(data.rodadaAtual !== undefined ? { rodadaAtual: data.rodadaAtual } : {}),
+                    ...(data.totalRodadas !== undefined ? { totalRodadas: data.totalRodadas } : {}),
+                    ...(data.rodadaIniciadaEm !== undefined ? { rodadaIniciadaEm: data.rodadaIniciadaEm } : {}),
+                    ...(data.status !== undefined ? { status: data.status } : {}),
+                } : prev);
                 setCheckinRodadaAberto(false);
                 loadTournament();
                 loadStandings();
@@ -317,8 +314,9 @@ export function useTournamentDetail() {
                 setTorneio((prev) =>
                     prev ? { ...prev, totalInscritos: (prev.totalInscritos || 0) + 1 } : prev
                 );
-                // Reload full tournament to pick up any updated totalRodadas from the backend
+                // Reload standings so nickMOL/nickArena resolve correctly (not only after F5)
                 loadTournament();
+                loadStandings();
             },
             onCheckinRealizado: (msg) => {
                 const usuarioId = msg.data.usuario?.id || msg.data.usuarioId;
@@ -441,7 +439,7 @@ export function useTournamentDetail() {
             onTotalRodadasAlterado: (msg) => {
                 const data = msg?.data || {};
                 setTorneio((prev) => prev ? { ...prev, totalRodadas: data.totalRodadas } : prev);
-                showToast(`Torneio estendido para ${data.totalRodadas} rodadas (ingresso tardio).`, "info");
+                showToast(`Total de rodadas atualizado para ${data.totalRodadas}.`, "info");
             },
             onCheckinRodadaAberto: () => {
                 setCheckinRodadaAberto(true);
@@ -694,17 +692,18 @@ export function useTournamentDetail() {
         }
     };
 
-    const handleContestResult = async (partidaId) => {
+    const handleContestResult = async (partidaId, observacao = "") => {
         if (!partidaId) return;
         setActionLoading(true);
         setError("");
         try {
-            const data = await contestarResultado(partidaId, token);
+            const data = await contestarResultado(partidaId, token, observacao);
             const updated = mergePartidaState({
                 id: partidaId,
                 ...(data?.partida || data),
                 status: "pendente",
                 contestado: true,
+                observacaoContestacao: data?.observacaoContestacao ?? observacao ?? null,
                 vitoriasJogador1: 0,
                 vitoriasJogador2: 0,
             });
@@ -812,6 +811,7 @@ export function useTournamentDetail() {
                     setTorneio((prev) => prev ? {
                         ...prev,
                         rodadaAtual: data.rodadaAtual ?? prev.rodadaAtual,
+                        totalRodadas: data.totalRodadas ?? prev.totalRodadas,
                         emCorte: data.emCorte ?? prev.emCorte,
                         rodadaIniciadaEm: data.rodadaIniciadaEm,
                     } : prev);
@@ -862,6 +862,35 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleEncerrarTorneio = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("end-tournament");
+        setError("");
+        try {
+            const data = await encerrarTorneio(torneioId, token);
+            setTorneio((prev) => prev ? {
+                ...prev,
+                status: "finalizado",
+                totalRodadas: data?.totalRodadas ?? prev.totalRodadas,
+                rodadaAtual: data?.rodadaAtual ?? prev.rodadaAtual,
+            } : prev);
+            setSuccessMsg("Torneio encerrado.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao encerrar torneio.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
     const handleStartTournament = async () => {
         if (!torneioId || !canManageTournament) return;
 
@@ -870,8 +899,14 @@ export function useTournamentDetail() {
         setError("");
         try {
             const data = await iniciarTorneio(torneioId, token);
-            if (data?.rodadaIniciadaEm) {
-                setTorneio((prev) => prev ? { ...prev, rodadaIniciadaEm: data.rodadaIniciadaEm, status: "em_andamento" } : prev);
+            if (data) {
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    status: "em_andamento",
+                    rodadaAtual: data.rodadaAtual ?? 1,
+                    totalRodadas: data.totalRodadas ?? prev.totalRodadas,
+                    ...(data.rodadaIniciadaEm ? { rodadaIniciadaEm: data.rodadaIniciadaEm } : {}),
+                } : prev);
             }
             setSuccessMsg("Torneio iniciado com sucesso!");
             playTorneioRoundSound(somRodadaRef.current);
@@ -963,6 +998,34 @@ export function useTournamentDetail() {
             clearMessages();
         } catch (err) {
             setError(err.message || "Erro ao dropar jogador.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
+    const handleSelfDrop = async () => {
+        if (!torneioId || !usuario?.id || !currentPlayer || currentPlayer.dropped) return;
+        if (torneio?.status === "finalizado") return;
+
+        setActionLoading(true);
+        setAdminActionKey("self-drop");
+        setDroppingPlayerId(usuario.id);
+        setError("");
+        try {
+            await dropJogador(torneioId, usuario.id, token);
+            const mensagem = torneio?.status === "inscricoes_abertas"
+                ? "Inscrição cancelada com sucesso."
+                : "Você dropou do torneio.";
+            setSuccessMsg(mensagem);
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao dropar do torneio.");
             clearMessages();
         } finally {
             setActionLoading(false);
@@ -1063,8 +1126,10 @@ export function useTournamentDetail() {
         handleStartTournament: guard(handleStartTournament),
         handleNextRound: guard(handleNextRound),
         handleRefazerRodada: guard(handleRefazerRodada),
+        handleEncerrarTorneio: guard(handleEncerrarTorneio),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayer: guard(handleDropPlayer),
+        handleSelfDrop: guard(handleSelfDrop),
         handleEditTorneio: guard(handleEditTorneio),
         handleDefinirAnfitriao: guard(handleDefinirAnfitriao),
         handleDeleteTorneio: guard(handleDeleteTorneio),

@@ -74,6 +74,18 @@ describe("resolveExternalNavigationTarget", () => {
     });
   });
 
+  it("redireciona rota externa de privacidade", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?rota=privacidade",
+    });
+
+    expect(target).toEqual({
+      pathname: "/privacidade",
+      search: "",
+    });
+  });
+
   it("redireciona appPath para uma rota interna preservando parametros extras", () => {
     const target = resolveExternalNavigationTarget({
       pathname: "/",
@@ -141,6 +153,13 @@ describe("build public app urls", () => {
     const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
     expect(buildExternalAppUrlForPath("/termos-de-uso")).toBe(
       "https://app.tiagofuguete.com.br/termos-de-uso",
+    );
+  });
+
+  it("gera url publica para privacidade", async () => {
+    const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
+    expect(buildExternalAppUrlForPath("/privacidade")).toBe(
+      "https://app.tiagofuguete.com.br/privacidade",
     );
   });
 });

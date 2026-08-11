@@ -183,14 +183,15 @@ async function requestPresignedUrl(file, token) {
     }
 }
 
-export async function uploadBannerImage(file, token, onProgress) {
+export async function uploadBannerImage(file, token, onProgress, options = {}) {
+    const { optimize = true } = options;
     const validationError = validateBannerImageFile(file);
 
     if (validationError) {
         throw validationError;
     }
 
-    const fileParaUpload = await otimizarBannerParaUpload(file);
+    const fileParaUpload = optimize ? await otimizarBannerParaUpload(file) : file;
     const initialUpload = await requestPresignedUrl(fileParaUpload, token);
 
     try {
@@ -205,4 +206,9 @@ export async function uploadBannerImage(file, token, onProgress) {
 
         throw normalizeUploadError(error, "upload");
     }
+}
+
+/** Upload de fundo do story Top 8 (mantém proporção; sem crop OG 1200×630). */
+export async function uploadStoryFundoImage(file, token, onProgress) {
+    return uploadBannerImage(file, token, onProgress, { optimize: false });
 }

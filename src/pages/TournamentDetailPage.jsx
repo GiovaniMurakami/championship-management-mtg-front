@@ -55,8 +55,10 @@ export function TournamentDetailPage() {
     handleStartTournament,
     handleNextRound,
     handleRefazerRodada,
+    handleEncerrarTorneio,
     handleBulkDropPlayers,
     handleDropPlayer,
+    handleSelfDrop,
     handleEditTorneio,
     handleDefinirAnfitriao,
     handleDeleteTorneio,
@@ -108,7 +110,7 @@ export function TournamentDetailPage() {
     <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap max-md:flex-col max-md:items-stretch">
         <button
-          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px] max-md:w-full max-md:justify-center"
+          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] max-md:w-full max-md:justify-center"
           onClick={() => navigate("/")}
         >
           ← Voltar para torneios
@@ -207,6 +209,7 @@ export function TournamentDetailPage() {
           onStartTournament: handleStartTournament,
           onNextRound: handleNextRound,
           onRefazerRodada: handleRefazerRodada,
+          onEncerrarTorneio: handleEncerrarTorneio,
           onDropPlayersWithoutDeck: (playerIds) => handleBulkDropPlayers(playerIds, {
             actionKey: "drop-missing-decks",
             successMessage: "Jogadores sem deck dropados com sucesso!",
@@ -257,7 +260,9 @@ export function TournamentDetailPage() {
             onCheckin={handleCheckin}
             onInscrever={handleInscrever}
             onInscreverTarde={handleInscreverTarde}
+            onSelfDrop={handleSelfDrop}
             actionLoading={actionLoading}
+            droppingPlayerId={droppingPlayerId}
             times={times}
             selectedTimeId={selectedTimeId}
             onTimeChange={setSelectedTimeId}
@@ -276,6 +281,8 @@ export function TournamentDetailPage() {
             isAnfitriao={isAnfitriao}
             canManageTournament={canManageTournament}
             torneioNome={torneio?.nome}
+            torneioHorario={torneio?.horario}
+            storyFundoUrl={torneio?.storyFundoUrl}
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
             totalInscritos={torneio?.totalInscritos}
@@ -288,6 +295,7 @@ export function TournamentDetailPage() {
             <MatchTablesPanel
               torneio={torneio}
               partidas={partidas}
+              standings={standings}
               usuarioId={usuario?.id}
               isOwner={canManageTournament}
               token={token}
@@ -296,7 +304,7 @@ export function TournamentDetailPage() {
           </>
         );
 
-        const shouldShowPlayerProfile = !isOngoing && !isFinished;
+        const shouldShowPlayerProfile = Boolean(currentPlayer) || (!isOngoing && !isFinished);
 
         // ── Ongoing: standings compact sidebar on left, everything else on right ──
         if (isOngoing) {
@@ -304,6 +312,7 @@ export function TournamentDetailPage() {
             <div className="grid gap-6">
               {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
               {matchPanel}
+              {shouldShowPlayerProfile && playerProfile}
               {standingsTable(false)}
               {matchTablesPanel}
             </div>

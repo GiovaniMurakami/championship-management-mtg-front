@@ -47,7 +47,7 @@ export function SitePasswordGate({ children }) {
           </span>
           <h2 className="m-0 font-display text-4xl leading-none text-text-main">Area protegida</h2>
           <p className="m-0 text-sm text-text-soft">
-            Este projeto ainda nao esta publico. Digite a senha para continuar.
+            Este projeto ainda não está público. Digite a senha para continuar.
           </p>
         </div>
 

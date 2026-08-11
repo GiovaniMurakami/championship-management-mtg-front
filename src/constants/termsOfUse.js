@@ -41,7 +41,7 @@ export const TERMS_SECTIONS = [
   {
     title: "8. Privacidade",
     body:
-      "Dados informados no cadastro (como nome, e-mail e nicks de plataformas de jogo) são utilizados para autenticação, comunicação sobre torneios e funcionamento do serviço. Não compartilhamos seus dados com terceiros fora do necessário para operação da plataforma, salvo obrigação legal.",
+      "O tratamento de dados pessoais é descrito na Política de Privacidade (LGPD) da plataforma. Dados informados no cadastro (como nome, e-mail e nicks de plataformas de jogo) são utilizados para autenticação, comunicação sobre torneios e funcionamento do serviço, nos termos dessa política.",
   },
   {
     title: "9. Disponibilidade e alterações",

@@ -31,7 +31,7 @@ export function AdSenseLayout({ children }) {
   const adsEnabled = isAdSenseEnabled();
 
   return (
-    <div className={`w-full min-w-0 overflow-x-clip ${NAV_OFFSET}`}>
+    <div className={`w-full min-w-0 ${NAV_OFFSET}`}>
       <div className={`${ADSENSE_CONTENT_SHELL} pb-12`}>
         {adsEnabled && <AdSenseTopBanner />}
         {children}

@@ -1,7 +1,16 @@
 import { Link } from "react-router-dom";
 import { termsAcceptanceCardClass } from "../../styles/uiClasses";
 
-export function TermsAcceptanceField({ checked, onChange, id = "aceite-termos" }) {
+export function TermsAcceptanceField({
+  checked,
+  onChange,
+  onLegalLinkClick,
+  id = "aceite-termos",
+}) {
+  const handleLegalLinkClick = () => {
+    onLegalLinkClick?.();
+  };
+
   return (
     <div className={termsAcceptanceCardClass(checked)}>
       <div className="flex items-start gap-3">
@@ -19,9 +28,21 @@ export function TermsAcceptanceField({ checked, onChange, id = "aceite-termos" }
           </label>
           <Link
             to="/termos-de-uso"
+            onClick={handleLegalLinkClick}
             className="font-semibold text-[#c795ff] underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
           >
             Termos de Uso
+          </Link>
+          <label htmlFor={id} className="cursor-pointer">
+            {" "}
+            e a{" "}
+          </label>
+          <Link
+            to="/privacidade"
+            onClick={handleLegalLinkClick}
+            className="font-semibold text-[#c795ff] underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
+          >
+            Política de Privacidade (LGPD)
           </Link>
         </p>
       </div>

@@ -20,7 +20,7 @@ const getBaseURL = () => {
 
 const httpClient = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000,
 });
 
 /** Refresh pode coincidir com cold start da Lambda — precisa de mais folga que o timeout padrão. */

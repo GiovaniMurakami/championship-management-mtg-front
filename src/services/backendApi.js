@@ -93,10 +93,21 @@ export const atualizarUsuario = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const excluirConta = (payload, token) =>
+  httpClient.delete("/usuario/conta", {
+    headers: { Authorization: `Bearer ${token}` },
+    data: payload,
+  });
+
 export const listarUsuarios = (token, params = {}) =>
   httpClient.get("/usuario/listar", {
     headers: { Authorization: `Bearer ${token}` },
     params,
+  });
+
+export const alterarBloqueioTorneios = (usuarioId, payload, token) =>
+  httpClient.put(`/usuario/${usuarioId}/bloqueio-torneios`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 
 // Atualizar Deck
@@ -183,10 +194,12 @@ export const registrarResultado = (partidaId, payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const contestarResultado = (partidaId, token) =>
-  httpClient.post(`/torneio/partida/${partidaId}/contestar`, {}, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const contestarResultado = (partidaId, token, observacao) =>
+  httpClient.post(
+    `/torneio/partida/${partidaId}/contestar`,
+    observacao ? { observacao } : {},
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
 
 export const ajustarResultado = (partidaId, payload, token) =>
   httpClient.put(`/torneio/partida/${partidaId}/ajustar`, payload, {
@@ -205,6 +218,16 @@ export const ingressarComToken = (tokenIngresso, authToken, deckId) =>
 
 export const proximaRodada = (torneioId, token) =>
   httpClient.post(`/torneio/${torneioId}/proxima-rodada`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const ajustarTotalRodadas = (torneioId, totalRodadas, token) =>
+  httpClient.put(`/torneio/${torneioId}/total-rodadas`, { totalRodadas }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const encerrarTorneio = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/encerrar`, {}, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -403,6 +426,22 @@ export const salvarAnuncios = (anuncios, token) =>
 
 export const registrarCliqueAnuncio = (anuncioId) =>
   httpClient.post(`/site/anuncios/${encodeURIComponent(anuncioId)}/clique`, {});
+
+// Story fundos (admin)
+export const listarStoryFundos = (token) =>
+  httpClient.get("/story-fundo", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const cadastrarStoryFundo = (payload, token) =>
+  httpClient.post("/story-fundo", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirStoryFundo = (id, token) =>
+  httpClient.delete(`/story-fundo/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
 // Imagens
 export const obterPresignedUrl = (payload, token) =>

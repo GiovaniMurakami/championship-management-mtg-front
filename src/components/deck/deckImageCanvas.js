@@ -14,7 +14,37 @@ function rr(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export async function fetchCardImg(cardName) {
+/** Prefer CDN "normal" size for canvas (lighter + same art as large). */
+export function toCanvasImageUrl(url) {
+  if (!url || typeof url !== "string") return "";
+  return url.replace("/large/", "/normal/").replace("/png/", "/normal/");
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function loadImageFromUrl(url, { crossOrigin = "anonymous", retries = 2 } = {}) {
+  const src = toCanvasImageUrl(url);
+  if (!src) return Promise.resolve(null);
+
+  return (async () => {
+    for (let left = retries; left >= 0; left -= 1) {
+      const img = await new Promise((resolve) => {
+        const image = new Image();
+        if (crossOrigin) image.crossOrigin = crossOrigin;
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = src;
+      });
+      if (img) return img;
+      if (left > 0) await delay(120);
+    }
+    return null;
+  })();
+}
+
+async function fetchNamedCardImage(cardName) {
   const normalizedName = cardName?.trim().replace(/\s*\/\/\s*/g, " // ").replace(/\s+/g, " ");
   const candidates = [
     normalizedName,
@@ -28,11 +58,20 @@ export async function fetchCardImg(cardName) {
       const url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(candidate)}&format=image&version=normal`;
       resp = await fetch(url);
       if (resp.ok) break;
+      if (resp.status === 429) {
+        await delay(800);
+        resp = await fetch(url);
+        if (resp.ok) break;
+      }
     }
 
     if (!resp?.ok && normalizedName) {
       const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(normalizedName)}&format=image&version=normal`;
       resp = await fetch(url);
+      if (resp.status === 429) {
+        await delay(800);
+        resp = await fetch(url);
+      }
     }
 
     if (!resp?.ok) return null;
@@ -48,6 +87,55 @@ export async function fetchCardImg(cardName) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Loads a card Image for canvas drawing.
+ * Prefers an already-known Scryfall image URL (avoids rate limits); falls back to named API.
+ */
+export async function fetchCardImg(cardName, preferredUrl = "") {
+  if (preferredUrl) {
+    const fromUrl = await loadImageFromUrl(preferredUrl);
+    if (fromUrl) return fromUrl;
+  }
+  return fetchNamedCardImage(cardName);
+}
+
+/** Run async work over items with a fixed concurrency pool. */
+export async function mapWithConcurrency(items, concurrency, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runWorker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await worker(items[index], index);
+    }
+  }
+
+  const poolSize = Math.max(1, Math.min(concurrency, items.length || 1));
+  await Promise.all(Array.from({ length: poolSize }, () => runWorker()));
+  return results;
+}
+
+/**
+ * Loads HTMLImageElement for each card entry using known URLs first.
+ * @param {Array<{ nome: string, imagem?: string }>} cards
+ * @param {{ concurrency?: number, onProgress?: (done: number, total: number) => void, isCancelled?: () => boolean }} options
+ */
+export async function loadCardImagesForDeck(cards, options = {}) {
+  const { concurrency = 6, onProgress, isCancelled } = options;
+  const total = cards.length;
+  let done = 0;
+
+  return mapWithConcurrency(cards, concurrency, async (card) => {
+    if (isCancelled?.()) return null;
+    const img = await fetchCardImg(card.nome, card.imagem || "");
+    done += 1;
+    onProgress?.(done, total);
+    return img;
+  });
 }
 
 function getTypeGroup(typeLine) {

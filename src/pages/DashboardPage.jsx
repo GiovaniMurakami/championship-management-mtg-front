@@ -40,9 +40,9 @@ function AdPreview({ ad }) {
 
   return (
     <div className="rounded-lg border border-[rgba(217,180,255,0.14)] bg-[#120b24] p-4">
-      {ad.imagemUrl && <img src={ad.imagemUrl} alt={ad.titulo || "Anuncio"} className="mb-3 h-20 w-full object-contain" />}
+      {ad.imagemUrl && <img src={ad.imagemUrl} alt={ad.titulo || "Anúncio"} className="mb-3 h-20 w-full object-contain" />}
       {ad.tag && <span className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#c795ff]">{ad.tag}</span>}
-      <h3 className="m-0 mt-1 text-lg font-bold text-[#f5edff]">{ad.titulo || "Novo anuncio"}</h3>
+      <h3 className="m-0 mt-1 text-lg font-bold text-[#f5edff]">{ad.titulo || "Novo anúncio"}</h3>
       {ad.texto && <p className="mt-2 mb-0 text-sm leading-5 text-[#b9abd8]">{ad.texto}</p>}
       {ad.botaoTexto && (
         <span className="mt-3 inline-flex rounded-full border border-[rgba(44,207,180,0.4)] bg-[rgba(44,207,180,0.12)] px-3 py-1.5 text-xs font-bold text-[#2ccfb4]">
@@ -60,14 +60,14 @@ function DashboardAdsPreview({ ads }) {
   if (activeAds.length === 0) {
     return (
       <section className="mb-5 rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#0b0717] p-4">
-        <div className="text-sm font-semibold text-[#8f82ad]">Nenhum anuncio ativo para preview.</div>
+        <div className="text-sm font-semibold text-[#8f82ad]">Nenhum anúncio ativo para preview.</div>
       </section>
     );
   }
 
   const currentIndex = current < activeAds.length ? current : 0;
   const slide = activeAds[currentIndex] ?? activeAds[0];
-  const label = slide.tipo === "banner" ? (slide.tag || "Anuncio") : "Patrocinador Oficial";
+  const label = slide.tipo === "banner" ? (slide.tag || "Anúncio") : "Patrocinador Oficial";
   const goTo = (index) => setCurrent(index);
   const prev = () => setCurrent((currentIndex - 1 + activeAds.length) % activeAds.length);
   const next = () => setCurrent((currentIndex + 1) % activeAds.length);
@@ -77,7 +77,7 @@ function DashboardAdsPreview({ ads }) {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="m-0 text-lg font-bold text-[#f5edff]">Preview do carrossel</h2>
-          <p className="m-0 mt-1 text-sm text-[#8f82ad]">Visualizacao dos anuncios ativos na ordem atual.</p>
+          <p className="m-0 mt-1 text-sm text-[#8f82ad]">Visualização dos anúncios ativos na ordem atual.</p>
         </div>
         <span className="rounded-full border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
           {currentIndex + 1} de {activeAds.length}
@@ -95,13 +95,13 @@ function DashboardAdsPreview({ ads }) {
           <a
             href={slide.link || undefined}
             className="block transition-all duration-200"
-            aria-label={slide.titulo || "Anuncio"}
+            aria-label={slide.titulo || "Anúncio"}
             onClick={(event) => event.preventDefault()}
           >
             {slide.imagemUrl ? (
               <img
                 src={slide.imagemUrl}
-                alt={slide.titulo || "Anuncio"}
+                alt={slide.titulo || "Anúncio"}
                 className="h-[180px] w-full object-cover max-[600px]:h-[130px]"
               />
             ) : (
@@ -117,7 +117,7 @@ function DashboardAdsPreview({ ads }) {
                 <img src={slide.imagemUrl} alt={slide.titulo || "Patrocinador"} className="w-full h-full object-contain p-2" />
               ) : (
                 <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
-                  {slide.titulo || "Anuncio"}
+                  {slide.titulo || "Anúncio"}
                 </span>
               )}
             </div>
@@ -128,7 +128,7 @@ function DashboardAdsPreview({ ads }) {
                 </span>
               )}
               <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-[#f5edff] max-[600px]:text-[1.7rem]">
-                {slide.titulo || "Novo anuncio"}
+                {slide.titulo || "Novo anúncio"}
               </h3>
               {slide.texto && (
                 <p className="m-0 mb-[1.1rem] text-[#beafd7] text-[0.9rem] leading-[1.55] max-w-[520px]">
@@ -210,7 +210,7 @@ export function DashboardPage() {
       })
       .catch((error) => {
         if (mounted) {
-          setMessage(error.message || "Nao foi possivel carregar os anuncios.");
+          setMessage(error.message || "Não foi possível carregar os anúncios.");
           setAds(normalizeAds(DEFAULT_ADS));
         }
       })
@@ -277,7 +277,7 @@ export function DashboardPage() {
 
   const resetDefaults = () => {
     setAds(normalizeAds(DEFAULT_ADS));
-    setMessage("Anuncios padrao restaurados. Salve para publicar.");
+    setMessage("Anúncios padrão restaurados. Salve para publicar.");
   };
 
   const uploadImage = async (ad, file) => {
@@ -311,9 +311,9 @@ export function DashboardPage() {
       const payload = prepareAds(ads);
       const response = await salvarAnuncios(payload, token);
       setAds(normalizeAds(response?.anuncios ?? payload, payload));
-      setMessage("Anuncios publicados com sucesso.");
+      setMessage("Anúncios publicados com sucesso.");
     } catch (error) {
-      setMessage(error.message || "Nao foi possivel publicar os anuncios.");
+      setMessage(error.message || "Não foi possível publicar os anúncios.");
     } finally {
       setSaving(false);
     }
@@ -328,13 +328,13 @@ export function DashboardPage() {
             Dashboard
           </h1>
           <p className="m-0 mt-2 max-w-2xl text-sm leading-6 text-[#b9abd8]">
-            Edite os anuncios exibidos no carrossel de patrocinador.
+            Edite os anúncios exibidos no carrossel de patrocinador.
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onChange={setActiveTab} className="mb-5">
-        <Tabs.Item value="anuncios" label="Anuncios" count={loading ? undefined : ads.length} />
+        <Tabs.Item value="anuncios" label="Anúncios" count={loading ? undefined : ads.length} />
       </Tabs>
 
       {activeTab === "anuncios" && loading && <SkeletonDashboard />}
@@ -343,7 +343,7 @@ export function DashboardPage() {
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#8f82ad]">Anuncios</span>
+              <span className="text-xs font-bold tracking-[0.08em] text-[#8f82ad]">ANÚNCIOS</span>
               <strong className="mt-1 block text-2xl text-[#f5edff]">{ads.length}</strong>
             </div>
             <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
@@ -423,7 +423,7 @@ export function DashboardPage() {
                           }`}
                           type="button"
                           draggable
-                          aria-label={`Arrastar anuncio ${index + 1}`}
+                          aria-label={`Arrastar anúncio ${index + 1}`}
                           title="Arrastar para ordenar"
                           onDragStart={(event) => {
                             setDraggingAdId(ad.id);
@@ -552,15 +552,15 @@ export function DashboardPage() {
             })}
 
             <div className="flex flex-wrap justify-end gap-2 border-t border-[rgba(217,180,255,0.12)] pt-4">
-              <button className={subtleButtonClass} type="button" onClick={addAd}>Adicionar anuncio</button>
-              <button className={subtleButtonClass} type="button" onClick={resetDefaults}>Restaurar padrao</button>
+              <button className={subtleButtonClass} type="button" onClick={addAd}>Adicionar anúncio</button>
+              <button className={subtleButtonClass} type="button" onClick={resetDefaults}>Restaurar padrão</button>
               <button
                 className="rounded-lg bg-[#c795ff] px-4 py-2 text-sm font-bold text-[#120b24] transition hover:bg-[#e0c6ff] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={saveAds}
                 disabled={saving}
               >
-                {saving ? "Publicando..." : "Publicar anuncios"}
+                {saving ? "Publicando..." : "Publicar anúncios"}
               </button>
             </div>
           </div>

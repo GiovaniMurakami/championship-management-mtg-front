@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
+import { BaseModal } from "../ui/BaseModal";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
@@ -143,6 +144,7 @@ export function OwnerControlPanel({
   onStartTournament,
   onNextRound,
   onRefazerRodada,
+  onEncerrarTorneio,
   onDropPlayersWithoutDeck,
   onDropPlayersWithoutCheckin,
   onDropPlayer,
@@ -164,6 +166,8 @@ export function OwnerControlPanel({
   const [linkCopied, setLinkCopied] = useState(false);
   const [playersListOpen, setPlayersListOpen] = useState(false);
   const [tablesListOpen, setTablesListOpen] = useState(false);
+  const [endModalOpen, setEndModalOpen] = useState(false);
+  const [redoModalOpen, setRedoModalOpen] = useState(false);
   const joinLinkTimeoutRef = useRef(null);
   const linkCopiedTimeoutRef = useRef(null);
 
@@ -236,14 +240,27 @@ export function OwnerControlPanel({
   const isBulkDroppingCheckin = actionLoading && adminActionKey === "drop-missing-checkin";
   const isStartingTournament = actionLoading && adminActionKey === "start-tournament";
   const isRedoingRound = actionLoading && adminActionKey === "redo-round";
+  const isEndingTournament = actionLoading && adminActionKey === "end-tournament";
   const canRedoRound = isOngoing && Number(torneio?.rodadaAtual || 0) > 1;
 
   const handleRedoRound = () => {
     if (!onRefazerRodada || !canRedoRound || actionLoading) return;
-    const ok = window.confirm(
-      `Refazer a rodada ${torneio?.rodadaAtual}? As partidas desta rodada serao removidas e o torneio voltara para a rodada anterior.`,
-    );
-    if (ok) onRefazerRodada();
+    setRedoModalOpen(true);
+  };
+
+  const handleConfirmRedoRound = () => {
+    setRedoModalOpen(false);
+    onRefazerRodada?.();
+  };
+
+  const handleEndTournament = () => {
+    if (!onEncerrarTorneio || !isOngoing || actionLoading) return;
+    setEndModalOpen(true);
+  };
+
+  const handleConfirmEndTournament = () => {
+    setEndModalOpen(false);
+    onEncerrarTorneio?.();
   };
 
   return (
@@ -295,7 +312,7 @@ export function OwnerControlPanel({
                 type="button"
                 onClick={handleRedoRound}
                 disabled={actionLoading || !canRedoRound}
-                title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponivel a partir da rodada 2"}
+                title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponível a partir da rodada 2"}
               >
                 {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
               </button>
@@ -306,6 +323,14 @@ export function OwnerControlPanel({
                 disabled={actionLoading}
               >
                 Revisar Rodada
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)] max-md:flex-1"
+                type="button"
+                onClick={handleEndTournament}
+                disabled={actionLoading}
+              >
+                {isEndingTournament ? "Encerrando..." : "Encerrar torneio"}
               </button>
             </div>
           )}
@@ -382,7 +407,7 @@ export function OwnerControlPanel({
       <div className="grid gap-3 mb-4 min-[720px]:grid-cols-2">
         {isRegistrationOpen && (
           <div className="rounded-[0.9rem] border border-[rgba(239,68,68,0.24)] bg-[rgba(239,68,68,0.08)] p-4">
-            <p className="m-0 text-[0.78rem] uppercase tracking-[0.08em] text-[#fca5a5] font-semibold">Pendência de deck</p>
+            <p className="m-0 text-[0.78rem] tracking-[0.08em] text-[#fca5a5] font-semibold">PENDÊNCIA DE DECK</p>
             <p className="mt-2 mb-3 text-[0.88rem] text-[#f5d5d8]">
               {jogadoresSemDeck.length} jogador(es) inscrito(s) ainda não enviaram deck.
             </p>
@@ -399,7 +424,7 @@ export function OwnerControlPanel({
 
         {canDropByCheckin && (
           <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.24)] bg-[rgba(251,191,36,0.08)] p-4">
-            <p className="m-0 text-[0.78rem] uppercase tracking-[0.08em] text-[#fde68a] font-semibold">Pendência de check-in</p>
+            <p className="m-0 text-[0.78rem] tracking-[0.08em] text-[#fde68a] font-semibold">PENDÊNCIA DE CHECK-IN</p>
             <p className="mt-2 mb-3 text-[0.88rem] text-[#f6ebc4]">
               {isRegistrationOpen
                 ? `${jogadoresSemCheckin.length} jogador(es) inscrito(s) ainda não fizeram check-in inicial.`
@@ -535,7 +560,7 @@ export function OwnerControlPanel({
           </button>
 
           {playersListOpen && (
-            <div className="grid gap-1.5 max-h-[360px] overflow-y-auto border-t border-[rgba(251,191,36,0.12)] p-3 pr-[0.8rem]">
+            <div className="grid gap-1.5 border-t border-[rgba(251,191,36,0.12)] p-3">
           {jogadoresAtivos.length === 0 ? (
             <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador ativo.</p>
           ) : (
@@ -607,12 +632,18 @@ export function OwnerControlPanel({
             <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
               <p className="text-[#fca5a5] text-[0.8rem] m-0 mb-1">Ajuste o resultado para resolver a contestação.</p>
               {contestadas.map((partida) => (
-                <MatchEditRow
-                  key={partida.id}
-                  partida={partida}
-                  onSave={onAdjustResult || onEditResult}
-                  saving={actionLoading}
-                />
+                <div key={partida.id} className="grid gap-1">
+                  {partida.observacaoContestacao ? (
+                    <p className="m-0 text-[0.8rem] text-[#fde68a] px-1">
+                      Observação: {partida.observacaoContestacao}
+                    </p>
+                  ) : null}
+                  <MatchEditRow
+                    partida={partida}
+                    onSave={onAdjustResult || onEditResult}
+                    saving={actionLoading}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -632,6 +663,70 @@ export function OwnerControlPanel({
         droppingPlayerId={droppingPlayerId}
         usuarioId={usuarioId}
       />
+
+      <BaseModal
+        isOpen={redoModalOpen}
+        onClose={() => setRedoModalOpen(false)}
+        ariaLabelledBy="refazer-rodada-title"
+        ariaDescribedBy="refazer-rodada-desc"
+      >
+        <h2 id="refazer-rodada-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-[#f5edff]">
+          Refazer rodada {torneio?.rodadaAtual ?? ""}
+        </h2>
+        <p id="refazer-rodada-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
+          As partidas desta rodada serão removidas e o torneio voltará para a rodada anterior.
+        </p>
+        <div className="flex gap-3 max-md:flex-col">
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            onClick={() => setRedoModalOpen(false)}
+            disabled={isRedoingRound}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(239,68,68,0.5)] rounded-lg text-[#fecaca] text-[0.9rem] font-semibold bg-[rgba(239,68,68,0.15)] hover:bg-[rgba(239,68,68,0.25)] transition-colors disabled:opacity-50"
+            onClick={handleConfirmRedoRound}
+            disabled={isRedoingRound}
+          >
+            {isRedoingRound ? "Refazendo..." : "Confirmar"}
+          </button>
+        </div>
+      </BaseModal>
+
+      <BaseModal
+        isOpen={endModalOpen}
+        onClose={() => setEndModalOpen(false)}
+        ariaLabelledBy="encerrar-torneio-title"
+        ariaDescribedBy="encerrar-torneio-desc"
+      >
+        <h2 id="encerrar-torneio-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-[#f5edff]">
+          Encerrar torneio
+        </h2>
+        <p id="encerrar-torneio-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
+          Encerrar o torneio agora? O ranking atual será considerado final e não haverá mais rodadas nem corte.
+        </p>
+        <div className="flex gap-3 max-md:flex-col">
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            onClick={() => setEndModalOpen(false)}
+            disabled={isEndingTournament}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(239,68,68,0.5)] rounded-lg text-[#fecaca] text-[0.9rem] font-semibold bg-[rgba(239,68,68,0.15)] hover:bg-[rgba(239,68,68,0.25)] transition-colors disabled:opacity-50"
+            onClick={handleConfirmEndTournament}
+            disabled={isEndingTournament}
+          >
+            {isEndingTournament ? "Encerrando..." : "Confirmar encerramento"}
+          </button>
+        </div>
+      </BaseModal>
     </section>
   );
 }

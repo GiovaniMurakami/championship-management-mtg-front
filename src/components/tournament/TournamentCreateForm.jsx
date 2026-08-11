@@ -1,10 +1,12 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { criarTorneio } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { SelectField, FormFeedback, FormSection } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
+import { StoryFundoPicker } from "./StoryFundoPicker";
+import { Top8StoryPreview } from "./Top8StoryPreview";
 import {
   BTN_SUBMIT,
   FORM_COUNTER_CLASS,
@@ -49,17 +51,27 @@ function FieldLabel({ htmlFor, children, hint }) {
 }
 
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
-  const [createForm, setCreateForm] = useState(() => ({ ...INITIAL_FORM, ...(initialValues ?? {}) }));
+  const { storyFundoUrl: initialStoryFundoUrl, ...formInitialValues } = initialValues ?? {};
+  const [createForm, setCreateForm] = useState(() => ({ ...INITIAL_FORM, ...formInitialValues }));
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(initialValues?.linkBanner ?? null);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bannerError, setBannerError] = useState("");
+  const [storyPreview, setStoryPreview] = useState(initialStoryFundoUrl || "");
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const [storyUploadProgress, setStoryUploadProgress] = useState(0);
+  const [storyError, setStoryError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const bannerInputRef = useRef(null);
+  const storyFundoPickerRef = useRef(null);
 
-  const isSubmitting = loading || uploadingBanner;
+  const isSubmitting = loading || uploadingBanner || uploadingStory;
+
+  const handleStoryPreviewUrlChange = useCallback((url) => {
+    setStoryPreview(url || "");
+  }, []);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -95,9 +107,11 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
     setLoading(true);
     setError("");
     setBannerError("");
+    setStoryError("");
 
     try {
       let bannerUrl;
+      let storyFundoUrl;
 
       if (bannerFile) {
         setUploadingBanner(true);
@@ -105,6 +119,11 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
         setUploadingBanner(false);
       }
+
+      setUploadingStory(true);
+      setStoryUploadProgress(0);
+      storyFundoUrl = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress);
+      setUploadingStory(false);
 
       const payload = {
         ...createForm,
@@ -115,6 +134,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         somRodada: optionalTrimmed(createForm.somRodada),
         linkLive: optionalTrimmed(createForm.linkLive),
         ...(bannerUrl !== undefined ? { bannerUrl } : {}),
+        ...(storyFundoUrl ? { storyFundoUrl } : {}),
         maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
         maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
         corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
@@ -123,16 +143,22 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       await criarTorneio(payload, token);
       setCreateForm(INITIAL_FORM);
       removeBanner();
+      storyFundoPickerRef.current?.clear();
+      setStoryPreview("");
       onTournamentCreated?.();
     } catch (err) {
-      if (err?.code) {
-        setBannerError(err.userMessage || err.message);
+      if (err?.code || err?.userMessage) {
+        const message = err.userMessage || err.message;
+        if (uploadingStory) setStoryError(message);
+        else if (err?.code) setBannerError(message);
+        else setStoryError(message);
       } else {
         setError(err.message || "Erro ao criar torneio. Tente novamente.");
       }
     } finally {
       setLoading(false);
       setUploadingBanner(false);
+      setUploadingStory(false);
     }
   };
 
@@ -142,7 +168,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         <h2 className={`${FORM_PAGE_TITLE_CLASS} max-[480px]:text-[1.5rem]`}>Criar Novo Torneio</h2>
 
         <form onSubmit={handleSubmit} className="grid gap-6 max-[768px]:gap-5 max-[480px]:gap-4">
-          <FormSection title="Informacoes Basicas">
+          <FormSection title="Informações Básicas">
 
             <div className="grid gap-2">
               <FieldLabel htmlFor="nome">Nome do Torneio</FieldLabel>
@@ -153,7 +179,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               <input id="secreto" name="secreto" type="checkbox" checked={createForm.secreto} onChange={handleChange} disabled={isSubmitting} className="w-4 h-4 rounded accent-[#8e39ed] cursor-pointer" />
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
-                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Nao aparece em listagens publicas; compartilhe o link diretamente.</span>
+                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
               </label>
             </div>
 
@@ -200,14 +226,14 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">Descricao <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
-              <textarea id="descricao" name="descricao" rows="4" maxLength={4000} placeholder="Resumo do torneio, premiacao e informacoes importantes..." value={createForm.descricao} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
+              <label htmlFor="descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">Descrição <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <textarea id="descricao" name="descricao" rows="4" maxLength={4000} placeholder="Resumo do torneio, premiação e informações importantes..." value={createForm.descricao} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
               <span className={FORM_COUNTER_CLASS}>{createForm.descricao.length}/4000</span>
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="regras" className="text-[#e0e0e0] font-medium text-[0.95rem]">Regras do Torneio <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
-              <textarea id="regras" name="regras" rows="5" maxLength={4000} placeholder="Tempo de rodada, regras da casa, orientacoes e excecoes..." value={createForm.regras} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
+              <textarea id="regras" name="regras" rows="5" maxLength={4000} placeholder="Tempo de rodada, regras da casa, orientações e exceções..." value={createForm.regras} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
               <span className={FORM_COUNTER_CLASS}>{createForm.regras.length}/4000</span>
             </div>
           </FormSection>
@@ -221,9 +247,25 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               </div>
 
               <div className="flex flex-col gap-2">
-                <label htmlFor="maxRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">Limite de Rodadas <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
-                <input id="maxRodadas" name="maxRodadas" type="number" min="1" placeholder="Ex: 5" value={createForm.maxRodadas} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
-                <small className="text-[#a3a3a3] text-[0.8rem]">O sistema calcula as rodadas automaticamente pelo numero de jogadores com check-in. Este campo apenas define o teto e impede ultrapassar esse valor.</small>
+                <label htmlFor="maxRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                  Total de rodadas Swiss <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
+                </label>
+                <input
+                  id="maxRodadas"
+                  name="maxRodadas"
+                  type="number"
+                  min="1"
+                  max="30"
+                  placeholder="Ex: 8"
+                  value={createForm.maxRodadas}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className={TOURNAMENT_INPUT_CLASS}
+                />
+                <small className="text-[#a3a3a3] text-[0.8rem]">
+                  Pode forçar mais ou menos rodadas que o cálculo automático (com base nos jogadores com check-in no início).
+                  Se vazio, o sistema usa o automático.
+                </small>
               </div>
             </div>
 
@@ -283,6 +325,37 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             <div className="flex flex-col gap-2">
               <label htmlFor="linkBanner" className="text-[#e0e0e0] font-medium text-[0.95rem]">Link do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
               <input id="linkBanner" name="linkBanner" type="url" placeholder="https://..." value={createForm.linkBanner} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
+            </div>
+          </FormSection>
+
+          <FormSection title="Story Top 8">
+            <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+              <div className="flex flex-col gap-2">
+                <StoryFundoPicker
+                  ref={storyFundoPickerRef}
+                  token={token}
+                  valueUrl={initialStoryFundoUrl || ""}
+                  disabled={isSubmitting}
+                  onPreviewUrlChange={handleStoryPreviewUrlChange}
+                />
+                {storyError ? <FormFeedback message={storyError} variant="error" /> : null}
+                {uploadingStory && (
+                  <div className="flex flex-col gap-1.5 max-w-[280px]">
+                    <div className="flex justify-between text-[0.78rem] text-[#a5b4fc]">
+                      <span>Enviando / salvando fundo...</span>
+                      <span>{storyUploadProgress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full rounded-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-[width] duration-200" style={{ width: `${storyUploadProgress}%` }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Top8StoryPreview
+                horario={createForm.horario}
+                storyFundoUrl={storyPreview || ""}
+              />
             </div>
           </FormSection>
 

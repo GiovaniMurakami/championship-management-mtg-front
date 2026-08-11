@@ -2,10 +2,11 @@ import { Skeleton } from "../ui/Skeleton";
 import { getTournamentFormatLabel } from "../../constants/tournament";
 import { ExpandableText } from "./ExpandableText";
 import { formatBrasiliaDateTime } from "../../utils/brasiliaTime";
+import { formatTournamentRoundLabel } from "../../utils/tournamentFlow";
 
 const STATUS_CONFIG = {
   inscricoes_abertas: {
-    label: "Inscricoes Abertas",
+    label: "Inscrições Abertas",
     dot: "#4ade80",
     badge: "bg-[rgba(34,197,94,0.14)] text-[#4ade80] border border-[rgba(34,197,94,0.35)]",
   },
@@ -80,7 +81,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
       {torneio?.descricao && (
         <div className="mb-4 rounded-2xl border border-[rgba(217,180,255,0.16)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[#d8d1e9] text-[0.92rem]">
           <ExpandableText
-            label="Descricao"
+            label="Descrição"
             text={torneio.descricao}
             maxLength={220}
             alwaysToggle
@@ -122,9 +123,9 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
             />
           )}
           {torneio.formato && <StatChip icon={<IconFormat />} label="Formato" value={getTournamentFormatLabel(torneio.formato)} accent="#c795ff" />}
-          <StatChip icon={<IconRound />} label="Rodada" value={torneio.totalRodadas ? `${torneio.rodadaAtual ?? 0} / ${torneio.totalRodadas}` : `${torneio.rodadaAtual ?? 0} / Sem limite`} accent="#2ccfb4" />
+          <StatChip icon={<IconRound />} label="Rodada" value={formatTournamentRoundLabel(torneio)} accent="#2ccfb4" />
           {torneio.totalInscritos != null && <StatChip icon={<IconPlayers />} label="Inscritos" value={torneio.maxJogadores != null ? `${torneio.totalInscritos} / ${torneio.maxJogadores}` : torneio.totalCheckin != null ? `${torneio.totalInscritos} (${torneio.totalCheckin} check-in)` : String(torneio.totalInscritos)} accent="#2ccfb4" />}
-          {torneio.visualizacoes != null && <StatChip icon={<IconViews />} label="Visualizacoes" value={String(torneio.visualizacoes)} accent="#f0b429" />}
+          {torneio.visualizacoes != null && <StatChip icon={<IconViews />} label="Visualizações" value={String(torneio.visualizacoes)} accent="#f0b429" />}
           {torneio.horario && <StatChip icon={<IconDate />} label="Data" value={formatDate(torneio.horario)} />}
           {torneio.linkLive && (
             <a href={torneio.linkLive} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-[0.4rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#f87171] text-[0.82rem] font-semibold no-underline transition-all duration-200 hover:bg-[rgba(239,68,68,0.18)] hover:text-[#fca5a5] max-md:w-full max-md:justify-center">

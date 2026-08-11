@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
-import { TOP8_BACKGROUND_URL } from "../../constants/top8";
+import { resolveTop8BackgroundUrl, formatTop8StoryDate } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
 
@@ -61,6 +61,22 @@ function drawCoverImage(ctx, img, x, y, w, h) {
   return true;
 }
 
+/** Data centralizada abaixo dos jogadores (PNG 1080×1920 ou vídeo escalado). */
+function drawStoryFooterDate(ctx, { width, height, tournamentDate }) {
+  const dateLabel = String(tournamentDate || "").trim();
+  if (!dateLabel) return;
+
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `${Math.round(width * 0.028)}px Arial, sans-serif`;
+  ctx.fillStyle = "#c4b5fd";
+  ctx.shadowColor = "rgba(0,0,0,0.7)";
+  ctx.shadowBlur = Math.round(width * 0.008);
+  ctx.fillText(dateLabel, width / 2, height - Math.round(height * 0.016));
+  ctx.restore();
+}
+
 /**
  * Calculate card layout so N players always fit within the available vertical space.
  * Returns { cardH, cardGap, startY }
@@ -77,14 +93,14 @@ function calcLayout(canvasH, headerEndY, bottomReserve, n, nominalCardH) {
 
 //  Static PNG (1080 � 1920) 
 
-async function downloadTop8Canvas(players, tournamentName) {
+async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, tournamentDate } = {}) {
   const W = 1080;
   const H = 1920;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
-  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
+  const backgroundImage = await loadImage(resolveTop8BackgroundUrl(backgroundUrl));
 
   if (!drawCoverImage(ctx, backgroundImage, 0, 0, W, H)) {
     ctx.fillStyle = "#0e091c";
@@ -93,7 +109,7 @@ async function downloadTop8Canvas(players, tournamentName) {
 
   // Layout
   const n = players.length;
-  const { cardH, cardGap, startY } = calcLayout(H, Math.round(H * TOP8_CONTENT_START_RATIO), 70, n, 150);
+  const { cardH, cardGap, startY } = calcLayout(H, Math.round(H * TOP8_CONTENT_START_RATIO), 110, n, 150);
   const fontScale = Math.min(1, cardH / 150);
 
   players.forEach((player, i) => {
@@ -149,6 +165,12 @@ async function downloadTop8Canvas(players, tournamentName) {
     ctx.fillText(dDeck, 290, y + cardH * 0.78);
   });
 
+  drawStoryFooterDate(ctx, {
+    width: W,
+    height: H,
+    tournamentDate,
+  });
+
   const link = document.createElement("a");
   link.download = `top${players.length}-${(tournamentName || "torneio").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase()}.png`;
   link.href = canvas.toDataURL("image/png");
@@ -165,6 +187,14 @@ function gifDrawBackground(ctx, backgroundImage) {
     ctx.fillStyle = "#0e091c";
     ctx.fillRect(0, 0, GW, GH);
   }
+}
+
+function gifDrawFooterDate(ctx, tournamentDate) {
+  drawStoryFooterDate(ctx, {
+    width: GW,
+    height: GH,
+    tournamentDate,
+  });
 }
 
 function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
@@ -253,7 +283,7 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
 
 //  Frame renderer (shared between export paths) 
 
-function renderFrame(ctx, f, n, revealOrder, layout, backgroundImage) {
+function renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta) {
   const INTRO = 8, PER_P = 7, OUTRO = 22;
   const revealOffset = f - INTRO;
   const isOutro = f >= INTRO + n * PER_P;
@@ -287,22 +317,28 @@ function renderFrame(ctx, f, n, revealOrder, layout, backgroundImage) {
       isOutro && pos === 1 ? glowAlpha : 0,
       layout);
   }
+
+  gifDrawFooterDate(ctx, headerMeta?.tournamentDate);
 }
 
 //  Animated MP4 (1080 � 1920, 10 fps) 
 
-async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) {
+async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, options = {}) {
   const FPS = 10;
   const INTRO = 8, PER_P = 7, OUTRO = 22;
   const n = players.length;
   const totalFrames = INTRO + n * PER_P + OUTRO;
-  const backgroundImage = await loadImage(TOP8_BACKGROUND_URL);
+  const backgroundImage = await loadImage(resolveTop8BackgroundUrl(options.backgroundUrl));
+  const headerMeta = {
+    tournamentName,
+    tournamentDate: options.tournamentDate || "",
+  };
 
   const revealOrder = players
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
     .reverse();
 
-  const layout = calcLayout(GH, Math.round(GH * TOP8_CONTENT_START_RATIO), 24, n, 66);
+  const layout = calcLayout(GH, Math.round(GH * TOP8_CONTENT_START_RATIO), 40, n, 66);
 
   // Render at 1080�1920 by scaling the GW/GH coordinate space �2.25
   const OUT_W = 1080, OUT_H = 1920;
@@ -366,7 +402,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
         onDone?.();
         return;
       }
-      renderFrame(ctx, f, n, revealOrder, layout, backgroundImage);
+      renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta);
       const timestamp = Math.round(f * (1_000_000 / FPS));
       const duration = Math.round(1_000_000 / FPS);
       const frame = new VideoFrame(canvas, { timestamp, duration });
@@ -400,7 +436,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone) 
     recorder.start();
 
     for (let f = 0; f < totalFrames; f++) {
-      renderFrame(ctx, f, n, revealOrder, layout, backgroundImage);
+      renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta);
       onProgress?.(Math.round(((f + 1) / totalFrames) * 100));
       await new Promise((r) => setTimeout(r, FRAME_MS));
     }
@@ -479,7 +515,14 @@ function pxToPercent(value, total) {
 
 //  Modal component 
 
-export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {}, onClose }) {
+export function Top8StoryModal({
+  standings,
+  torneioNome,
+  torneioHorario,
+  storyFundoUrl,
+  deckNameOverrides = {},
+  onClose,
+}) {
   const allPlayers = (standings || []).map((p) => ({
     ...p,
     deckNome: deckNameOverrides[p.deckId] || p.deckNome || p.deck?.nome || "—",
@@ -492,13 +535,17 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
 
   const players = allPlayers.slice(0, topN);
-  const previewLayout = calcLayout(1920, Math.round(1920 * TOP8_CONTENT_START_RATIO), 70, Math.max(players.length, 1), 150);
+  const previewLayout = calcLayout(1920, Math.round(1920 * TOP8_CONTENT_START_RATIO), 110, Math.max(players.length, 1), 150);
+  const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
+  const dateLabel = formatTop8StoryDate(torneioHorario);
+  const exportOptions = { backgroundUrl: storyFundoUrl, tournamentDate: dateLabel };
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
     setVideoProgress(0);
     await generateAnimatedMp4(players, torneioNome, setVideoProgress, () =>
-      setVideoProgress(null)
+      setVideoProgress(null),
+      exportOptions,
     );
   };
 
@@ -547,7 +594,7 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
             {/* story-download-btn: inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold cursor-pointer transition hover */}
             <button
               className="inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color] duration-[160ms] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] disabled:cursor-not-allowed"
-              onClick={() => downloadTop8Canvas(players, torneioNome)}
+              onClick={() => downloadTop8Canvas(players, torneioNome, exportOptions)}
               disabled={videoProgress !== null}
             >
               � PNG
@@ -609,22 +656,10 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
         {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
         <div
           className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center"
-          style={{ backgroundImage: `url(${TOP8_BACKGROUND_URL})` }}
+          style={{ backgroundImage: `url(${backgroundUrl})` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}
           <div className="hidden h-[6px] shrink-0 bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
-
-          {/* story-head: flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0 */}
-          <div className="hidden flex-col items-center pt-4 px-4 pb-[0.6rem] shrink-0">
-            {/* story-top8-label: clamp font-size, font-black, tracking, gradient text */}
-            <h1 className="text-[clamp(2.4rem,10vw,3.8rem)] font-black tracking-[0.06em] m-0 leading-[1.1] bg-gradient-to-r from-[#c4b5fd] via-[#ffd700] to-[#c4b5fd] bg-clip-text text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]">
-              TOP {topN}
-            </h1>
-            {/* story-tournament-name: clamp 0.72rem1rem, font-semibold, #c4b5fd, mt-1, text-center, opacity-90 */}
-            <p className="text-[clamp(0.72rem,3vw,1rem)] font-semibold text-[#c4b5fd] mt-1 mb-0 text-center opacity-90">
-              {torneioNome || "Torneio"}
-            </p>
-          </div>
 
           {/* story-separator: h-px mx-4 my-2 gradient bg shrink-0 */}
           <div className="hidden h-px mx-4 my-2 bg-[linear-gradient(90deg,rgba(199,149,255,0)_0%,rgba(199,149,255,0.5)_30%,rgba(255,215,0,0.35)_70%,rgba(199,149,255,0)_100%)] shrink-0" />
@@ -707,6 +742,12 @@ export function Top8StoryModal({ standings, torneioNome, deckNameOverrides = {},
               );
             })}
           </ul>
+
+          {dateLabel ? (
+            <p className="absolute inset-x-0 bottom-[1.2%] z-10 m-0 px-4 text-center text-[clamp(0.65rem,2.8cqw,0.9rem)] font-medium text-[#c4b5fd] drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] pointer-events-none">
+              {dateLabel}
+            </p>
+          ) : null}
 
           {/* story-band story-band--bottom: same as top band but mt-auto */}
           <div className="hidden h-[6px] shrink-0 mt-auto bg-[linear-gradient(90deg,rgba(167,79,255,0)_0%,rgba(167,79,255,0.7)_30%,rgba(255,215,0,0.7)_70%,rgba(167,79,255,0)_100%)]" />
