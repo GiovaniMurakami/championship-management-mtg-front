@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { truncateGraphemes } from "../../utils/graphemeText";
 
 function ToggleArrow({ expanded }) {
   return (
@@ -28,10 +29,8 @@ export function ExpandableText({
   const normalized = (text || "").trim();
 
   const { preview, shouldCollapse } = useMemo(() => {
-    if (normalized.length <= maxLength) {
-      return { preview: normalized, shouldCollapse: false };
-    }
-    return { preview: `${normalized.slice(0, maxLength).trimEnd()}...`, shouldCollapse: true };
+    const { text: previewText, truncated } = truncateGraphemes(normalized, maxLength);
+    return { preview: previewText, shouldCollapse: truncated };
   }, [maxLength, normalized]);
 
   if (!normalized) return null;

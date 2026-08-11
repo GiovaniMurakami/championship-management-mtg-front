@@ -256,7 +256,7 @@ export function useDeckBuilder() {
 
     if (ilegalCards.length > 0) {
       setIllegalCardMessage(
-        `As seguintes cartas nao sao legais em ${formatoChecagem}: ${ilegalCards.join(", ")}`,
+        `As seguintes cartas não são legais em ${formatoChecagem}: ${ilegalCards.join(", ")}`,
       );
       return;
     }
@@ -317,27 +317,17 @@ export function useDeckBuilder() {
       .filter(Boolean);
   };
 
-  const importDeckFromTxt = async (file) => {
-    if (!file) {
-      return;
-    }
-
-    if (!file.name.toLowerCase().endsWith(".txt")) {
-      setImportMessage("Use um arquivo .txt para importar o deck.");
-      return;
-    }
-
+  const applyImportedText = async (content) => {
     setImportLoading(true);
     setImportMessage("");
     setDeckMessage("");
     setIllegalCardMessage("");
 
     try {
-      const content = await file.text();
       const { mainEntries, sideEntries, commanderEntries } = parseDeckTxt(content);
 
       if (mainEntries.length === 0 && sideEntries.length === 0 && commanderEntries.length === 0) {
-        setImportMessage("Nenhuma carta valida foi encontrada no arquivo.");
+        setImportMessage("Nenhuma carta valida foi encontrada no texto.");
         return;
       }
 
@@ -348,7 +338,7 @@ export function useDeckBuilder() {
       ]);
 
       if (resolvedMain.length === 0 && resolvedSide.length === 0 && resolvedCommander.length === 0) {
-        setImportMessage("Nao foi possivel encontrar as cartas no Scryfall.");
+        setImportMessage("Não foi possível encontrar as cartas no Scryfall.");
         return;
       }
 
@@ -358,10 +348,33 @@ export function useDeckBuilder() {
       setImportMessage("Deck importado com sucesso.");
       setTimeout(() => setImportMessage(""), MESSAGE_DISPLAY_MS);
     } catch {
-      setImportMessage("Erro ao importar o arquivo de deck.");
+      setImportMessage("Erro ao importar o deck.");
     } finally {
       setImportLoading(false);
     }
+  };
+
+  const importDeckFromTxt = async (file) => {
+    if (!file) {
+      return;
+    }
+
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".txt") && !name.endsWith(".dek") && !name.endsWith(".deck")) {
+      setImportMessage("Use um arquivo .txt, .dek ou .deck para importar o deck.");
+      return;
+    }
+
+    const content = await file.text();
+    await applyImportedText(content);
+  };
+
+  const importDeckFromPaste = async (text) => {
+    if (!String(text || "").trim()) {
+      setImportMessage("Cole a lista do deck para importar.");
+      return;
+    }
+    await applyImportedText(text);
   };
 
   return {
@@ -387,5 +400,6 @@ export function useDeckBuilder() {
     removeCard,
     handleCreateDeck,
     importDeckFromTxt,
+    importDeckFromPaste,
   };
 }

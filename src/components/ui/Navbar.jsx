@@ -65,6 +65,12 @@ const IconTime = () => (
   </svg>
 );
 
+const IconTools = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+  </svg>
+);
+
 const IconEdit = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -100,13 +106,29 @@ export function Navbar({
   onOpenEditProfile,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const navRef = useRef(null);
+  const toolsRef = useRef(null);
+  const dashboardRef = useRef(null);
   const isAdmin = usuario?.role === "admin";
+
+  const close = () => {
+    setMenuOpen(false);
+    setToolsOpen(false);
+    setDashboardOpen(false);
+  };
 
   useEffect(() => {
     const handler = (e) => {
       if (navRef.current && !navRef.current.contains(e.target)) {
         setMenuOpen(false);
+      }
+      if (toolsRef.current && !toolsRef.current.contains(e.target)) {
+        setToolsOpen(false);
+      }
+      if (dashboardRef.current && !dashboardRef.current.contains(e.target)) {
+        setDashboardOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -120,8 +142,6 @@ export function Navbar({
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
-
-  const close = () => setMenuOpen(false);
 
   return (
     <header
@@ -211,10 +231,96 @@ export function Navbar({
           </button>
         )}
 
+        {isAuthenticated ? (
+          <div className="relative" ref={toolsRef}>
+            <button
+              type="button"
+              className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
+                toolsOpen ? "text-white" : "text-[#beafd7] hover:text-white"
+              }`}
+              aria-expanded={toolsOpen}
+              aria-haspopup="menu"
+              onClick={() => setToolsOpen((open) => !open)}
+            >
+              Ferramentas
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {toolsOpen && (
+              <div
+                role="menu"
+                className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50"
+              >
+                <NavLink
+                  role="menuitem"
+                  to="/ferramentas/contador-vida"
+                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                  onClick={close}
+                >
+                  Contador de vida
+                </NavLink>
+                <NavLink
+                  role="menuitem"
+                  to="/ferramentas/calculadora-swiss"
+                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                  onClick={close}
+                >
+                  Calculadora Swiss / Top 8
+                </NavLink>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
+            type="button"
+            onClick={() => { onOpenAuth("login"); close(); }}
+          >
+            Ferramentas
+          </button>
+        )}
+
         {isAuthenticated && isAdmin && (
-          <NavLink to="/dashboard" className={desktopLinkClass} onClick={close}>
-            Dashboard
-          </NavLink>
+          <div className="relative" ref={dashboardRef}>
+            <button
+              type="button"
+              className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
+                dashboardOpen ? "text-white" : "text-[#beafd7] hover:text-white"
+              }`}
+              aria-expanded={dashboardOpen}
+              aria-haspopup="menu"
+              onClick={() => setDashboardOpen((open) => !open)}
+            >
+              Dashboard
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {dashboardOpen && (
+              <div
+                role="menu"
+                className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50"
+              >
+                <NavLink
+                  role="menuitem"
+                  to="/dashboard"
+                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                  onClick={close}
+                >
+                  Anúncios
+                </NavLink>
+                <NavLink
+                  role="menuitem"
+                  to="/dashboard/bloqueios"
+                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                  onClick={close}
+                >
+                  Bloqueio de usuários
+                </NavLink>
+              </div>
+            )}
+          </div>
         )}
       </nav>
 
@@ -360,11 +466,43 @@ export function Navbar({
                 </button>
               )}
 
+              {isAuthenticated ? (
+                <div className="flex flex-col gap-0.5">
+                  <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#9f91bd]">
+                    <IconTools />
+                    <span>Ferramentas</span>
+                  </p>
+                  <NavLink to="/ferramentas/contador-vida" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Contador de vida</span>
+                  </NavLink>
+                  <NavLink to="/ferramentas/calculadora-swiss" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Calculadora Swiss / Top 8</span>
+                  </NavLink>
+                </div>
+              ) : (
+                <button
+                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
+                  type="button"
+                  onClick={() => { onOpenAuth("login"); close(); }}
+                >
+                  <IconTools />
+                  <span>Ferramentas</span>
+                </button>
+              )}
+
               {isAuthenticated && isAdmin && (
-                <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
-                  <IconDashboard />
-                  <span>Dashboard</span>
-                </NavLink>
+                <div className="flex flex-col gap-0.5">
+                  <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#9f91bd]">
+                    <IconDashboard />
+                    <span>Dashboard</span>
+                  </p>
+                  <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Anúncios</span>
+                  </NavLink>
+                  <NavLink to="/dashboard/bloqueios" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Bloqueio de usuários</span>
+                  </NavLink>
+                </div>
               )}
             </nav>
 

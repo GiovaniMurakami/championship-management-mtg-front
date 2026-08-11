@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { PAGE_TITLES } from "../constants/pageTitles";
-import { applyDocumentTitle, resetDocumentTitle } from "../utils/documentTitle";
+import { applyDocumentTitle } from "../utils/documentTitle";
 
 /**
  * Define o título da aba (e metas opcionais) conforme a página atual.
@@ -19,9 +19,5 @@ export function usePageTitle(pageTitle, {
 
   useEffect(() => {
     applyDocumentTitle(resolvedTitle, { seo, image });
-
-    return () => {
-      resetDocumentTitle({ seo });
-    };
   }, [resolvedTitle, seo, image]);
 }

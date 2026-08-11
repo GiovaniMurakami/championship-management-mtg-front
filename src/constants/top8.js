@@ -1,2 +1,5 @@
-export const TOP8_BACKGROUND_URL =
-  "https://fuguete-championship-management.s3.us-east-1.amazonaws.com/imagens/b14080b1-fd2e-4ef8-aa13-acab1d9c9c79/75c57035-0ae8-45e0-8a66-b52669d44c4a.jpeg";
+// ?inline → data URL no JS (evita /assets/*.jpeg no Amplify cair no fallback SPA / cache HTML).
+import top8Background from "../assets/top8/fundoTop8.jpeg?inline";
+
+/** Fundo do story Top8 como data URL (mesma origem no canvas; sem CORS/S3). */
+export const TOP8_BACKGROUND_URL = top8Background;

@@ -167,7 +167,7 @@ export function TournamentSection() {
                         <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
-                      <span>{item.visualizacoes} visualizacoes</span>
+                      <span>{item.visualizacoes} visualizações</span>
                     </div>
                   )}
                 </div>

@@ -2,7 +2,8 @@ import { useMemo, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { getDisplaySides, getMatchPlayerName } from "../../utils/matchDisplay";
-import { isEliminationPhase } from "../../utils/tournamentFlow";
+import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
+import { formatTournamentRoundLabel, isEliminationPhase } from "../../utils/tournamentFlow";
 import { editarPareamentosRodada } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
@@ -48,7 +49,7 @@ function MatchCard({ partida, index, usuarioId }) {
         : "VS";
 
     return (
-        <article className={`min-w-0 max-w-full overflow-hidden rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
+        <article className={`min-w-0 max-w-full overflow-visible rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
             <div className="flex items-start justify-between gap-2 mb-[0.55rem] flex-wrap max-md:flex-col max-md:items-start">
                 <div className="flex items-center gap-[0.4rem] min-w-0">
                     <span className="text-[0.72rem] font-bold text-[#7dd3fc] tracking-[0.04em] uppercase">Mesa {getMesa(partida, index)}</span>
@@ -70,8 +71,10 @@ function MatchCard({ partida, index, usuarioId }) {
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem] max-md:grid-cols-1 max-md:gap-2">
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start max-md:items-center max-md:text-center ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
-                    <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>{p1.name}</span>
-                    {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
+                    <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>
+                        <UsuarioNomeExibicao nome={p1.name} excluido={p1.excluido} />
+                    </span>
+                    {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em]">VOCÊ</span>}
                     {isFinalizada && !isBye && (
                         <ConfirmationIcon confirmed={player1Confirmed} label={`${p1.name}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
                     )}
@@ -82,8 +85,10 @@ function MatchCard({ partida, index, usuarioId }) {
                 </span>
 
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right max-md:items-center max-md:text-center ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
-                    {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em] uppercase">Voce</span>}
-                    <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>{p2.name}</span>
+                    {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em]">VOCÊ</span>}
+                    <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>
+                        {isBye ? p2.name : <UsuarioNomeExibicao nome={p2.name} excluido={p2.excluido} />}
+                    </span>
                     {isFinalizada && !isBye && (
                         <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.name}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
                     )}
@@ -94,7 +99,7 @@ function MatchCard({ partida, index, usuarioId }) {
     );
 }
 
-export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token, onPartidasUpdate }) {
+export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId, isOwner, token, onPartidasUpdate }) {
     const isOngoing = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
     const isTopCut = isEliminationPhase(torneio);
@@ -146,26 +151,65 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
     const [pairingsError, setPairingsError] = useState("");
     const [pairingsDraft, setPairingsDraft] = useState([]);
 
-    const roundPlayers = useMemo(() => {
+    const tournamentPlayers = useMemo(() => {
         const map = new Map();
+        (standings || []).forEach((row) => {
+            if (row?.dropped) return;
+            const id = row.usuario?.id || row.usuarioId || row.id;
+            const nome = row.usuario?.nome || row.nome || id;
+            if (id) map.set(normalizeId(id), { id, nome });
+        });
+        // Garante jogadores já pareados mesmo se sumirem do standing filtrado.
         partidasRodada.forEach((partida) => {
             const jogador1Id = partida.jogador1Id || partida.jogador1?.id;
             const jogador2Id = partida.jogador2Id || partida.jogador2?.id;
-            if (jogador1Id && !map.has(jogador1Id)) {
-                map.set(jogador1Id, getMatchPlayerName(partida, 1));
+            if (jogador1Id && !map.has(normalizeId(jogador1Id))) {
+                map.set(normalizeId(jogador1Id), { id: jogador1Id, nome: getMatchPlayerName(partida, 1) });
             }
-            if (jogador2Id && !map.has(jogador2Id)) {
-                map.set(jogador2Id, getMatchPlayerName(partida, 2));
+            if (jogador2Id && !map.has(normalizeId(jogador2Id))) {
+                map.set(normalizeId(jogador2Id), { id: jogador2Id, nome: getMatchPlayerName(partida, 2) });
             }
         });
-        return Array.from(map.entries()).map(([id, nome]) => ({ id, nome }));
-    }, [partidasRodada]);
+        return Array.from(map.values()).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+    }, [standings, partidasRodada]);
+
+    const assignedPlayerIds = useMemo(() => {
+        const set = new Set();
+        pairingsDraft.forEach((partida) => {
+            if (partida.jogador1Id) set.add(normalizeId(partida.jogador1Id));
+            if (partida.jogador2Id) set.add(normalizeId(partida.jogador2Id));
+        });
+        return set;
+    }, [pairingsDraft]);
+
+    const conflictPlayerIds = useMemo(() => {
+        const counts = new Map();
+        pairingsDraft.forEach((partida) => {
+            [partida.jogador1Id, partida.jogador2Id].filter(Boolean).forEach((id) => {
+                const key = normalizeId(id);
+                counts.set(key, (counts.get(key) || 0) + 1);
+            });
+        });
+        return new Set(Array.from(counts.entries()).filter(([, n]) => n > 1).map(([id]) => id));
+    }, [pairingsDraft]);
+
+    const unassignedPlayers = useMemo(
+        () => tournamentPlayers.filter((player) => !assignedPlayerIds.has(normalizeId(player.id))),
+        [tournamentPlayers, assignedPlayerIds]
+    );
+
+    const byeCount = useMemo(
+        () => pairingsDraft.filter((partida) => !partida.jogador2Id).length,
+        [pairingsDraft]
+    );
 
     const handleOpenPairingsEditor = () => {
         setPairingsError("");
         setPairingsDraft(
             partidasRodada.map((partida, index) => ({
                 id: partida.id,
+                clientKey: partida.id || `row-${index}`,
+                locked: partida.status === "finalizada",
                 jogador1Id: partida.jogador1Id || partida.jogador1?.id || "",
                 jogador2Id: partida.jogador2Id || partida.jogador2?.id || "",
                 mesa: String(getMesa(partida, index)),
@@ -175,11 +219,49 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
     };
 
     const handlePairingChange = (index, field, value) => {
-        setPairingsDraft((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item));
+        setPairingsDraft((prev) => prev.map((item, itemIndex) => {
+            if (itemIndex !== index) return item;
+            if (item.locked && field !== "mesa") return item;
+            return { ...item, [field]: value };
+        }));
+    };
+
+    const handleAddTable = (asBye = false) => {
+        const nextMesa = Math.max(0, ...pairingsDraft.map((p) => Number(p.mesa) || 0)) + 1;
+        setPairingsDraft((prev) => [
+            ...prev,
+            {
+                id: null,
+                clientKey: `new-${Date.now()}-${prev.length}`,
+                locked: false,
+                jogador1Id: "",
+                jogador2Id: asBye ? "" : "",
+                mesa: String(nextMesa),
+            },
+        ]);
+    };
+
+    const handleRemoveTable = (index) => {
+        setPairingsDraft((prev) => prev.filter((item, itemIndex) => itemIndex !== index || item.locked));
     };
 
     const handleSavePairings = async () => {
         if (!token || !torneio?.id || !selectedRound) return;
+
+        const incomplete = pairingsDraft.some((partida) => !partida.jogador1Id);
+        if (incomplete) {
+            setPairingsError("Todas as mesas precisam de jogador 1.");
+            return;
+        }
+        if (conflictPlayerIds.size > 0) {
+            setPairingsError("Há jogadores em mais de uma mesa.");
+            return;
+        }
+        if (byeCount > 1) {
+            setPairingsError("A rodada pode ter no máximo um BYE.");
+            return;
+        }
+
         setPairingsLoading(true);
         setPairingsError("");
         try {
@@ -188,7 +270,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                 selectedRound,
                 {
                     partidas: pairingsDraft.map((partida) => ({
-                        id: partida.id,
+                        ...(partida.id ? { id: partida.id } : {}),
                         jogador1Id: partida.jogador1Id,
                         jogador2Id: partida.jogador2Id || null,
                         mesa: partida.mesa ? Number(partida.mesa) : null,
@@ -233,7 +315,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                     <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Mesas</h2>
                     {isOngoing && (
                         <span className="text-[0.75rem] font-semibold text-[#7dd3fc] bg-[rgba(56,189,248,0.1)] border border-[rgba(56,189,248,0.25)] rounded-full px-[0.65rem] py-[0.2rem]">
-                            Rodada {torneio?.rodadaAtual} / {torneio?.totalRodadas}
+                            Rodada {formatTournamentRoundLabel(torneio)}
                         </span>
                     )}
                     {isTopCut && (
@@ -273,7 +355,7 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
 
             {isTopCut && total > 0 && (
                 <div className="mb-3 rounded-[0.75rem] border border-[rgba(250,204,21,0.22)] bg-[rgba(250,204,21,0.07)] px-3 py-2 text-[0.82rem] font-semibold text-[#fef3c7]">
-                    Pareamentos do corte eliminatorio visiveis para os jogadores classificados.
+                    Pareamentos do corte eliminatório visíveis para os jogadores classificados.
                 </div>
             )}
 
@@ -363,38 +445,72 @@ export function MatchTablesPanel({ torneio, partidas, usuarioId, isOwner, token,
                 className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
                 onMouseDown={(e) => { if (e.target === e.currentTarget) setPairingsOpen(false); }}
             >
-                <div className="bg-[#110a22] border border-[rgba(56,189,248,0.3)] rounded-2xl p-6 w-full max-w-[760px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
-                    <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-4">Editar Pareamentos da Rodada {selectedRound}</h3>
+                <div className="bg-[#110a22] border border-[rgba(56,189,248,0.3)] rounded-2xl p-6 w-full max-w-[860px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+                    <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-2">Editar Pareamentos da Rodada {selectedRound}</h3>
+                    <p className="text-[0.82rem] text-[#94a3b8] m-0 mb-4">Mesas finalizadas ficam travadas. Você pode adicionar mesas, BYE e jogadores ativos sem mesa.</p>
+
+                    <div className="flex gap-2 flex-wrap mb-4">
+                        <button type="button" className="px-3 py-1.5 rounded-lg border border-[rgba(56,189,248,0.35)] text-[#7dd3fc] text-[0.8rem] font-semibold bg-[rgba(56,189,248,0.08)]" onClick={() => handleAddTable(false)} disabled={pairingsLoading}>+ Mesa</button>
+                        <button type="button" className="px-3 py-1.5 rounded-lg border border-[rgba(250,204,21,0.35)] text-[#fde047] text-[0.8rem] font-semibold bg-[rgba(250,204,21,0.08)]" onClick={() => handleAddTable(true)} disabled={pairingsLoading || byeCount >= 1}>+ BYE</button>
+                    </div>
+
                     <div className="grid gap-3">
-                        {pairingsDraft.map((partida, index) => (
-                            <div key={partida.id} className="grid grid-cols-[1fr_1fr_110px] gap-3 max-[640px]:grid-cols-1 border border-[rgba(255,255,255,0.08)] rounded-xl p-3 bg-white/[0.03]">
+                        {pairingsDraft.map((partida, index) => {
+                            const conflict =
+                                conflictPlayerIds.has(normalizeId(partida.jogador1Id)) ||
+                                conflictPlayerIds.has(normalizeId(partida.jogador2Id));
+                            return (
+                            <div key={partida.clientKey || partida.id || index} className={`grid grid-cols-[1fr_1fr_90px_auto] gap-3 max-[720px]:grid-cols-1 border rounded-xl p-3 bg-white/[0.03] ${partida.locked ? "border-[rgba(34,197,94,0.35)] opacity-90" : conflict ? "border-[rgba(239,68,68,0.45)]" : "border-[rgba(255,255,255,0.08)]"}`}>
                                 <SelectField
                                     value={partida.jogador1Id}
                                     onChange={(e) => handlePairingChange(index, "jogador1Id", e.target.value)}
                                     className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
-                                    placeholder={undefined}
+                                    placeholder="Jogador 1"
+                                    disabled={partida.locked || pairingsLoading}
                                 >
-                                    {roundPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
+                                    {tournamentPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
                                 </SelectField>
                                 <SelectField
                                     value={partida.jogador2Id}
                                     onChange={(e) => handlePairingChange(index, "jogador2Id", e.target.value)}
                                     className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
                                     placeholder="BYE"
+                                    disabled={partida.locked || pairingsLoading}
                                 >
-                                    {roundPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
+                                    {tournamentPlayers.map((player) => <option key={player.id} value={player.id}>{player.nome}</option>)}
                                 </SelectField>
                                 <input
                                     type="number"
                                     min="1"
                                     value={partida.mesa}
                                     onChange={(e) => handlePairingChange(index, "mesa", e.target.value)}
-                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff] disabled:opacity-60"
                                     placeholder="Mesa"
+                                    disabled={pairingsLoading}
                                 />
+                                <button
+                                    type="button"
+                                    className="px-3 py-2 rounded-lg border border-[rgba(239,68,68,0.35)] text-[#fca5a5] text-[0.78rem] font-semibold disabled:opacity-40"
+                                    onClick={() => handleRemoveTable(index)}
+                                    disabled={partida.locked || pairingsLoading}
+                                    title={partida.locked ? "Mesa finalizada" : "Remover mesa"}
+                                >
+                                    Remover
+                                </button>
+                                {partida.locked && <span className="col-span-full text-[0.72rem] text-[#86efac]">Finalizada — jogadores travados</span>}
+                                {conflict && !partida.locked && <span className="col-span-full text-[0.72rem] text-[#fca5a5]">Conflito: jogador repetido</span>}
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
+
+                    {unassignedPlayers.length > 0 && (
+                        <div className="mt-4 rounded-xl border border-[rgba(250,204,21,0.25)] bg-[rgba(250,204,21,0.06)] px-3 py-2">
+                            <p className="m-0 mb-1 text-[0.78rem] font-semibold text-[#fde047]">Sem mesa ({unassignedPlayers.length})</p>
+                            <p className="m-0 text-[0.8rem] text-[#fef3c7]">{unassignedPlayers.map((p) => p.nome).join(", ")}</p>
+                        </div>
+                    )}
+
                     {pairingsError && <p className="text-[#fca5a5] text-[0.85rem] mt-4 mb-0">{pairingsError}</p>}
                     <div className="flex gap-3 mt-5 max-md:flex-col">
                         <button type="button" className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors max-md:w-full" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>

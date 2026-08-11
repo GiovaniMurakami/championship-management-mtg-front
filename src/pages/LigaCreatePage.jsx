@@ -4,8 +4,16 @@ import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../service
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
-import { PageShell } from "../components/ui/PageShell";
-import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { BackButton, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
+import {
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  BTN_SUBMIT,
+  FORM_LABEL_CLASS,
+  FORM_PAGE_SHELL_CLASS,
+  FORM_PAGE_TITLE_CLASS,
+  TOURNAMENT_INPUT_CLASS,
+} from "../styles/uiClasses";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -196,59 +204,44 @@ export function LigaCreatePage({ editMode = false }) {
 
   return (
     <PageShell>
-      <button
-        className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
-        type="button"
+      <BackButton
+        className="mb-6"
         onClick={() => navigate(editMode && ligaId ? `/ligas/${ligaId}` : "/ligas")}
-      >
-        ← Voltar
-      </button>
+      />
 
-      <section className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] p-8 mb-8 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] max-[768px]:p-6">
+      <section className={FORM_PAGE_SHELL_CLASS}>
         <div className="max-w-[600px] mx-auto">
-          <h2 className="text-white text-center mb-8 text-[1.8rem] font-semibold max-[768px]:text-[1.5rem]">
+          <h2 className={FORM_PAGE_TITLE_CLASS}>
             {editMode ? "Editar Liga" : "Criar Nova Liga"}
           </h2>
           <form onSubmit={handleSubmit} className="grid gap-6">
 
-            {/* Informações */}
-            <div className="flex flex-col gap-4 p-5 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-              <h3 className="text-[0.78rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 mb-1 pb-2 border-b border-[rgba(79,70,229,0.18)]">
-                Informações
-              </h3>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="liga-nome" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                  Nome da Liga
-                </label>
-                <input
-                  id="liga-nome"
-                  name="nome"
-                  type="text"
-                  placeholder="Ex: Liga Mensal Standard"
-                  value={form.nome}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                  className={TOURNAMENT_INPUT_CLASS}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="liga-descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                  Descrição <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
-                </label>
-                <textarea
-                  id="liga-descricao"
-                  name="descricao"
-                  placeholder="Descreva a liga..."
-                  value={form.descricao}
-                  onChange={handleChange}
-                  rows={3}
-                  disabled={loading}
-                  className={`${TOURNAMENT_INPUT_CLASS} resize-y min-h-[80px]`}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Tipo de Liga</label>
+            <FormSection title="Informações">
+              <FormField
+                id="liga-nome"
+                name="nome"
+                label="Nome da Liga"
+                size="page"
+                placeholder="Ex: Liga Mensal Standard"
+                value={form.nome}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+              <FormField
+                id="liga-descricao"
+                name="descricao"
+                label="Descrição (opcional)"
+                size="page"
+                multiline
+                rows={3}
+                placeholder="Descreva a liga..."
+                value={form.descricao}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              <div className="grid gap-2">
+                <span className={FORM_LABEL_CLASS}>Tipo de Liga</span>
                 <div className="flex gap-3">
                   {[
                     { value: "individual", label: "Individual" },
@@ -258,7 +251,7 @@ export function LigaCreatePage({ editMode = false }) {
                       key={value}
                       className={`flex items-center gap-2 flex-1 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
                         form.tipo === value
-                          ? "border-[rgba(79,70,229,0.6)] bg-[rgba(79,70,229,0.12)]"
+                          ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.12)]"
                           : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                       }`}
                     >
@@ -269,56 +262,44 @@ export function LigaCreatePage({ editMode = false }) {
                         checked={form.tipo === value}
                         onChange={handleChange}
                         disabled={loading}
-                        className="accent-[#4f46e5]"
+                        className="accent-[#8e39ed]"
                       />
                       <span className="text-[#f5edff] text-[0.9rem] font-medium">{label}</span>
                     </label>
                   ))}
                 </div>
               </div>
-            </div>
+            </FormSection>
 
-            {/* Torneios */}
-            <div className="flex flex-col gap-4 p-5 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-              <h3 className="text-[0.78rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 mb-1 pb-2 border-b border-[rgba(79,70,229,0.18)]">
-                Torneios <span className="text-[#beafd7] text-[0.75rem] normal-case tracking-normal font-normal">(opcional)</span>
-              </h3>
+            <FormSection title="Torneios" subtitle="(opcional)">
               <div className="grid grid-cols-1 min-[560px]:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="torneio-data-inicio" className="text-[#e0e0e0] font-medium text-[0.9rem]">
-                    Data inicial
-                  </label>
-                  <input
-                    id="torneio-data-inicio"
-                    name="dataInicio"
-                    type="date"
-                    value={filtrosTorneio.dataInicio}
-                    onChange={handleFiltroChange}
-                    disabled={loading || loadingTorneios}
-                    className={TOURNAMENT_INPUT_CLASS}
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="torneio-data-fim" className="text-[#e0e0e0] font-medium text-[0.9rem]">
-                    Data final
-                  </label>
-                  <input
-                    id="torneio-data-fim"
-                    name="dataFim"
-                    type="date"
-                    value={filtrosTorneio.dataFim}
-                    onChange={handleFiltroChange}
-                    disabled={loading || loadingTorneios}
-                    className={TOURNAMENT_INPUT_CLASS}
-                  />
-                </div>
+                <FormField
+                  id="torneio-data-inicio"
+                  name="dataInicio"
+                  label="Data inicial"
+                  type="date"
+                  size="page"
+                  value={filtrosTorneio.dataInicio}
+                  onChange={handleFiltroChange}
+                  disabled={loading || loadingTorneios}
+                />
+                <FormField
+                  id="torneio-data-fim"
+                  name="dataFim"
+                  label="Data final"
+                  type="date"
+                  size="page"
+                  value={filtrosTorneio.dataFim}
+                  onChange={handleFiltroChange}
+                  disabled={loading || loadingTorneios}
+                />
               </div>
               <div className="flex gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={handleFiltrarTorneios}
                   disabled={loading || loadingTorneios}
-                  className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                  className={BTN_PRIMARY}
                 >
                   {loadingTorneios ? "Filtrando..." : "Filtrar"}
                 </button>
@@ -326,7 +307,7 @@ export function LigaCreatePage({ editMode = false }) {
                   type="button"
                   onClick={handleLimparFiltrosTorneio}
                   disabled={loading || loadingTorneios}
-                  className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.18)] bg-white/[0.03] text-[#beafd7] cursor-pointer font-semibold transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.06] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className={BTN_SECONDARY}
                 >
                   Limpar
                 </button>
@@ -347,11 +328,7 @@ export function LigaCreatePage({ editMode = false }) {
                   Remover filtrados
                 </button>
               </div>
-              {filterError && (
-                <div className="bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-2 rounded-[6px] text-[0.85rem]">
-                  {filterError}
-                </div>
-              )}
+              {filterError ? <FormFeedback message={filterError} variant="error" /> : null}
               {loadingTorneios ? (
                 <p className="text-[#888] text-[0.875rem] m-0">Carregando torneios...</p>
               ) : torneiosDisponiveis.length === 0 ? (
@@ -377,13 +354,13 @@ export function LigaCreatePage({ editMode = false }) {
                         key={torneio.id}
                         className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
                           selected
-                            ? "border-[rgba(79,70,229,0.6)] bg-[rgba(79,70,229,0.12)]"
+                            ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.12)]"
                             : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                         }`}
                       >
                         <input
                           type="checkbox"
-                          className="w-4 h-4 accent-[#4f46e5] cursor-pointer"
+                          className="w-4 h-4 accent-[#8e39ed] cursor-pointer"
                           checked={selected}
                           onChange={() => toggleTorneio(torneio.id)}
                           disabled={loading || loadingTorneios}
@@ -398,23 +375,15 @@ export function LigaCreatePage({ editMode = false }) {
                 </div>
               )}
               {torneiosSelecionados.length > 0 && (
-                <p className="text-[#a5b4fc] text-[0.8rem] m-0">
+                <p className="text-[#c795ff] text-[0.8rem] m-0">
                   {torneiosDisponiveis.length} filtrado(s), {torneiosSelecionados.length} selecionado(s)
                 </p>
               )}
-            </div>
+            </FormSection>
 
-            {error && (
-              <div className="bg-[rgba(239,68,68,0.1)] border border-[#ef4444] text-[#fca5a5] px-3 py-3 rounded-[6px] text-[0.9rem] text-center">
-                {error}
-              </div>
-            )}
+            {error ? <FormFeedback message={error} variant="error" /> : null}
 
-            <button
-              type="submit"
-              className="bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white border-none px-8 py-4 rounded-lg text-[1.1rem] font-semibold cursor-pointer transition-all duration-300 mt-2 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(79,70,229,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:!transform-none"
-              disabled={loading}
-            >
+            <button type="submit" className={BTN_SUBMIT} disabled={loading}>
               {loading
                 ? editMode ? "Salvando..." : "Criando..."
                 : editMode ? "Salvar Alterações" : "Criar Liga"}

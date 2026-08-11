@@ -23,6 +23,21 @@ export function normalizeStandingsPayload(data) {
   );
 }
 
+/** Campos de torneio que a API de standings pode devolver — merge seletivo (não espalha o payload inteiro). */
+export function pickTorneioFieldsFromStandings(data) {
+  if (!data || typeof data !== "object") return {};
+  const patch = {};
+  if (data.rodadaIniciadaEm !== undefined) patch.rodadaIniciadaEm = data.rodadaIniciadaEm;
+  if (data.rodadaAtual !== undefined) patch.rodadaAtual = data.rodadaAtual;
+  if (data.totalRodadas !== undefined) patch.totalRodadas = data.totalRodadas;
+  if (data.status !== undefined) patch.status = data.status;
+  if (data.totalInscritos !== undefined) patch.totalInscritos = data.totalInscritos;
+  if (data.emCorte !== undefined) patch.emCorte = data.emCorte;
+  if (data.nome !== undefined) patch.nome = data.nome;
+  if (data.torneioNome !== undefined) patch.nome = data.torneioNome;
+  return patch;
+}
+
 export function normalizeMatchesPayload(data) {
   return data?.partidas || data?.matches || data?.rodadaAtualPartidas || [];
 }

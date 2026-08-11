@@ -40,6 +40,33 @@ describe("buscarCartasPorNome", () => {
     });
   });
 
+  it("prefere image_uris.normal quando disponivel", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [
+          {
+            id: "1",
+            name: "Counterspell",
+            set_name: "Masters 25",
+            image_uris: {
+              normal: "https://cards.example/counterspell-normal.jpg",
+              large: "https://cards.example/counterspell-large.jpg",
+            },
+            type_line: "Instant",
+            legalities: { legacy: "legal" },
+            colors: ["U"],
+            cmc: 2,
+            mana_cost: "{U}{U}",
+          },
+        ],
+      }),
+    });
+
+    const cards = await buscarCartasPorNome(["Counterspell"]);
+    expect(cards[0].imagem).toBe("https://cards.example/counterspell-normal.jpg");
+  });
+
   it("resolve carta dupla-face quando a importacao usa apenas uma face", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

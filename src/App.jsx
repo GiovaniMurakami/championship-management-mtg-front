@@ -3,13 +3,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import {
-  buildExternalAppUrlForPath,
+  buildWordpressEmbedUrlForPath,
+  getWordpressEmbedOrigins,
   resolveExternalNavigationTarget,
-  WORDPRESS_APP_URL,
+  WORDPRESS_EMBED_URL,
 } from "./utils/externalNavigation";
 
 const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
@@ -54,28 +55,6 @@ function ExternalRouteSync() {
   return null;
 }
 
-function getWordpressTargetOrigin() {
-  try {
-    return new URL(WORDPRESS_APP_URL).origin;
-  } catch {
-    return null;
-  }
-}
-
-function getWordpressAllowedOrigins() {
-  const origins = new Set();
-  const configuredOrigin = getWordpressTargetOrigin();
-  if (configuredOrigin) origins.add(configuredOrigin);
-
-  try {
-    if (document.referrer) origins.add(new URL(document.referrer).origin);
-  } catch {
-    // Referrer may be absent or malformed; the configured origin remains enough.
-  }
-
-  return origins;
-}
-
 function getNavigationValueFromMessage(data) {
   if (!data) return "";
   if (typeof data === "string") return data;
@@ -89,7 +68,7 @@ function resolveWordpressMessageTarget(data) {
   if (!navigationValue) return null;
 
   try {
-    const wordpressUrl = new URL(WORDPRESS_APP_URL);
+    const wordpressUrl = new URL(WORDPRESS_EMBED_URL);
     const nextUrl = new URL(navigationValue, wordpressUrl.origin);
 
     if (nextUrl.pathname === wordpressUrl.pathname) {
@@ -114,7 +93,7 @@ function WordpressRouteBridge() {
   useEffect(() => {
     if (window.parent === window) return;
 
-    const allowedOrigins = getWordpressAllowedOrigins();
+    const allowedOrigins = getWordpressEmbedOrigins();
     if (allowedOrigins.size === 0) return;
 
     const handleMessage = (event) => {
@@ -147,11 +126,11 @@ function WordpressRouteBridge() {
   useEffect(() => {
     if (window.parent === window) return;
 
-    const allowedOrigins = getWordpressAllowedOrigins();
+    const allowedOrigins = getWordpressEmbedOrigins();
     if (allowedOrigins.size === 0) return;
 
     const path = `${location.pathname}${location.search}`;
-    const url = buildExternalAppUrlForPath(path);
+    const url = buildWordpressEmbedUrlForPath(path);
     const message = {
       type: "APP_ROUTE_CHANGED",
       source: "championship-management-mtg-front",
@@ -175,11 +154,13 @@ function AppContent() {
     loginForm, setLoginForm, registerForm, setRegisterForm, handleLogin,
     handleRegister, loginLockout, showEditProfileModal, closeEditProfileModal,
     editProfileForm, setEditProfileForm, handleUpdateProfile,
+    handleDeleteAccount, deleteAccountLoading, deleteAccountError,
   } = useAuth();
 
   const { pathname } = useLocation();
   const isBare = BARE_ROUTES.includes(pathname);
-  const isPublicAuthRoute = pathname === "/esqueci-senha" || pathname === "/reset-senha";
+  const isPublicAuthRoute = pathname === "/esqueci-senha"
+    || pathname === "/reset-senha";
 
   if (isBare) {
     return (
@@ -205,10 +186,12 @@ function AppContent() {
         onOpenEditProfile={openEditProfileModal}
       />
 
-      <main className="flex-1 min-w-0 overflow-x-clip">
-        <ErrorBoundary>
-          <AppRoutes />
-        </ErrorBoundary>
+      <main className="flex-1 min-w-0">
+        <AdSenseLayout>
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
+        </AdSenseLayout>
       </main>
 
       <AuthModal
@@ -235,6 +218,10 @@ function AppContent() {
         form={editProfileForm}
         onFormChange={setEditProfileForm}
         onSubmit={handleUpdateProfile}
+        usuarioNome={usuario?.nome || ""}
+        onDeleteAccount={handleDeleteAccount}
+        deleteLoading={deleteAccountLoading}
+        deleteError={deleteAccountError}
       />
 
       <Footer />

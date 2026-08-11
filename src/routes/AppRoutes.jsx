@@ -16,15 +16,20 @@ const LigaDetailPage      = lazy(() => import("../pages/LigaDetailPage").then(m 
 const LigaCreatePage      = lazy(() => import("../pages/LigaCreatePage").then(m => ({ default: m.LigaCreatePage })));
 const EsqueciSenhaPage    = lazy(() => import("../pages/EsqueciSenhaPage").then(m => ({ default: m.EsqueciSenhaPage })));
 const ResetSenhaPage      = lazy(() => import("../pages/ResetSenhaPage").then(m => ({ default: m.ResetSenhaPage })));
+const TermosDeUsoPage     = lazy(() => import("../pages/TermosDeUsoPage").then(m => ({ default: m.TermosDeUsoPage })));
+const PrivacidadePage     = lazy(() => import("../pages/PrivacidadePage").then(m => ({ default: m.PrivacidadePage })));
 const LandingPage         = lazy(() => import("../pages/LandingPage").then(m => ({ default: m.LandingPage })));
 const LandingBlogPage     = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
 const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
 const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
 const DashboardPage       = lazy(() => import("../pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const DashboardBloqueiosPage = lazy(() => import("../pages/DashboardBloqueiosPage").then(m => ({ default: m.DashboardBloqueiosPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
 const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
 const TimeCreatePage      = lazy(() => import("../pages/TimeCreatePage").then(m => ({ default: m.TimeCreatePage })));
+const ContadorVidaPage    = lazy(() => import("../pages/ContadorVidaPage").then(m => ({ default: m.ContadorVidaPage })));
+const CalculadoraSwissPage = lazy(() => import("../pages/CalculadoraSwissPage").then(m => ({ default: m.CalculadoraSwissPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -65,6 +70,10 @@ export function AppRoutes() {
         <Route path="/torneio/ingressar/:token" element={<TournamentJoinPage />} />
         <Route path="/dashboard" element={
           <ProtectedRoute requireAdmin><DashboardPage /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/anuncios" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard/bloqueios" element={
+          <ProtectedRoute requireAdmin><DashboardBloqueiosPage /></ProtectedRoute>
         } />
 
         <Route path="/times" element={
@@ -109,8 +118,18 @@ export function AppRoutes() {
           </ProtectedRoute>
         } />
 
+        <Route path="/ferramentas" element={<Navigate to="/ferramentas/contador-vida" replace />} />
+        <Route path="/ferramentas/contador-vida" element={
+          <ProtectedRoute><ContadorVidaPage /></ProtectedRoute>
+        } />
+        <Route path="/ferramentas/calculadora-swiss" element={
+          <ProtectedRoute><CalculadoraSwissPage /></ProtectedRoute>
+        } />
+
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
+        <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
+        <Route path="/privacidade" element={<PrivacidadePage />} />
         <Route path="/blog" element={<LandingBlogPage />} />
         <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
         <Route path="/parceiros" element={<LandingParceirosPage />} />

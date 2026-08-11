@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { CardSearch } from "./CardSearch";
 import { DeckList } from "./DeckList";
 import { SelectField } from "../ui";
+import { FORM_LABEL_CLASS, MODAL_INPUT_CLASS } from "../../styles/uiClasses";
 
 const FORMATS = [
   { value: "standard", label: "Standard" },
@@ -12,8 +13,6 @@ const FORMATS = [
   { value: "commander500", label: "Commander 500" },
   { value: "pauper", label: "Pauper" },
 ];
-
-const FORMAT_LABELS = Object.fromEntries(FORMATS.map((format) => [format.value, format.label]));
 
 const EXPORT_FORMATS = [
   { key: "arena", label: "MTG Arena" },
@@ -71,27 +70,14 @@ function buildExport(type, deckForm, mainDeck, sideboard, commander) {
     }
     case "txt":
     default: {
-      const total = main.reduce((s, c) => s + (c.quantidade || 0), 0);
-      const lines = [
-        `// ${deckForm.nome || "Deck"}`,
-        `// Formato: ${FORMAT_LABELS[deckForm.formato] || deckForm.formato || "—"}`,
-        `// ${total} cartas`,
-        ...(deckForm.linkLigaMagic ? [`// LigaMagic: ${deckForm.linkLigaMagic}`] : []),
-        "",
-      ];
+      const lines = [];
       main.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
       if (commanderCards.length > 0) {
-        lines.push(
-          "",
-          `// Commander (${commanderCards.reduce((s, c) => s + (c.quantidade || 0), 0)})`
-        );
+        lines.push("", "Commander");
         commanderCards.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
       }
       if (side.length > 0) {
-        lines.push(
-          "",
-          `// ${(isCommander ? "Sideboard" : sideSectionLabel)} (${side.reduce((s, c) => s + (c.quantidade || 0), 0)})`
-        );
+        lines.push("", "Sideboard");
         side.forEach((c) => lines.push(`${c.quantidade} ${c.nome}`));
       }
       return { content: lines.join("\n"), ext: "txt" };
@@ -269,12 +255,15 @@ export function DeckBuilder({
   importLoading,
   importMessage,
   onImportDeck,
+  onImportPaste,
   onSubmit,
   isEditMode = false,
   readOnly = false,
 }) {
   const [invalidFields, setInvalidFields] = useState({ nome: false, formato: false, linkLigaMagic: false });
   const [shakeFields, setShakeFields] = useState({ nome: false, formato: false, linkLigaMagic: false });
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
 
   const isCommander = deckForm.formato === "commander" || deckForm.formato === "commander500";
   const isCommander500 = deckForm.formato === "commander500";
@@ -313,6 +302,13 @@ export function DeckBuilder({
     const file = event.target.files?.[0];
     await onImportDeck(file);
     event.target.value = "";
+  };
+
+  const handlePasteImport = async () => {
+    if (!onImportPaste) return;
+    await onImportPaste(pasteText);
+    setPasteText("");
+    setPasteOpen(false);
   };
 
   return (
@@ -354,17 +350,17 @@ export function DeckBuilder({
           {/* form-label for nome — field-invalid + shake-field applied conditionally */}
           <label
             className={`
-              grid gap-[0.45rem] text-[0.95rem]
+              ${FORM_LABEL_CLASS}
               ${invalidFields.nome
                 ? "text-[#ffb5c3] [&_input]:border-[rgba(255,98,124,0.95)] [&_input]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
-                : "text-text-soft"
+                : ""
               }
               ${shakeFields.nome ? "animate-[field-shake_420ms_ease]" : ""}
             `}
           >
             Nome do deck
             <input
-              className="border border-line rounded-[0.7rem] bg-white/[0.03] text-text-main px-[0.7rem] py-[0.65rem] w-full focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)]"
+              className={MODAL_INPUT_CLASS}
               value={deckForm.nome}
               onChange={(event) => {
                 onDeckFormChange((current) => ({ ...current, nome: event.target.value }));
@@ -379,7 +375,7 @@ export function DeckBuilder({
           {/* form-label for formato — field-invalid + shake-field applied conditionally */}
           <label
             className={`
-              grid gap-[0.45rem] text-[0.95rem]
+              ${FORM_LABEL_CLASS}
               ${invalidFields.formato
                 ? "text-[#ffb5c3] [&_.format-select-wrapper]:border-[rgba(255,98,124,0.95)] [&_.format-select-wrapper]:shadow-[0_0_0_2px_rgba(255,98,124,0.2)]"
                 : "text-text-soft"
@@ -623,18 +619,37 @@ export function DeckBuilder({
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
-                {importLoading ? "Importando..." : "Importar (.txt)"}
+                {importLoading ? "Importando..." : "Importar (.txt/.dek)"}
               </label>
 
               {/* import-file-input: visually hidden */}
               <input
                 id="import-deck-file"
                 type="file"
-                accept=".txt"
+                accept=".txt,.dek,.deck,text/plain"
                 className="absolute w-px h-px opacity-0 pointer-events-none"
                 onChange={handleImportFileChange}
                 disabled={importLoading}
               />
+
+              {onImportPaste && (
+                <button
+                  type="button"
+                  className="
+                    inline-flex items-center justify-center gap-[0.4rem]
+                    border border-line rounded-[0.75rem] px-4 py-[0.6rem]
+                    cursor-pointer font-bold
+                    bg-white/[0.03] text-text-main
+                    transition-all duration-[220ms]
+                    hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08]
+                    max-sm:w-full max-sm:py-[0.85rem]
+                  "
+                  onClick={() => setPasteOpen((open) => !open)}
+                  disabled={importLoading}
+                >
+                  Colar lista
+                </button>
+              )}
             </>
           )}
 
@@ -663,6 +678,37 @@ export function DeckBuilder({
             </button>
           )}
         </div>
+
+        {!readOnly && pasteOpen && onImportPaste && (
+          <div className="mt-3 grid gap-2 w-full">
+            <textarea
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              rows={8}
+              placeholder={"4 Lightning Bolt\n...\nSB: 2 Rest in Peace"}
+              className="w-full bg-[rgba(255,255,255,0.04)] border border-line rounded-[0.75rem] px-3 py-2 text-[0.9rem] text-text-main placeholder:text-text-soft/50"
+              disabled={importLoading}
+            />
+            <div className="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                className="px-3 py-2 rounded-[0.65rem] border border-[rgba(199,149,255,0.45)] text-[#c795ff] font-semibold disabled:opacity-50"
+                onClick={handlePasteImport}
+                disabled={importLoading || !pasteText.trim()}
+              >
+                Importar texto
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 rounded-[0.65rem] border border-line text-text-soft font-semibold"
+                onClick={() => { setPasteOpen(false); setPasteText(""); }}
+                disabled={importLoading}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* feedback messages */}
         {importMessage ? (

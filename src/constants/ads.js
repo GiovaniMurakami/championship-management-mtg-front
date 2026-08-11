@@ -32,7 +32,7 @@ export const DEFAULT_ADS = [
     tipo: "card",
     tag: "Novidade",
     titulo: "Boosters & Sealed",
-    texto: "Abra boosters dos sets mais recentes e monte sua colecao. Disponivel na loja fisica e com entrega para todo o Brasil.",
+    texto: "Abra boosters dos sets mais recentes e monte sua coleção. Disponível na loja física e com entrega para todo o Brasil.",
     botaoTexto: "Ver produtos",
     link: "https://www.mukatraders.com.br/",
     imagemUrl: mukaLogo,

@@ -14,3 +14,7 @@ export { TimePage } from "./TimePage";
 export { TimeDetailPage } from "./TimeDetailPage";
 export { TimeCreatePage } from "./TimeCreatePage";
 export { NotFoundPage } from "./NotFoundPage";
+export { ContadorVidaPage } from "./ContadorVidaPage";
+export { CalculadoraSwissPage } from "./CalculadoraSwissPage";
+export { DashboardBloqueiosPage } from "./DashboardBloqueiosPage";
+export { PrivacidadePage } from "./PrivacidadePage";

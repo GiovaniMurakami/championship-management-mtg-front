@@ -5,6 +5,8 @@ import { getDisplaySides, getMatchScore } from "../../utils/matchDisplay";
 export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
+    const [showContestForm, setShowContestForm] = useState(false);
+    const [contestObservacao, setContestObservacao] = useState("");
 
     const eliminationPhase = isEliminationPhase(torneio);
     const requiresNextRoundCheckin = shouldRequestNextRoundCheckin(torneio);
@@ -79,8 +81,8 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
     const mySide = isPlayer2 ? rightSide : leftSide;
     const myName = mySide.name;
     const myNick = mySide.nick;
-    const leftLabel = leftSide.isMe ? "Você" : "Oponente";
-    const rightLabel = rightSide.isMe ? "Você" : "Oponente";
+    const leftLabel = leftSide.isMe ? "VOCÊ" : "OPONENTE";
+    const rightLabel = rightSide.isMe ? "VOCÊ" : "OPONENTE";
     const rightName = isBye ? "BYE" : rightSide.name;
     const rightNick = rightSide.nick;
 
@@ -108,7 +110,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
             {isBye ? (
                 <div className="text-center">
                     <div className="flex flex-col items-center gap-[0.35rem] p-4 px-2 border border-[rgba(142,57,237,0.4)] rounded-[0.85rem] bg-[rgba(142,57,237,0.08)]">
-                        <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">Você</span>
+                        <span className="text-[0.72rem] font-bold tracking-[0.1em] text-[#beafd7]">VOCÊ</span>
                         <span className="text-[1.1rem] font-bold text-white text-center break-words">{myName}</span>
                         {myNick && (
                             <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{myNick}</span>
@@ -126,7 +128,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                 <>
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 mb-5 max-[900px]:grid-cols-1 max-[900px]:gap-2 max-[900px]:text-center">
                         <div className={`flex flex-col items-center gap-[0.35rem] p-4 px-2 border rounded-[0.85rem] ${leftSide.isMe ? "border-[rgba(142,57,237,0.4)] bg-[rgba(142,57,237,0.08)]" : "border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.05)]"}`}>
-                            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">{leftLabel}</span>
+                            <span className="text-[0.72rem] font-bold tracking-[0.1em] text-[#beafd7]">{leftLabel}</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{leftSide.name}</span>
                             {leftSide.nick && (
                                 <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{leftSide.nick}</span>
@@ -138,7 +140,7 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                 : "VS"}
                         </div>
                         <div className={`flex flex-col items-center gap-[0.35rem] p-4 px-2 border rounded-[0.85rem] ${rightSide.isMe ? "border-[rgba(142,57,237,0.4)] bg-[rgba(142,57,237,0.08)]" : "border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.05)]"}`}>
-                            <span className="text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">{rightLabel}</span>
+                            <span className="text-[0.72rem] font-bold tracking-[0.1em] text-[#beafd7]">{rightLabel}</span>
                             <span className="text-[1.1rem] font-bold text-white text-center break-words">{rightName}</span>
                             {rightNick && (
                                 <span className="text-[0.72rem] text-[#c795ff] font-mono tracking-wide">{rightNick}</span>
@@ -187,15 +189,57 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                 </button>
                             )}
 
-                            {canContest && (
+                            {canContest && !showContestForm && (
                                 <button
                                     type="button"
                                     className="inline-flex min-h-11 items-center justify-center px-4 py-2 border border-[rgba(251,191,36,0.45)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.08)] hover:bg-[rgba(251,191,36,0.16)] hover:border-[rgba(251,191,36,0.7)] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onClick={() => onContestResult(myMatch.id)}
+                                    onClick={() => setShowContestForm(true)}
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? "Contestando..." : "Contestar resultado"}
+                                    Contestar resultado
                                 </button>
+                            )}
+
+                            {canContest && showContestForm && (
+                                <div className="w-full max-w-[420px] grid gap-2 mt-1">
+                                    <label htmlFor="contest-observacao" className="text-[0.82rem] font-semibold text-[#fde68a]">
+                                        Motivo da contestação (opcional)
+                                    </label>
+                                    <textarea
+                                        id="contest-observacao"
+                                        value={contestObservacao}
+                                        onChange={(e) => setContestObservacao(e.target.value)}
+                                        maxLength={500}
+                                        rows={3}
+                                        placeholder="Ex.: placar informado está incorreto..."
+                                        className="w-full box-border rounded-[0.7rem] border border-[rgba(251,191,36,0.35)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-[#f5edff] text-[0.88rem] outline-none resize-y min-h-[72px] focus:border-[rgba(251,191,36,0.7)]"
+                                    />
+                                    <div className="flex gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            className="inline-flex min-h-10 items-center justify-center px-4 py-2 border border-[rgba(251,191,36,0.45)] rounded-[0.7rem] text-[0.88rem] font-semibold text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50"
+                                            disabled={actionLoading}
+                                            onClick={async () => {
+                                                await onContestResult(myMatch.id, contestObservacao.trim());
+                                                setShowContestForm(false);
+                                                setContestObservacao("");
+                                            }}
+                                        >
+                                            {actionLoading ? "Contestando..." : "Enviar contestação"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="inline-flex min-h-10 items-center justify-center px-4 py-2 border border-[rgba(217,180,255,0.25)] rounded-[0.7rem] text-[0.88rem] font-semibold text-[#beafd7] bg-transparent"
+                                            disabled={actionLoading}
+                                            onClick={() => {
+                                                setShowContestForm(false);
+                                                setContestObservacao("");
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     ) : (

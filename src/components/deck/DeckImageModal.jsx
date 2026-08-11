@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { buscarCartaPorNome } from "../../services/scryfallApi";
-import { fetchCardImg, buildListCanvas, buildVisualCanvas } from "./deckImageCanvas";
+import { buscarCartasPorNome } from "../../services/scryfallApi";
+import { loadCardImagesForDeck, buildListCanvas, buildVisualCanvas } from "./deckImageCanvas";
 import { Tooltip } from "../ui/Tooltip";
 
 export function DeckImageModal({ deck, ownerName, onClose }) {
@@ -30,34 +30,73 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   useEffect(() => {
     let cancelled = false;
     const allCards = [...(deck.maindeck || []), ...(deck.sideboard || [])];
-    const unique = [...new Map(allCards.map(c => [c.nome, c])).values()];
+    const unique = [...new Map(allCards.map((c) => [c.nome, c])).values()];
     const map = {};
 
     async function run() {
-      // Stage 1: metadata (cmc, typeLine) — enables list export
       setStage("meta");
-      for (let i = 0; i < unique.length; i++) {
-        if (cancelled) return;
-        setProgress(Math.round(((i + 1) / unique.length) * 45));
-        try {
-          const data = await buscarCartaPorNome(unique[i].nome);
-          map[unique[i].nome] = { cmc: data?.cmc ?? 0, typeLine: data?.typeLine || "", imagem: data?.imagem || "", img: null };
-        } catch {
-          map[unique[i].nome] = { cmc: 0, typeLine: "", imagem: "", img: null };
-        }
-        await new Promise(r => setTimeout(r, 55));
-      }
-      // metadata complete → list mode can download now
-      if (!cancelled) setCardDataMap({ ...map });
+      setProgress(5);
 
-      // Stage 2: blob images for visual canvas
+      const resolved = await buscarCartasPorNome(unique.map((c) => c.nome));
+      if (cancelled) return;
+
+      unique.forEach((card, index) => {
+        const data = resolved[index];
+        map[card.nome] = {
+          cmc: data?.cmc ?? 0,
+          typeLine: data?.typeLine || "",
+          imagem: data?.imagem || "",
+          img: null,
+        };
+      });
+
+      setCardDataMap({ ...map });
+      setProgress(40);
       setStage("imgs");
-      for (let i = 0; i < unique.length; i++) {
+
+      const images = await loadCardImagesForDeck(
+        unique.map((card) => ({
+          nome: card.nome,
+          imagem: map[card.nome]?.imagem || "",
+        })),
+        {
+          concurrency: 6,
+          isCancelled: () => cancelled,
+          onProgress: (done, total) => {
+            if (cancelled) return;
+            setProgress(40 + Math.round((done / Math.max(total, 1)) * 55));
+          },
+        },
+      );
+
+      if (cancelled) return;
+
+      unique.forEach((card, index) => {
+        if (map[card.nome]) map[card.nome].img = images[index] || null;
+      });
+
+      // Segunda passagem só para cartas que falharam.
+      const failedIndexes = unique
+        .map((card, index) => ({ card, index }))
+        .filter(({ index }) => !images[index]);
+
+      if (failedIndexes.length > 0) {
+        const retryImages = await loadCardImagesForDeck(
+          failedIndexes.map(({ card }) => ({
+            nome: card.nome,
+            imagem: "",
+          })),
+          {
+            concurrency: 2,
+            isCancelled: () => cancelled,
+          },
+        );
         if (cancelled) return;
-        setProgress(45 + Math.round(((i + 1) / unique.length) * 50));
-        const img = await fetchCardImg(unique[i].nome);
-        if (map[unique[i].nome]) map[unique[i].nome].img = img;
-        await new Promise(r => setTimeout(r, 55));
+        failedIndexes.forEach(({ card }, retryIndex) => {
+          if (retryImages[retryIndex] && map[card.nome]) {
+            map[card.nome].img = retryImages[retryIndex];
+          }
+        });
       }
 
       if (!cancelled) {
@@ -97,7 +136,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
     >
       <div
         className="flex flex-col gap-[0.75rem] w-full max-w-[min(98vw,1500px)]"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* ── top bar ── */}
         <div className="flex items-center gap-3 flex-wrap">
@@ -155,7 +194,6 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
           )}
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* download button */}
             {canDownload && (
               <Tooltip content={`Salvar imagem do deck como PNG (${layout === "lista" ? "lista de cartas" : `visual ${ratio}`})`} focusable={false}>
               <button
@@ -166,7 +204,6 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               </button>
               </Tooltip>
             )}
-            {/* early-available indicator for list when images are still loading */}
             {layout === "lista" && stage === "imgs" && (
               <span className="text-[0.72rem] text-[#22c55e] font-medium">
                 pronto para exportar
@@ -182,7 +219,6 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
           </div>
         </div>
 
-        {/* ── loading bar (shown until fully done, but download unlocks per mode) ── */}
         {!loadingDone && (
           <div className="flex flex-col items-center gap-3 py-3">
             <div className="w-full max-w-[440px] h-[5px] rounded-full bg-[rgba(167,79,255,0.15)] overflow-hidden">
@@ -199,7 +235,6 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
           </div>
         )}
 
-        {/* ── preview panel ── */}
         <div
           className="rounded-[0.85rem] border border-[rgba(199,149,255,0.2)] overflow-hidden"
           style={{ background: "#09050f", minHeight: "40vh" }}

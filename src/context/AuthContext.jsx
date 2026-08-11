@@ -4,9 +4,14 @@ import {
   loginUsuario,
   cadastrarUsuario,
   atualizarUsuario,
+  excluirConta,
   logoutUsuario,
 } from "../services/backendApi";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
+import {
+  ensureFreshToken,
+  isAccessTokenExpiredOrExpiring,
+} from "../services/httpClient";
 
 export const AuthContext = createContext(null);
 
@@ -18,9 +23,15 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState("");
   const [usuario, setUsuario] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [authRefreshing, setAuthRefreshing] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: "", senha: "" });
-  const [registerForm, setRegisterForm] = useState({ nome: "", email: "", senha: "" });
+  const [registerForm, setRegisterForm] = useState({
+    nome: "",
+    email: "",
+    senha: "",
+    aceiteTermos: false,
+  });
 
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [editProfileForm, setEditProfileForm] = useState({
@@ -29,37 +40,116 @@ export function AuthProvider({ children }) {
     nickMTGO: "",
     nickArena: "",
   });
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState("");
 
   const [loginLockout, setLoginLockout] = useState(false);
   const [rateLimitMsg, setRateLimitMsg] = useState("");
 
-  // Restaurar sessão ao montar
+  // Restaurar sessão ao montar — renova access token expirado antes de liberar as rotas
   useEffect(() => {
-    const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!savedAuth) { setAuthInitialized(true); return; }
-    try {
-      const parsed = JSON.parse(savedAuth);
-      setToken(parsed.token || "");
-      setUsuario(parsed.usuario || null);
-    } catch {
-      window.localStorage.removeItem(AUTH_STORAGE_KEY);
-    } finally {
-      setAuthInitialized(true);
-    }
+    let cancelled = false;
+
+    const restoreSession = async () => {
+      const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
+      if (!savedAuth) {
+        if (!cancelled) setAuthInitialized(true);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(savedAuth);
+        const storedToken = parsed.token || "";
+        const storedUsuario = parsed.usuario || null;
+
+        if (storedToken && parsed.refreshToken && isAccessTokenExpiredOrExpiring(storedToken)) {
+          try {
+            const freshToken = await ensureFreshToken();
+            if (cancelled) return;
+            setToken(freshToken || "");
+            setUsuario(storedUsuario);
+          } catch {
+            if (cancelled) return;
+            // Falha definitiva já dispara auth:logout; transitória mantém o que há no storage
+            const latest = window.localStorage.getItem(AUTH_STORAGE_KEY);
+            if (latest) {
+              try {
+                const reparsed = JSON.parse(latest);
+                setToken(reparsed.token || "");
+                setUsuario(reparsed.usuario || null);
+              } catch {
+                setToken("");
+                setUsuario(null);
+              }
+            } else {
+              setToken("");
+              setUsuario(null);
+            }
+          }
+        } else {
+          if (!cancelled) {
+            setToken(storedToken);
+            setUsuario(storedUsuario);
+          }
+        }
+      } catch {
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      } finally {
+        if (!cancelled) setAuthInitialized(true);
+      }
+    };
+
+    restoreSession();
+    return () => { cancelled = true; };
   }, []);
 
-  // Logout forçado pelo interceptor (token expirado)
+  // Ao voltar para a aba, tenta renovar antes do próximo clique falhar
+  useEffect(() => {
+    const refreshIfNeeded = () => {
+      if (document.visibilityState !== "visible") return;
+      const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
+      if (!savedAuth) return;
+      try {
+        const parsed = JSON.parse(savedAuth);
+        if (!parsed.refreshToken || !parsed.token) return;
+        if (!isAccessTokenExpiredOrExpiring(parsed.token)) return;
+        ensureFreshToken().catch(() => { /* transitório: mantém sessão */ });
+      } catch {
+        // ignore
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshIfNeeded);
+    window.addEventListener("focus", refreshIfNeeded);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshIfNeeded);
+      window.removeEventListener("focus", refreshIfNeeded);
+    };
+  }, []);
+
+  // Logout forçado pelo interceptor (refresh definitivamente inválido)
   useEffect(() => {
     const handle = () => { setToken(""); setUsuario(null); };
     window.addEventListener("auth:logout", handle);
     return () => window.removeEventListener("auth:logout", handle);
   }, []);
 
-  // Token renovado pelo refresh preventivo do interceptor
+  // Token renovado pelo refresh do interceptor / ensureFreshToken
   useEffect(() => {
     const handle = (e) => setToken(e.detail.token);
     window.addEventListener("auth:tokenRefreshed", handle);
     return () => window.removeEventListener("auth:tokenRefreshed", handle);
+  }, []);
+
+  useEffect(() => {
+    const onStart = () => setAuthRefreshing(true);
+    const onEnd = () => setAuthRefreshing(false);
+    window.addEventListener("auth:refreshStart", onStart);
+    window.addEventListener("auth:refreshEnd", onEnd);
+    return () => {
+      window.removeEventListener("auth:refreshStart", onStart);
+      window.removeEventListener("auth:refreshEnd", onEnd);
+    };
   }, []);
 
   // Rate-limit global (429)
@@ -133,13 +223,25 @@ export function AuthProvider({ children }) {
     event.preventDefault();
     setAuthLoading(true);
     setAuthMessage("");
+
+    if (!registerForm.aceiteTermos) {
+      setAuthMessage("Você precisa aceitar os Termos de Uso para criar uma conta.");
+      setAuthLoading(false);
+      return;
+    }
+
     try {
-      await cadastrarUsuario(registerForm);
+      await cadastrarUsuario({
+        nome: registerForm.nome,
+        email: registerForm.email,
+        senha: registerForm.senha,
+        aceiteTermos: true,
+      });
       const authData = await loginUsuario({ email: registerForm.email, senha: registerForm.senha });
       saveAuth(authData);
       setAuthMessage("Conta criada com sucesso! Um e-mail de boas-vindas foi enviado para você.");
       setShowAuthModal(false);
-      setRegisterForm({ nome: "", email: "", senha: "" });
+      setRegisterForm({ nome: "", email: "", senha: "", aceiteTermos: false });
     } catch (error) {
       setAuthMessage(error.message);
     } finally {
@@ -163,6 +265,7 @@ export function AuthProvider({ children }) {
   const closeEditProfileModal = () => {
     setShowEditProfileModal(false);
     setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "" });
+    setDeleteAccountError("");
   };
 
   const handleUpdateProfile = async (event) => {
@@ -187,11 +290,34 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const handleDeleteAccount = async (confirmName, onSuccess) => {
+    if (!usuario?.nome || confirmName !== usuario.nome) {
+      setDeleteAccountError("O nome não corresponde. Digite exatamente como está no perfil.");
+      return;
+    }
+
+    setDeleteAccountLoading(true);
+    setDeleteAccountError("");
+    try {
+      await excluirConta({ confirmacao: confirmName }, token);
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      setToken("");
+      setUsuario(null);
+      setShowEditProfileModal(false);
+      onSuccess?.();
+    } catch (error) {
+      setDeleteAccountError(error.message || "Não foi possível excluir a conta.");
+    } finally {
+      setDeleteAccountLoading(false);
+    }
+  };
+
   const isAuthenticated = Boolean(token && usuario);
   const isAdmin = (usuario?.role ?? "user") === "admin";
 
   const value = {
     authInitialized,
+    authRefreshing,
     showAuthModal,
     authTab,
     authLoading,
@@ -218,6 +344,9 @@ export function AuthProvider({ children }) {
     openEditProfileModal,
     closeEditProfileModal,
     handleUpdateProfile,
+    handleDeleteAccount,
+    deleteAccountLoading,
+    deleteAccountError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

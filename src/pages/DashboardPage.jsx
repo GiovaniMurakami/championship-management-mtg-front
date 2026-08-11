@@ -8,10 +8,9 @@ import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { MODAL_INPUT_CLASS, FORM_LABEL_CLASS, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
 
-const inputClass = "w-full rounded-lg border border-[rgba(217,180,255,0.18)] bg-[#120b24] px-3 py-2 text-sm text-[#f5edff] outline-none transition focus:border-[#c795ff] focus:ring-2 focus:ring-[rgba(199,149,255,0.16)]";
-const labelClass = "grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#9f91bd]";
-const subtleButtonClass = "rounded-lg border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm font-bold text-[#e8dfff] transition hover:border-[rgba(199,149,255,0.5)] hover:bg-[rgba(167,79,255,0.14)] disabled:cursor-not-allowed disabled:opacity-50";
+const subtleButtonClass = BTN_SECONDARY;
 
 function prepareAds(anuncios) {
   return anuncios.map((ad, index) => ({
@@ -41,9 +40,9 @@ function AdPreview({ ad }) {
 
   return (
     <div className="rounded-lg border border-[rgba(217,180,255,0.14)] bg-[#120b24] p-4">
-      {ad.imagemUrl && <img src={ad.imagemUrl} alt={ad.titulo || "Anuncio"} className="mb-3 h-20 w-full object-contain" />}
+      {ad.imagemUrl && <img src={ad.imagemUrl} alt={ad.titulo || "Anúncio"} className="mb-3 h-20 w-full object-contain" />}
       {ad.tag && <span className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#c795ff]">{ad.tag}</span>}
-      <h3 className="m-0 mt-1 text-lg font-bold text-[#f5edff]">{ad.titulo || "Novo anuncio"}</h3>
+      <h3 className="m-0 mt-1 text-lg font-bold text-[#f5edff]">{ad.titulo || "Novo anúncio"}</h3>
       {ad.texto && <p className="mt-2 mb-0 text-sm leading-5 text-[#b9abd8]">{ad.texto}</p>}
       {ad.botaoTexto && (
         <span className="mt-3 inline-flex rounded-full border border-[rgba(44,207,180,0.4)] bg-[rgba(44,207,180,0.12)] px-3 py-1.5 text-xs font-bold text-[#2ccfb4]">
@@ -61,14 +60,14 @@ function DashboardAdsPreview({ ads }) {
   if (activeAds.length === 0) {
     return (
       <section className="mb-5 rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#0b0717] p-4">
-        <div className="text-sm font-semibold text-[#8f82ad]">Nenhum anuncio ativo para preview.</div>
+        <div className="text-sm font-semibold text-[#8f82ad]">Nenhum anúncio ativo para preview.</div>
       </section>
     );
   }
 
   const currentIndex = current < activeAds.length ? current : 0;
   const slide = activeAds[currentIndex] ?? activeAds[0];
-  const label = slide.tipo === "banner" ? (slide.tag || "Anuncio") : "Patrocinador Oficial";
+  const label = slide.tipo === "banner" ? (slide.tag || "Anúncio") : "Patrocinador Oficial";
   const goTo = (index) => setCurrent(index);
   const prev = () => setCurrent((currentIndex - 1 + activeAds.length) % activeAds.length);
   const next = () => setCurrent((currentIndex + 1) % activeAds.length);
@@ -78,7 +77,7 @@ function DashboardAdsPreview({ ads }) {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="m-0 text-lg font-bold text-[#f5edff]">Preview do carrossel</h2>
-          <p className="m-0 mt-1 text-sm text-[#8f82ad]">Visualizacao dos anuncios ativos na ordem atual.</p>
+          <p className="m-0 mt-1 text-sm text-[#8f82ad]">Visualização dos anúncios ativos na ordem atual.</p>
         </div>
         <span className="rounded-full border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
           {currentIndex + 1} de {activeAds.length}
@@ -96,13 +95,13 @@ function DashboardAdsPreview({ ads }) {
           <a
             href={slide.link || undefined}
             className="block transition-all duration-200"
-            aria-label={slide.titulo || "Anuncio"}
+            aria-label={slide.titulo || "Anúncio"}
             onClick={(event) => event.preventDefault()}
           >
             {slide.imagemUrl ? (
               <img
                 src={slide.imagemUrl}
-                alt={slide.titulo || "Anuncio"}
+                alt={slide.titulo || "Anúncio"}
                 className="h-[180px] w-full object-cover max-[600px]:h-[130px]"
               />
             ) : (
@@ -118,7 +117,7 @@ function DashboardAdsPreview({ ads }) {
                 <img src={slide.imagemUrl} alt={slide.titulo || "Patrocinador"} className="w-full h-full object-contain p-2" />
               ) : (
                 <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
-                  {slide.titulo || "Anuncio"}
+                  {slide.titulo || "Anúncio"}
                 </span>
               )}
             </div>
@@ -129,7 +128,7 @@ function DashboardAdsPreview({ ads }) {
                 </span>
               )}
               <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-[#f5edff] max-[600px]:text-[1.7rem]">
-                {slide.titulo || "Novo anuncio"}
+                {slide.titulo || "Novo anúncio"}
               </h3>
               {slide.texto && (
                 <p className="m-0 mb-[1.1rem] text-[#beafd7] text-[0.9rem] leading-[1.55] max-w-[520px]">
@@ -211,7 +210,7 @@ export function DashboardPage() {
       })
       .catch((error) => {
         if (mounted) {
-          setMessage(error.message || "Nao foi possivel carregar os anuncios.");
+          setMessage(error.message || "Não foi possível carregar os anúncios.");
           setAds(normalizeAds(DEFAULT_ADS));
         }
       })
@@ -278,7 +277,7 @@ export function DashboardPage() {
 
   const resetDefaults = () => {
     setAds(normalizeAds(DEFAULT_ADS));
-    setMessage("Anuncios padrao restaurados. Salve para publicar.");
+    setMessage("Anúncios padrão restaurados. Salve para publicar.");
   };
 
   const uploadImage = async (ad, file) => {
@@ -312,9 +311,9 @@ export function DashboardPage() {
       const payload = prepareAds(ads);
       const response = await salvarAnuncios(payload, token);
       setAds(normalizeAds(response?.anuncios ?? payload, payload));
-      setMessage("Anuncios publicados com sucesso.");
+      setMessage("Anúncios publicados com sucesso.");
     } catch (error) {
-      setMessage(error.message || "Nao foi possivel publicar os anuncios.");
+      setMessage(error.message || "Não foi possível publicar os anúncios.");
     } finally {
       setSaving(false);
     }
@@ -329,13 +328,13 @@ export function DashboardPage() {
             Dashboard
           </h1>
           <p className="m-0 mt-2 max-w-2xl text-sm leading-6 text-[#b9abd8]">
-            Edite os anuncios exibidos no carrossel de patrocinador.
+            Edite os anúncios exibidos no carrossel de patrocinador.
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onChange={setActiveTab} className="mb-5">
-        <Tabs.Item value="anuncios" label="Anuncios" count={loading ? undefined : ads.length} />
+        <Tabs.Item value="anuncios" label="Anúncios" count={loading ? undefined : ads.length} />
       </Tabs>
 
       {activeTab === "anuncios" && loading && <SkeletonDashboard />}
@@ -344,7 +343,7 @@ export function DashboardPage() {
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#8f82ad]">Anuncios</span>
+              <span className="text-xs font-bold tracking-[0.08em] text-[#8f82ad]">ANÚNCIOS</span>
               <strong className="mt-1 block text-2xl text-[#f5edff]">{ads.length}</strong>
             </div>
             <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
@@ -424,7 +423,7 @@ export function DashboardPage() {
                           }`}
                           type="button"
                           draggable
-                          aria-label={`Arrastar anuncio ${index + 1}`}
+                          aria-label={`Arrastar anúncio ${index + 1}`}
                           title="Arrastar para ordenar"
                           onDragStart={(event) => {
                             setDraggingAdId(ad.id);
@@ -476,48 +475,48 @@ export function DashboardPage() {
                     </div>
 
                     <div className={`grid gap-4 ${ad.tipo === "card" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Tipo
-                        <select className={inputClass} value={ad.tipo} onChange={(event) => updateAd(ad.id, { tipo: event.target.value })}>
+                        <select className={MODAL_INPUT_CLASS} value={ad.tipo} onChange={(event) => updateAd(ad.id, { tipo: event.target.value })}>
                           <option value="card">Titulo, texto, botao e imagem</option>
                           <option value="banner">Apenas banner com link</option>
                         </select>
                       </label>
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Tag
-                        <input className={inputClass} value={ad.tag} onChange={(event) => updateAd(ad.id, { tag: event.target.value })} />
+                        <input className={MODAL_INPUT_CLASS} value={ad.tag} onChange={(event) => updateAd(ad.id, { tag: event.target.value })} />
                       </label>
                       {ad.tipo === "card" && (
-                        <label className={labelClass}>
+                        <label className={FORM_LABEL_CLASS}>
                           Titulo
-                          <input className={inputClass} value={ad.titulo} onChange={(event) => updateAd(ad.id, { titulo: event.target.value })} />
+                          <input className={MODAL_INPUT_CLASS} value={ad.titulo} onChange={(event) => updateAd(ad.id, { titulo: event.target.value })} />
                         </label>
                       )}
                     </div>
 
                     {ad.tipo === "card" && (
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Texto
-                        <textarea className={`${inputClass} min-h-24 resize-y`} value={ad.texto} onChange={(event) => updateAd(ad.id, { texto: event.target.value })} />
+                        <textarea className={`${MODAL_INPUT_CLASS} min-h-24 resize-y`} value={ad.texto} onChange={(event) => updateAd(ad.id, { texto: event.target.value })} />
                       </label>
                     )}
 
                     <div className={`grid gap-4 ${ad.tipo === "card" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
                       {ad.tipo === "card" && (
-                        <label className={labelClass}>
+                        <label className={FORM_LABEL_CLASS}>
                           Texto do botao
-                          <input className={inputClass} value={ad.botaoTexto} onChange={(event) => updateAd(ad.id, { botaoTexto: event.target.value })} />
+                          <input className={MODAL_INPUT_CLASS} value={ad.botaoTexto} onChange={(event) => updateAd(ad.id, { botaoTexto: event.target.value })} />
                         </label>
                       )}
-                      <label className={labelClass}>
+                      <label className={FORM_LABEL_CLASS}>
                         Link
-                        <input className={inputClass} value={ad.link} onChange={(event) => updateAd(ad.id, { link: event.target.value })} />
+                        <input className={MODAL_INPUT_CLASS} value={ad.link} onChange={(event) => updateAd(ad.id, { link: event.target.value })} />
                       </label>
-                      <div className={labelClass}>
+                      <div className={FORM_LABEL_CLASS}>
                         URL da imagem
                         <div className="flex gap-2">
                           <input
-                            className={inputClass}
+                            className={MODAL_INPUT_CLASS}
                             value={ad.imagemUrl}
                             onChange={(event) => updateAd(ad.id, { imagemUrl: event.target.value })}
                           />
@@ -553,15 +552,15 @@ export function DashboardPage() {
             })}
 
             <div className="flex flex-wrap justify-end gap-2 border-t border-[rgba(217,180,255,0.12)] pt-4">
-              <button className={subtleButtonClass} type="button" onClick={addAd}>Adicionar anuncio</button>
-              <button className={subtleButtonClass} type="button" onClick={resetDefaults}>Restaurar padrao</button>
+              <button className={subtleButtonClass} type="button" onClick={addAd}>Adicionar anúncio</button>
+              <button className={subtleButtonClass} type="button" onClick={resetDefaults}>Restaurar padrão</button>
               <button
                 className="rounded-lg bg-[#c795ff] px-4 py-2 text-sm font-bold text-[#120b24] transition hover:bg-[#e0c6ff] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={saveAds}
                 disabled={saving}
               >
-                {saving ? "Publicando..." : "Publicar anuncios"}
+                {saving ? "Publicando..." : "Publicar anúncios"}
               </button>
             </div>
           </div>

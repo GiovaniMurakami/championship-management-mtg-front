@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { buscarDeck } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -60,12 +61,17 @@ export function PlayerProfile({
   onCheckin,
   onInscrever,
   onInscreverTarde,
+  onSelfDrop,
   actionLoading,
+  droppingPlayerId,
   times = [],
   selectedTimeId,
   onTimeChange,
+  token,
 }) {
   const [deckSort, setDeckSort] = useState("recente");
+  const [confirmedDeckName, setConfirmedDeckName] = useState(null);
+  const [confirmDrop, setConfirmDrop] = useState(false);
 
   const canEditDeck = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
@@ -74,11 +80,16 @@ export function PlayerProfile({
   const missingNick = !usuario?.nickMTGO;
   const canLateJoin = isOngoing && !currentPlayer && !isFull && Boolean(onInscreverTarde);
   const dropped = Boolean(currentPlayer?.dropped);
+  const canSelfDrop = Boolean(currentPlayer) && !dropped && !isFinished && Boolean(onSelfDrop);
+  const isSelfDropping =
+    actionLoading &&
+    Boolean(droppingPlayerId) &&
+    String(droppingPlayerId) === String(usuario?.id);
 
   const checkinRound = currentPlayer?.checkinRodada ?? currentPlayer?.checkInRodada ?? -1;
   const isCheckedIn = checkinRound >= 0;
-  const deckName = currentPlayer?.deckNome || currentPlayer?.deck?.nome || null;
-  const isDeckConfirmed = Boolean(currentPlayer?.deckConfirmado || deckName || currentPlayer?.deckId || currentPlayer?.deck?.id);
+  const confirmedDeckId = currentPlayer?.deckId || currentPlayer?.deck?.id || null;
+  const isDeckConfirmed = Boolean(currentPlayer?.deckConfirmado || currentPlayer?.deckNome || confirmedDeckId);
   const displayName =
     currentPlayer?.nome ||
     currentPlayer?.username ||
@@ -105,15 +116,53 @@ export function PlayerProfile({
 
   const selectedDeck = deckOptions.find((deck) => String(deck.id) === String(selectedDeckId));
 
+  // Só aqui: mostrar o nome digitado pelo usuário, não o arquétipo consolidado dos standings
+  useEffect(() => {
+    if (!confirmedDeckId) {
+      setConfirmedDeckName(null);
+      return;
+    }
+
+    const fromUserDecks = decks.find((deck) => String(deck.id) === String(confirmedDeckId));
+    if (fromUserDecks?.nome) {
+      setConfirmedDeckName(fromUserDecks.nome);
+      return;
+    }
+
+    if (!token) {
+      setConfirmedDeckName(null);
+      return;
+    }
+
+    let cancelled = false;
+    buscarDeck(confirmedDeckId, token)
+      .then((deck) => {
+        if (!cancelled) setConfirmedDeckName(deck?.nome || null);
+      })
+      .catch(() => {
+        if (!cancelled) setConfirmedDeckName(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmedDeckId, decks, token]);
+
+  const deckName = confirmedDeckName || selectedDeck?.nome || null;
+
+  useEffect(() => {
+    if (!canSelfDrop) setConfirmDrop(false);
+  }, [canSelfDrop]);
+
   const selectedTeam = times.find((time) => String(time.id) === String(currentPlayer?.timeId));
   const statusTone = dropped ? "danger" : currentPlayer ? "success" : canLateJoin ? "warning" : "neutral";
-  const statusLabel = dropped ? "Dropado" : currentPlayer ? "Inscrito" : canLateJoin ? "Entrada tardia" : "Nao inscrito";
+  const statusLabel = dropped ? "Dropado" : currentPlayer ? "Inscrito" : canLateJoin ? "Entrada tardia" : "Não inscrito";
 
   return (
     <section className="rounded-2xl border border-[rgba(217,180,255,0.2)] bg-[linear-gradient(160deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] p-5 shadow-[0_16px_38px_rgba(3,2,8,0.32)] animate-[slide-up_400ms_ease-out] max-md:p-4">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-[#a78bfa]">Minha participacao</p>
+          <p className="m-0 text-[0.72rem] font-bold tracking-[0.12em] text-[#a78bfa]">MINHA PARTICIPAÇÃO</p>
           <h2 className="m-0 mt-1 truncate font-['Bebas_Neue',sans-serif] text-[1.75rem] tracking-[0.04em] text-[#f5edff]">
             {displayName || "Jogador"}
           </h2>
@@ -126,9 +175,9 @@ export function PlayerProfile({
           {torneio?.maxJogadores != null && (
             <SectionBlock title="Vagas" aside={<StatusPill tone={isFull ? "danger" : "success"}>{torneio.totalInscritos ?? 0}/{torneio.maxJogadores}</StatusPill>}>
               {isFull ? (
-                <Notice tone="danger">O torneio esta lotado no momento.</Notice>
+                <Notice tone="danger">O torneio está lotado no momento.</Notice>
               ) : (
-                <Notice>Voce ainda pode participar deste torneio.</Notice>
+                <Notice>Você ainda pode participar deste torneio.</Notice>
               )}
             </SectionBlock>
           )}
@@ -153,9 +202,9 @@ export function PlayerProfile({
           )}
 
           {canLateJoin && (
-            <SectionBlock title="Inscricao tardia">
+            <SectionBlock title="Inscrição tardia">
               <div className="grid gap-3">
-                <Notice tone="warning">Ao entrar agora, voce recebe uma derrota de punicao na rodada atual.</Notice>
+                <Notice tone="warning">Ao entrar agora, você recebe uma derrota de punição na rodada atual.</Notice>
                 <Tooltip
                   content={missingNick ? "Configure seu nick do MTGO no perfil" : "Entrar nesta rodada"}
                   focusable={false}
@@ -179,7 +228,7 @@ export function PlayerProfile({
               {isDeckConfirmed ? (
                 <p className="m-0 truncate text-[0.95rem] font-bold text-[#f5edff]">{deckName || "Deck enviado"}</p>
               ) : (
-                <Notice tone="warning">Escolha um deck antes do inicio do torneio.</Notice>
+                <Notice tone="warning">Escolha um deck antes do início do torneio.</Notice>
               )}
             </SectionBlock>
 
@@ -225,10 +274,10 @@ export function PlayerProfile({
             <SectionBlock title="Escolher deck">
               {decks.length === 0 ? (
                 <p className="m-0 text-[0.85rem] text-[#beafd7]">
-                  Voce nao tem decks cadastrados. <a href="/decks/criar" className="font-bold text-[#c795ff] underline">Criar deck</a>
+                  Você não tem decks cadastrados. <a href="/decks/criar" className="font-bold text-[#c795ff] underline">Criar deck</a>
                 </p>
               ) : deckOptions.length === 0 ? (
-                <Notice tone="warning">Voce nao tem decks compativeis com o formato deste torneio.</Notice>
+                <Notice tone="warning">Você não tem decks compatíveis com o formato deste torneio.</Notice>
               ) : (
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between gap-2">
@@ -275,8 +324,55 @@ export function PlayerProfile({
             </SectionBlock>
           )}
 
-          {!canEditDeck && (
-            <Notice>{isOngoing ? "O torneio ja comecou, entao a troca de deck esta bloqueada." : "A participacao deste torneio nao pode mais ser alterada."}</Notice>
+          {!canEditDeck && !dropped && (
+            <Notice>{isOngoing ? "O torneio já começou, então a troca de deck está bloqueada." : "A participação deste torneio não pode mais ser alterada."}</Notice>
+          )}
+
+          {canSelfDrop && (
+            <SectionBlock title={canEditDeck ? "Cancelar inscrição" : "Dropar"}>
+              <div className="grid gap-3">
+                <Notice tone="warning">
+                  {canEditDeck
+                    ? "Ao cancelar, você sai da lista de inscritos deste torneio."
+                    : "Ao dropar, você deixa de jogar as próximas rodadas. Partidas pendentes desta rodada são resolvidas por WO para o oponente."}
+                </Notice>
+                {!confirmDrop ? (
+                  <button
+                    type="button"
+                    className={`${buttonBase} w-full border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.1)] text-[#fca5a5] hover:not-disabled:bg-[rgba(239,68,68,0.2)] hover:not-disabled:border-[rgba(239,68,68,0.7)]`}
+                    disabled={actionLoading}
+                    onClick={() => setConfirmDrop(true)}
+                  >
+                    {canEditDeck ? "Cancelar minha inscrição" : "Dropar do torneio"}
+                  </button>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      className={`${buttonBase} border border-[rgba(239,68,68,0.55)] bg-[rgba(239,68,68,0.22)] text-[#fecaca] hover:not-disabled:bg-[rgba(239,68,68,0.32)]`}
+                      disabled={actionLoading}
+                      onClick={() => onSelfDrop?.()}
+                    >
+                      {isSelfDropping
+                        ? (canEditDeck ? "Cancelando..." : "Dropando...")
+                        : "Confirmar"}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${buttonBase} border border-[rgba(217,180,255,0.22)] bg-white/[0.05] text-[#e9ddff] hover:not-disabled:bg-white/[0.09]`}
+                      disabled={actionLoading}
+                      onClick={() => setConfirmDrop(false)}
+                    >
+                      Voltar
+                    </button>
+                  </div>
+                )}
+              </div>
+            </SectionBlock>
+          )}
+
+          {dropped && (
+            <Notice tone="danger">Você dropou deste torneio e não participa mais das rodadas.</Notice>
           )}
         </div>
       )}

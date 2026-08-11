@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { BaseModal } from "../ui/BaseModal";
-import { MODAL_INPUT_CLASS } from "../../styles/uiClasses";
+import { DeleteConfirmModal } from "../ui/DeleteConfirmModal";
+import { FormFeedback, FormField } from "../ui";
+import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY } from "../../styles/uiClasses";
 
 export function EditProfileModal({
   isOpen,
@@ -9,83 +12,125 @@ export function EditProfileModal({
   form,
   onFormChange,
   onSubmit,
+  usuarioNome = "",
+  onDeleteAccount,
+  deleteLoading = false,
+  deleteError = "",
 }) {
-  return (
-    <BaseModal isOpen={isOpen} onClose={onClose}>
-        <h2 className="mb-6 text-center m-0">Editar Perfil</h2>
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-        <form className="grid gap-[0.85rem]" onSubmit={onSubmit}>
-          <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-            Nome
-            <input
-              type="text"
-              value={form.nome}
-              onChange={(event) =>
-                onFormChange((current) => ({ ...current, nome: event.target.value }))
-              }
-              className={MODAL_INPUT_CLASS}
-            />
-          </label>
-          <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-            Telefone
-            <input
-              type="tel"
-              placeholder="(opcional)"
-              value={form.telefone}
-              onChange={(event) =>
-                onFormChange((current) => ({ ...current, telefone: event.target.value }))
-              }
-              className={MODAL_INPUT_CLASS}
-            />
-          </label>
-          <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-            Nick MTGO
-            <input
-              type="text"
-              placeholder="(opcional)"
-              value={form.nickMTGO}
-              onChange={(event) =>
-                onFormChange((current) => ({ ...current, nickMTGO: event.target.value }))
-              }
-              className={MODAL_INPUT_CLASS}
-            />
-          </label>
-          <label className="grid gap-[0.45rem] text-[#beafd7] text-[0.95rem]">
-            Nick Arena
-            <input
-              type="text"
-              placeholder="(opcional)"
-              value={form.nickArena}
-              onChange={(event) =>
-                onFormChange((current) => ({ ...current, nickArena: event.target.value }))
-              }
-              className={MODAL_INPUT_CLASS}
-            />
-          </label>
-          <div className="flex gap-4">
-            <button
-              className="flex-1 border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
-              disabled={isLoading}
-              type="submit"
-            >
+  const handleClose = () => {
+    setShowDeleteConfirm(false);
+    onClose();
+  };
+
+  return (
+    <>
+      <BaseModal isOpen={isOpen && !showDeleteConfirm} onClose={handleClose}>
+        <div className="mb-5 text-center">
+          <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+            Sua conta
+          </p>
+          <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-[#f5edff] m-0">
+            Editar perfil
+          </h2>
+          <p className="mt-1 text-[0.88rem] text-[#9f91bd]">
+            Atualize como você aparece nos torneios e pareamentos.
+          </p>
+        </div>
+
+        <form className="grid gap-4" onSubmit={onSubmit}>
+          <FormField
+            id="profile-nome"
+            label="Nome"
+            autoComplete="name"
+            value={form.nome}
+            onChange={(event) => onFormChange((current) => ({ ...current, nome: event.target.value }))}
+            required
+          />
+          <FormField
+            id="profile-telefone"
+            label="Telefone"
+            type="tel"
+            placeholder="(opcional)"
+            hint="Usado apenas para contato em eventos, se necessário."
+            value={form.telefone}
+            onChange={(event) => onFormChange((current) => ({ ...current, telefone: event.target.value }))}
+          />
+          <FormField
+            id="profile-nick-mtgo"
+            label="Nick MTGO"
+            placeholder="(opcional)"
+            value={form.nickMTGO}
+            onChange={(event) => onFormChange((current) => ({ ...current, nickMTGO: event.target.value }))}
+          />
+          <FormField
+            id="profile-nick-arena"
+            label="Nick Arena"
+            placeholder="(opcional)"
+            value={form.nickArena}
+            onChange={(event) => onFormChange((current) => ({ ...current, nickArena: event.target.value }))}
+          />
+
+          {message ? <FormFeedback message={message} /> : null}
+
+          <div className="flex gap-3 pt-1">
+            <button className={`flex-1 ${BTN_PRIMARY}`} disabled={isLoading || deleteLoading} type="submit">
               {isLoading ? "Salvando..." : "Salvar"}
             </button>
             <button
-              className="flex-1 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-white/[0.03] text-[#f5edff] transition-all duration-[220ms] hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08] hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
+              className={`flex-1 ${BTN_GHOST} border border-[rgba(217,180,255,0.2)]`}
               type="button"
-              onClick={onClose}
-              disabled={isLoading}
+              onClick={handleClose}
+              disabled={isLoading || deleteLoading}
             >
               Cancelar
             </button>
           </div>
         </form>
 
-        {message && (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(44,207,180,0.1)] border border-[rgba(44,207,180,0.25)] text-[#5eead4] text-[0.9rem]">
-            {message}
+        <div className="mt-6 border-t border-[rgba(252,88,119,0.22)] pt-5">
+          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-[#ffa8b8]">
+            Zona de risco
           </p>
-        )}
-    </BaseModal>
+          <p className="mt-2 mb-3 text-[0.84rem] leading-relaxed text-[#beafd7]">
+            A exclusão anonimiza sua conta e remove dados pessoais. Decks e
+            participações em torneios são preservados e passam a aparecer como
+            &quot;Usuário excluído&quot;. Esta ação é irreversível.
+          </p>
+          <button
+            type="button"
+            className={`w-full ${BTN_DANGER}`}
+            disabled={isLoading || deleteLoading || !usuarioNome}
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            Excluir minha conta
+          </button>
+        </div>
+      </BaseModal>
+
+      <DeleteConfirmModal
+        isOpen={isOpen && showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        itemName={usuarioNome}
+        loading={deleteLoading}
+        error={deleteError}
+        title="Excluir conta"
+        description={
+          <>
+            Você está prestes a excluir a conta{" "}
+            <strong className="text-brand">{usuarioNome}</strong>. Dados pessoais
+            serão anonimizados; decks e histórico de torneios permanecem visíveis
+            como usuário excluído.
+          </>
+        }
+        onConfirm={(confirmName, closeModal) => {
+          onDeleteAccount?.(confirmName, () => {
+            setShowDeleteConfirm(false);
+            closeModal?.();
+          });
+        }}
+      />
+    </>
   );
 }

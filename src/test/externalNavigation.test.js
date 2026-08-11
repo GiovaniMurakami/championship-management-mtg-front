@@ -1,11 +1,5 @@
-import { describe, expect, it } from "vitest";
-import {
-  buildExternalAppUrlForPath,
-  buildTeamInviteExternalUrl,
-  buildTournamentExternalUrl,
-  buildTournamentJoinExternalUrl,
-  resolveExternalNavigationTarget,
-} from "../utils/externalNavigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { resolveExternalNavigationTarget } from "../utils/externalNavigation";
 
 describe("resolveExternalNavigationTarget", () => {
   it("redireciona torneioId para a tela de detalhe do torneio", () => {
@@ -68,6 +62,30 @@ describe("resolveExternalNavigationTarget", () => {
     });
   });
 
+  it("redireciona rota externa de termos de uso", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?rota=termos-de-uso",
+    });
+
+    expect(target).toEqual({
+      pathname: "/termos-de-uso",
+      search: "",
+    });
+  });
+
+  it("redireciona rota externa de privacidade", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?rota=privacidade",
+    });
+
+    expect(target).toEqual({
+      pathname: "/privacidade",
+      search: "",
+    });
+  });
+
   it("redireciona appPath para uma rota interna preservando parametros extras", () => {
     const target = resolveExternalNavigationTarget({
       pathname: "/",
@@ -90,28 +108,88 @@ describe("resolveExternalNavigationTarget", () => {
   });
 });
 
-describe("build external wordpress urls", () => {
-  it("gera url externa para torneio", () => {
+async function loadExternalNavigationWithDefaults() {
+  vi.stubEnv("VITE_APP_URL", "");
+  vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "");
+  vi.stubEnv("VITE_WORDPRESS_APP_URL", "");
+  vi.resetModules();
+  return import("../utils/externalNavigation");
+}
+
+describe("build public app urls", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("gera url publica para torneio", async () => {
+    const { buildTournamentExternalUrl } = await loadExternalNavigationWithDefaults();
     expect(buildTournamentExternalUrl("abc-123")).toBe(
-      "https://www.tiagofuguete.com.br/app-torneios?torneioId=abc-123",
+      "https://app.tiagofuguete.com.br/torneios/abc-123",
     );
   });
 
-  it("gera url externa para ingresso em torneio", () => {
+  it("gera url publica para ingresso em torneio", async () => {
+    const { buildTournamentJoinExternalUrl } = await loadExternalNavigationWithDefaults();
     expect(buildTournamentJoinExternalUrl("join-555")).toBe(
-      "https://www.tiagofuguete.com.br/app-torneios?ingressoToken=join-555",
+      "https://app.tiagofuguete.com.br/torneio/ingressar/join-555",
     );
   });
 
-  it("gera url externa para convite de time", () => {
+  it("gera url publica para convite de time", async () => {
+    const { buildTeamInviteExternalUrl } = await loadExternalNavigationWithDefaults();
     expect(buildTeamInviteExternalUrl("invite-22")).toBe(
-      "https://www.tiagofuguete.com.br/app-torneios?rota=times&convite=invite-22",
+      "https://app.tiagofuguete.com.br/times?convite=invite-22",
     );
   });
 
-  it("gera url externa dinamica para a rota atual do app", () => {
+  it("gera url publica dinamica para a rota atual do app", async () => {
+    const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
     expect(buildExternalAppUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
-      "https://www.tiagofuguete.com.br/app-torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
+      "https://app.tiagofuguete.com.br/torneios/abc-123?aba=mesas",
+    );
+  });
+
+  it("gera url publica para termos de uso", async () => {
+    const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
+    expect(buildExternalAppUrlForPath("/termos-de-uso")).toBe(
+      "https://app.tiagofuguete.com.br/termos-de-uso",
+    );
+  });
+
+  it("gera url publica para privacidade", async () => {
+    const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
+    expect(buildExternalAppUrlForPath("/privacidade")).toBe(
+      "https://app.tiagofuguete.com.br/privacidade",
+    );
+  });
+});
+
+describe("getWordpressEmbedOrigins", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("inclui variantes com e sem www do WordPress", async () => {
+    vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "https://www.tiagofuguete.com.br/app-torneios");
+    vi.resetModules();
+
+    const { getWordpressEmbedOrigins } = await import("../utils/externalNavigation");
+    const origins = getWordpressEmbedOrigins();
+
+    expect(origins.has("https://www.tiagofuguete.com.br")).toBe(true);
+    expect(origins.has("https://tiagofuguete.com.br")).toBe(true);
+  });
+});
+
+describe("build wordpress embed urls", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("gera url do embed WordPress para sincronizar rota com o parent", async () => {
+    const { buildWordpressEmbedUrlForPath } = await loadExternalNavigationWithDefaults();
+    expect(buildWordpressEmbedUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
+      "https://tiagofuguete.com.br/app-torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
     );
   });
 });

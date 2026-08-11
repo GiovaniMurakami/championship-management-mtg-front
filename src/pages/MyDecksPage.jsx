@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { listarDecks, deletarDeck } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
+import { useRequestSequence } from "../hooks/useRequestSequence";
 import { SkeletonCard } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { Tabs } from "../components/ui/Tabs";
 import { Tooltip } from "../components/ui/Tooltip";
+import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -64,12 +67,16 @@ export function MyDecksPage() {
   const [busca, setBusca] = useState("");
   const [somenteMyDecks, setSomenteMyDecks] = useState(false);
   const [pagina, setPagina] = useState(1);
+  const [tabTotals, setTabTotals] = useState({ todos: 0, meus: 0 });
 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, deck: null });
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [imageModal, setImageModal] = useState(null);
   const [sharedDeckId, setSharedDeckId] = useState(null);
+
+  const listRequest = useRequestSequence();
+  const imageRequest = useRequestSequence();
 
   const isOwner = useCallback(
     (deck) => String(deck.usuario?.id ?? deck.usuarioId) === String(usuario?.id),
@@ -79,7 +86,16 @@ export function MyDecksPage() {
   const tokenRef = useRef(token);
   tokenRef.current = token;
 
+  const handleAbaChange = useCallback((value) => {
+    setSomenteMyDecks(value === "meus");
+    setPagina(1);
+    setDecks([]);
+    setTotal(0);
+    setError("");
+  }, []);
+
   const loadDecks = useCallback(async () => {
+    const request = listRequest();
     setLoading(true);
     setError("");
     try {
@@ -87,27 +103,57 @@ export function MyDecksPage() {
       if (somenteMyDecks && usuario?.id) params.usuarioId = usuario.id;
       if (busca.trim()) params.nome = busca.trim();
       const data = await listarDecks(tokenRef.current, params);
+      if (!request.isCurrent()) return;
       setDecks(data.decks);
       setTotal(data.total);
+      setTabTotals((prev) => (
+        somenteMyDecks
+          ? { ...prev, meus: data.total }
+          : { ...prev, todos: data.total }
+      ));
     } catch (err) {
+      if (!request.isCurrent()) return;
       setError(err.message || "Erro ao carregar decks.");
     } finally {
-      setLoading(false);
+      if (request.isCurrent()) setLoading(false);
     }
-  }, [pagina, somenteMyDecks, usuario?.id, busca]);
+  }, [pagina, somenteMyDecks, usuario?.id, busca, listRequest]);
 
   useEffect(() => {
     loadDecks();
   }, [loadDecks]);
 
+  // Prefetch do total da aba inativa (badge)
+  useEffect(() => {
+    if (!usuario?.id) return undefined;
+    let cancelled = false;
+    const prefetch = async () => {
+      try {
+        if (somenteMyDecks) {
+          const data = await listarDecks(tokenRef.current, { limite: 1, offset: 0, ...(busca.trim() ? { nome: busca.trim() } : {}) });
+          if (!cancelled) setTabTotals((prev) => ({ ...prev, todos: data.total }));
+        } else {
+          const data = await listarDecks(tokenRef.current, { usuarioId: usuario.id, limite: 1, offset: 0, ...(busca.trim() ? { nome: busca.trim() } : {}) });
+          if (!cancelled) setTabTotals((prev) => ({ ...prev, meus: data.total }));
+        }
+      } catch {
+        // badge opcional
+      }
+    };
+    prefetch();
+    return () => { cancelled = true; };
+  }, [somenteMyDecks, usuario?.id, busca]);
+
   // Carrega imagem da primeira carta de cada deck
   useEffect(() => {
     if (decks.length === 0) return;
+    const request = imageRequest();
     const fetchImages = async () => {
       const decksWithCards = decks.filter((d) => d.maindeck?.length > 0);
       const cards = await buscarCartasPorNome(
         decksWithCards.map((deck) => deck.maindeck[0].nome),
       );
+      if (!request.isCurrent()) return;
 
       const entries = cards.map((carta, index) =>
         carta?.imagem ? [decksWithCards[index].id, carta.imagem] : null,
@@ -115,7 +161,7 @@ export function MyDecksPage() {
       setDeckImages(Object.fromEntries(entries.filter(Boolean)));
     };
     fetchImages();
-  }, [decks]);
+  }, [decks, imageRequest]);
 
   const totalPaginas = Math.ceil(total / LIMITE) || 1;
   const decksPagina = decks;
@@ -129,7 +175,6 @@ export function MyDecksPage() {
   const handleLimparFiltros = () => {
     setBusca("");
     setBuscaInput("");
-    setSomenteMyDecks(false);
     setPagina(1);
   };
 
@@ -187,7 +232,7 @@ export function MyDecksPage() {
     });
   };
 
-  const temFiltrosAtivos = busca || somenteMyDecks;
+  const temFiltrosAtivos = Boolean(busca);
 
   return (
     <PageShell>
@@ -217,7 +262,7 @@ export function MyDecksPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-col gap-3 mb-6">
+      <div className="flex flex-col gap-3 mb-2">
         <form onSubmit={handleBusca} className="flex gap-2">
           <input
             type="text"
@@ -242,34 +287,15 @@ export function MyDecksPage() {
             </button>
           )}
         </form>
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => { setPagina(1); setSomenteMyDecks(false); }}
-            className={`px-4 py-[0.45rem] rounded-lg text-[0.82rem] font-semibold border transition-all duration-200 ${
-              !somenteMyDecks
-                ? "bg-[rgba(79,70,229,0.3)] border-[rgba(79,70,229,0.7)] text-[#d9d6ff]"
-                : "bg-white/[0.03] border-[rgba(217,180,255,0.15)] text-[#beafd7] hover:border-[rgba(199,149,255,0.35)] hover:text-white"
-            }`}
-          >
-            Todos os Decks
-          </button>
-          <button
-            type="button"
-            onClick={() => { setPagina(1); setSomenteMyDecks(true); }}
-            className={`px-4 py-[0.45rem] rounded-lg text-[0.82rem] font-semibold border transition-all duration-200 ${
-              somenteMyDecks
-                ? "bg-[rgba(79,70,229,0.3)] border-[rgba(79,70,229,0.7)] text-[#d9d6ff]"
-                : "bg-white/[0.03] border-[rgba(217,180,255,0.15)] text-[#beafd7] hover:border-[rgba(199,149,255,0.35)] hover:text-white"
-            }`}
-          >
-            Meus Decks
-          </button>
-        </div>
       </div>
 
+      <Tabs value={somenteMyDecks ? "meus" : "todos"} onChange={handleAbaChange}>
+        <Tabs.Item value="todos" label="Todos os decks" count={tabTotals.todos} />
+        <Tabs.Item value="meus" label="Meus decks" count={tabTotals.meus} />
+      </Tabs>
+
       {/* Conteúdo */}
+      <div aria-busy={loading} aria-live="polite">
       {loading ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-6 max-sm:grid-cols-1">
           {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
@@ -332,8 +358,13 @@ export function MyDecksPage() {
                     <div className="absolute top-[0.7rem] left-[0.75rem] right-[0.75rem] flex items-start justify-between gap-2">
                       <FormatBadge formato={deck.formato} />
                       {deck.usuario?.nome && (
-                        <span className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-[rgba(217,180,255,0.2)] backdrop-blur-sm max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap ${owner ? "text-[#c795ff]" : "text-text-soft"}`}>
-                          {owner ? "Meu deck" : deck.usuario.nome}
+                        <span className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-[rgba(217,180,255,0.2)] backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap ${owner ? "text-[#c795ff]" : "text-text-soft"}`}>
+                          {owner ? "Meu deck" : (
+                            <UsuarioNomeExibicao
+                              nome={deck.usuario.nome}
+                              excluido={deck.usuario.excluido}
+                            />
+                          )}
                         </span>
                       )}
                     </div>
@@ -409,7 +440,7 @@ export function MyDecksPage() {
                           <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
                           <circle cx="12" cy="12" r="3" />
                         </svg>
-                        <span>{deck.visualizacoes} visualizacoes</span>
+                        <span>{deck.visualizacoes} visualizações</span>
                       </div>
                     )}
 
@@ -490,6 +521,7 @@ export function MyDecksPage() {
           )}
         </>
       )}
+      </div>
 
       {imageModal && (
         <DeckImageModal

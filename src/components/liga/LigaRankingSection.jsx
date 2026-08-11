@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
 import { EmptyState } from "../ui/EmptyState";
+import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
 
@@ -247,8 +248,8 @@ function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHove
 
 function VoceBadge() {
   return (
-    <span className="inline-block text-[0.62rem] font-bold text-[#818cf8] bg-[rgba(79,70,229,0.2)] border border-[rgba(79,70,229,0.45)] rounded-full px-[0.4rem] py-[0.05rem] uppercase tracking-[0.07em] flex-shrink-0 leading-[1.6]">
-      você
+    <span className="inline-block text-[0.62rem] font-bold text-[#818cf8] bg-[rgba(79,70,229,0.2)] border border-[rgba(79,70,229,0.45)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.07em] flex-shrink-0 leading-[1.6]">
+      VOCÊ
     </span>
   );
 }
@@ -362,6 +363,7 @@ function PodiumCard({ jogador, idx, isLogado, elevated = false }) {
   const pos = jogador.posicao;
   const cfg = PODIUM_CFG[pos] ?? PODIUM_CFG[3];
   const nome = jogador.jogador?.nome || "—";
+  const excluido = Boolean(jogador.jogador?.excluido);
   const pts = jogador.pontos ?? 0;
   const wins = jogador.vitorias ?? 0;
   const losses = jogador.derrotas ?? 0;
@@ -389,12 +391,12 @@ function PodiumCard({ jogador, idx, isLogado, elevated = false }) {
       <div
         className={`w-14 h-14 rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center text-[1rem] font-bold text-white select-none ring-2 ring-white/10`}
       >
-        {getInitials(nome)}
+        {getInitials(excluido ? "UE" : nome)}
       </div>
 
       {/* Name */}
       <p className="m-0 font-semibold text-[#f5edff] text-[0.95rem] leading-snug text-center truncate max-w-[150px] w-full">
-        {nome}
+        <UsuarioNomeExibicao nome={nome} excluido={excluido} />
       </p>
 
       {/* Points */}
@@ -436,6 +438,7 @@ function PodiumCard({ jogador, idx, isLogado, elevated = false }) {
 function PlayerRow({ jogador, idx, isLogado }) {
   const pos = jogador.posicao;
   const nome = jogador.jogador?.nome || "—";
+  const excluido = Boolean(jogador.jogador?.excluido);
   const pts = jogador.pontos ?? 0;
   const wins = jogador.vitorias ?? 0;
   const losses = jogador.derrotas ?? 0;
@@ -456,13 +459,13 @@ function PlayerRow({ jogador, idx, isLogado }) {
       <span
         className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center text-[0.72rem] font-bold text-white flex-shrink-0 select-none`}
       >
-        {getInitials(nome)}
+        {getInitials(excluido ? "UE" : nome)}
       </span>
 
       {/* Name */}
       <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
         <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
-          {nome}
+          <UsuarioNomeExibicao nome={nome} excluido={excluido} />
         </span>
         {isLogado && <VoceBadge />}
       </div>

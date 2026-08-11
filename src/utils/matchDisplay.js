@@ -14,6 +14,13 @@ export function getMatchPlayerName(partida, playerNumber) {
     : partida?.jogador2Nome || partida?.jogador2?.nome || partida?.jogador2?.username || "Jogador 2";
 }
 
+export function isMatchPlayerExcluido(partida, playerNumber) {
+  if (playerNumber === 2 && !getMatchPlayerId(partida, 2)) return false;
+  return playerNumber === 1
+    ? Boolean(partida?.jogador1Excluido || partida?.jogador1?.excluido)
+    : Boolean(partida?.jogador2Excluido || partida?.jogador2?.excluido);
+}
+
 export function getMatchPlayerNick(partida, playerNumber) {
   return playerNumber === 1
     ? partida?.jogador1NickMTGO || partida?.jogador1?.nickMTGO || null
@@ -51,6 +58,7 @@ export function getDisplaySides(partida, usuarioId) {
       id: getMatchPlayerId(partida, leftSeat),
       name: getMatchPlayerName(partida, leftSeat),
       nick: getMatchPlayerNick(partida, leftSeat),
+      excluido: isMatchPlayerExcluido(partida, leftSeat),
       isMe: seat === leftSeat,
     },
     right: {
@@ -58,6 +66,7 @@ export function getDisplaySides(partida, usuarioId) {
       id: getMatchPlayerId(partida, rightSeat),
       name: getMatchPlayerName(partida, rightSeat),
       nick: getMatchPlayerNick(partida, rightSeat),
+      excluido: isMatchPlayerExcluido(partida, rightSeat),
       isMe: seat === rightSeat,
     },
   };

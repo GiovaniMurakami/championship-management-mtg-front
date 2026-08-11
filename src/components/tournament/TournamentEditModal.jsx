@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { calculateAutomaticSwissRounds, calculateSwissRounds } from "../../utils/tournamentFlow";
 import { sanitizeText } from "../../utils/sanitize";
 import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
-import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
-import { SelectField } from "../ui";
+import { BTN_GHOST, BTN_PRIMARY, FORM_COUNTER_CLASS, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
+import { FormFeedback, FormSection, SelectField } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
+import { StoryFundoPicker } from "./StoryFundoPicker";
+import { Top8StoryPreview } from "./Top8StoryPreview";
 
 function toDatetimeLocal(dateStr) {
   return toDatetimeLocalBrasilia(dateStr);
 }
 
-const TEXTAREA_CLASS = `${TOURNAMENT_INPUT_CLASS} min-h-[120px] resize-y`;
-const COUNTER_CLASS = "text-[0.78rem] text-[#8ea0c7] text-right";
+const TEXTAREA_CLASS = `${FORM_TEXTAREA_CLASS} min-h-[120px]`;
 const TOURNAMENT_SELECT_CLASS = `${TOURNAMENT_INPUT_CLASS} pr-10`;
 
 const optionalTrimmed = (value) => {
@@ -42,17 +43,31 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bannerError, setBannerError] = useState("");
+  const [storyPreview, setStoryPreview] = useState("");
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const [storyUploadProgress, setStoryUploadProgress] = useState(0);
+  const [storyError, setStoryError] = useState("");
   const bannerInputRef = useRef(null);
+  const storyFundoPickerRef = useRef(null);
   const existingBannerUrlRef = useRef("");
+  const existingStoryUrlRef = useRef("");
+
+  const handleStoryPreviewUrlChange = useCallback((url) => {
+    setStoryPreview(url || "");
+  }, []);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!torneio || !isOpen) return;
     existingBannerUrlRef.current = torneio.bannerUrl || "";
+    existingStoryUrlRef.current = torneio.storyFundoUrl || "";
     setBannerFile(null);
     setBannerPreview(torneio.bannerUrl || null);
     setBannerError("");
     setUploadProgress(0);
+    setStoryPreview(torneio.storyFundoUrl || "");
+    setStoryError("");
+    setStoryUploadProgress(0);
     setForm({
       nome: torneio.nome || "",
       horario: toDatetimeLocal(torneio.horario),
@@ -73,7 +88,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
   if (!isOpen) return null;
 
-  const isUploading = uploadingBanner;
+  const isUploading = uploadingBanner || uploadingStory;
   const isDisabled = loading || isUploading;
   const totalCheckin = Number(torneio?.totalCheckin || 0);
   const automaticSwissRounds = calculateAutomaticSwissRounds(totalCheckin);
@@ -113,6 +128,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     event.preventDefault();
     let bannerUrl = existingBannerUrlRef.current;
     setBannerError("");
+    setStoryError("");
 
     if (bannerFile && token) {
       setUploadingBanner(true);
@@ -125,6 +141,20 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         return;
       }
       setUploadingBanner(false);
+    }
+
+    let storyFundoUrl = existingStoryUrlRef.current || "";
+    if (token) {
+      setUploadingStory(true);
+      setStoryUploadProgress(0);
+      try {
+        storyFundoUrl = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress) ?? "";
+      } catch (err) {
+        setStoryError(err.userMessage || err.message || "Falha ao salvar o fundo do story.");
+        setUploadingStory(false);
+        return;
+      }
+      setUploadingStory(false);
     }
 
     const payload = {
@@ -144,6 +174,10 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       payload.bannerUrl = bannerUrl;
     }
 
+    if (storyFundoUrl || torneio?.storyFundoUrl) {
+      payload.storyFundoUrl = storyFundoUrl || "";
+    }
+
     onSubmit(payload);
   };
 
@@ -156,14 +190,13 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 grid gap-5">
-          <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-            <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Informacoes Basicas</h3>
+          <FormSection title="Informações Básicas">
             <input name="nome" type="text" value={form.nome} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
             <div className="flex items-center gap-3 py-1">
-              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded border-[#555] bg-white/[0.05] accent-[#4f46e5] cursor-pointer" />
+              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded accent-[#8e39ed] cursor-pointer" />
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
-                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Nao aparece em listagens publicas; compartilhe o link diretamente.</span>
+                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
               </label>
             </div>
             <div className="grid gap-2">
@@ -175,7 +208,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 onChange={handleChange}
                 disabled={isDisabled}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#a5b4fc]"
+                iconClassName="text-[#c795ff]"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
@@ -190,26 +223,46 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               onChange={handleChange}
               disabled={isDisabled}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#a5b4fc]"
+              iconClassName="text-[#c795ff]"
               options={TOURNAMENT_FORMATS.map((item) => ({
                 value: item.value,
                 label: item.label,
               }))}
             />
-            <textarea name="descricao" rows="4" maxLength={4000} value={form.descricao} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Resumo do torneio, premiacao e informacoes importantes..." />
-            <span className={COUNTER_CLASS}>{form.descricao.length}/4000</span>
-            <textarea name="regras" rows="5" maxLength={4000} value={form.regras} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Tempo de rodada, regras da casa, orientacoes e excecoes..." />
-            <span className={COUNTER_CLASS}>{form.regras.length}/4000</span>
-          </div>
+            <textarea name="descricao" rows="4" maxLength={4000} value={form.descricao} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Resumo do torneio, premiação e informações importantes..." />
+            <span className={FORM_COUNTER_CLASS}>{form.descricao.length}/4000</span>
+            <textarea name="regras" rows="5" maxLength={4000} value={form.regras} onChange={handleChange} disabled={isDisabled} className={TEXTAREA_CLASS} placeholder="Tempo de rodada, regras da casa, orientações e exceções..." />
+            <span className={FORM_COUNTER_CLASS}>{form.regras.length}/4000</span>
+          </FormSection>
 
-          <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-            <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Estrutura</h3>
+          <FormSection title="Estrutura">
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <input name="maxJogadores" type="number" min="2" value={form.maxJogadores} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} placeholder="Max. jogadores" />
               <div className="grid gap-1.5">
-                <input name="maxRodadas" type="number" min="1" value={form.maxRodadas} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} placeholder="Limite de rodadas" />
-                <small className="text-[#a3a3a3] text-[0.8rem]">O sistema calcula o suico automaticamente. Este campo apenas limita o teto.</small>
-                {totalCheckin > 0 && <small className="text-[#a5b4fc] text-[0.8rem]">Com {totalCheckin} jogador(es), o suico teria {automaticSwissRounds} rodada(s){form.maxRodadas ? ` e ficaria limitado a ${limitedSwissRounds}.` : "."}</small>}
+                <label htmlFor="edit-maxRodadas" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                  Total de rodadas Swiss <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span>
+                </label>
+                <input
+                  id="edit-maxRodadas"
+                  name="maxRodadas"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={form.maxRodadas}
+                  onChange={handleChange}
+                  disabled={isDisabled}
+                  className={TOURNAMENT_INPUT_CLASS}
+                  placeholder="Ex: 8"
+                />
+                <small className="text-[#a3a3a3] text-[0.8rem]">
+                  Pode forçar mais ou menos rodadas que o cálculo automático no início do torneio. Se vazio, usa o automático.
+                </small>
+                {totalCheckin > 0 && (
+                  <small className="text-[#a5b4fc] text-[0.8rem]">
+                    Com {totalCheckin} jogador(es), o automático seria {automaticSwissRounds} rodada(s)
+                    {form.maxRodadas ? `; forçado: ${limitedSwissRounds}.` : "."}
+                  </small>
+                )}
               </div>
             </div>
             <SelectField
@@ -218,16 +271,15 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               onChange={handleChange}
               disabled={isDisabled}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#a5b4fc]"
+              iconClassName="text-[#c795ff]"
               options={TOP_CUT_OPTIONS.map((option) => ({
                 value: option.value,
                 label: option.label,
               }))}
             />
-          </div>
+          </FormSection>
 
-          <div className="grid gap-4 p-4 border border-[rgba(79,70,229,0.2)] rounded-[10px] bg-[rgba(79,70,229,0.04)]">
-            <h3 className="text-[0.75rem] font-bold tracking-[0.08em] uppercase text-[#a5b4fc] m-0 pb-2 border-b border-[rgba(79,70,229,0.18)]">Midia</h3>
+          <FormSection title="Midia">
 
             {bannerPreview ? (
               <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
@@ -241,7 +293,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             )}
 
             <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={handleBannerFileChange} disabled={isDisabled} />
-            {bannerError && <small className="text-[#fca5a5] text-[0.8rem]">{bannerError}</small>}
+            {bannerError ? <FormFeedback message={bannerError} variant="error" /> : null}
             {isUploading && (
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between text-[0.75rem] text-[#a5b4fc]">
@@ -249,7 +301,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] transition-[width] duration-200" style={{ width: `${uploadProgress}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#8e39ed] to-[#5f23b3] transition-[width] duration-200" style={{ width: `${uploadProgress}%` }} />
                 </div>
               </div>
             )}
@@ -265,12 +317,42 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               />
             </div>
             <input name="linkLive" type="url" placeholder="Live no YouTube" value={form.linkLive} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-          </div>
+          </FormSection>
+
+          <FormSection title="Story Top 8">
+            <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+              <div className="flex flex-col gap-2">
+                <StoryFundoPicker
+                  ref={storyFundoPickerRef}
+                  token={token}
+                  valueUrl={torneio?.storyFundoUrl || ""}
+                  disabled={isDisabled}
+                  onPreviewUrlChange={handleStoryPreviewUrlChange}
+                />
+                {storyError ? <FormFeedback message={storyError} variant="error" /> : null}
+                {uploadingStory && (
+                  <div className="flex flex-col gap-1.5 max-w-[240px]">
+                    <div className="flex justify-between text-[0.75rem] text-[#a5b4fc]">
+                      <span>Enviando / salvando fundo...</span>
+                      <span>{storyUploadProgress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full rounded-full bg-gradient-to-r from-[#8e39ed] to-[#5f23b3] transition-[width] duration-200" style={{ width: `${storyUploadProgress}%` }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Top8StoryPreview
+                horario={form.horario}
+                storyFundoUrl={storyPreview || ""}
+              />
+            </div>
+          </FormSection>
 
           <div className="flex gap-3 justify-end">
-            <button type="button" onClick={onClose} disabled={isDisabled} className="px-5 py-2.5 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] bg-transparent cursor-pointer font-medium text-[0.9rem] transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.4)] hover:bg-white/[0.05] disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isDisabled} className="px-5 py-2.5 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white border-none rounded-lg font-semibold text-[0.9rem] cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)] disabled:opacity-60 disabled:cursor-not-allowed disabled:!transform-none">
-              {isUploading ? "Enviando banner..." : loading ? "Salvando..." : "Salvar Alteracoes"}
+            <button type="button" onClick={onClose} disabled={isDisabled} className={BTN_GHOST}>Cancelar</button>
+            <button type="submit" disabled={isDisabled} className={BTN_PRIMARY}>
+              {uploadingBanner ? "Enviando banner..." : uploadingStory ? "Enviando fundo..." : loading ? "Salvando..." : "Salvar Alteracoes"}
             </button>
           </div>
         </form>

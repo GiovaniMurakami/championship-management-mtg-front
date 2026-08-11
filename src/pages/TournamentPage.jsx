@@ -5,6 +5,7 @@ import { listarTorneios, inscreverTorneio } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { useActionGuard } from "../hooks/useActionGuard";
 import { useToast } from "../context/ToastContext";
+import { useRequestSequence } from "../hooks/useRequestSequence";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { SkeletonTorneioCard } from "../components";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -12,8 +13,7 @@ import { InlineAlert } from "../components/ui/InlineAlert";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
 import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
-import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
-import { SponsorSection } from "../components/ui/SponsorSection";
+import { SponsorSection } from "../components";
 import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
 import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
@@ -22,6 +22,12 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
 
 const LIMITE = 20;
+
+function resolveAba(searchParams) {
+  const aba = searchParams.get("aba");
+  if (aba === "anteriores" || aba === "encerrados") return "encerrados";
+  return "disponiveis";
+}
 
 function PlatformStats() {
   const { stats, loading } = useSiteEstatisticas();
@@ -54,12 +60,14 @@ function PlatformStats() {
 export function TournamentPage() {
   const { token, usuario, isAdmin } = useAuth();
   const { addToast } = useToast();
+  const listRequest = useRequestSequence();
+  const prefetchRequest = useRequestSequence();
 
   usePageTitle(PAGE_TITLES.torneios);
 
   const [torneios, setTorneios] = useState([]);
   const [total, setTotal] = useState(0);
-  const [tabTotals, setTabTotals] = useState({ disponiveis: 0, anteriores: 0 });
+  const [tabTotals, setTabTotals] = useState({ disponiveis: 0, encerrados: 0 });
   const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -67,32 +75,42 @@ export function TournamentPage() {
   const [inscricoesLocais, setInscricoesLocais] = useState({});
   const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialAba = searchParams.get("aba") === "anteriores" ? "anteriores" : "disponiveis";
-  const [abaAtiva, setAbaAtiva] = useState(initialAba);
+  const [abaAtiva, setAbaAtiva] = useState(() => resolveAba(searchParams));
   const channelsRef = useRef({});
   const navigate = useNavigate();
 
+  const handleAbaChange = useCallback((nextAba) => {
+    setAbaAtiva(nextAba);
+    setPagina(1);
+    setTorneios([]);
+    setTotal(0);
+    setLoadError("");
+  }, []);
+
   const loadTorneios = useCallback(async () => {
     if (!token) return;
+    const request = listRequest();
     setLoading(true);
     setLoadError("");
     try {
       const offset = (pagina - 1) * LIMITE;
 
-      if (abaAtiva === "anteriores") {
+      if (abaAtiva === "encerrados") {
         const data = await listarTorneios(token, {
           status: "finalizado",
           limite: LIMITE,
           offset,
         });
+        if (!request.isCurrent()) return;
         setTorneios(data.torneios);
         setTotal(data.total);
-        setTabTotals((prev) => ({ ...prev, anteriores: data.total }));
+        setTabTotals((prev) => ({ ...prev, encerrados: data.total }));
       } else {
         const [inscricoes, andamento] = await Promise.all([
           listarTorneios(token, { status: "inscricoes_abertas", limite: LIMITE, offset }),
           listarTorneios(token, { status: "em_andamento", limite: LIMITE, offset }),
         ]);
+        if (!request.isCurrent()) return;
         const merged = [...inscricoes.torneios, ...andamento.torneios].sort(
           (a, b) => new Date(b.horario) - new Date(a.horario),
         );
@@ -102,35 +120,35 @@ export function TournamentPage() {
         setTabTotals((prev) => ({ ...prev, disponiveis: disponiveisTotal }));
       }
     } catch (error) {
+      if (!request.isCurrent()) return;
       logError("Erro ao carregar torneios:", error);
       const message = error.message || "Erro ao carregar torneios. Tente novamente.";
       setLoadError(message);
       addToast(message, { type: "error" });
     } finally {
-      setLoading(false);
+      if (request.isCurrent()) setLoading(false);
     }
-  }, [token, abaAtiva, pagina, addToast]);
+  }, [token, abaAtiva, pagina, addToast, listRequest]);
 
   useEffect(() => {
     loadTorneios();
   }, [loadTorneios]);
 
   useEffect(() => {
-    setPagina(1);
-  }, [abaAtiva]);
-
-  useEffect(() => {
     if (!token) return;
+    const request = prefetchRequest();
     const prefetchInactiveTabTotal = async () => {
       try {
         if (abaAtiva === "disponiveis") {
           const data = await listarTorneios(token, { status: "finalizado", limite: 1, offset: 0 });
-          setTabTotals((prev) => ({ ...prev, anteriores: data.total }));
+          if (!request.isCurrent()) return;
+          setTabTotals((prev) => ({ ...prev, encerrados: data.total }));
         } else {
           const [inscricoes, andamento] = await Promise.all([
             listarTorneios(token, { status: "inscricoes_abertas", limite: 1, offset: 0 }),
             listarTorneios(token, { status: "em_andamento", limite: 1, offset: 0 }),
           ]);
+          if (!request.isCurrent()) return;
           setTabTotals((prev) => ({
             ...prev,
             disponiveis: inscricoes.total + andamento.total,
@@ -141,11 +159,11 @@ export function TournamentPage() {
       }
     };
     prefetchInactiveTabTotal();
-  }, [token, abaAtiva]);
+  }, [token, abaAtiva, prefetchRequest]);
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
-    if (abaAtiva === "anteriores") nextParams.set("aba", "anteriores");
+    if (abaAtiva === "encerrados") nextParams.set("aba", "encerrados");
     else nextParams.delete("aba");
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
@@ -250,9 +268,9 @@ export function TournamentPage() {
         )}
       </div>
 
-      <Tabs value={abaAtiva} onChange={setAbaAtiva}>
-        <Tabs.Item value="disponiveis" label="Torneios Disponíveis" count={tabTotals.disponiveis} />
-        <Tabs.Item value="anteriores" label="Torneios Anteriores" count={tabTotals.anteriores} />
+      <Tabs value={abaAtiva} onChange={handleAbaChange}>
+        <Tabs.Item value="disponiveis" label="Disponíveis" count={tabTotals.disponiveis} />
+        <Tabs.Item value="encerrados" label="Encerrados" count={tabTotals.encerrados} />
       </Tabs>
 
       {loadError && !loading && (
@@ -275,14 +293,14 @@ export function TournamentPage() {
       )}
 
       {/* List */}
-      <section className="mt-6">
+      <section className="mt-6" aria-busy={loading} aria-live="polite">
         {loading ? (
           <div className="grid grid-cols-1 min-[700px]:grid-cols-2 gap-5 mb-8">
             {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
           </div>
         ) : torneiosExibidos.length === 0 ? (
           <EmptyState
-            title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio anterior encontrado"}
+            title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio encerrado encontrado"}
             description={abaAtiva === "disponiveis" ? "Quando houver torneios abertos ou em andamento, eles aparecerão aqui." : "Torneios finalizados ficarão disponíveis nesta aba."}
             action={isAdmin && abaAtiva === "disponiveis" && (
               <button
@@ -373,13 +391,13 @@ export function TournamentPage() {
                           <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
                           <polyline points="17 6 23 6 23 12" />
                         </svg>
-                        <span>Rodada {torneio.rodadaAtual}/{torneio.totalRodadas}</span>
+                        <span>Rodada {torneio.totalRodadas ? `${torneio.rodadaAtual}/${torneio.totalRodadas}` : (torneio.rodadaAtual ?? "—")}</span>
                       </div>
                     )}
                     {torneio.visualizacoes != null && (
                       <div className="flex items-center gap-2 text-[#beafd7] text-[0.85rem]">
                         <span>👁</span>
-                        <span>{torneio.visualizacoes} visualizacoes</span>
+                        <span>{torneio.visualizacoes} visualizações</span>
                       </div>
                     )}
                   </div>

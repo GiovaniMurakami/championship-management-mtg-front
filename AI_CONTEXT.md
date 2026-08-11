@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.08** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.29** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -147,7 +147,10 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | `/torneios/criar` | auth + admin | `TournamentCreatePage` |
 | `/torneios/:id` | auth | `TournamentDetailPage` |
 | `/torneio/ingressar/:token` | público | `TournamentJoinPage` |
-| `/dashboard` | auth + admin | `DashboardPage` |
+| `/dashboard` | auth + admin | `DashboardPage` (anúncios) |
+| `/dashboard/bloqueios` | auth + admin | `DashboardBloqueiosPage` |
+| `/termos-de-uso` | público | `TermosDeUsoPage` |
+| `/privacidade` | público | `PrivacidadePage` (LGPD) |
 | `/times`, `/times/criar`, `/times/:id`, `/times/:id/editar` | auth | Time pages |
 | `/ligas`, `/ligas/criar`, `/ligas/:id`, `/ligas/:id/editar` | auth (+ admin criar/editar) | Liga pages |
 | `/esqueci-senha`, `/reset-senha` | público | Reset senha |
@@ -165,15 +168,17 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Feature | Onde mexer |
 |---|---|
 | Nova rota | `routes/AppRoutes.jsx` + nova page em `pages/` |
-| Auth/login | `context/AuthContext.jsx`, `components/auth/` |
+| Auth/login | `context/AuthContext.jsx`, `components/auth/` (exclusão de conta soft-delete; `UsuarioExcluidoTag`) |
 | Deck builder | `hooks/useDeckBuilder.js`, `components/deck/`, `utils/parseDeckTxt.js`, `utils/deckPayload.js` |
 | Lista de torneios | `pages/TournamentPage.jsx` |
-| Detalhe de torneio | `hooks/useTournamentDetail.js` (~1000 linhas), `pages/TournamentDetailPage.jsx`, `components/tournament/` |
+| Detalhe de torneio | `hooks/useTournamentDetail.js`, `pages/TournamentDetailPage.jsx`, `components/tournament/` (auto-drop em `PlayerProfile`) |
+| Standings | `StandingsTable.jsx` (largura full / sem clip lateral; sem scroll vertical interno) |
+| Usuário excluído | `components/ui/UsuarioExcluidoTag.jsx` + flags `excluido` nos payloads |
 | Fluxo de rodadas/top cut | `utils/tournamentFlow.js`, `hooks/useTournamentQueries.js` |
 | Realtime Ably | `services/ablyService.js`, handlers em `useTournamentDetail` e `TournamentPage` |
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
-| Admin/dashboard | `pages/DashboardPage.jsx` |
+| Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
 | HTTP/errors | `services/httpClient.js` |
 | Todos endpoints REST | `services/backendApi.js` |
@@ -197,7 +202,9 @@ Base URL resolvida em `httpClient.js`:
 Auth:     POST /usuario/login, /cadastrar, /refresh-token, /logout
           POST /usuario/reset-senha/solicitar, /confirmar
           PUT  /usuario/atualizar
+          DELETE /usuario/conta         (soft-delete; confirmação = nome)
           GET  /usuario/listar          (admin — busca usuários para anfitrião)
+          PUT  /usuario/:id/bloqueio-torneios (admin)
 
 Decks:    POST /deck/cadastrar
           GET  /deck/listar, /deck/:id
@@ -292,14 +299,31 @@ Limites de deck (`constants/auth.js`):
 - Lógica em `utils/matchConfirmations.js` e `utils/matchDisplay.js`
 - Jogadores confirmam resultados mutuamente; contestação disponível
 
+### Auto-drop do participante
+- `handleSelfDrop` em `useTournamentDetail.js` → `POST /torneio/:id/drop`
+- UI em `PlayerProfile`: cancelar inscrição (abertas) ou dropar (em andamento), com confirmação em 2 passos
+- Perfil também aparece durante `em_andamento` quando o usuário está inscrito
+
+### Conta excluída / LGPD
+- Soft-delete no backend; front mostra tag `UsuarioExcluidoTag` / `UsuarioNomeExibicao`
+- Copy de exclusão em `EditProfileModal` e política em `constants/privacyPolicy.js` (`/privacidade`)
+
+### Acentuação em badges
+- Evitar `uppercase` CSS em textos com acento (pode virar “VOCE”); preferir literal acentuado (`VOCÊ`, `CAPITÃO`, etc.)
+
 ---
 
 ## 12. WordPress / navegação externa
 
+Arquitetura:
+- **WordPress** (`tiagofuguete.com.br`) — site principal; embute o app em iframe
+- **Este front** (`app.tiagofuguete.com.br`) — SPA React deste repositório
+
 `src/utils/externalNavigation.js`:
-- App embutida em iframe no WordPress (`VITE_WORDPRESS_APP_URL`, default `tiagofuguete.com.br/app-torneios`)
-- Query params na `/` são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
-- `App.jsx` sincroniza rotas via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
+- `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados e acesso direto ao app
+- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/app-torneios`)
+- Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
+- `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
 
 Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalNavigationTarget()`.
 
@@ -317,7 +341,8 @@ VITE_ABLY_API_KEY=...           # dev fallback
 VITE_YOUTUBE_CHANNEL_ID=...
 VITE_YOUTUBE_API_KEY=...
 VITE_SITE_PASSWORD=...          # gate opcional
-VITE_WORDPRESS_APP_URL=...      # URL do embed WordPress
+VITE_APP_URL=...                # URL publica do front (default app.tiagofuguete.com.br)
+VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/app-torneios)
 ```
 
 Copiar de `.env.example`. **Nunca commitar `.env`.**
@@ -366,6 +391,7 @@ npm run preview
 8. **Não criar commits** a menos que o usuário peça.
 9. **Classes Tailwind longas** — reutilizar constantes de `uiClasses.js` quando o padrão já existe.
 10. **Ably sem key configurada** — `getAblyClient()` retorna `null`; código deve tolerar ausência de realtime.
+11. **`uppercase` CSS remove acentos** — em badges (“VOCÊ”, “CAPITÃO”, “ANFITRIÃO”, etc.) use o literal acentuado e evite a classe `uppercase`.
 
 ---
 
@@ -407,4 +433,4 @@ npm run preview
 
 ---
 
-*Última revisão: junho/2026 — alinhado com v1.2.08*
+*Última revisão: agosto/2026 — alinhado com v1.2.29 (soft-delete UI, auto-drop, standings full-width, acentuação de badges)*
