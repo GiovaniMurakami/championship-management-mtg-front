@@ -22,3 +22,4 @@ export { AdSenseLayout } from "./AdSenseLayout";
 export { Tabs } from "./Tabs";
 export { Tooltip } from "./Tooltip";
 export { UuidParamGuard } from "./UuidParamGuard";
+export { UsuarioExcluidoTag, UsuarioNomeExibicao, isUsuarioExcluido } from "./UsuarioExcluidoTag";

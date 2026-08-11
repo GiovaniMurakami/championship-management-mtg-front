@@ -62,7 +62,11 @@ function normalizeCard(card) {
     nome: card.name,
     set: card.set_name,
     imagem:
-      card.image_uris?.large || card.card_faces?.[0]?.image_uris?.large || "",
+      card.image_uris?.normal
+      || card.image_uris?.large
+      || card.card_faces?.[0]?.image_uris?.normal
+      || card.card_faces?.[0]?.image_uris?.large
+      || "",
     isBasicLand,
     legalities: {
       standard: card.legalities?.standard === "legal",

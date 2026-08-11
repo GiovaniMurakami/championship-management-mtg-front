@@ -144,6 +144,7 @@ export function AuthModal({
             onChange={(aceiteTermos) =>
               onRegisterFormChange((current) => ({ ...current, aceiteTermos }))
             }
+            onLegalLinkClick={onClose}
           />
           {message ? <AuthFeedback message={message} /> : null}
           <button
@@ -155,7 +156,7 @@ export function AuthModal({
           </button>
           {!registerForm.aceiteTermos ? (
             <p className="m-0 text-center text-[0.78rem] text-[#8f82ad]">
-              Marque o aceite dos termos para habilitar o cadastro.
+              Marque o aceite dos Termos de Uso e da Política de Privacidade para habilitar o cadastro.
             </p>
           ) : null}
         </form>

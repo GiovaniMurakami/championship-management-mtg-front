@@ -4,7 +4,7 @@
  */
 export function PageShell({ children, className = "" }) {
   return (
-    <div className={`w-full min-w-0 overflow-x-clip animate-[fade-in_400ms_ease-out] ${className}`}>
+    <div className={`w-full min-w-0 animate-[fade-in_400ms_ease-out] ${className}`}>
       {children}
     </div>
   );

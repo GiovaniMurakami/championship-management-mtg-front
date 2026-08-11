@@ -10,4 +10,17 @@ describe("pageTitles", () => {
     expect(formatPageTitle("")).toBe(SITE_TITLE);
     expect(formatPageTitle(SITE_TITLE)).toBe(SITE_TITLE);
   });
+
+  it("inclui títulos das ferramentas individuais", () => {
+    expect(PAGE_TITLES.contadorVida).toBe("Contador de vida");
+    expect(PAGE_TITLES.calculadoraSwiss).toMatch(/Calculadora/i);
+  });
+
+  it("inclui título do bloqueio de usuários no dashboard", () => {
+    expect(PAGE_TITLES.dashboardBloqueios).toMatch(/Bloqueio/i);
+  });
+
+  it("inclui título da política de privacidade", () => {
+    expect(PAGE_TITLES.privacidade).toMatch(/Privacidade/i);
+  });
 });

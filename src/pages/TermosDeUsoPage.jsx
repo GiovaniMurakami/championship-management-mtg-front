@@ -78,6 +78,12 @@ export function TermosDeUsoPage() {
 
         <div className="mt-8 flex flex-wrap gap-4 border-t border-[rgba(217,180,255,0.12)] pt-6">
           <Link
+            to="/privacidade"
+            className="text-[0.9rem] font-semibold text-[#c795ff] underline underline-offset-2 hover:text-[#e8dfff]"
+          >
+            Ver Política de Privacidade (LGPD)
+          </Link>
+          <Link
             to="/"
             className="text-[0.9rem] font-semibold text-[#c795ff] underline underline-offset-2 hover:text-[#e8dfff]"
           >

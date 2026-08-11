@@ -2,6 +2,7 @@ import { Fragment, useState } from "react";
 import { Top8StoryModal } from "./Top8StoryModal";
 import { DeckViewButton, RANK_BADGE } from "./DeckDrawer";
 import { Tooltip } from "../ui/Tooltip";
+import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 
 function CollapseToggle({ collapsed, onToggle, label = "standings" }) {
   return (
@@ -39,6 +40,8 @@ export function StandingsTable({
   isAnfitriao = false,
   canManageTournament = false,
   torneioNome = "",
+  torneioHorario = "",
+  storyFundoUrl = "",
   compact = false,
   totalInscritos,
 }) {
@@ -54,7 +57,7 @@ export function StandingsTable({
     return (
       <section className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out]">
         <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Standings</h2>
-        <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum dado de standings disponivel.</p>
+        <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum dado de standings disponível.</p>
       </section>
     );
   }
@@ -66,6 +69,8 @@ export function StandingsTable({
     player?.userName ||
     player?.jogadorNome ||
     "Jogador";
+
+  const isPlayerExcluido = (player) => Boolean(player?.usuario?.excluido || player?.excluido);
 
   const getDeckStatus = (player) =>
     player?.deckId || player?.deck?.id || player?.deckConfirmado;
@@ -159,7 +164,7 @@ export function StandingsTable({
           <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#c795ff] text-right">Pts</span>
         </div>
 
-        <div className="overflow-y-auto flex-1 min-h-0 max-h-[calc(100vh-320px)] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] pb-2">
+        <div className="pb-2">
           {filtered.length === 0 ? (
             <p className="text-[#beafd7] text-[0.82rem] m-0 px-4 pt-3">Nenhum jogador encontrado.</p>
           ) : (
@@ -195,7 +200,12 @@ export function StandingsTable({
                           className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
                         />
                       )}
-                      <span className="truncate">{getPlayerName(player)}</span>
+                      <span className="truncate">
+                        <UsuarioNomeExibicao
+                          nome={getPlayerName(player)}
+                          excluido={isPlayerExcluido(player)}
+                        />
+                      </span>
                       {expressiveBadge(player)}
                     </span>
                     <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-[#beafd7]"}`}>
@@ -214,7 +224,7 @@ export function StandingsTable({
   }
 
   return (
-    <section id="standings-panel" className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-w-full min-w-0 overflow-hidden">
+    <section id="standings-panel" className="border border-[rgba(217,180,255,0.2)] rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-w-full min-w-0">
       <div className={`flex items-center justify-between gap-3 flex-wrap max-md:flex-col max-md:items-stretch ${collapsed ? "mb-0" : "mb-4"}`}>
         <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff] max-md:text-[1.35rem]">{sectionTitle}</h2>
         <div className="flex items-center gap-[0.6rem] flex-wrap max-md:w-full">
@@ -273,22 +283,22 @@ export function StandingsTable({
 
       {!collapsed && filtered.length > 0 && (
         <>
-          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] overflow-auto max-h-[62vh] [scrollbar-width:thin] [scrollbar-color:rgba(167,79,255,0.3)_transparent] max-md:hidden">
-            <table className="w-full border-collapse text-[0.88rem]">
+          <div className="rounded-xl border border-[rgba(217,180,255,0.2)] overflow-x-auto max-md:hidden">
+            <table className="w-full table-fixed border-collapse text-[0.88rem]">
               <thead className="bg-[#21133a] sticky top-0 z-10 shadow-[0_1px_0_rgba(217,180,255,0.15)]">
                 <tr>
-                  <th className="w-10 text-center px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">#</th>
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Jogador</th>
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Pts</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">V</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">D</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">E</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">MWP</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">OMW%</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">GW%</th>}
-                  {!isRegistrationOpen && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">OGW%</th>}
-                  <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Deck</th>
-                  {!isFinished && <th className="px-3 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left whitespace-nowrap">Check-in</th>}
+                  <th className="w-[3%] text-center px-2 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff]">#</th>
+                  <th className="w-[22%] px-2 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left">Jogador</th>
+                  {!isRegistrationOpen && <th className="w-[5%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">Pts</th>}
+                  {!isRegistrationOpen && <th className="w-[4%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">V</th>}
+                  {!isRegistrationOpen && <th className="w-[4%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">D</th>}
+                  {!isRegistrationOpen && <th className="w-[4%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">E</th>}
+                  {!isRegistrationOpen && <th className="w-[7%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">MWP</th>}
+                  {!isRegistrationOpen && <th className="w-[7%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">OMW%</th>}
+                  {!isRegistrationOpen && <th className="w-[7%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">GW%</th>}
+                  {!isRegistrationOpen && <th className="w-[7%] px-1.5 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-center">OGW%</th>}
+                  <th className={`${isFinished ? "w-[30%]" : "w-[18%]"} px-2 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left`}>Deck</th>
+                  {!isFinished && <th className="w-[12%] px-2 py-[0.65rem] text-[0.75rem] font-bold uppercase tracking-[0.06em] text-[#c795ff] text-left">Check-in</th>}
                 </tr>
               </thead>
               <tbody>
@@ -306,15 +316,15 @@ export function StandingsTable({
                   return (
                     <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
                       <tr className={`transition-[background] duration-150 hover:bg-[rgba(167,79,255,0.06)] ${rowBorderClass}`}>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] text-center font-bold text-[#c795ff]">
+                        <td className="px-2 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-center font-bold text-[#c795ff]">
                           {isTop3 ? (
                             <span className={`inline-flex items-center justify-center w-[1.6rem] h-[1.6rem] rounded-full text-[0.72rem] font-extrabold leading-none ${posicao === 1 ? "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]" : posicao === 2 ? "bg-[linear-gradient(135deg,#d0d0d0,#888)] text-[#1e1e1e] shadow-[0_0_6px_rgba(200,200,200,0.3)]" : "bg-[linear-gradient(135deg,#cd7f32,#8b4513)] text-[#fff8f0] shadow-[0_0_6px_rgba(205,127,50,0.35)]"}`}>{posicao}</span>
                           ) : (
                             <span className="text-[#beafd7] text-[0.82rem]">{posicao}</span>
                           )}
                         </td>
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] font-semibold">
-                          <span className="inline-flex items-center gap-[0.35rem]">
+                        <td className="px-2 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] font-semibold min-w-0">
+                          <span className="inline-flex items-center gap-[0.35rem] max-w-full min-w-0">
                             {player.time?.imagemUrl && (
                               <img
                                 src={player.time.imagemUrl}
@@ -322,25 +332,30 @@ export function StandingsTable({
                                 className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
                               />
                             )}
-                            <span>{getPlayerName(player)}</span>
+                            <span className="truncate min-w-0">
+                              <UsuarioNomeExibicao
+                                nome={getPlayerName(player)}
+                                excluido={isPlayerExcluido(player)}
+                              />
+                            </span>
                             {expressiveBadge(player)}
                           </span>
                         </td>
                         {!isRegistrationOpen && (
-                          <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">
+                          <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] text-center">
                             <span className={isTop8 && !player.dropped ? "text-[#fde68a] font-bold" : undefined}>
                               {player.pontosMesa ?? player.pontos ?? 0}
                             </span>
                           </td>
                         )}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#86efac] font-semibold">{player.vitoriasPartida ?? player.vitorias ?? 0}</td>}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#fca5a5]">{player.derrotasPartida ?? player.derrotas ?? 0}</td>}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">{player.empatesPartida ?? player.empates ?? 0}</td>}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.mwp)}</td>}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.omwp)}</td>}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.gwp)}</td>}
-                        {!isRegistrationOpen && <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] [font-variant-numeric:tabular-nums]">{formatPct(player.ogwp)}</td>}
-                        <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] relative">
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#86efac] font-semibold text-center">{player.vitoriasPartida ?? player.vitorias ?? 0}</td>}
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#fca5a5] text-center">{player.derrotasPartida ?? player.derrotas ?? 0}</td>}
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] text-center">{player.empatesPartida ?? player.empates ?? 0}</td>}
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] text-center [font-variant-numeric:tabular-nums]">{formatPct(player.mwp)}</td>}
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] text-center [font-variant-numeric:tabular-nums]">{formatPct(player.omwp)}</td>}
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] text-center [font-variant-numeric:tabular-nums]">{formatPct(player.gwp)}</td>}
+                        {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.82rem] text-center [font-variant-numeric:tabular-nums]">{formatPct(player.ogwp)}</td>}
+                        <td className="px-2 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] relative min-w-0">
                           {isFinished ? (
                             <DeckViewButton
                               player={player}
@@ -358,7 +373,7 @@ export function StandingsTable({
                           )}
                         </td>
                         {!isFinished && (
-                          <td className="px-3 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff]">
+                          <td className="px-2 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] min-w-0">
                             {isCheckedIn(player) ? (
                               <span className="inline-flex items-center gap-[0.25rem] text-[#4ade80] font-semibold">
                                 ✓
@@ -386,7 +401,7 @@ export function StandingsTable({
             </table>
           </div>
 
-          <div className="hidden max-md:grid gap-[0.55rem]">
+          <div className="hidden max-md:grid gap-[0.55rem] pr-1">
             {filtered.map((player, index) => {
               const posicao = player.posicao ?? index + 1;
               const pontos = player.pontosMesa ?? player.pontos ?? 0;
@@ -425,7 +440,12 @@ export function StandingsTable({
                               className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
                             />
                           )}
-                          <span className="break-words">{getPlayerName(player)}</span>
+                          <span className="break-words">
+                            <UsuarioNomeExibicao
+                              nome={getPlayerName(player)}
+                              excluido={isPlayerExcluido(player)}
+                            />
+                          </span>
                           {expressiveBadge(player)}
                         </span>
                       </div>
@@ -499,6 +519,8 @@ export function StandingsTable({
         <Top8StoryModal
           standings={enrichedStandings}
           torneioNome={torneioNome}
+          torneioHorario={torneioHorario}
+          storyFundoUrl={storyFundoUrl}
           deckNameOverrides={deckNameOverrides}
           onClose={() => setShowStory(false)}
         />

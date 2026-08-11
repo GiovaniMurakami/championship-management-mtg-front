@@ -10,8 +10,8 @@
   --color-text-main: #f5edff;
   --color-text-soft: #beafd7;
   --color-line: rgba(217, 180, 255, 0.2);
-  --font-sans: "Space Grotesk", sans-serif;
-  --font-display: "Bebas Neue", sans-serif;
+  --font-sans: "Twemoji Country Flags", "Space Grotesk", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  --font-display: "Twemoji Country Flags", "Bebas Neue", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
   --breakpoint-nav: 59.375rem;
   /* 950px */
 }
@@ -294,7 +294,7 @@ body,
 
 body {
   min-width: 320px;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -307,6 +307,13 @@ body {
     radial-gradient(ellipse at 55% 50%, rgba(60, 15, 120, 0.15), transparent 55%),
     linear-gradient(150deg, #06040e 0%, #0e0820 50%, #120930 100%);
   background-attachment: fixed;
+}
+
+/* Garante bandeiras também em títulos com Bebas Neue (classes utilitárias arbitrárias). */
+[class*="Bebas_Neue"],
+[class*="Bebas Neue"],
+.font-display {
+  font-family: var(--font-display);
 }
 
 /* ── View Transitions ─────────────────────────────────────────── */

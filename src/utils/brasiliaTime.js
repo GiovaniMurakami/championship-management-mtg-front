@@ -22,6 +22,21 @@ export function formatBrasiliaDate(dateString) {
   return date.toLocaleDateString("pt-BR", { timeZone: BRASILIA_TZ });
 }
 
+/** Data e hora (sem segundos) em Brasília — útil em stories e headers. */
+export function formatBrasiliaDateTimeShort(dateString) {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString("pt-BR", {
+    timeZone: BRASILIA_TZ,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 /** Converte ISO para valor de input datetime-local em horário de Brasília. */
 export function toDatetimeLocalBrasilia(dateStr) {
   if (!dateStr) return "";

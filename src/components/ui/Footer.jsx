@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 
 const SOCIALS = [
@@ -33,6 +34,21 @@ export function Footer() {
                 </div>
 
                 <div className="w-full h-px bg-[rgba(217,180,255,0.08)]" />
+
+                <nav aria-label="Documentos legais" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                    <Link
+                        to="/termos-de-uso"
+                        className="text-[#8f7db8] text-xs font-semibold no-underline hover:text-[#c795ff] transition-colors"
+                    >
+                        Termos de Uso
+                    </Link>
+                    <Link
+                        to="/privacidade"
+                        className="text-[#8f7db8] text-xs font-semibold no-underline hover:text-[#c795ff] transition-colors"
+                    >
+                        Privacidade (LGPD)
+                    </Link>
+                </nav>
 
                 <p className="text-[#6b5a8a] text-xs">© {new Date().getFullYear()} Tiago Fuguete — Todos os direitos reservados</p>
                 <p className="text-[#6b5a8a] text-xs">feito com <span className="text-[#c795ff]">♥</span> por Giovani</p>

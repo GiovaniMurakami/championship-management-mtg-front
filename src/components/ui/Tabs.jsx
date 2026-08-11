@@ -20,11 +20,18 @@ function TabItem({ value, label, count, currentValue, onChange }) {
           ? "text-white border-b-[#4f46e5]"
           : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
       }`}
-      onClick={() => onChange(value)}
+      onClick={() => {
+        if (value === currentValue) return;
+        onChange(value);
+      }}
     >
       {label}
-      {count !== undefined && count > 0 && (
-        <span className="bg-[#4f46e5] text-white text-[0.75rem] font-semibold px-[0.45rem] py-[0.1rem] rounded-full leading-[1.4]">
+      {count !== undefined && (
+        <span className={`text-[0.75rem] font-semibold px-[0.45rem] py-[0.1rem] rounded-full leading-[1.4] ${
+          isActive
+            ? "bg-[#4f46e5] text-white"
+            : "bg-white/[0.06] text-[#beafd7]"
+        }`}>
           {count}
         </span>
       )}

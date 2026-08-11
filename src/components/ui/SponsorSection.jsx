@@ -70,7 +70,7 @@ export function SponsorSection() {
 
   const currentIndex = current < activeAds.length ? current : 0;
   const slide = activeAds[currentIndex] ?? activeAds[0];
-  const label = slide.tipo === "banner" ? (slide.tag || "Anuncio") : "Patrocinador Oficial";
+  const label = slide.tipo === "banner" ? (slide.tag || "Anúncio") : "Patrocinador Oficial";
 
   return (
     <section className="mb-10">
@@ -87,12 +87,12 @@ export function SponsorSection() {
             target={slide.link ? "_blank" : undefined}
             rel={slide.link ? "noopener noreferrer" : undefined}
             className={`block transition-all duration-200 ${animating ? "opacity-0 translate-y-[6px]" : "opacity-100 translate-y-0"}`}
-            aria-label={slide.titulo || "Anuncio"}
+            aria-label={slide.titulo || "Anúncio"}
             onClick={() => trackClick(slide)}
           >
             <img
               src={slide.imagemUrl}
-              alt={slide.titulo || "Anuncio"}
+              alt={slide.titulo || "Anúncio"}
               className="h-[180px] w-full object-cover max-[600px]:h-[130px]"
             />
           </a>
@@ -105,7 +105,7 @@ export function SponsorSection() {
                 <img src={slide.imagemUrl} alt={slide.titulo || "Patrocinador"} className="w-full h-full object-contain p-2" />
               ) : (
                 <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
-                  {slide.titulo || "Anuncio"}
+                  {slide.titulo || "Anúncio"}
                 </span>
               )}
             </div>

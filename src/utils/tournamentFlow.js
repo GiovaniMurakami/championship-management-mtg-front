@@ -23,17 +23,37 @@ export function calculateAutomaticSwissRounds(playerCount) {
 
 export function calculateSwissRounds(playerCount, maxRodadas) {
     const automaticRounds = calculateAutomaticSwissRounds(playerCount);
-    const roundLimit = toPositiveNumber(maxRodadas);
+    const forcedRounds = toPositiveNumber(maxRodadas);
 
-    if (!roundLimit) {
-        return automaticRounds;
+    // maxRodadas força o total Swiss (pode ser maior ou menor que o log2).
+    if (forcedRounds) {
+        return forcedRounds;
     }
 
-    return Math.min(automaticRounds, roundLimit);
+    return automaticRounds;
 }
 
 export function hasTopCut(torneio) {
     return toPositiveNumber(torneio?.corteTop) > 0;
+}
+
+/** Label do chip "Rodada X / Y" — evita "Sem limite" quando o total ainda não chegou no estado. */
+export function formatTournamentRoundLabel(torneio) {
+    const atual = Number(torneio?.rodadaAtual);
+    const total = Number(torneio?.totalRodadas);
+    const atualLabel = Number.isFinite(atual) && atual >= 0 ? String(atual) : "—";
+    const totalValido = Number.isFinite(total) && total > 0;
+
+    if (totalValido) {
+        return `${atualLabel} / ${total}`;
+    }
+
+    if (torneio?.status === "inscricoes_abertas") {
+        return "—";
+    }
+
+    // Em andamento/finalizado sem total ainda sincronizado: não mentir "Sem limite".
+    return atualLabel;
 }
 
 export function isEliminationPhase(torneio) {

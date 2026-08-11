@@ -7,6 +7,8 @@ export { StandingsTable } from "./StandingsTable";
 export { OwnerControlPanel } from "./OwnerControlPanel";
 export { RoundTimer } from "./RoundTimer";
 export { Top8StoryModal } from "./Top8StoryModal";
+export { Top8StoryPreview } from "./Top8StoryPreview";
+export { StoryFundoPicker } from "./StoryFundoPicker";
 export { ReviewRoundModal } from "./ReviewRoundModal";
 export { TournamentCreateForm } from "./TournamentCreateForm";
 export { TournamentSection } from "./TournamentSection";

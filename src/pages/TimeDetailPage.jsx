@@ -8,6 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { PageShell } from "../components/ui/PageShell";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { buildTeamInviteExternalUrl } from "../utils/externalNavigation";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -187,7 +188,7 @@ export function TimeDetailPage() {
     <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <button
-          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] hover:-translate-x-[2px]"
+          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06]"
           onClick={() => navigate("/times")}
         >
           ← Voltar para times
@@ -365,6 +366,7 @@ export function TimeDetailPage() {
           <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
             {membros.map((membro, idx) => {
               const nome = membro.nome || membro.usuario?.nome || "—";
+              const excluido = Boolean(membro.excluido || membro.usuario?.excluido);
               const isMe = String(membro.id ?? membro.usuarioId) === String(usuario?.id);
               const isCapitao = String(membro.id ?? membro.usuarioId) === String(time.donoId);
               return (
@@ -375,24 +377,24 @@ export function TimeDetailPage() {
                   <span
                     className={`w-9 h-9 rounded-full bg-gradient-to-br ${AVATAR_PALETTES[idx % AVATAR_PALETTES.length]} flex items-center justify-center text-[0.72rem] font-bold text-white flex-shrink-0 select-none`}
                   >
-                    {getInitials(nome)}
+                    {getInitials(excluido ? "UE" : nome)}
                   </span>
                   <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
                     <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
-                      {nome}
+                      <UsuarioNomeExibicao nome={nome} excluido={excluido} />
                     </span>
                     {isMe && (
-                      <span className="inline-block text-[0.62rem] font-bold text-[#818cf8] bg-[rgba(79,70,229,0.2)] border border-[rgba(79,70,229,0.45)] rounded-full px-[0.4rem] py-[0.05rem] uppercase tracking-[0.07em] flex-shrink-0">
-                        você
+                      <span className="inline-block text-[0.62rem] font-bold text-[#818cf8] bg-[rgba(79,70,229,0.2)] border border-[rgba(79,70,229,0.45)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.07em] flex-shrink-0">
+                        VOCÊ
                       </span>
                     )}
                     {isCapitao && (
-                      <span className="inline-block text-[0.62rem] font-bold text-[#fbbf24] bg-[rgba(251,191,36,0.15)] border border-[rgba(251,191,36,0.4)] rounded-full px-[0.4rem] py-[0.05rem] uppercase tracking-[0.07em] flex-shrink-0">
-                        capitão
+                      <span className="inline-block text-[0.62rem] font-bold text-[#fbbf24] bg-[rgba(251,191,36,0.15)] border border-[rgba(251,191,36,0.4)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.07em] flex-shrink-0">
+                        CAPITÃO
                       </span>
                     )}
                   </div>
-                  {membro.nickMTGO && (
+                  {!excluido && membro.nickMTGO && (
                     <span className="text-[0.72rem] text-[#c795ff] font-mono flex-shrink-0">{membro.nickMTGO}</span>
                   )}
                 </li>

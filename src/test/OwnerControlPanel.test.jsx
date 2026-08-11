@@ -21,6 +21,8 @@ function createBaseProps(overrides = {}) {
         onDropPlayersWithoutCheckin: vi.fn(),
         onDropPlayer: vi.fn(),
         onEditResult: vi.fn(),
+        onRefazerRodada: vi.fn(),
+        onEncerrarTorneio: vi.fn(),
         actionLoading: false,
         adminActionKey: "",
         droppingPlayerId: "",
@@ -75,5 +77,119 @@ describe("OwnerControlPanel", () => {
         expect(screen.queryByRole("button", { name: /Dropar sem deck/i })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: /Revisar Rodada/i })).toBeInTheDocument();
         expect(props.onDropPlayersWithoutCheckin).toHaveBeenCalledWith(["2"]);
+    });
+
+    it("refaz a rodada após confirmação na modal", () => {
+        const props = createBaseProps({
+            torneio: {
+                id: "t-1",
+                status: "em_andamento",
+                rodadaAtual: 3,
+                totalRodadas: 4,
+                donoId: "owner-1",
+            },
+        });
+
+        render(<OwnerControlPanel {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: /Refazer rodada/i }));
+
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        expect(screen.getByText(/As partidas desta rodada serão removidas/i)).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: /^Confirmar$/i }));
+        expect(props.onRefazerRodada).toHaveBeenCalledTimes(1);
+    });
+
+    it("cancela o refazer rodada pela modal sem chamar o handler", () => {
+        const props = createBaseProps({
+            torneio: {
+                id: "t-1",
+                status: "em_andamento",
+                rodadaAtual: 3,
+                totalRodadas: 4,
+                donoId: "owner-1",
+            },
+        });
+
+        render(<OwnerControlPanel {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: /Refazer rodada/i }));
+        fireEvent.click(screen.getByRole("button", { name: /Cancelar/i }));
+
+        expect(props.onRefazerRodada).not.toHaveBeenCalled();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("encerra o torneio após confirmação na modal", () => {
+        const props = createBaseProps({
+            torneio: {
+                id: "t-1",
+                status: "em_andamento",
+                rodadaAtual: 2,
+                totalRodadas: 4,
+                donoId: "owner-1",
+            },
+        });
+
+        render(<OwnerControlPanel {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: /Encerrar torneio/i }));
+
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        expect(screen.getByText(/O ranking atual será considerado final/i)).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: /Confirmar encerramento/i }));
+        expect(props.onEncerrarTorneio).toHaveBeenCalledTimes(1);
+    });
+
+    it("cancela o encerramento pela modal sem chamar o handler", () => {
+        const props = createBaseProps({
+            torneio: {
+                id: "t-1",
+                status: "em_andamento",
+                rodadaAtual: 2,
+                totalRodadas: 4,
+                donoId: "owner-1",
+            },
+        });
+
+        render(<OwnerControlPanel {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: /Encerrar torneio/i }));
+        fireEvent.click(screen.getByRole("button", { name: /Cancelar/i }));
+
+        expect(props.onEncerrarTorneio).not.toHaveBeenCalled();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("mostra observação de contestação na aba Contestadas", () => {
+        const props = createBaseProps({
+            torneio: {
+                id: "t-1",
+                status: "em_andamento",
+                rodadaAtual: 1,
+                totalRodadas: 3,
+                donoId: "owner-1",
+            },
+            standings: [
+                { id: "u-1", nome: "Ana" },
+                { id: "u-2", nome: "Beto" },
+            ],
+            partidas: [
+                {
+                    id: "p-1",
+                    rodada: 1,
+                    jogador1Id: "u-1",
+                    jogador2Id: "u-2",
+                    vitoriasJogador1: 2,
+                    vitoriasJogador2: 0,
+                    status: "finalizada",
+                    contestado: true,
+                    observacaoContestacao: "Placar digitado invertido",
+                },
+            ],
+        });
+
+        render(<OwnerControlPanel {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: /Contestadas/i }));
+
+        expect(screen.getByText(/Observação: Placar digitado invertido/i)).toBeInTheDocument();
     });
 });
