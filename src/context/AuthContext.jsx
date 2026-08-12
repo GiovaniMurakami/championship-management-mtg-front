@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   loginUsuario,
   cadastrarUsuario,
@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [authRefreshing, setAuthRefreshing] = useState(false);
+  const pendingAuthActionRef = useRef(null);
 
   const [loginForm, setLoginForm] = useState({ email: "", senha: "" });
   const [registerForm, setRegisterForm] = useState({
@@ -194,7 +195,28 @@ export function AuthProvider({ children }) {
     setShowAuthModal(true);
   };
 
-  const closeAuth = () => setShowAuthModal(false);
+  const closeAuth = () => {
+    pendingAuthActionRef.current = null;
+    setShowAuthModal(false);
+  };
+
+  /** Se autenticado, executa a ação; senão abre o modal e retoma após login/cadastro. */
+  const requireAuth = (action, tab = "login") => {
+    if (token && usuario) {
+      Promise.resolve(action?.({ token, usuario })).catch(() => {});
+      return true;
+    }
+    pendingAuthActionRef.current = typeof action === "function" ? action : null;
+    openAuth(tab);
+    return false;
+  };
+
+  const runPendingAuthAction = (auth) => {
+    const pending = pendingAuthActionRef.current;
+    pendingAuthActionRef.current = null;
+    if (!pending) return;
+    Promise.resolve(pending(auth)).catch(() => {});
+  };
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -206,6 +228,7 @@ export function AuthProvider({ children }) {
       setAuthMessage("Login realizado com sucesso.");
       setShowAuthModal(false);
       setLoginForm({ email: "", senha: "" });
+      runPendingAuthAction({ token: response.token, usuario: response.usuario });
     } catch (error) {
       if (error.message?.includes("bloqueada") || error.message?.includes("429") || error.message?.includes("Tente novamente em")) {
         setLoginLockout(true);
@@ -242,6 +265,7 @@ export function AuthProvider({ children }) {
       setAuthMessage("Conta criada com sucesso! Um e-mail de boas-vindas foi enviado para você.");
       setShowAuthModal(false);
       setRegisterForm({ nome: "", email: "", senha: "", aceiteTermos: false });
+      runPendingAuthAction({ token: authData.token, usuario: authData.usuario });
     } catch (error) {
       setAuthMessage(error.message);
     } finally {
@@ -337,6 +361,7 @@ export function AuthProvider({ children }) {
     setEditProfileForm,
     openAuth,
     closeAuth,
+    requireAuth,
     handleLogin,
     handleRegister,
     setAuthTab,

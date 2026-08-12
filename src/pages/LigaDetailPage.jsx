@@ -35,7 +35,7 @@ export function LigaDetailPage() {
   usePageTitle(liga?.nome, { loading, fallback: "Liga" });
 
   const loadLiga = useCallback(async () => {
-    if (!ligaId || !token) return;
+    if (!ligaId) return;
     setLoading(true);
     setLoadError("");
     try {
@@ -52,7 +52,7 @@ export function LigaDetailPage() {
   }, [ligaId, token, addToast]);
 
   const loadRanking = useCallback(async () => {
-    if (!ligaId || !token) return;
+    if (!ligaId) return;
     setRankingLoading(true);
     setRankingError("");
     try {

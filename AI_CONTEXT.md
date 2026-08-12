@@ -131,6 +131,9 @@ BrowserRouter
 - Aguarda `authInitialized` antes de decidir
 - Se não autenticado: abre `AuthModal` automaticamente
 - `requireAdmin` bloqueia não-admins com mensagem estática
+- Usado só em rotas de **ação** (criar/editar) e admin — leitura de decks/torneios/ligas/times é pública
+
+`requireAuth(action)` em `AuthContext`: abre o modal e, após login/cadastro, retoma a ação (ex.: inscrever-se).
 
 ---
 
@@ -140,19 +143,22 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 
 | Rota | Proteção | Página |
 |---|---|---|
-| `/` | auth | `TournamentPage` (lista de torneios = home) |
-| `/decks` | auth | `MyDecksPage` |
+| `/` | público (leitura) | `TournamentPage` (lista de torneios = home) |
+| `/decks` | público (leitura) | `MyDecksPage` |
 | `/decks/criar` | auth | `DeckBuilderPage` (criar) |
-| `/editar-deck/:id` | auth | `DeckBuilderPage` (editar) |
+| `/editar-deck/:id` | público (leitura); edição só se dono/admin autenticado | `DeckBuilderPage` (editar/visualizar) |
 | `/torneios/criar` | auth + admin | `TournamentCreatePage` |
-| `/torneios/:id` | auth | `TournamentDetailPage` |
+| `/torneios/:id` | público (leitura) | `TournamentDetailPage` |
 | `/torneio/ingressar/:token` | público | `TournamentJoinPage` |
 | `/dashboard` | auth + admin | `DashboardPage` (anúncios) |
 | `/dashboard/bloqueios` | auth + admin | `DashboardBloqueiosPage` |
 | `/termos-de-uso` | público | `TermosDeUsoPage` |
 | `/privacidade` | público | `PrivacidadePage` (LGPD) |
-| `/times`, `/times/criar`, `/times/:id`, `/times/:id/editar` | auth | Time pages |
-| `/ligas`, `/ligas/criar`, `/ligas/:id`, `/ligas/:id/editar` | auth (+ admin criar/editar) | Liga pages |
+| `/times`, `/times/:id` | público (leitura) | Time pages |
+| `/times/criar`, `/times/:id/editar` | auth | Time create/edit |
+| `/ligas`, `/ligas/:id` | público (leitura) | Liga pages |
+| `/ligas/criar`, `/ligas/:id/editar` | auth + admin | Liga create/edit |
+| `/ferramentas/*` | público | Contador de vida / Calculadora Swiss |
 | `/esqueci-senha`, `/reset-senha` | público | Reset senha |
 | `/blog`, `/sobre-mim`, `/parceiros` | público (layout bare) | Landing pages |
 | `*` | — | `NotFoundPage` |
@@ -321,7 +327,7 @@ Arquitetura:
 
 `src/utils/externalNavigation.js`:
 - `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados e acesso direto ao app
-- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/app-torneios`)
+- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/torneios`)
 - Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
 - `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
 
@@ -342,7 +348,7 @@ VITE_YOUTUBE_CHANNEL_ID=...
 VITE_YOUTUBE_API_KEY=...
 VITE_SITE_PASSWORD=...          # gate opcional
 VITE_APP_URL=...                # URL publica do front (default app.tiagofuguete.com.br)
-VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/app-torneios)
+VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/torneios)
 ```
 
 Copiar de `.env.example`. **Nunca commitar `.env`.**

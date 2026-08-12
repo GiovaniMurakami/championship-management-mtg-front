@@ -37,23 +37,17 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={
-          <ProtectedRoute><TournamentPage /></ProtectedRoute>
-        } />
+        <Route path="/" element={<TournamentPage />} />
         <Route path="/torneio" element={<Navigate to="/" replace />} />
 
-        <Route path="/decks" element={
-          <ProtectedRoute><MyDecksPage /></ProtectedRoute>
-        } />
+        <Route path="/decks" element={<MyDecksPage />} />
         <Route path="/decks/criar" element={
           <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
         } />
         <Route path="/editar-deck/:id" element={
-          <ProtectedRoute>
-            <UuidParamGuard param="id">
-              <DeckBuilderPage isEditMode={true} />
-            </UuidParamGuard>
-          </ProtectedRoute>
+          <UuidParamGuard param="id">
+            <DeckBuilderPage isEditMode={true} />
+          </UuidParamGuard>
         } />
 
         <Route path="/torneios" element={<Navigate to="/" replace />} />
@@ -61,11 +55,9 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><TournamentCreatePage /></ProtectedRoute>
         } />
         <Route path="/torneios/:id" element={
-          <ProtectedRoute>
-            <UuidParamGuard param="id">
-              <TournamentDetailPage />
-            </UuidParamGuard>
-          </ProtectedRoute>
+          <UuidParamGuard param="id">
+            <TournamentDetailPage />
+          </UuidParamGuard>
         } />
         <Route path="/torneio/ingressar/:token" element={<TournamentJoinPage />} />
         <Route path="/dashboard" element={
@@ -76,18 +68,14 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><DashboardBloqueiosPage /></ProtectedRoute>
         } />
 
-        <Route path="/times" element={
-          <ProtectedRoute><TimePage /></ProtectedRoute>
-        } />
+        <Route path="/times" element={<TimePage />} />
         <Route path="/times/criar" element={
           <ProtectedRoute><TimeCreatePage editMode={false} /></ProtectedRoute>
         } />
         <Route path="/times/:id" element={
-          <ProtectedRoute>
-            <UuidParamGuard param="id">
-              <TimeDetailPage />
-            </UuidParamGuard>
-          </ProtectedRoute>
+          <UuidParamGuard param="id">
+            <TimeDetailPage />
+          </UuidParamGuard>
         } />
         <Route path="/times/:id/editar" element={
           <ProtectedRoute>
@@ -97,18 +85,14 @@ export function AppRoutes() {
           </ProtectedRoute>
         } />
 
-        <Route path="/ligas" element={
-          <ProtectedRoute><LigaPage /></ProtectedRoute>
-        } />
+        <Route path="/ligas" element={<LigaPage />} />
         <Route path="/ligas/criar" element={
           <ProtectedRoute requireAdmin><LigaCreatePage editMode={false} /></ProtectedRoute>
         } />
         <Route path="/ligas/:id" element={
-          <ProtectedRoute>
-            <UuidParamGuard param="id">
-              <LigaDetailPage />
-            </UuidParamGuard>
-          </ProtectedRoute>
+          <UuidParamGuard param="id">
+            <LigaDetailPage />
+          </UuidParamGuard>
         } />
         <Route path="/ligas/:id/editar" element={
           <ProtectedRoute requireAdmin>
@@ -119,12 +103,8 @@ export function AppRoutes() {
         } />
 
         <Route path="/ferramentas" element={<Navigate to="/ferramentas/contador-vida" replace />} />
-        <Route path="/ferramentas/contador-vida" element={
-          <ProtectedRoute><ContadorVidaPage /></ProtectedRoute>
-        } />
-        <Route path="/ferramentas/calculadora-swiss" element={
-          <ProtectedRoute><CalculadoraSwissPage /></ProtectedRoute>
-        } />
+        <Route path="/ferramentas/contador-vida" element={<ContadorVidaPage />} />
+        <Route path="/ferramentas/calculadora-swiss" element={<CalculadoraSwissPage />} />
 
         <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
         <Route path="/reset-senha" element={<ResetSenhaPage />} />

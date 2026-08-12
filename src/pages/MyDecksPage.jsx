@@ -52,7 +52,7 @@ function FormatBadge({ formato }) {
 }
 
 export function MyDecksPage() {
-  const { usuario, token } = useAuth();
+  const { usuario, token, requireAuth } = useAuth();
   const navigate = useNavigate();
 
   usePageTitle(PAGE_TITLES.meusDecks);
@@ -87,12 +87,22 @@ export function MyDecksPage() {
   tokenRef.current = token;
 
   const handleAbaChange = useCallback((value) => {
+    if (value === "meus" && !usuario?.id) {
+      requireAuth(() => {
+        setSomenteMyDecks(true);
+        setPagina(1);
+        setDecks([]);
+        setTotal(0);
+        setError("");
+      });
+      return;
+    }
     setSomenteMyDecks(value === "meus");
     setPagina(1);
     setDecks([]);
     setTotal(0);
     setError("");
-  }, []);
+  }, [usuario?.id, requireAuth]);
 
   const loadDecks = useCallback(async () => {
     const request = listRequest();
@@ -251,7 +261,7 @@ export function MyDecksPage() {
         <button
           className="inline-flex items-center gap-[0.4rem] border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] max-sm:justify-center"
           type="button"
-          onClick={() => navigate("/decks/criar")}
+          onClick={() => requireAuth(() => navigate("/decks/criar"))}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -330,7 +340,7 @@ export function MyDecksPage() {
             <button
               className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
               type="button"
-              onClick={() => navigate("/decks/criar")}
+              onClick={() => requireAuth(() => navigate("/decks/criar"))}
             >
               Criar primeiro deck
             </button>

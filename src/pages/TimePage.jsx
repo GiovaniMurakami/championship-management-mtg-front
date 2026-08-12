@@ -20,7 +20,7 @@ const getTotalMembros = (time) =>
   time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? 0;
 
 export function TimePage() {
-  const { token, isAdmin, usuario } = useAuth();
+  const { token, isAdmin, usuario, requireAuth } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -72,7 +72,6 @@ export function TimePage() {
   }, [token, usuario?.id]);
 
   const loadTimes = useCallback(async () => {
-    if (!token) return;
     setLoading(true);
     try {
       const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };
@@ -212,7 +211,7 @@ export function TimePage() {
               </button>
               <button
                 className="px-4 py-2 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white rounded-lg text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)]"
-                onClick={() => navigate("/times/criar")}
+                onClick={() => requireAuth(() => navigate("/times/criar"))}
               >
                 + Criar Time
               </button>
