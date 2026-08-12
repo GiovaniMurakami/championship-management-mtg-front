@@ -321,7 +321,7 @@ Arquitetura:
 
 `src/utils/externalNavigation.js`:
 - `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados e acesso direto ao app
-- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/app-torneios`)
+- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/torneios`)
 - Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
 - `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
 
@@ -342,7 +342,7 @@ VITE_YOUTUBE_CHANNEL_ID=...
 VITE_YOUTUBE_API_KEY=...
 VITE_SITE_PASSWORD=...          # gate opcional
 VITE_APP_URL=...                # URL publica do front (default app.tiagofuguete.com.br)
-VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/app-torneios)
+VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/torneios)
 ```
 
 Copiar de `.env.example`. **Nunca commitar `.env`.**

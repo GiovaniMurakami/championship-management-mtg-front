@@ -1,5 +1,5 @@
 const DEFAULT_APP_PUBLIC_URL = "https://app.tiagofuguete.com.br";
-const DEFAULT_WORDPRESS_EMBED_URL = "https://tiagofuguete.com.br/app-torneios";
+const DEFAULT_WORDPRESS_EMBED_URL = "https://tiagofuguete.com.br/torneios";
 
 const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
 
