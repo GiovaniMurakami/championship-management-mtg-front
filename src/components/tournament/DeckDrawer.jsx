@@ -55,7 +55,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
   }, []);
 
   useEffect(() => {
-    if (!deckId || !token) return;
+    if (!deckId) return;
 
     const resolveCards = async (entries) => {
       const cards = await buscarCartasPorNome(entries.map((entry) => entry.nome));

@@ -175,111 +175,61 @@ export function Navbar({
 
       {/* Desktop nav */}
       <nav className="flex items-center gap-4 max-nav:hidden" aria-label="Navegação principal">
-        {isAuthenticated ? (
-          <NavLink to="/" className={desktopLinkClass} onClick={close}>
-            Torneios
-          </NavLink>
-        ) : (
-          <button
-            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
-            type="button"
-            onClick={() => { onOpenAuth("login"); close(); }}
-          >
-            Torneios
-          </button>
-        )}
+        <NavLink to="/" className={desktopLinkClass} onClick={close}>
+          Torneios
+        </NavLink>
 
-        {isAuthenticated ? (
-          <NavLink to="/decks" className={desktopLinkClass} onClick={close}>
-            Decks
-          </NavLink>
-        ) : (
-          <button
-            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
-            type="button"
-            onClick={() => { onOpenAuth("login"); close(); }}
-          >
-            Decks
-          </button>
-        )}
+        <NavLink to="/decks" className={desktopLinkClass} onClick={close}>
+          Decks
+        </NavLink>
 
-        {isAuthenticated ? (
-          <NavLink to="/ligas" className={desktopLinkClass} onClick={close}>
-            Ligas
-          </NavLink>
-        ) : (
-          <button
-            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
-            type="button"
-            onClick={() => { onOpenAuth("login"); close(); }}
-          >
-            Ligas
-          </button>
-        )}
+        <NavLink to="/ligas" className={desktopLinkClass} onClick={close}>
+          Ligas
+        </NavLink>
 
-        {isAuthenticated ? (
-          <NavLink to="/times" className={desktopLinkClass} onClick={close}>
-            Times
-          </NavLink>
-        ) : (
-          <button
-            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
-            type="button"
-            onClick={() => { onOpenAuth("login"); close(); }}
-          >
-            Times
-          </button>
-        )}
+        <NavLink to="/times" className={desktopLinkClass} onClick={close}>
+          Times
+        </NavLink>
 
-        {isAuthenticated ? (
-          <div className="relative" ref={toolsRef}>
-            <button
-              type="button"
-              className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
-                toolsOpen ? "text-white" : "text-[#beafd7] hover:text-white"
-              }`}
-              aria-expanded={toolsOpen}
-              aria-haspopup="menu"
-              onClick={() => setToolsOpen((open) => !open)}
-            >
-              Ferramentas
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            {toolsOpen && (
-              <div
-                role="menu"
-                className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50"
-              >
-                <NavLink
-                  role="menuitem"
-                  to="/ferramentas/contador-vida"
-                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
-                  onClick={close}
-                >
-                  Contador de vida
-                </NavLink>
-                <NavLink
-                  role="menuitem"
-                  to="/ferramentas/calculadora-swiss"
-                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
-                  onClick={close}
-                >
-                  Calculadora Swiss / Top 8
-                </NavLink>
-              </div>
-            )}
-          </div>
-        ) : (
+        <div className="relative" ref={toolsRef}>
           <button
-            className="text-[#beafd7] font-semibold text-[0.9rem] bg-transparent border-none cursor-pointer p-0 hover:text-white transition-colors duration-200"
             type="button"
-            onClick={() => { onOpenAuth("login"); close(); }}
+            className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
+              toolsOpen ? "text-white" : "text-[#beafd7] hover:text-white"
+            }`}
+            aria-expanded={toolsOpen}
+            aria-haspopup="menu"
+            onClick={() => setToolsOpen((open) => !open)}
           >
             Ferramentas
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
-        )}
+          {toolsOpen && (
+            <div
+              role="menu"
+              className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50"
+            >
+              <NavLink
+                role="menuitem"
+                to="/ferramentas/contador-vida"
+                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                onClick={close}
+              >
+                Contador de vida
+              </NavLink>
+              <NavLink
+                role="menuitem"
+                to="/ferramentas/calculadora-swiss"
+                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                onClick={close}
+              >
+                Calculadora Swiss / Top 8
+              </NavLink>
+            </div>
+          )}
+        </div>
 
         {isAuthenticated && isAdmin && (
           <div className="relative" ref={dashboardRef}>
@@ -402,93 +352,37 @@ export function Navbar({
             aria-label="Menu de navegação"
           >
             <nav className="flex flex-col gap-[0.2rem]">
-              {isAuthenticated ? (
-                <NavLink to="/" className={mobileLinkClass} onClick={close}>
-                  <IconTrophy />
-                  <span>Torneios</span>
-                </NavLink>
-              ) : (
-                <button
-                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                  type="button"
-                  onClick={() => { onOpenAuth("login"); close(); }}
-                >
-                  <IconTrophy />
-                  <span>Torneios</span>
-                </button>
-              )}
+              <NavLink to="/" className={mobileLinkClass} onClick={close}>
+                <IconTrophy />
+                <span>Torneios</span>
+              </NavLink>
 
-              {isAuthenticated ? (
-                <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
-                  <IconDeck />
-                  <span>Meus Decks</span>
-                </NavLink>
-              ) : (
-                <button
-                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                  type="button"
-                  onClick={() => { onOpenAuth("login"); close(); }}
-                >
-                  <IconDeck />
-                  <span>Decks</span>
-                </button>
-              )}
+              <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
+                <IconDeck />
+                <span>Decks</span>
+              </NavLink>
 
-              {isAuthenticated ? (
-                <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
-                  <IconLiga />
-                  <span>Ligas</span>
-                </NavLink>
-              ) : (
-                <button
-                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                  type="button"
-                  onClick={() => { onOpenAuth("login"); close(); }}
-                >
-                  <IconLiga />
-                  <span>Ligas</span>
-                </button>
-              )}
+              <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
+                <IconLiga />
+                <span>Ligas</span>
+              </NavLink>
 
-              {isAuthenticated ? (
-                <NavLink to="/times" className={mobileLinkClass} onClick={close}>
-                  <IconTime />
-                  <span>Times</span>
-                </NavLink>
-              ) : (
-                <button
-                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                  type="button"
-                  onClick={() => { onOpenAuth("login"); close(); }}
-                >
-                  <IconTime />
-                  <span>Times</span>
-                </button>
-              )}
+              <NavLink to="/times" className={mobileLinkClass} onClick={close}>
+                <IconTime />
+                <span>Times</span>
+              </NavLink>
 
-              {isAuthenticated ? (
-                <div className="flex flex-col gap-0.5">
-                  <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#9f91bd]">
-                    <IconTools />
-                    <span>Ferramentas</span>
-                  </p>
-                  <NavLink to="/ferramentas/contador-vida" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Contador de vida</span>
-                  </NavLink>
-                  <NavLink to="/ferramentas/calculadora-swiss" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Calculadora Swiss / Top 8</span>
-                  </NavLink>
-                </div>
-              ) : (
-                <button
-                  className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] text-[#beafd7] font-semibold text-[0.92rem] border-none bg-transparent cursor-pointer w-full text-left hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff] transition-all duration-[180ms]"
-                  type="button"
-                  onClick={() => { onOpenAuth("login"); close(); }}
-                >
-                  <IconTools />
-                  <span>Ferramentas</span>
-                </button>
-              )}
+              <div className="mt-1 mb-1">
+                <p className="m-0 px-[0.75rem] py-1 text-[0.72rem] uppercase tracking-[0.08em] text-[#8f7fb0] font-semibold">
+                  Ferramentas
+                </p>
+                <NavLink to="/ferramentas/contador-vida" className={mobileLinkClass} onClick={close}>
+                  <span>Contador de vida</span>
+                </NavLink>
+                <NavLink to="/ferramentas/calculadora-swiss" className={mobileLinkClass} onClick={close}>
+                  <span>Calculadora Swiss / Top 8</span>
+                </NavLink>
+              </div>
 
               {isAuthenticated && isAdmin && (
                 <div className="flex flex-col gap-0.5">

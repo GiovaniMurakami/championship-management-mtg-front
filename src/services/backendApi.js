@@ -165,9 +165,7 @@ export const listarTorneios = async (token, params) => {
 };
 
 export const buscarTorneio = (torneioId, token) =>
-  httpClient.get(`/torneio/${torneioId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  httpClient.get(`/torneio/${torneioId}`, optionalAuthConfig(token));
 
 export const inscreverTorneio = (torneioId, token, payload = {}) =>
   httpClient.post(`/torneio/${torneioId}/inscrever`, payload, {
@@ -242,9 +240,7 @@ export const dropJogador = (torneioId, jogadorId, token) =>
   });
 
 export const getStandings = (torneioId, token) =>
-  httpClient.get(`/torneio/${torneioId}/standings`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  httpClient.get(`/torneio/${torneioId}/standings`, optionalAuthConfig(token));
 
 export const listarPartidasTorneio = (torneioId, token, options = {}) => {
   const params = {};
@@ -292,14 +288,12 @@ export const criarLiga = (payload, token) =>
 
 export const listarLigas = (token, params) =>
   httpClient.get("/liga/listar", {
-    headers: { Authorization: `Bearer ${token}` },
+    ...optionalAuthConfig(token),
     params,
   });
 
 export const buscarLiga = (ligaId, token) =>
-  httpClient.get(`/liga/${ligaId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  httpClient.get(`/liga/${ligaId}`, optionalAuthConfig(token));
 
 export const atualizarLiga = (ligaId, payload, token) =>
   httpClient.put(`/liga/${ligaId}`, payload, {
@@ -313,7 +307,7 @@ export const deletarLiga = (ligaId, token) =>
 
 export const getRankingLiga = async (ligaId, token, options = {}) => {
   const response = await httpClient.get(`/liga/${ligaId}/ranking`, {
-    headers: { Authorization: `Bearer ${token}` },
+    ...optionalAuthConfig(token),
     params: options.limiteTimes != null ? { limiteTimes: options.limiteTimes } : undefined,
   });
 
@@ -328,14 +322,12 @@ export const criarTime = (payload, token) =>
 
 export const listarTimes = (token, params) =>
   httpClient.get("/time/listar", {
-    headers: { Authorization: `Bearer ${token}` },
+    ...optionalAuthConfig(token),
     params,
   });
 
 export const buscarTime = (timeId, token) =>
-  httpClient.get(`/time/${timeId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  httpClient.get(`/time/${timeId}`, optionalAuthConfig(token));
 
 export const atualizarTime = (timeId, payload, token) =>
   httpClient.put(`/time/${timeId}`, payload, {

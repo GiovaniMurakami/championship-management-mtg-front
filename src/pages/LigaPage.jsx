@@ -29,7 +29,6 @@ export function LigaPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const loadLigas = useCallback(async () => {
-    if (!token) return;
     setLoading(true);
     try {
       const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };

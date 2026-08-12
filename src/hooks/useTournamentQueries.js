@@ -43,28 +43,28 @@ export function normalizeMatchesPayload(data) {
 }
 
 export function useTournamentQueries({ torneioId, token, enabled = true }) {
-  const canFetch = Boolean(enabled && torneioId && token);
+  const canFetch = Boolean(enabled && torneioId);
 
   const tournamentQuery = useQuery({
-    queryKey: tournamentQueryKeys.detail(torneioId),
+    queryKey: [...tournamentQueryKeys.detail(torneioId), Boolean(token)],
     queryFn: () => buscarTorneio(torneioId, token),
     enabled: canFetch,
   });
 
   const standingsQuery = useQuery({
-    queryKey: tournamentQueryKeys.standings(torneioId),
+    queryKey: [...tournamentQueryKeys.standings(torneioId), Boolean(token)],
     queryFn: () => getStandings(torneioId, token),
     enabled: canFetch,
   });
 
   const matchesQuery = useQuery({
-    queryKey: tournamentQueryKeys.matches(torneioId),
+    queryKey: [...tournamentQueryKeys.matches(torneioId), Boolean(token)],
     queryFn: () => listarPartidasTorneio(torneioId, token),
     enabled: canFetch,
   });
 
   const teamsQuery = useQuery({
-    queryKey: tournamentQueryKeys.teams,
+    queryKey: [...tournamentQueryKeys.teams, Boolean(token)],
     queryFn: async () => {
       const data = await listarTimes(token);
       return data?.times || data || [];

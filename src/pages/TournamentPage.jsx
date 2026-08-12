@@ -58,7 +58,7 @@ function PlatformStats() {
 }
 
 export function TournamentPage() {
-  const { token, usuario, isAdmin } = useAuth();
+  const { token, usuario, isAdmin, requireAuth } = useAuth();
   const { addToast } = useToast();
   const listRequest = useRequestSequence();
   const prefetchRequest = useRequestSequence();
@@ -88,7 +88,6 @@ export function TournamentPage() {
   }, []);
 
   const loadTorneios = useCallback(async () => {
-    if (!token) return;
     const request = listRequest();
     setLoading(true);
     setLoadError("");
@@ -135,7 +134,6 @@ export function TournamentPage() {
   }, [loadTorneios]);
 
   useEffect(() => {
-    if (!token) return;
     const request = prefetchRequest();
     const prefetchInactiveTabTotal = async () => {
       try {
@@ -194,8 +192,15 @@ export function TournamentPage() {
     loadTorneios();
   }, [loadTorneios]);
 
-  // Subscreve apenas torneios ativos (finalizados não emitem mais eventos)
+  // Subscreve apenas torneios ativos (finalizados não emitem mais eventos) — só autenticado
   useEffect(() => {
+    if (!token) {
+      Object.values(channelsRef.current).forEach((channel) => {
+        if (channel) unsubscribeFromTournament(channel);
+      });
+      channelsRef.current = {};
+      return undefined;
+    }
     const ativos = torneios.filter((t) => t.status !== "finalizado");
     ativos.forEach((torneio) => {
       if (!channelsRef.current[torneio.id]) {
@@ -215,16 +220,22 @@ export function TournamentPage() {
       });
       channelsRef.current = {};
     };
-  }, [torneios, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
+  }, [token, torneios, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
 
-  const handleInscrever = guard(async (torneioId) => {
-    if (!usuario?.nickMTGO) {
+  const handleInscrever = guard(async (torneioId, authOverride) => {
+    const authToken = authOverride?.token ?? token;
+    const authUsuario = authOverride?.usuario ?? usuario;
+    if (!authToken) {
+      requireAuth((auth) => handleInscrever(torneioId, auth));
+      return;
+    }
+    if (!authUsuario?.nickMTGO) {
       addToast("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever. Acesse seu perfil pelo menu superior.", { type: "error", duration: 6000 });
       return;
     }
     setEnrollingId(torneioId);
     try {
-      await inscreverTorneio(torneioId, token);
+      await inscreverTorneio(torneioId, authToken);
       setInscricoesLocais((prev) => ({ ...prev, [torneioId]: true }));
       addToast("Inscrição realizada com sucesso!", { type: "success" });
       loadTorneios();
