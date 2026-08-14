@@ -4,3 +4,6 @@ export * from "./MetagameDeckSection";
 export * from "./MetagameRecentSidebar";
 export * from "./MetagameManaPips";
 export * from "./MetagameNomeConsolidadoEditor";
+export * from "./MetagameListaCard";
+export * from "./MetagameMatchupsSection";
+export * from "./MetagameResultadosSection";
