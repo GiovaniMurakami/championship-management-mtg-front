@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.31** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.32** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -451,4 +451,4 @@ npm run preview
 
 ---
 
-*Última revisão: agosto/2026 — alinhado com v1.2.31 (metagame, scroll ao topo, nick MOL)*
+*Última revisão: agosto/2026 — alinhado com v1.2.32 (metagame mostra a primeira lista do arquétipo)*
