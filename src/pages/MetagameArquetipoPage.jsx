@@ -247,7 +247,7 @@ export function MetagameArquetipoPage() {
             </div>
           )}
 
-          <h2 className="m-0 mb-3 text-[#f5edff] text-[1.25rem]">Lista típica</h2>
+          <h2 className="m-0 mb-3 text-[#f5edff] text-[1.25rem]">Lista</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <MetagameDeckSection
               titulo="Maindeck"
