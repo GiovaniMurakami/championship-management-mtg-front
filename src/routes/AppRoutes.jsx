@@ -30,6 +30,8 @@ const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m 
 const TimeCreatePage      = lazy(() => import("../pages/TimeCreatePage").then(m => ({ default: m.TimeCreatePage })));
 const ContadorVidaPage    = lazy(() => import("../pages/ContadorVidaPage").then(m => ({ default: m.ContadorVidaPage })));
 const CalculadoraSwissPage = lazy(() => import("../pages/CalculadoraSwissPage").then(m => ({ default: m.CalculadoraSwissPage })));
+const MetagamePage = lazy(() => import("../pages/MetagamePage").then(m => ({ default: m.MetagamePage })));
+const MetagameArquetipoPage = lazy(() => import("../pages/MetagameArquetipoPage").then(m => ({ default: m.MetagameArquetipoPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -86,6 +88,8 @@ export function AppRoutes() {
         } />
 
         <Route path="/ligas" element={<LigaPage />} />
+        <Route path="/metagame" element={<MetagamePage />} />
+        <Route path="/metagame/:formato/:slug" element={<MetagameArquetipoPage />} />
         <Route path="/ligas/criar" element={
           <ProtectedRoute requireAdmin><LigaCreatePage editMode={false} /></ProtectedRoute>
         } />

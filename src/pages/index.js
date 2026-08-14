@@ -17,4 +17,6 @@ export { NotFoundPage } from "./NotFoundPage";
 export { ContadorVidaPage } from "./ContadorVidaPage";
 export { CalculadoraSwissPage } from "./CalculadoraSwissPage";
 export { DashboardBloqueiosPage } from "./DashboardBloqueiosPage";
+export { MetagamePage } from "./MetagamePage";
+export { MetagameArquetipoPage } from "./MetagameArquetipoPage";
 export { PrivacidadePage } from "./PrivacidadePage";

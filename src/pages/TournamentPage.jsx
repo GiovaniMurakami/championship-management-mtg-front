@@ -365,7 +365,7 @@ export function TournamentPage() {
                     {torneio.descricao && (
                       <ExpandableText
                         text={torneio.descricao}
-                        maxLength={180}
+                        maxLines={3}
                         className="text-[#d7d0e6] text-[0.84rem]"
                         buttonClassName="mt-2 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#c795ff] text-[0.78rem] font-semibold cursor-pointer hover:text-white transition-colors"
                       />
@@ -373,7 +373,7 @@ export function TournamentPage() {
                     {torneio.regras && (
                       <ExpandableText
                         text={torneio.regras}
-                        maxLength={220}
+                        maxLines={3}
                         className="rounded-xl border border-[rgba(56,189,248,0.16)] bg-[rgba(56,189,248,0.05)] px-3 py-[0.7rem] text-[#d5ebff] text-[0.82rem]"
                         buttonClassName="mt-2 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#7dd3fc] text-[0.78rem] font-semibold cursor-pointer hover:text-white transition-colors"
                       />

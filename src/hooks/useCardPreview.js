@@ -1,18 +1,41 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import { buscarCartaPorNome } from "../services/scryfallApi";
 
 export function useCardPreview() {
   const [previewCard, setPreviewCard] = useState(null);
+  const seqRef = useRef(0);
+
+  const closeCardPreview = useCallback(() => {
+    seqRef.current += 1;
+    setPreviewCard(null);
+  }, []);
 
   const openCardPreview = useCallback((card) => {
-    if (!card?.imagem) {
+    if (card?.imagem) {
+      seqRef.current += 1;
+      setPreviewCard(card);
+      return;
+    }
+
+    const nome = typeof card === "string" ? card : card?.nome;
+    if (!nome) {
+      seqRef.current += 1;
       setPreviewCard(null);
       return;
     }
-    setPreviewCard(card);
-  }, []);
 
-  const closeCardPreview = useCallback(() => {
-    setPreviewCard(null);
+    const seq = ++seqRef.current;
+    buscarCartaPorNome(nome)
+      .then((carta) => {
+        if (seq !== seqRef.current) return;
+        if (carta?.imagem) {
+          setPreviewCard({ nome: carta.nome, imagem: carta.imagem });
+        }
+      })
+      .catch(() => {
+        if (seq !== seqRef.current) return;
+        setPreviewCard(null);
+      });
   }, []);
 
   return {

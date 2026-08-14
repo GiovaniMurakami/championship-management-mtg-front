@@ -1,3 +1,5 @@
+import { getCardTypeGroup } from "../../utils/cardTypeGroup";
+
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 function rr(ctx, x, y, w, h, r) {
@@ -138,24 +140,17 @@ export async function loadCardImagesForDeck(cards, options = {}) {
   });
 }
 
-function getTypeGroup(typeLine) {
-  if (!typeLine) return "Other";
-  if (typeLine.includes("Creature")) return "Creature";
-  if (typeLine.includes("Land")) return "Land";
-  if (typeLine.includes("Planeswalker")) return "Planeswalker";
-  if (typeLine.includes("Instant")) return "Instant";
-  if (typeLine.includes("Sorcery")) return "Sorcery";
-  if (typeLine.includes("Enchantment")) return "Enchantment";
-  if (typeLine.includes("Artifact")) return "Artifact";
-  return "Other";
-}
-
 const GROUP_ORDER = ["Creature", "Planeswalker", "Instant", "Sorcery", "Enchantment", "Artifact", "Other", "Land"];
 const GROUP_COLOR = {
   Creature: "#6ee7b7", Planeswalker: "#fcd34d", Instant: "#60a5fa",
   Sorcery: "#f87171", Enchantment: "#c084fc", Artifact: "#94a3b8",
   Land: "#a78bfa", Other: "#e9d5ff",
 };
+
+function getTypeGroup(typeLine) {
+  const group = getCardTypeGroup(typeLine);
+  return GROUP_ORDER.includes(group) ? group : "Other";
+}
 const FMT_COLOR = {
   standard: "#93c5fd", modern: "#fdba74", pioneer: "#6ee7b7",
   legacy: "#c4b5fd", commander: "#fcd34d", commander500: "#f59e0b", pauper: "#cbd5e1",

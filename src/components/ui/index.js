@@ -12,6 +12,7 @@ export { Footer } from "./Footer";
 export { Hero } from "./Hero";
 export { LandingHeader } from "./LandingHeader";
 export { Navbar } from "./Navbar";
+export { ScrollToTop } from "./ScrollToTop";
 export { PageShell } from "./PageShell";
 export { SelectField } from "./SelectField";
 export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard } from "./Skeleton";

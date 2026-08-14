@@ -20,7 +20,7 @@ export function DeckList({
         <li
           key={card.nome}
           className="flex items-center gap-2 px-[0.35rem] py-[0.22rem] rounded-[0.4rem] hover:bg-white/[0.04] group"
-          onMouseEnter={() => onCardMouseEnter(card)}
+          onMouseEnter={() => onCardMouseEnter?.(card)}
           onMouseLeave={onCardMouseLeave}
         >
           {/* dl-info */}

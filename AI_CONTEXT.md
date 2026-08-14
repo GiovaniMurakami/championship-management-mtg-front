@@ -13,6 +13,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Construtor e CRUD de decks (validação via Scryfall)
 - Torneios Swiss com top cut, pareamentos, resultados e check-in por rodada
 - Ligas (rankings de jogadores, decks, cartas e times)
+- Metagame público por formato (arquétipos, matchups, listas)
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
@@ -55,6 +56,7 @@ src/
 │   ├── deck/               # DeckBuilder, CardSearch, HandSimulator, etc.
 │   ├── tournament/         # MatchPanel, StandingsTable, OwnerControlPanel, etc.
 │   ├── liga/               # Ranking sections
+│   ├── metagame/           # Lista e detalhe de arquétipos
 │   └── ui/                 # Navbar, Footer, Spinner, modais base, etc.
 ├── hooks/                  # Lógica de negócio reutilizável
 ├── context/
@@ -157,6 +159,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | `/times`, `/times/:id` | público (leitura) | Time pages |
 | `/times/criar`, `/times/:id/editar` | auth | Time create/edit |
 | `/ligas`, `/ligas/:id` | público (leitura) | Liga pages |
+| `/metagame`, `/metagame/:formato/:slug` | público | Metagame (slug não é UUID) |
 | `/ligas/criar`, `/ligas/:id/editar` | auth + admin | Liga create/edit |
 | `/ferramentas/*` | público | Contador de vida / Calculadora Swiss |
 | `/esqueci-senha`, `/reset-senha` | público | Reset senha |
@@ -183,6 +186,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Fluxo de rodadas/top cut | `utils/tournamentFlow.js`, `hooks/useTournamentQueries.js` |
 | Realtime Ably | `services/ablyService.js`, handlers em `useTournamentDetail` e `TournamentPage` |
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
+| Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
 | Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
@@ -231,6 +235,13 @@ Torneios: POST /torneio/criar, /:id/inscrever
           DELETE /torneio/:id
 
 Ligas:    CRUD /liga/* + GET /liga/:id/ranking
+          (`jogador.nome` = nick MOL)
+
+Metagame: GET /metagame?formato=&dias=30
+          GET /metagame/:formato/:slug?dias=30   (público; sem JWT)
+          (`usuario.nome` = nick MOL)
+
+Decks:    CRUD /deck/* — `usuario.nome` em listar/buscar = nick MOL
 
 Times:    CRUD /time/* + entrar, sair, convite, solicitar, aprovar, rejeitar
 
@@ -330,6 +341,7 @@ Arquitetura:
 - `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/torneios`)
 - Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
 - `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
+- `ScrollToTop` em `App.jsx` volta o scroll ao topo a cada mudança de `pathname`
 
 Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalNavigationTarget()`.
 
@@ -363,12 +375,12 @@ npm run lint      # eslint
 ```
 
 Testes em `src/test/`:
-- `backendApi.test.js`, `scryfallApi.test.js`
-- `tournamentFlow.test.js`
-- Componentes: `OwnerControlPanel.test.jsx`, `ReviewRoundModal.test.jsx`, `TournamentCreateForm.test.jsx`
+- API: `backendApi.test.js`, `backendApi.torneioMutations.test.js`, `backendApi.metagame.test.js`, `scryfallApi.test.js`
+- Utils: `deckColors.test.js`, `cardTypeGroup.test.js`, `tournamentFlow.test.js`, `externalNavigation.test.js`
+- UI: `ScrollToTop.test.jsx`, `ExpandableText.test.jsx`, `OwnerControlPanel.test.jsx`, `Navbar.*.test.jsx`
 - Setup: `src/test/setupTests.js`
 
-Config de teste embutida em `vite.config.js` (ambiente jsdom).
+Config de teste embutida em `vite.config.js` (ambiente jsdom). Sem limiar global de cobertura; o backend é quem tem `coverageThreshold`.
 
 ---
 

@@ -211,6 +211,8 @@ export function resolveExternalNavigationTarget(locationLike) {
       return withSearch("/times/criar", searchParams);
     case "ligas":
       return withSearch("/ligas", searchParams);
+    case "metagame":
+      return withSearch("/metagame", searchParams);
     case "criar-liga":
       return withSearch("/ligas/criar", searchParams);
     case "blog":

@@ -62,6 +62,18 @@ describe("resolveExternalNavigationTarget", () => {
     });
   });
 
+  it("redireciona rota externa de metagame preservando filtros", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?rota=metagame&formato=pauper&dias=30",
+    });
+
+    expect(target).toEqual({
+      pathname: "/metagame",
+      search: "?formato=pauper&dias=30",
+    });
+  });
+
   it("redireciona rota externa de termos de uso", () => {
     const target = resolveExternalNavigationTarget({
       pathname: "/",

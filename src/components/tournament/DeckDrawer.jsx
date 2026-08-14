@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { Tooltip } from "../ui/Tooltip";
+import { getCardTypeGroup } from "../../utils/cardTypeGroup";
 
 export const RANK_BADGE = {
   1: "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]",
@@ -100,9 +101,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
   const grouped = useMemo(() => {
     const groups = Object.fromEntries(TYPE_ORDER.map((t) => [t, []]));
     maindeck.forEach((card) => {
-      const tl = card.typeLine || "";
-      const match = TYPE_ORDER.slice(0, -1).find((t) => tl.includes(t));
-      groups[match || "Other"].push(card);
+      groups[getCardTypeGroup(card.typeLine)].push(card);
     });
     return TYPE_ORDER.filter((t) => groups[t].length > 0).map((t) => ({ type: t, cards: groups[t] }));
   }, [maindeck]);

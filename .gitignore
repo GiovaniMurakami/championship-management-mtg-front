@@ -38,5 +38,5 @@ coverage
 *.sln
 *.sw?
 .claude
+.superpowers
 .vscode
-

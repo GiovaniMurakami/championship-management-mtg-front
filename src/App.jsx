@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import {
@@ -232,6 +232,7 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ToastProvider>

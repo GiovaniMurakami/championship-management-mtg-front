@@ -8,4 +8,6 @@ export { useDebouncedValue } from "./useDebouncedValue";
 export { useMyDecks } from "./useMyDecks";
 export { useTournamentDetail } from "./useTournamentDetail";
 export { usePageTitle } from "./usePageTitle";
+export { useScryfallArt } from "./useScryfallArt";
+export { useMetagameDeckColors } from "./useMetagameDeckColors";
 export { useYouTubeVideos } from "./useYouTubeVideos";

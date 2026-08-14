@@ -67,6 +67,10 @@ function normalizeCard(card) {
       || card.card_faces?.[0]?.image_uris?.normal
       || card.card_faces?.[0]?.image_uris?.large
       || "",
+    artCrop:
+      card.image_uris?.art_crop
+      || card.card_faces?.[0]?.image_uris?.art_crop
+      || "",
     isBasicLand,
     legalities: {
       standard: card.legalities?.standard === "legal",
@@ -78,6 +82,9 @@ function normalizeCard(card) {
       pauper: card.legalities?.pauper === "legal",
     },
     colors: card.colors || [],
+    colorIdentity: Array.isArray(card.color_identity) && card.color_identity.length > 0
+      ? card.color_identity
+      : (card.colors || []),
     cmc,
     manaCost: card.mana_cost || "",
     typeLine: card.type_line || "",

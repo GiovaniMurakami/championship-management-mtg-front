@@ -23,4 +23,8 @@ describe("pageTitles", () => {
   it("inclui título da política de privacidade", () => {
     expect(PAGE_TITLES.privacidade).toMatch(/Privacidade/i);
   });
+
+  it("inclui título do metagame", () => {
+    expect(PAGE_TITLES.metagame).toBe("Metagame");
+  });
 });

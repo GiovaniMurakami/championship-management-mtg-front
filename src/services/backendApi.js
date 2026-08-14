@@ -314,6 +314,12 @@ export const getRankingLiga = async (ligaId, token, options = {}) => {
   return normalizeLigaRankingResponse(response);
 };
 
+export const buscarMetagame = (params) =>
+  httpClient.get("/metagame", { params });
+
+export const buscarArquetipoMetagame = (formato, slug, params) =>
+  httpClient.get(`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(slug)}`, { params });
+
 // Times
 export const criarTime = (payload, token) =>
   httpClient.post("/time/criar", payload, {
