@@ -4,7 +4,8 @@ import { createPortal } from "react-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { Tooltip } from "../ui/Tooltip";
-import { getCardTypeGroup } from "../../utils/cardTypeGroup";
+import { DeckGroupedList, DeckTypeBadges } from "../deck/DeckGroupedList";
+import { groupCardsByType, MANA_COLOR_MAP, MANA_COLOR_LABELS } from "../../utils/deckTypeGroups";
 
 export const RANK_BADGE = {
   1: "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]",
@@ -12,14 +13,6 @@ export const RANK_BADGE = {
   3: "bg-[linear-gradient(135deg,#cd7f32,#8b4513)] text-[#fff8f0] shadow-[0_0_6px_rgba(205,127,50,0.35)]",
 };
 
-const COLOR_MAP = { W: "#f0c040", U: "#2563eb", B: "#7c3aed", R: "#dc2626", G: "#16a34a" };
-const COLOR_LABELS = { W: "Branco", U: "Azul", B: "Preto", R: "Vermelho", G: "Verde" };
-const TYPE_LABELS = {
-  Creature: "Criaturas", Planeswalker: "Planeswalkers", Battle: "Batalhas",
-  Instant: "Mágicas Inst.", Sorcery: "Feitiços", Enchantment: "Encantamentos",
-  Artifact: "Artefatos", Land: "Terrenos", Other: "Outros",
-};
-const TYPE_ORDER = ["Creature", "Planeswalker", "Battle", "Instant", "Sorcery", "Enchantment", "Artifact", "Land", "Other"];
 const CURVE_BUCKETS = ["0", "1", "2", "3", "4", "5", "6", "7+"];
 const FORMAT_LABELS = {
   standard: "Standard",
@@ -98,13 +91,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
 
   const maxCurve = Math.max(...manaCurve.map((b) => b.count), 1);
 
-  const grouped = useMemo(() => {
-    const groups = Object.fromEntries(TYPE_ORDER.map((t) => [t, []]));
-    maindeck.forEach((card) => {
-      groups[getCardTypeGroup(card.typeLine)].push(card);
-    });
-    return TYPE_ORDER.filter((t) => groups[t].length > 0).map((t) => ({ type: t, cards: groups[t] }));
-  }, [maindeck]);
+  const grouped = useMemo(() => groupCardsByType(maindeck), [maindeck]);
 
   const colors = useMemo(() => {
     const set = new Set();
@@ -190,8 +177,8 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
               )}
               {colors.map((c) => (
                 <span key={c} className="inline-flex items-center gap-1 text-[0.68rem] text-[#beafd7]">
-                  <span className="inline-block w-3 h-3 rounded-full border border-black/30 shadow-sm flex-shrink-0" style={{ background: COLOR_MAP[c] ?? "#64748b" }} />
-                  {COLOR_LABELS[c] || c}
+                  <span className="inline-block w-3 h-3 rounded-full border border-black/30 shadow-sm flex-shrink-0" style={{ background: MANA_COLOR_MAP[c] ?? "#64748b" }} />
+                  {MANA_COLOR_LABELS[c] || c}
                 </span>
               ))}
             </div>
@@ -249,84 +236,14 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
               )}
 
               {/* Type badges */}
-              {grouped.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {grouped.map(({ type, cards }) => {
-                    const total = cards.reduce((s, c) => s + (c.quantidade || 1), 0);
-                    return (
-                      <span key={type} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[rgba(167,79,255,0.1)] border border-[rgba(199,149,255,0.22)] text-[0.65rem] text-[#beafd7] leading-none">
-                        <span className="font-bold text-[#c4b5fd]">{total}</span>
-                        {TYPE_LABELS[type]}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              <DeckTypeBadges grouped={grouped} />
 
-              {/* Card list grouped by type */}
-              <div className="flex flex-col gap-4">
-                {grouped.map(({ type, cards }) => {
-                  const total = cards.reduce((s, c) => s + (c.quantidade || 1), 0);
-                  return (
-                    <div key={type}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[0.67rem] font-bold uppercase tracking-widest text-[#c795ff]">{TYPE_LABELS[type]}</span>
-                        <span className="text-[0.65rem] text-[rgba(190,175,215,0.6)]">{total}</span>
-                      </div>
-                      <ul className="m-0 p-0 list-none flex flex-col">
-                        {cards.map((card) => (
-                          <li
-                            key={card.nome}
-                            className="flex items-center gap-2 px-2 py-[0.28rem] rounded-md hover:bg-[rgba(167,79,255,0.08)] transition-colors duration-100 cursor-default group"
-                            onMouseEnter={() => card.imagem ? setHoveredCard(card) : null}
-                            onMouseLeave={() => setHoveredCard(null)}
-                          >
-                            {card.colors?.length > 0 && (
-                              <div className="flex gap-[3px] flex-shrink-0">
-                                {card.colors.slice(0, 4).map((c) => (
-                                  <span key={c} className="inline-block w-2.5 h-2.5 rounded-full border border-black/30" style={{ background: COLOR_MAP[c] ?? "#64748b" }} />
-                                ))}
-                              </div>
-                            )}
-                            <span className="flex-1 text-[0.83rem] text-[#e8d5ff] truncate group-hover:text-white transition-colors duration-100">{card.nome}</span>
-                            <span className="text-[0.8rem] font-bold text-[#c795ff] flex-shrink-0 tabular-nums">{card.quantidade}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-
-                {/* Sideboard */}
-                {sideboard.length > 0 && (
-                  <div className="pt-1">
-                    <div className="flex items-center justify-between mb-1.5 pt-3 border-t border-[rgba(217,180,255,0.12)]">
-                      <span className="text-[0.67rem] font-bold uppercase tracking-widest text-[#c795ff]">Sideboard</span>
-                      <span className="text-[0.65rem] text-[rgba(190,175,215,0.6)]">{totalSide}</span>
-                    </div>
-                    <ul className="m-0 p-0 list-none flex flex-col">
-                      {sideboard.map((card) => (
-                        <li
-                          key={card.nome}
-                          className="flex items-center gap-2 px-2 py-[0.28rem] rounded-md hover:bg-[rgba(167,79,255,0.06)] transition-colors duration-100 cursor-default group"
-                          onMouseEnter={() => card.imagem ? setHoveredCard(card) : null}
-                          onMouseLeave={() => setHoveredCard(null)}
-                        >
-                          {card.colors?.length > 0 && (
-                            <div className="flex gap-[3px] flex-shrink-0">
-                              {card.colors.slice(0, 4).map((c) => (
-                                <span key={c} className="inline-block w-2.5 h-2.5 rounded-full border border-black/30" style={{ background: COLOR_MAP[c] ?? "#64748b" }} />
-                              ))}
-                            </div>
-                          )}
-                          <span className="flex-1 text-[0.83rem] text-[#beafd7] truncate group-hover:text-[#e8d5ff] transition-colors duration-100">{card.nome}</span>
-                          <span className="text-[0.8rem] font-bold text-[rgba(199,149,255,0.55)] flex-shrink-0 tabular-nums">{card.quantidade}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+              <DeckGroupedList
+                maindeck={maindeck}
+                sideboard={sideboard}
+                onCardMouseEnter={(card) => card.imagem ? setHoveredCard(card) : null}
+                onCardMouseLeave={() => setHoveredCard(null)}
+              />
             </div>
           )}
         </div>

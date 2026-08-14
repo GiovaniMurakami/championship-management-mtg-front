@@ -1,6 +1,7 @@
 ﻿import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 import { resolveTop8BackgroundUrl, formatTop8StoryDate } from "../../utils/top8Story";
+import { loadCanvasImage } from "../../utils/loadCanvasImage";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
 
@@ -25,29 +26,7 @@ function easeOutQuart(t) {
 }
 
 async function loadImage(src) {
-  if (!src) return null;
-
-  // data: (inline) e blob: nunca contaminam o canvas
-  if (src.startsWith("data:") || src.startsWith("blob:")) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
-      img.src = src;
-    });
-  }
-
-  try {
-    const absolute = new URL(src, window.location.href).href;
-    const res = await fetch(absolute, { mode: "cors", credentials: "omit" });
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    // Amplify SPA rewrite devolve index.html com 200 — não usar como imagem
-    if (blob.type.includes("html") || blob.type.includes("text/")) return null;
-    return await createImageBitmap(blob);
-  } catch {
-    return null;
-  }
+  return loadCanvasImage(src);
 }
 
 function drawCoverImage(ctx, img, x, y, w, h) {
@@ -538,7 +517,7 @@ export function Top8StoryModal({
   const previewLayout = calcLayout(1920, Math.round(1920 * TOP8_CONTENT_START_RATIO), 110, Math.max(players.length, 1), 150);
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
   const dateLabel = formatTop8StoryDate(torneioHorario);
-  const exportOptions = { backgroundUrl: storyFundoUrl, tournamentDate: dateLabel };
+  const exportOptions = { backgroundUrl, tournamentDate: dateLabel };
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
