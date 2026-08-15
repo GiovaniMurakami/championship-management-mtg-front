@@ -51,7 +51,13 @@ async function bitmapFromBlob(blob) {
 }
 
 async function fetchBlobCors(url) {
-  const res = await fetch(url, { mode: "cors", credentials: "omit" });
+  const res = await fetch(url, {
+    mode: "cors",
+    credentials: "omit",
+    // Primeiro Accept precisa ser image/* para o API Gateway decodificar binário
+    // (binaryMediaTypes sem wildcard */*, que quebrava o CORS OPTIONS).
+    headers: { Accept: "image/*,application/octet-stream;q=0.9,*/*;q=0.8" },
+  });
   if (!res.ok) return null;
   const blob = await res.blob();
   if (blobParecePaginaWeb(blob)) return null;
@@ -88,7 +94,7 @@ export async function loadCanvasImage(src) {
     }
   }
 
-  // Último recurso: <img crossOrigin> quando o bucket já tem CORS
+  // Fallback: <img crossOrigin> (CORS no bucket) — antes de desistir
   if (/^https?:/i.test(absolute)) {
     const viaImg = await loadFromElementSrc(absolute, { crossOrigin: "anonymous" });
     if (viaImg) return viaImg;

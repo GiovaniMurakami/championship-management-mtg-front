@@ -1,7 +1,6 @@
 ﻿import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
-import { resolveTop8BackgroundUrl, formatTop8StoryDate } from "../../utils/top8Story";
-import { loadCanvasImage } from "../../utils/loadCanvasImage";
+import { resolveTop8BackgroundUrl, formatTop8StoryDate, loadTop8BackgroundImage } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
 
@@ -25,8 +24,8 @@ function easeOutQuart(t) {
   return 1 - Math.pow(1 - t, 4);
 }
 
-async function loadImage(src) {
-  return loadCanvasImage(src);
+async function loadBackground(backgroundUrl) {
+  return loadTop8BackgroundImage(backgroundUrl);
 }
 
 function drawCoverImage(ctx, img, x, y, w, h) {
@@ -79,7 +78,7 @@ async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, tour
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
-  const backgroundImage = await loadImage(resolveTop8BackgroundUrl(backgroundUrl));
+  const backgroundImage = await loadBackground(backgroundUrl);
 
   if (!drawCoverImage(ctx, backgroundImage, 0, 0, W, H)) {
     ctx.fillStyle = "#0e091c";
@@ -307,7 +306,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
   const INTRO = 8, PER_P = 7, OUTRO = 22;
   const n = players.length;
   const totalFrames = INTRO + n * PER_P + OUTRO;
-  const backgroundImage = await loadImage(resolveTop8BackgroundUrl(options.backgroundUrl));
+  const backgroundImage = await loadBackground(options.backgroundUrl);
   const headerMeta = {
     tournamentName,
     tournamentDate: options.tournamentDate || "",

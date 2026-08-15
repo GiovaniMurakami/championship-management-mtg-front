@@ -370,14 +370,6 @@ export function TournamentPage() {
                         buttonClassName="mt-1.5 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#c795ff] text-[0.72rem] font-semibold cursor-pointer hover:text-white transition-colors"
                       />
                     )}
-                    {torneio.regras && (
-                      <ExpandableText
-                        text={torneio.regras}
-                        maxLines={2}
-                        className="rounded-lg border border-[rgba(56,189,248,0.16)] bg-[rgba(56,189,248,0.05)] px-2.5 py-[0.55rem] text-[#d5ebff] text-[0.76rem]"
-                        buttonClassName="mt-1.5 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#7dd3fc] text-[0.72rem] font-semibold cursor-pointer hover:text-white transition-colors"
-                      />
-                    )}
                     <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                         <rect x="3" y="4" width="18" height="18" rx="2" />
