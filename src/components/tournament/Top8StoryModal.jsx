@@ -516,7 +516,8 @@ export function Top8StoryModal({
   const previewLayout = calcLayout(1920, Math.round(1920 * TOP8_CONTENT_START_RATIO), 110, Math.max(players.length, 1), 150);
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
   const dateLabel = formatTop8StoryDate(torneioHorario);
-  const exportOptions = { backgroundUrl, tournamentDate: dateLabel };
+  // Passa a URL original do torneio (não a já resolvida) para o loader poder cair no padrão só se o custom falhar.
+  const exportOptions = { backgroundUrl: storyFundoUrl, tournamentDate: dateLabel };
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;

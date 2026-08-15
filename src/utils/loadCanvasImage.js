@@ -50,13 +50,23 @@ async function bitmapFromBlob(blob) {
   return loadFromElementSrc(URL.createObjectURL(blob));
 }
 
+function isApiImageProxyUrl(url) {
+  return url.includes("/imagem/proxy?") || url.includes("/__s3-image?");
+}
+
 async function fetchBlobCors(url) {
+  const headers = {};
+  // Accept custom só no proxy da API (binaryMediaTypes). Em S3 direto isso
+  // força preflight e, com resposta cacheada sem ACAO, o browser bloqueia.
+  if (isApiImageProxyUrl(url)) {
+    headers.Accept = "image/jpeg,image/png,image/webp,image/gif,application/octet-stream";
+  }
+
   const res = await fetch(url, {
     mode: "cors",
     credentials: "omit",
-    // Accept image/jpeg primeiro: API Gateway só decodifica binário se o 1º Accept
-    // bater em binaryMediaTypes (wildcard */* quebra o CORS OPTIONS).
-    headers: { Accept: "image/jpeg,image/png,image/webp,image/gif,application/octet-stream" },
+    cache: "no-store",
+    headers,
   });
   if (!res.ok) return null;
   const blob = await res.blob();
@@ -67,7 +77,8 @@ async function fetchBlobCors(url) {
 /**
  * Carrega imagem para desenhar em canvas sem contaminar (precisa CORS ou mesma origem).
  * URL S3 pública funciona no CSS, mas o canvas exige ACAO.
- * Em dev: proxy Vite. Em produção: GET /imagem/proxy na API.
+ * Em prod: prioriza GET /imagem/proxy (evita CORS intermitente do S3).
+ * Em dev: proxy Vite /__s3-image.
  */
 export async function loadCanvasImage(src) {
   if (!src) return null;
@@ -77,10 +88,15 @@ export async function loadCanvasImage(src) {
   }
 
   const absolute = new URL(src, window.location.href).href;
-  const tentativas = [absolute];
+  const tentativas = [];
+
   if (isS3HttpUrl(absolute)) {
     const proxyUrl = buildS3ImageProxyUrl(absolute);
     if (proxyUrl) tentativas.push(proxyUrl);
+    // S3 direto só como fallback (CSS ok; fetch costuma falhar por CORS/cache)
+    tentativas.push(absolute);
+  } else {
+    tentativas.push(absolute);
   }
 
   for (const url of tentativas) {
@@ -90,11 +106,10 @@ export async function loadCanvasImage(src) {
       const img = await bitmapFromBlob(blob);
       if (img) return img;
     } catch {
-      // tenta a próxima origem (proxy)
+      // tenta a próxima origem
     }
   }
 
-  // Fallback: <img crossOrigin> (CORS no bucket) — antes de desistir
   if (/^https?:/i.test(absolute)) {
     const viaImg = await loadFromElementSrc(absolute, { crossOrigin: "anonymous" });
     if (viaImg) return viaImg;
