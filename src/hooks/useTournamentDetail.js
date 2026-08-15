@@ -82,7 +82,13 @@ export function useTournamentDetail() {
     const [checkinRodadaAberto, setCheckinRodadaAberto] = useState(false);
     const toastTimeoutRef = useRef(null);
 
-    const { decks } = useMyDecks(token, usuario?.id);
+    const needsMyDecks = Boolean(
+      token
+      && usuario?.id
+      && torneio
+      && (torneio.status === "inscricoes_abertas" || torneio.status === "em_andamento"),
+    );
+    const { decks } = useMyDecks(token, usuario?.id, { enabled: needsMyDecks });
     const {
         tournamentQuery,
         standingsQuery,

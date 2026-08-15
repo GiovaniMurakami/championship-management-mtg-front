@@ -67,7 +67,7 @@ export function MyDecksPage() {
   const [busca, setBusca] = useState("");
   const [somenteMyDecks, setSomenteMyDecks] = useState(false);
   const [pagina, setPagina] = useState(1);
-  const [tabTotals, setTabTotals] = useState({ todos: 0, meus: 0 });
+  const [tabTotals, setTabTotals] = useState({ todos: null, meus: null });
 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, deck: null });
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -132,27 +132,6 @@ export function MyDecksPage() {
   useEffect(() => {
     loadDecks();
   }, [loadDecks]);
-
-  // Prefetch do total da aba inativa (badge)
-  useEffect(() => {
-    if (!usuario?.id) return undefined;
-    let cancelled = false;
-    const prefetch = async () => {
-      try {
-        if (somenteMyDecks) {
-          const data = await listarDecks(tokenRef.current, { limite: 1, offset: 0, ...(busca.trim() ? { nome: busca.trim() } : {}) });
-          if (!cancelled) setTabTotals((prev) => ({ ...prev, todos: data.total }));
-        } else {
-          const data = await listarDecks(tokenRef.current, { usuarioId: usuario.id, limite: 1, offset: 0, ...(busca.trim() ? { nome: busca.trim() } : {}) });
-          if (!cancelled) setTabTotals((prev) => ({ ...prev, meus: data.total }));
-        }
-      } catch {
-        // badge opcional
-      }
-    };
-    prefetch();
-    return () => { cancelled = true; };
-  }, [somenteMyDecks, usuario?.id, busca]);
 
   // Carrega imagem da primeira carta de cada deck
   useEffect(() => {
@@ -300,8 +279,16 @@ export function MyDecksPage() {
       </div>
 
       <Tabs value={somenteMyDecks ? "meus" : "todos"} onChange={handleAbaChange}>
-        <Tabs.Item value="todos" label="Todos os decks" count={tabTotals.todos} />
-        <Tabs.Item value="meus" label="Meus decks" count={tabTotals.meus} />
+        <Tabs.Item
+          value="todos"
+          label="Todos os decks"
+          count={tabTotals.todos != null ? tabTotals.todos : undefined}
+        />
+        <Tabs.Item
+          value="meus"
+          label="Meus decks"
+          count={tabTotals.meus != null ? tabTotals.meus : undefined}
+        />
       </Tabs>
 
       {/* Conteúdo */}

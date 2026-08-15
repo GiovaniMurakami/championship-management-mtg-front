@@ -61,13 +61,12 @@ export function TournamentPage() {
   const { token, usuario, isAdmin, requireAuth } = useAuth();
   const { addToast } = useToast();
   const listRequest = useRequestSequence();
-  const prefetchRequest = useRequestSequence();
 
   usePageTitle(PAGE_TITLES.torneios);
 
   const [torneios, setTorneios] = useState([]);
   const [total, setTotal] = useState(0);
-  const [tabTotals, setTabTotals] = useState({ disponiveis: 0, encerrados: 0 });
+  const [tabTotals, setTabTotals] = useState({ disponiveis: null, encerrados: null });
   const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -132,32 +131,6 @@ export function TournamentPage() {
   useEffect(() => {
     loadTorneios();
   }, [loadTorneios]);
-
-  useEffect(() => {
-    const request = prefetchRequest();
-    const prefetchInactiveTabTotal = async () => {
-      try {
-        if (abaAtiva === "disponiveis") {
-          const data = await listarTorneios(token, { status: "finalizado", limite: 1, offset: 0 });
-          if (!request.isCurrent()) return;
-          setTabTotals((prev) => ({ ...prev, encerrados: data.total }));
-        } else {
-          const [inscricoes, andamento] = await Promise.all([
-            listarTorneios(token, { status: "inscricoes_abertas", limite: 1, offset: 0 }),
-            listarTorneios(token, { status: "em_andamento", limite: 1, offset: 0 }),
-          ]);
-          if (!request.isCurrent()) return;
-          setTabTotals((prev) => ({
-            ...prev,
-            disponiveis: inscricoes.total + andamento.total,
-          }));
-        }
-      } catch {
-        // badge count is optional
-      }
-    };
-    prefetchInactiveTabTotal();
-  }, [token, abaAtiva, prefetchRequest]);
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
@@ -280,8 +253,16 @@ export function TournamentPage() {
       </div>
 
       <Tabs value={abaAtiva} onChange={handleAbaChange}>
-        <Tabs.Item value="disponiveis" label="Disponíveis" count={tabTotals.disponiveis} />
-        <Tabs.Item value="encerrados" label="Encerrados" count={tabTotals.encerrados} />
+        <Tabs.Item
+          value="disponiveis"
+          label="Disponíveis"
+          count={tabTotals.disponiveis != null ? tabTotals.disponiveis : undefined}
+        />
+        <Tabs.Item
+          value="encerrados"
+          label="Encerrados"
+          count={tabTotals.encerrados != null ? tabTotals.encerrados : undefined}
+        />
       </Tabs>
 
       {loadError && !loading && (

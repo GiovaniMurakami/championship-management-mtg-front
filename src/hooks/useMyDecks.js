@@ -1,7 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { listarDecks } from "../services/backendApi";
 
-export function useMyDecks(token, usuarioId) {
+/**
+ * @param {string|null|undefined} token
+ * @param {string|null|undefined} usuarioId
+ * @param {{ enabled?: boolean }} [options] — default true; use false para adiar o fetch
+ */
+export function useMyDecks(token, usuarioId, options = {}) {
+  const enabled = options.enabled !== false;
   const [decks, setDecks] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -28,8 +34,15 @@ export function useMyDecks(token, usuarioId) {
   }, [usuarioId]);
 
   useEffect(() => {
+    if (!enabled) {
+      setDecks([]);
+      setTotal(0);
+      setLoading(false);
+      setMessage("");
+      return;
+    }
     fetchDecks();
-  }, [fetchDecks]);
+  }, [enabled, fetchDecks]);
 
   return {
     decks,

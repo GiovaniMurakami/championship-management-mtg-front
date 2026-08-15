@@ -44,8 +44,14 @@ export function TournamentSection() {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await listarTorneios(token);
-        setTorneios(data.torneios || []);
+        const [abertos, andamento] = await Promise.all([
+          listarTorneios(token, { status: "inscricoes_abertas", limite: 3, offset: 0 }),
+          listarTorneios(token, { status: "em_andamento", limite: 3, offset: 0 }),
+        ]);
+        const merged = [...(abertos.torneios || []), ...(andamento.torneios || [])]
+          .sort((a, b) => new Date(a.horario) - new Date(b.horario))
+          .slice(0, 3);
+        setTorneios(merged);
       } catch (error) {
         logError("Erro ao carregar torneios:", error);
       } finally {
@@ -57,9 +63,7 @@ export function TournamentSection() {
 
   const formatDate = (dateString) => formatBrasiliaDate(dateString);
 
-  const items = torneios
-    .filter((t) => t.status === "inscricoes_abertas" || t.status === "em_andamento")
-    .slice(0, 3);
+  const items = torneios;
 
   if (!loading && items.length === 0) return null;
 
