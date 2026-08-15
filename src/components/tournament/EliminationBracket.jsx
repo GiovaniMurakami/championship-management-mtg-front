@@ -130,13 +130,12 @@ export function EliminationBracket({ torneio, partidas }) {
         </div>
       </div>
 
-      <p className="mb-2 text-[0.72rem] text-[#beafd7] hidden md:block">Deslize horizontalmente para ver todas as fases</p>
-      <div className="max-md:grid max-md:grid-cols-1 max-md:gap-4 md:overflow-x-auto md:pb-2 [scrollbar-width:thin] md:[scrollbar-color:rgba(250,204,21,0.28)_transparent]">
-        <div className="grid gap-4 max-md:grid-cols-1 md:grid-flow-col md:auto-cols-[minmax(200px,1fr)] md:gap-5 md:min-w-0">
+      <div className="overflow-x-auto pb-2 [scrollbar-width:thin] [scrollbar-color:rgba(250,204,21,0.28)_transparent]">
+        <div className="flex w-max min-w-full gap-5">
           {rounds.map(([rodada, matches], roundIndex) => {
             const participants = corteTop / (2 ** roundIndex);
             return (
-              <div key={rodada} className="grid content-center gap-3">
+              <div key={rodada} className="grid w-[240px] shrink-0 content-center gap-3">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="m-0 text-sm font-black uppercase tracking-[0.08em] text-[#fde68a]">
                     {getRoundLabel(participants)}
