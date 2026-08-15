@@ -54,9 +54,9 @@ async function fetchBlobCors(url) {
   const res = await fetch(url, {
     mode: "cors",
     credentials: "omit",
-    // Primeiro Accept precisa ser image/* para o API Gateway decodificar binário
-    // (binaryMediaTypes sem wildcard */*, que quebrava o CORS OPTIONS).
-    headers: { Accept: "image/*,application/octet-stream;q=0.9,*/*;q=0.8" },
+    // Accept image/jpeg primeiro: API Gateway só decodifica binário se o 1º Accept
+    // bater em binaryMediaTypes (wildcard */* quebra o CORS OPTIONS).
+    headers: { Accept: "image/jpeg,image/png,image/webp,image/gif,application/octet-stream" },
   });
   if (!res.ok) return null;
   const blob = await res.blob();
