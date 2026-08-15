@@ -55,4 +55,11 @@ describe("nomesCartasParaCores", () => {
       cartasChave: ["tolarian terror"],
     })).toEqual(["brainstorm", "tolarian terror"]);
   });
+
+  it("ignora uuid de arte escolhida pelo admin", () => {
+    expect(nomesCartasParaCores({
+      cartaRepresentativa: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+      cartasChave: ["guttersnipe"],
+    })).toEqual(["guttersnipe"]);
+  });
 });

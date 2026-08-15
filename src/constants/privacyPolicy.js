@@ -1,6 +1,6 @@
-export const PRIVACY_VERSION = "2026-08-10";
+export const PRIVACY_VERSION = "2026-08-15";
 
-export const PRIVACY_LAST_UPDATED = "10 de agosto de 2026";
+export const PRIVACY_LAST_UPDATED = "15 de agosto de 2026";
 
 export const PRIVACY_SECTIONS = [
   {
@@ -36,7 +36,7 @@ export const PRIVACY_SECTIONS = [
   {
     title: "7. Cookies, anúncios e tecnologias semelhantes",
     body:
-      "Podemos utilizar armazenamento local do navegador para sessão, preferências e funcionamento da aplicação. Quando anúncios (por exemplo Google AdSense) estiverem habilitados, terceiros podem utilizar cookies ou tecnologias semelhantes conforme suas próprias políticas. Você pode gerenciar cookies nas configurações do navegador, ciente de que isso pode afetar algumas funcionalidades.",
+      "Utilizamos cookies e armazenamento local do navegador. Os essenciais (sessão, autenticação, segurança e preferências, inclusive o próprio registro do seu consentimento) são necessários ao funcionamento do serviço e permanecem ativos. Exibimos anúncios do Google AdSense para manter a plataforma. Se você aceitar cookies de publicidade no aviso, os anúncios podem ser personalizados. Se recusar (somente necessários), os anúncios continuam em modo não personalizado (NPA), sem uso de perfil publicitário. Você pode alterar essa escolha a qualquer momento pelo link \"Cookies\" no rodapé. Não vendemos dados pessoais. O Google trata anúncios conforme a política dele. Você também pode gerenciar cookies nas configurações do navegador, ciente de que isso pode afetar algumas funcionalidades.",
   },
   {
     title: "8. Retenção",

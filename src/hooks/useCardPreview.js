@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
-import { buscarCartaPorNome } from "../services/scryfallApi";
+import { buscarCartaPorId, buscarCartaPorNome } from "../services/scryfallApi";
+import { isScryfallId } from "../utils/scryfallId";
 
 export function useCardPreview() {
   const [previewCard, setPreviewCard] = useState(null);
@@ -25,7 +26,8 @@ export function useCardPreview() {
     }
 
     const seq = ++seqRef.current;
-    buscarCartaPorNome(nome)
+    const carregar = isScryfallId(nome) ? buscarCartaPorId : buscarCartaPorNome;
+    carregar(nome)
       .then((carta) => {
         if (seq !== seqRef.current) return;
         if (carta?.imagem) {

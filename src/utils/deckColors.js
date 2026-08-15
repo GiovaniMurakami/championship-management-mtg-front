@@ -1,3 +1,5 @@
+import { isScryfallId } from "./scryfallId";
+
 export const MANA_COLOR_ORDER = ["W", "U", "B", "R", "G"];
 
 const BASIC_LAND_COLOR = {
@@ -32,7 +34,8 @@ export function nomesCartasParaCores(arquetipo, formato) {
   if (main.length > 0) {
     return main.map((carta) => carta.nome).filter(Boolean);
   }
-  return [arquetipo?.cartaRepresentativa, ...(arquetipo?.cartasChave || [])].filter(Boolean);
+  return [arquetipo?.cartaRepresentativa, ...(arquetipo?.cartasChave || [])]
+    .filter((nome) => nome && !isScryfallId(nome));
 }
 
 export function coresDoDeck(nomesCartas, cartasScryfall = []) {

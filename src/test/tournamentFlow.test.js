@@ -1,4 +1,4 @@
-import { calculateAutomaticSwissRounds, calculateSwissRounds, formatTournamentRoundLabel, isEliminationPhase } from "../utils/tournamentFlow";
+import { calculateAutomaticSwissRounds, calculateSwissRounds, formatTournamentRoundLabel, getFirstEliminationRound, isEliminationPhase } from "../utils/tournamentFlow";
 
 describe("tournamentFlow", () => {
     it("calcula o total automatico de rodadas suicas por log2 arredondado para cima", () => {
@@ -18,6 +18,27 @@ describe("tournamentFlow", () => {
             rodadaAtual: 9,
             totalRodadas: 11,
         })).toBe(true);
+        expect(isEliminationPhase({
+            corteTop: 8,
+            emCorte: false,
+            rodadaAtual: 6,
+            totalRodadas: 8,
+        })).toBe(false);
+    });
+
+    it("nao calcula rodada de corte no Swiss", () => {
+        expect(getFirstEliminationRound({
+            corteTop: 8,
+            emCorte: false,
+            rodadaAtual: 6,
+            totalRodadas: 8,
+        })).toBeNull();
+        expect(getFirstEliminationRound({
+            corteTop: 8,
+            emCorte: true,
+            rodadaAtual: 9,
+            totalRodadas: 11,
+        })).toBe(9);
     });
 
     it("formata chip de rodada sem mostrar Sem limite quando total ainda não sincronizou", () => {

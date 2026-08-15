@@ -23,7 +23,7 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, onCard
       <div
         className="aspect-[16/9] overflow-hidden bg-[rgba(20,12,36,0.9)]"
         onMouseEnter={() => {
-          if (arquetipo.cartaRepresentativa) onCardMouseEnter?.({ nome: arquetipo.cartaRepresentativa });
+          if (arquetipo.cartaRepresentativa) onCardMouseEnter?.({ nome: arquetipo.cartaRepresentativa, imagem });
         }}
         onMouseLeave={onCardMouseLeave}
       >

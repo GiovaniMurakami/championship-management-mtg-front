@@ -304,7 +304,7 @@ function DeckNameEditPopover({ deckId, currentName, currentNomeConsolidado, toke
     setLoading(true);
     setError("");
     try {
-      // Cópia travada do torneio: back aceita só nomeConsolidado (sem GET prévio).
+      // Cópia travada do torneio: back aceita nomeConsolidado / cartaRepresentativa (sem GET prévio).
       await atualizarDeck(deckId, { nomeConsolidado: name.trim() }, token);
       onSave(name.trim());
     } catch {

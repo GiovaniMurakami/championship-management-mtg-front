@@ -11,6 +11,7 @@ import {
   MetagameManaPips,
   MetagameMatchupsSection,
   MetagameNomeConsolidadoEditor,
+  MetagameCartaRepresentativaEditor,
   MetagamePeriodoSelect,
   MetagameResultadosSection,
 } from "../components/metagame";
@@ -45,6 +46,7 @@ export function MetagameArquetipoPage() {
   const [result, setResult] = useState({ key: "", data: null, erro: "" });
   const [salvandoDeckId, setSalvandoDeckId] = useState("");
   const [salvandoArquivo, setSalvandoArquivo] = useState(false);
+  const [salvandoCarta, setSalvandoCarta] = useState(false);
   const [listaAberta, setListaAberta] = useState("");
 
   const data = result.key === requestKey ? result.data : null;
@@ -95,6 +97,14 @@ export function MetagameArquetipoPage() {
     if (ids.length === 0) return;
     await Promise.all(ids.map((id) => atualizarDeck(id, { nomeConsolidado }, token)));
     addToast(ids.length > 1 ? "Nomes consolidados atualizados." : "Nome consolidado atualizado.", { type: "success" });
+    await recarregar();
+  }, [addToast, recarregar, token]);
+
+  const salvarCarta = useCallback(async (deckIds, cartaRepresentativa) => {
+    const ids = [...new Set(deckIds.filter(Boolean))];
+    if (ids.length === 0) return;
+    await Promise.all(ids.map((id) => atualizarDeck(id, { cartaRepresentativa }, token)));
+    addToast(cartaRepresentativa ? "Carta representativa atualizada." : "Carta representativa removida.", { type: "success" });
     await recarregar();
   }, [addToast, recarregar, token]);
 
@@ -166,7 +176,7 @@ export function MetagameArquetipoPage() {
           </div>
 
           {isAdmin && token && (
-            <div className="mb-6 rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(167,79,255,0.06)] p-3">
+            <div className="mb-6 rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(167,79,255,0.06)] p-3 flex flex-col gap-5">
               <MetagameNomeConsolidadoEditor
                 key={`arquetipo-${data.nome}`}
                 valorInicial={data.nome === "Outros" ? "" : data.nome}
@@ -182,6 +192,27 @@ export function MetagameArquetipoPage() {
                     addToast("Não foi possível atualizar o nome consolidado.", { type: "error" });
                   } finally {
                     setSalvandoArquivo(false);
+                  }
+                }}
+              />
+              <MetagameCartaRepresentativaEditor
+                key={`carta-${data.cartaRepresentativa || "auto"}`}
+                valorInicial={data.cartaRepresentativa || ""}
+                salvando={salvandoCarta}
+                dica="Busca a carta e escolhe a ilustração que aparece na aba de metagame. Limpar volta à carta mais jogada."
+                onCardMouseEnter={openCardPreview}
+                onCardMouseLeave={closeCardPreview}
+                onPreviewDismiss={closeCardPreview}
+                onSalvar={async (cartaRepresentativa) => {
+                  const ids = (data.listas || []).map((l) => l.deckId);
+                  setSalvandoCarta(true);
+                  try {
+                    await salvarCarta(ids, cartaRepresentativa);
+                  } catch (err) {
+                    logError("Erro ao atualizar carta representativa do arquétipo:", err);
+                    addToast("Não foi possível atualizar a carta representativa.", { type: "error" });
+                  } finally {
+                    setSalvandoCarta(false);
                   }
                 }}
               />

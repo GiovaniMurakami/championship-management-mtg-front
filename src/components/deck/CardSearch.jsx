@@ -26,7 +26,7 @@ export function CardSearch({
 
   return (
     <div className="relative w-full">
-      <h4>{title}</h4>
+      {title ? <h4>{title}</h4> : null}
       {/* cs-input-wrapper */}
       <div className="relative flex items-center">
         {/* cs-input */}
@@ -63,7 +63,7 @@ export function CardSearch({
                 type="button"
                 className="flex items-center gap-[0.6rem] w-full px-[0.75rem] py-[0.55rem] cursor-pointer text-[0.87rem] text-[#beafd7] hover:bg-[rgba(167,79,255,0.12)] hover:text-[#f5edff] transition-colors duration-100 bg-transparent border-none text-left"
                 onClick={() => handleCardAdd(card)}
-                onMouseEnter={() => onCardMouseEnter(card)}
+                onMouseEnter={() => onCardMouseEnter?.(card)}
                 onMouseLeave={onCardMouseLeave}
               >
                 {card.imagem ? (

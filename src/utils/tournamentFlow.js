@@ -68,6 +68,25 @@ export function isEliminationPhase(torneio) {
     return toPositiveNumber(torneio?.rodadaAtual) > toPositiveNumber(torneio?.totalRodadas);
 }
 
+/**
+ * Primeira rodada do corte. Null no Swiss: `totalRodadas` ainda é só o Swiss,
+ * então contar `total - log2(top)` para trás pega mesas suíças (ex.: 72 mesas na R6).
+ */
+export function getFirstEliminationRound(torneio) {
+    if (!torneio?.emCorte) {
+        return null;
+    }
+
+    const corteTop = toPositiveNumber(torneio?.corteTop);
+    const totalRodadas = toPositiveNumber(torneio?.totalRodadas);
+    const cutRounds = Math.log2(corteTop);
+    if (!Number.isInteger(cutRounds) || cutRounds <= 0 || !totalRodadas) {
+        return null;
+    }
+
+    return totalRodadas - cutRounds + 1;
+}
+
 export function isSwissLastRound(torneio) {
     const totalRounds = toPositiveNumber(torneio?.totalRodadas);
     const currentRound = toPositiveNumber(torneio?.rodadaAtual);
