@@ -36,7 +36,7 @@ export function Top8StoryPreview({
       <p className="text-[0.82rem] text-[#beafd7] m-0">Pré-visualização do story</p>
       <div
         className="w-full max-w-[220px] aspect-[9/16] rounded-xl overflow-hidden border border-[rgba(199,149,255,0.25)] bg-cover bg-center relative shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
-        style={{ backgroundImage: `url(${backgroundUrl})` }}
+        style={{ backgroundImage: `url("${backgroundUrl}")` }}
         role="img"
         aria-label="Pré-visualização do story Top 8"
       >

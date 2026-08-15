@@ -7,6 +7,7 @@ import { FORM_LABEL_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses
 const TOURNAMENT_SELECT_CLASS = `${TOURNAMENT_INPUT_CLASS} pr-10`;
 const MODE_DEFAULT = "__default__";
 const MODE_NEW = "__new__";
+const MODE_EXISTING = "__existing__";
 
 /**
  * Seletor de fundo do story: catálogo nomeado, padrão ou cadastro de novo (nome + imagem).
@@ -23,7 +24,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
 ) {
   const [fundos, setFundos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState(MODE_DEFAULT);
+  const [selectedId, setSelectedId] = useState(() => (valueUrl ? MODE_EXISTING : MODE_DEFAULT));
   const [novoNome, setNovoNome] = useState("");
   const [novoFile, setNovoFile] = useState(null);
   const [novoPreview, setNovoPreview] = useState(null);
@@ -56,9 +57,16 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
   }, [token]);
 
   useEffect(() => {
-    if (!valueUrl || !fundos.length) return;
+    if (!valueUrl) {
+      setSelectedId((prev) => (prev === MODE_EXISTING ? MODE_DEFAULT : prev));
+      return;
+    }
+    if (!fundos.length) {
+      setSelectedId(MODE_EXISTING);
+      return;
+    }
     const match = fundos.find((f) => f.url === valueUrl);
-    if (match) setSelectedId(match.id);
+    setSelectedId(match ? match.id : MODE_EXISTING);
   }, [valueUrl, fundos]);
 
   const previewUrl =
@@ -66,11 +74,14 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
       ? ""
       : selectedId === MODE_NEW
         ? (novoPreview || "")
-        : (fundos.find((f) => f.id === selectedId)?.url || valueUrl || "");
+        : selectedId === MODE_EXISTING
+          ? (valueUrl || "")
+          : (fundos.find((f) => f.id === selectedId)?.url || valueUrl || "");
 
   useEffect(() => {
+    if (loading) return;
     onPreviewUrlChange?.(previewUrl);
-  }, [previewUrl, onPreviewUrlChange]);
+  }, [previewUrl, onPreviewUrlChange, loading]);
 
   stateRef.current = { selectedId, fundos, novoNome, novoFile, valueUrl };
 
@@ -80,6 +91,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
         stateRef.current;
 
       if (mode === MODE_DEFAULT) return "";
+      if (mode === MODE_EXISTING) return fallback || "";
 
       if (mode !== MODE_NEW) {
         const fundo = list.find((f) => f.id === mode);
@@ -152,6 +164,9 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
 
   const options = [
     { value: MODE_DEFAULT, label: "Fundo padrão" },
+    ...(selectedId === MODE_EXISTING && valueUrl
+      ? [{ value: MODE_EXISTING, label: "Fundo atual (do torneio copiado)" }]
+      : []),
     ...fundos.map((f) => ({ value: f.id, label: f.nome })),
     { value: MODE_NEW, label: "+ Cadastrar novo fundo…" },
   ];

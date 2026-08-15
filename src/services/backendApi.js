@@ -306,9 +306,16 @@ export const deletarLiga = (ligaId, token) =>
   });
 
 export const getRankingLiga = async (ligaId, token, options = {}) => {
+  const params = {
+    limiteJogadores: options.limiteJogadores ?? 50,
+    limiteCartas: options.limiteCartas ?? 50,
+    limiteDecks: options.limiteDecks ?? 50,
+  };
+  if (options.limiteTimes != null) params.limiteTimes = options.limiteTimes;
+
   const response = await httpClient.get(`/liga/${ligaId}/ranking`, {
     ...optionalAuthConfig(token),
-    params: options.limiteTimes != null ? { limiteTimes: options.limiteTimes } : undefined,
+    params,
   });
 
   return normalizeLigaRankingResponse(response);

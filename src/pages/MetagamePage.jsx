@@ -13,7 +13,7 @@ import { useCardPreview } from "../hooks/useCardPreview";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { logError } from "../utils/logger";
 
-const DIAS_OPCOES = [7, 14, 30, 90, 365];
+const DIAS_OPCOES = [7, 14, 30, 90];
 const DIAS_PADRAO = 30;
 const FORMATO_PADRAO = "pauper";
 

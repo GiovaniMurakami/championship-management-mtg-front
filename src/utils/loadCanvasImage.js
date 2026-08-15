@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from "./apiBaseUrl";
+
 const S3_HOST = /(^|\.)s3([.-][a-z0-9-]+)?\.amazonaws\.com$/i;
 
 export function isS3HttpUrl(src) {
@@ -17,9 +19,19 @@ export function blobParecePaginaWeb(blob) {
   return type.includes("html") || type === "application/xml" || type === "text/xml";
 }
 
-function loadFromElementSrc(src) {
+export function buildS3ImageProxyUrl(absoluteS3Url) {
+  if (import.meta.env.DEV) {
+    return `/__s3-image?url=${encodeURIComponent(absoluteS3Url)}`;
+  }
+  const base = String(getApiBaseUrl() || "").replace(/\/$/, "");
+  if (!base) return null;
+  return `${base}/imagem/proxy?url=${encodeURIComponent(absoluteS3Url)}`;
+}
+
+function loadFromElementSrc(src, { crossOrigin } = {}) {
   return new Promise((resolve) => {
     const img = new Image();
+    if (crossOrigin) img.crossOrigin = crossOrigin;
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
@@ -48,7 +60,8 @@ async function fetchBlobCors(url) {
 
 /**
  * Carrega imagem para desenhar em canvas sem contaminar (precisa CORS ou mesma origem).
- * URL S3 pública funciona no CSS, mas o canvas exige ACAO — em dev cai no proxy Vite.
+ * URL S3 pública funciona no CSS, mas o canvas exige ACAO.
+ * Em dev: proxy Vite. Em produção: GET /imagem/proxy na API.
  */
 export async function loadCanvasImage(src) {
   if (!src) return null;
@@ -59,8 +72,9 @@ export async function loadCanvasImage(src) {
 
   const absolute = new URL(src, window.location.href).href;
   const tentativas = [absolute];
-  if (import.meta.env.DEV && isS3HttpUrl(absolute)) {
-    tentativas.push(`/__s3-image?url=${encodeURIComponent(absolute)}`);
+  if (isS3HttpUrl(absolute)) {
+    const proxyUrl = buildS3ImageProxyUrl(absolute);
+    if (proxyUrl) tentativas.push(proxyUrl);
   }
 
   for (const url of tentativas) {
@@ -70,8 +84,14 @@ export async function loadCanvasImage(src) {
       const img = await bitmapFromBlob(blob);
       if (img) return img;
     } catch {
-      // tenta a próxima origem (proxy local)
+      // tenta a próxima origem (proxy)
     }
+  }
+
+  // Último recurso: <img crossOrigin> quando o bucket já tem CORS
+  if (/^https?:/i.test(absolute)) {
+    const viaImg = await loadFromElementSrc(absolute, { crossOrigin: "anonymous" });
+    if (viaImg) return viaImg;
   }
 
   return null;

@@ -210,18 +210,18 @@ function drawFooter(ctx, canvasW, canvasH, footerH) {
   ctx.fillStyle = line;
   ctx.fillRect(0, fy, canvasW, 1.5);
 
-  const brandGrad = ctx.createLinearGradient(16, fy, 160, fy);
+  const brandGrad = ctx.createLinearGradient(16, fy, 200, fy);
   brandGrad.addColorStop(0, "#a855f7");
   brandGrad.addColorStop(1, "#7c3aed");
   ctx.fillStyle = brandGrad;
-  ctx.font = "bold 18px Arial, sans-serif";
+  ctx.font = "bold 24px Arial, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("FUGUETE", 20, fy + footerH / 2 + 7);
+  ctx.fillText("FUGUETE", 20, fy + footerH / 2 + 8);
 
   ctx.fillStyle = "#3d2470";
-  ctx.font = "12px Arial, sans-serif";
+  ctx.font = "16px Arial, sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText(new Date().toLocaleDateString("pt-BR"), canvasW - 20, fy + footerH / 2 + 5);
+  ctx.fillText(new Date().toLocaleDateString("pt-BR"), canvasW - 20, fy + footerH / 2 + 6);
   ctx.textAlign = "left";
 }
 
@@ -233,23 +233,29 @@ function drawTypeBadges(ctx, canvasW, y, barH, typeCnt) {
   ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvasW, y); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(0, y + barH); ctx.lineTo(canvasW, y + barH); ctx.stroke();
 
-  ctx.font = "bold 11px Arial, sans-serif";
+  const badgeH = Math.max(24, Math.round(barH * 0.58));
+  const badgeY = y + Math.round((barH - badgeH) / 2);
+  ctx.font = `bold ${Math.max(14, Math.round(barH * 0.36))}px Arial, sans-serif`;
   const active = GROUP_ORDER.filter(g => typeCnt[g] > 0);
-  const bws = active.map(g => ctx.measureText(`${g}  ${typeCnt[g]}`).width + 20);
-  const total = bws.reduce((s, w) => s + w, 0) + (active.length - 1) * 8;
+  const bws = active.map(g => ctx.measureText(`${g}  ${typeCnt[g]}`).width + 28);
+  const total = bws.reduce((s, w) => s + w, 0) + (active.length - 1) * 10;
   let sx = Math.round((canvasW - total) / 2);
   for (let i = 0; i < active.length; i++) {
     const g = active[i]; const col = GROUP_COLOR[g];
     const lw = bws[i];
-    ctx.fillStyle = `${col}20`; rr(ctx, sx, y + 9, lw, 20, 10); ctx.fill();
+    ctx.fillStyle = `${col}20`; rr(ctx, sx, badgeY, lw, badgeH, 12); ctx.fill();
     ctx.strokeStyle = `${col}55`; ctx.lineWidth = 0.8;
-    rr(ctx, sx, y + 9, lw, 20, 10); ctx.stroke();
-    ctx.fillStyle = col; ctx.fillText(`${g}  ${typeCnt[g]}`, sx + 10, y + 23);
-    sx += lw + 8;
+    rr(ctx, sx, badgeY, lw, badgeH, 12); ctx.stroke();
+    ctx.fillStyle = col;
+    ctx.fillText(`${g}  ${typeCnt[g]}`, sx + 14, badgeY + Math.round(badgeH * 0.68));
+    sx += lw + 10;
   }
 }
 
 function drawCmcBars(ctx, deck, cardDataMap, bxStart, topY, bw, barH) {
+  const LABEL_PAD = 16; // espaço para o número acima da barra (evita cortar na borda)
+  const trackTop = topY + LABEL_PAD;
+  const trackH = Math.max(8, barH - LABEL_PAD);
   const cmcDist = {};
   for (const c of deck.maindeck || []) {
     const v = Math.min(Math.floor(cardDataMap[c.nome]?.cmc ?? 0), 7);
@@ -258,24 +264,22 @@ function drawCmcBars(ctx, deck, cardDataMap, bxStart, topY, bw, barH) {
   const cmcMax = Math.max(...Object.values(cmcDist), 1);
   for (let i = 0; i <= 7; i++) {
     const cnt = cmcDist[i] || 0;
-    const bh = cnt > 0 ? Math.max(4, Math.round((cnt / cmcMax) * barH)) : 0;
+    const bh = cnt > 0 ? Math.max(4, Math.round((cnt / cmcMax) * trackH)) : 0;
     const bx = bxStart + i * (bw + 4);
-    const by2 = topY + barH - bh;
-    ctx.fillStyle = "rgba(100,60,180,0.1)"; rr(ctx, bx, topY, bw, barH, 3); ctx.fill();
+    const by2 = trackTop + trackH - bh;
+    ctx.fillStyle = "rgba(100,60,180,0.1)"; rr(ctx, bx, trackTop, bw, trackH, 3); ctx.fill();
     if (bh > 0) {
       const g = ctx.createLinearGradient(bx, by2, bx, by2 + bh);
       g.addColorStop(0, "#c084fc"); g.addColorStop(1, "#7c3aed");
       ctx.fillStyle = g; rr(ctx, bx, by2, bw, bh, 3); ctx.fill();
-      ctx.font = "bold 9px Arial, sans-serif"; ctx.fillStyle = "#e9d5ff"; ctx.textAlign = "center";
-      ctx.fillText(cnt, bx + bw / 2, by2 - 2);
+      ctx.font = "bold 12px Arial, sans-serif"; ctx.fillStyle = "#e9d5ff"; ctx.textAlign = "center";
+      ctx.fillText(cnt, bx + bw / 2, by2 - 3);
     }
-    ctx.font = "9px Arial, sans-serif"; ctx.fillStyle = "#4b2d8a"; ctx.textAlign = "center";
-    ctx.fillText(i === 7 ? "7+" : String(i), bx + bw / 2, topY + barH + 11);
+    ctx.font = "12px Arial, sans-serif"; ctx.fillStyle = "#4b2d8a"; ctx.textAlign = "center";
+    ctx.fillText(i === 7 ? "7+" : String(i), bx + bw / 2, trackTop + trackH + 14);
   }
   ctx.textAlign = "left";
 }
-
-// ── VISUAL canvas (landscape 1280px, pile-based accumulation) ─────────────────
 
 function drawCardOnCanvas(ctx, img, x, y, w, h, borderRgba) {
   if (img) {
@@ -290,22 +294,81 @@ function drawCardOnCanvas(ctx, img, x, y, w, h, borderRgba) {
   ctx.lineWidth = 1; rr(ctx, x, y, w, h, 5); ctx.stroke();
 }
 
+/** Escolhe grade e tamanho de carta para preencher a caixa disponível. */
+function layoutPilesInBox(availW, availH, pileCount, pileLen, gapX = 10, gapY = 12) {
+  let best = null;
+  const maxRows = Math.min(pileCount, 12);
+  for (let rows = 1; rows <= maxRows; rows++) {
+    const cols = Math.ceil(pileCount / rows);
+    const gapXTotal = (cols - 1) * gapX;
+    const gapYTotal = (rows - 1) * gapY;
+    if (gapXTotal >= availW || gapYTotal >= availH) continue;
+
+    const maxCardW = Math.floor((availW - gapXTotal) / cols);
+    if (maxCardW < 40) continue;
+
+    const maxPileH = Math.floor((availH - gapYTotal) / rows);
+    const stackRatio = 0.12;
+    let cardH = Math.floor(maxPileH / (1 + (pileLen - 1) * stackRatio));
+    let cardW = Math.round(cardH / 1.4);
+    if (cardW > maxCardW) {
+      cardW = maxCardW;
+      cardH = Math.round(cardW * 1.4);
+    }
+    if (cardH < 48 || cardW < 34) continue;
+
+    let stackOffset = pileLen > 1
+      ? Math.max(10, Math.min(Math.round(cardH * stackRatio), Math.floor((maxPileH - cardH) / (pileLen - 1))))
+      : 0;
+    let pileH = cardH + (pileLen - 1) * stackOffset;
+
+    const usedW = cols * cardW + gapXTotal;
+    const usedH = rows * pileH + gapYTotal;
+    const scale = Math.min(availW / usedW, availH / usedH, 1.35);
+    if (scale > 1.01) {
+      cardW = Math.floor(cardW * scale);
+      cardH = Math.round(cardW * 1.4);
+      stackOffset = pileLen > 1 ? Math.max(10, Math.round(cardH * stackRatio)) : 0;
+      while (
+        (cols * cardW + gapXTotal > availW ||
+          rows * (cardH + (pileLen - 1) * stackOffset) + gapYTotal > availH) &&
+        cardW > 34
+      ) {
+        cardW -= 1;
+        cardH = Math.round(cardW * 1.4);
+        stackOffset = pileLen > 1 ? Math.max(10, Math.round(cardH * stackRatio)) : 0;
+      }
+      pileH = cardH + (pileLen - 1) * stackOffset;
+    }
+
+    const fillW = (cols * cardW + gapXTotal) / availW;
+    const fillH = (rows * pileH + gapYTotal) / availH;
+    const fill = fillW * fillH;
+    const area = cardW * cardH;
+    const score = area * (0.55 + 0.45 * fill);
+    if (!best || score > best.score) {
+      best = { score, rows, cols, cardW, cardH, stackOffset, pileH, gapX, gapY };
+    }
+  }
+  return best;
+}
+
 export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") {
   const MAX_PILE = 4;
-  const HEADER_H = 80;
-  const STATS_H = 32;
-  const FOOTER_H = 40;
+  const HEADER_H = 96;
+  const STATS_H = 40;
+  const FOOTER_H = 48;
   const PAD = 16;
   const PILE_GAP_X = 10;
-  const PILE_GAP_Y = 16;
+  const PILE_GAP_Y = 12;
 
   const is169 = ratio === "16x9";
   const CANVAS_W = is169 ? 1280 : 1080;
-  const SIDE_W = is169 ? 188 : 0;
+  const hasSide = (deck.sideboard || []).length > 0;
+  const SIDE_W = is169 && hasSide ? 200 : 0;
   const MAIN_X = PAD;
-  const MAIN_W = CANVAS_W - SIDE_W - MAIN_X - PAD;
+  const MAIN_W = CANVAS_W - SIDE_W - MAIN_X - (is169 && hasSide ? 10 : PAD);
 
-  // sideboard slots → piles
   const sideCards = deck.sideboard || [];
   const sideSlots = [];
   for (const card of sideCards)
@@ -314,7 +377,6 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
   const sidePiles = [];
   for (let i = 0; i < sideSlots.length; i += MAX_PILE) sidePiles.push(sideSlots.slice(i, i + MAX_PILE));
 
-  // maindeck sorted slots → piles
   const sorted = [...(deck.maindeck || [])].sort((a, b) =>
     (cardDataMap[a.nome]?.cmc ?? 0) - (cardDataMap[b.nome]?.cmc ?? 0) || a.nome.localeCompare(b.nome)
   );
@@ -325,42 +387,102 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
   const piles = [];
   for (let i = 0; i < allSlots.length; i += MAX_PILE) piles.push(allSlots.slice(i, i + MAX_PILE));
   const totalPiles = Math.max(piles.length, 1);
+  const maxPileLen = Math.max(1, ...piles.map((p) => p.length));
 
-  // ── layout ──────────────────────────────────────────────────────────────────
   let CARD_W, CARD_H, STACK_OFFSET, PILE_H, pilesPerRow, nRows, CANVAS_H;
+  let mainGapX = PILE_GAP_X;
+  let mainGapY = PILE_GAP_Y;
+  let mainOriginX = MAIN_X;
+  let mainOriginY = 0;
   let SC9W = 0, SC9H = 0, SC9VS = 0, SIDE916_H = 0;
+  let sideLayout = null;
 
   if (is169) {
-    // fixed 1280×720, fit cards into available height
     CANVAS_H = 720;
-    const AVAIL_H = CANVAS_H - HEADER_H - STATS_H - FOOTER_H - PAD;
-    for (let t = 1; t <= 12; t++) {
-      PILE_H = Math.floor((AVAIL_H - (t - 1) * PILE_GAP_Y) / t);
-      STACK_OFFSET = Math.max(14, Math.round(PILE_H * 0.115));
-      CARD_H = PILE_H - (MAX_PILE - 1) * STACK_OFFSET;
-      if (CARD_H < 55) continue;
-      CARD_W = Math.round(CARD_H / 1.4);
-      pilesPerRow = Math.max(1, Math.floor((MAIN_W + PILE_GAP_X) / (CARD_W + PILE_GAP_X)));
-      nRows = Math.ceil(totalPiles / pilesPerRow);
-      if (nRows <= t) break;
+    const AVAIL_H = CANVAS_H - HEADER_H - STATS_H - FOOTER_H - PAD * 2;
+    const AVAIL_W = MAIN_W;
+    const layout = layoutPilesInBox(AVAIL_W, AVAIL_H, totalPiles, maxPileLen) || {
+      rows: 1, cols: totalPiles, cardW: 60, cardH: 84, stackOffset: 14, pileH: 84, gapX: PILE_GAP_X, gapY: PILE_GAP_Y,
+    };
+    nRows = layout.rows;
+    pilesPerRow = layout.cols;
+    CARD_W = layout.cardW;
+    CARD_H = layout.cardH;
+    STACK_OFFSET = layout.stackOffset;
+    PILE_H = layout.pileH;
+    mainGapX = layout.gapX;
+    mainGapY = layout.gapY;
+
+    const usedW = Math.min(totalPiles, pilesPerRow) * CARD_W + (Math.min(totalPiles, pilesPerRow) - 1) * mainGapX;
+    const usedH = nRows * PILE_H + (nRows - 1) * mainGapY;
+    mainOriginX = MAIN_X + Math.max(0, Math.floor((AVAIL_W - usedW) / 2));
+    mainOriginY = HEADER_H + STATS_H + PAD + Math.max(0, Math.floor((AVAIL_H - usedH) / 2));
+
+    if (hasSide && sidePiles.length > 0) {
+      const sideAvailW = SIDE_W - 16;
+      const sideAvailH = AVAIL_H;
+      const sideMaxLen = Math.max(1, ...sidePiles.map((p) => p.length));
+      const sideCols = sidePiles.length <= 2 ? 1 : 2;
+      const sideRows = Math.ceil(sidePiles.length / sideCols);
+      const gapX = 6;
+      const gapY = 8;
+      const gapXTotal = (sideCols - 1) * gapX;
+      const gapYTotal = (sideRows - 1) * gapY;
+      let cw = Math.floor((sideAvailW - gapXTotal) / sideCols);
+      let ch = Math.round(cw * 1.4);
+      let so = sideMaxLen > 1 ? Math.max(10, Math.round(ch * 0.12)) : 0;
+      let ph = ch + (sideMaxLen - 1) * so;
+      while (sideRows * ph + gapYTotal < sideAvailH * 0.92) {
+        const nextW = cw + 2;
+        const nextH = Math.round(nextW * 1.4);
+        const nextSo = sideMaxLen > 1 ? Math.max(10, Math.round(nextH * 0.12)) : 0;
+        const nextPh = nextH + (sideMaxLen - 1) * nextSo;
+        if (sideCols * nextW + gapXTotal > sideAvailW) break;
+        if (sideRows * nextPh + gapYTotal > sideAvailH) break;
+        cw = nextW; ch = nextH; so = nextSo; ph = nextPh;
+      }
+      while (sideRows * ph + gapYTotal > sideAvailH && cw > 30) {
+        cw -= 1;
+        ch = Math.round(cw * 1.4);
+        so = sideMaxLen > 1 ? Math.max(10, Math.round(ch * 0.12)) : 0;
+        ph = ch + (sideMaxLen - 1) * so;
+      }
+      const sUsedW = sideCols * cw + gapXTotal;
+      const sUsedH = sideRows * ph + gapYTotal;
+      sideLayout = {
+        rows: sideRows, cols: sideCols, cardW: cw, cardH: ch, stackOffset: so, pileH: ph, gapX, gapY,
+        originX: CANVAS_W - SIDE_W + Math.max(4, Math.floor((SIDE_W - 8 - sUsedW) / 2)),
+        originY: HEADER_H + STATS_H + PAD + Math.max(0, Math.floor((sideAvailH - sUsedH) / 2)),
+      };
     }
-    PILE_H = CARD_H + (MAX_PILE - 1) * STACK_OFFSET;
   } else {
-    // 9:16 — dynamic canvas height, target ~3 rows with maximum card size
     pilesPerRow = Math.min(7, Math.max(3, Math.ceil(totalPiles / 3)));
-    CARD_W = Math.floor((MAIN_W - (pilesPerRow - 1) * PILE_GAP_X) / pilesPerRow);
-    CARD_H = Math.round(CARD_W * 1.4);
-    STACK_OFFSET = Math.max(14, Math.round(CARD_H * 0.12));
-    PILE_H = CARD_H + (MAX_PILE - 1) * STACK_OFFSET;
     nRows = Math.ceil(totalPiles / pilesPerRow);
-    // sideboard cards proportional to main (74%)
-    SC9W = Math.round(CARD_W * 0.74);
-    SC9H = Math.round(CARD_H * 0.74);
+    const layout = layoutPilesInBox(MAIN_W, Math.max(900, nRows * 280), totalPiles, maxPileLen);
+    if (layout) {
+      pilesPerRow = layout.cols;
+      nRows = layout.rows;
+      CARD_W = layout.cardW;
+      CARD_H = layout.cardH;
+      STACK_OFFSET = layout.stackOffset;
+      PILE_H = layout.pileH;
+      mainGapX = layout.gapX;
+      mainGapY = layout.gapY;
+    } else {
+      CARD_W = Math.floor((MAIN_W - (pilesPerRow - 1) * PILE_GAP_X) / pilesPerRow);
+      CARD_H = Math.round(CARD_W * 1.4);
+      STACK_OFFSET = Math.max(14, Math.round(CARD_H * 0.12));
+      PILE_H = CARD_H + (maxPileLen - 1) * STACK_OFFSET;
+    }
+    SC9W = Math.round(CARD_W * 0.78);
+    SC9H = Math.round(CARD_H * 0.78);
     SC9VS = Math.max(12, Math.round(SC9H * 0.18));
     const SC9_MAX_PILE_H = SC9H + (MAX_PILE - 1) * SC9VS;
-    SIDE916_H = sideCards.length > 0 ? SC9_MAX_PILE_H + 50 : 0; // pile + label + padding
-    const mainH = nRows * PILE_H + (nRows - 1) * PILE_GAP_Y;
+    SIDE916_H = sideCards.length > 0 ? SC9_MAX_PILE_H + 56 : 0;
+    const mainH = nRows * PILE_H + (nRows - 1) * mainGapY;
     CANVAS_H = HEADER_H + STATS_H + PAD + mainH + SIDE916_H + FOOTER_H + PAD;
+    mainOriginX = MAIN_X;
+    mainOriginY = HEADER_H + STATS_H + PAD;
   }
 
   const canvas = document.createElement("canvas");
@@ -370,20 +492,19 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
   drawBg(ctx, CANVAS_W, CANVAS_H);
   drawTopAccent(ctx, CANVAS_W);
 
-  // header
-  ctx.font = "bold 30px Arial, sans-serif"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "left";
+  ctx.font = "bold 38px Arial, sans-serif"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "left";
   let dName = deck.nome || "Deck";
   while (ctx.measureText(dName).width > CANVAS_W - (is169 ? 350 : 260) && dName.length > 1) dName = dName.slice(0, -1);
   if (dName !== deck.nome) dName += "…";
-  ctx.fillText(dName, MAIN_X + 4, 36);
+  ctx.fillText(dName, MAIN_X + 4, 42);
   const fc = FMT_COLOR[deck.formato] || "#beafd7";
   const fl = deck.formato ? deck.formato.charAt(0).toUpperCase() + deck.formato.slice(1) : "";
-  ctx.font = "14px Arial, sans-serif"; ctx.fillStyle = fc;
-  ctx.fillText(fl, MAIN_X + 4, 56);
+  ctx.font = "18px Arial, sans-serif"; ctx.fillStyle = fc;
+  ctx.fillText(fl, MAIN_X + 4, 68);
   ctx.fillStyle = "#9d74e8";
-  ctx.fillText(`  ·  por ${ownerName || "—"}`, MAIN_X + 4 + ctx.measureText(fl).width, 56);
+  ctx.fillText(`  ·  por ${ownerName || "—"}`, MAIN_X + 4 + ctx.measureText(fl).width, 68);
 
-  drawCmcBars(ctx, deck, cardDataMap, CANVAS_W - 206, 12, 19, 44);
+  drawCmcBars(ctx, deck, cardDataMap, CANVAS_W - 230, 14, 22, 52);
 
   const typeCnt = {};
   for (const c of deck.maindeck || []) {
@@ -392,9 +513,8 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
   }
   drawTypeBadges(ctx, CANVAS_W, HEADER_H, STATS_H, typeCnt);
 
-  // vertical divider (16:9 only)
   if (is169 && SIDE_W > 0) {
-    const DX = CANVAS_W - SIDE_W - 6;
+    const DX = CANVAS_W - SIDE_W - 4;
     const dvg = ctx.createLinearGradient(DX, HEADER_H, DX, CANVAS_H - FOOTER_H);
     dvg.addColorStop(0, "rgba(167,79,255,0)"); dvg.addColorStop(0.1, "rgba(167,79,255,0.35)");
     dvg.addColorStop(0.9, "rgba(167,79,255,0.35)"); dvg.addColorStop(1, "rgba(167,79,255,0)");
@@ -402,14 +522,18 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
     ctx.beginPath(); ctx.moveTo(DX, HEADER_H); ctx.lineTo(DX, CANVAS_H - FOOTER_H); ctx.stroke();
   }
 
-  // main piles
-  const startY = HEADER_H + STATS_H + PAD;
+  const startY = mainOriginY;
   for (let row = 0; row < nRows; row++) {
     const rowPiles = piles.slice(row * pilesPerRow, (row + 1) * pilesPerRow);
-    const rowY = startY + row * (PILE_H + PILE_GAP_Y);
+    const rowY = startY + row * (PILE_H + mainGapY);
+    const rowUsedW = rowPiles.length * CARD_W + Math.max(0, rowPiles.length - 1) * mainGapX;
+    const fullRowW = Math.min(totalPiles, pilesPerRow) * CARD_W + (Math.min(totalPiles, pilesPerRow) - 1) * mainGapX;
+    const rowStartX = is169
+      ? mainOriginX + Math.max(0, Math.floor((fullRowW - rowUsedW) / 2))
+      : mainOriginX;
     for (let pi = 0; pi < rowPiles.length; pi++) {
       const pile = rowPiles[pi];
-      const pileX = MAIN_X + pi * (CARD_W + PILE_GAP_X);
+      const pileX = rowStartX + pi * (CARD_W + mainGapX);
       for (let s = 0; s < pile.length; s++) {
         const gColor = GROUP_COLOR[getTypeGroup(pile[s].typeLine)] || "#e9d5ff";
         drawCardOnCanvas(ctx, pile[s].img, pileX, rowY + s * STACK_OFFSET, CARD_W, CARD_H, `${gColor}40`);
@@ -417,47 +541,45 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
     }
   }
 
-  // sideboard — 16:9: right column; 9:16: bottom section
   if (sideCards.length > 0) {
-    if (is169) {
-      const SVS = 18, SCW = 76, SCH = 106;
-      const sidePileH = p => SCH + (p.length - 1) * SVS + 8;
-      const SX1 = CANVAS_W - SIDE_W + 8, SX2 = SX1 + SCW + 6;
-      let sy1 = startY, sy2 = startY;
+    if (is169 && sideLayout) {
+      const { cardW: SCW, cardH: SCH, stackOffset: SVS, cols: sCols, gapX: sGapX, gapY: sGapY, pileH: sPileH, originX, originY } = sideLayout;
       ctx.save();
-      ctx.translate(CANVAS_W - 8, sy1 + 60); ctx.rotate(Math.PI / 2);
-      ctx.font = "bold 11px Arial, sans-serif"; ctx.fillStyle = "#3d2470"; ctx.textAlign = "center";
+      ctx.translate(CANVAS_W - 10, originY + Math.min(80, sPileH)); ctx.rotate(Math.PI / 2);
+      ctx.font = "bold 13px Arial, sans-serif"; ctx.fillStyle = "#5b3d8f"; ctx.textAlign = "center";
       ctx.fillText("SIDEBOARD", 0, 0); ctx.restore();
       for (let pi = 0; pi < sidePiles.length; pi++) {
-        const pile = sidePiles[pi]; const isC2 = pi % 2 === 1;
-        const cx = isC2 ? SX2 : SX1; const cy = isC2 ? sy2 : sy1;
+        const pile = sidePiles[pi];
+        const col = pi % sCols;
+        const row = Math.floor(pi / sCols);
+        const cx = originX + col * (SCW + sGapX);
+        const cy = originY + row * (sPileH + sGapY);
         for (let s = 0; s < pile.length; s++)
           drawCardOnCanvas(ctx, pile[s].img, cx, cy + s * SVS, SCW, SCH, "rgba(167,79,255,0.35)");
         if (pile.length > 1) {
-          const bdx = cx + SCW - 9, bdy = cy + SCH + (pile.length - 1) * SVS - 9;
+          const bdx = cx + SCW - 10, bdy = cy + SCH + (pile.length - 1) * SVS - 10;
           ctx.fillStyle = "rgba(0,0,0,0.88)";
-          ctx.beginPath(); ctx.arc(bdx + 7, bdy + 7, 7, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 7px Arial, sans-serif";
-          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + 7, bdy + 10); ctx.textAlign = "left";
+          ctx.beginPath(); ctx.arc(bdx + 8, bdy + 8, 8, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 9px Arial, sans-serif";
+          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + 8, bdy + 11); ctx.textAlign = "left";
         }
-        const ph = sidePileH(pile);
-        if (isC2) sy2 += ph; else sy1 += ph;
       }
-    } else {
-      // 9:16: horizontal row of side piles at the bottom
+    } else if (!is169) {
       const sideY = CANVAS_H - FOOTER_H - SIDE916_H + 14;
       const dg = ctx.createLinearGradient(PAD, sideY - 14, CANVAS_W - PAD, sideY - 14);
       dg.addColorStop(0, "rgba(167,79,255,0)"); dg.addColorStop(0.15, "rgba(167,79,255,0.35)");
       dg.addColorStop(0.85, "rgba(167,79,255,0.35)"); dg.addColorStop(1, "rgba(167,79,255,0)");
       ctx.strokeStyle = dg; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(PAD, sideY - 14); ctx.lineTo(CANVAS_W - PAD, sideY - 14); ctx.stroke();
-      ctx.font = "bold 13px Arial, sans-serif"; ctx.fillStyle = "#6b4a9e"; ctx.textAlign = "left";
+      ctx.font = "bold 15px Arial, sans-serif"; ctx.fillStyle = "#6b4a9e"; ctx.textAlign = "left";
       ctx.fillText("SIDEBOARD", PAD, sideY);
-      const pilesY = sideY + 18;
+      const pilesY = sideY + 20;
       const SC9GAP = 10;
+      const sideRowW = sidePiles.length * SC9W + Math.max(0, sidePiles.length - 1) * SC9GAP;
+      const sideStartX = PAD + Math.max(0, Math.floor((CANVAS_W - 2 * PAD - sideRowW) / 2));
       for (let pi = 0; pi < sidePiles.length; pi++) {
         const pile = sidePiles[pi];
-        const pileX = PAD + pi * (SC9W + SC9GAP);
+        const pileX = sideStartX + pi * (SC9W + SC9GAP);
         for (let s = 0; s < pile.length; s++)
           drawCardOnCanvas(ctx, pile[s].img, pileX, pilesY + s * SC9VS, SC9W, SC9H, "rgba(167,79,255,0.35)");
         if (pile.length > 1) {
@@ -477,205 +599,3 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
   return canvas;
 }
 
-// ── LIST canvas (portrait 1080×1350, text-based) ──────────────────────────────
-
-export function buildListCanvas(deck, cardDataMap, ownerName) {
-  const CANVAS_W = 1080;
-  const PAD = 40;
-  const COL_GAP = 20;
-  const COL_W = Math.floor((CANVAS_W - 2 * PAD - COL_GAP) / 2);
-  const HEADER_H = 148;
-  const STATS_H = 44;
-  const FOOTER_H = 52;
-  const SECTION_PAD = 22;
-  const GROUP_LBL_H = 30;
-  const GROUP_GAP = 14;
-  const CARD_ROW_H = 30;
-  const QTY_W = 30;
-
-  // group cards
-  const grouped = {};
-  for (const g of GROUP_ORDER) grouped[g] = [];
-  for (const c of deck.maindeck || []) {
-    const g = getTypeGroup(cardDataMap[c.nome]?.typeLine);
-    grouped[g].push(c);
-  }
-
-  const col1Keys = ["Creature", "Planeswalker"].filter(g => grouped[g].length > 0);
-  const col2Keys = ["Instant", "Sorcery", "Enchantment", "Artifact", "Other"].filter(g => grouped[g].length > 0);
-  const landKeys = ["Land"].filter(g => grouped[g].length > 0);
-  const sideCards = deck.sideboard || [];
-
-  function groupBlockH(keys) {
-    return keys.reduce((acc, g) => acc + GROUP_LBL_H + GROUP_GAP + grouped[g].length * CARD_ROW_H + GROUP_GAP, 0);
-  }
-
-  const colsH = Math.max(groupBlockH(col1Keys), groupBlockH(col2Keys));
-  const landCards = landKeys.flatMap(g => grouped[g]);
-  const landH = landCards.length > 0 ? GROUP_LBL_H + GROUP_GAP + Math.ceil(landCards.length / 2) * CARD_ROW_H + GROUP_GAP : 0;
-  const sideH = sideCards.length > 0 ? GROUP_LBL_H + GROUP_GAP + Math.ceil(sideCards.length / 2) * CARD_ROW_H + GROUP_GAP : 0;
-
-  const CARDS_AREA = SECTION_PAD + colsH + (landH > 0 ? SECTION_PAD / 2 + landH : 0) + (sideH > 0 ? SECTION_PAD / 2 + sideH : 0) + SECTION_PAD;
-  const CANVAS_H = Math.max(1350, HEADER_H + STATS_H + CARDS_AREA + FOOTER_H);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = CANVAS_W; canvas.height = CANVAS_H;
-  const ctx = canvas.getContext("2d");
-
-  drawBg(ctx, CANVAS_W, CANVAS_H);
-  drawTopAccent(ctx, CANVAS_W);
-
-  // ── header ─────────────────────────────────────────────────────────────────
-  ctx.font = "bold 50px Arial, sans-serif"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "left";
-  let dName = deck.nome || "Deck";
-  const maxNameW = CANVAS_W - PAD * 2 - 230;
-  while (ctx.measureText(dName).width > maxNameW && dName.length > 1) dName = dName.slice(0, -1);
-  if (dName !== deck.nome) dName += "…";
-  ctx.fillText(dName, PAD, 70);
-
-  const fc = FMT_COLOR[deck.formato] || "#beafd7";
-  const fl = deck.formato ? deck.formato.charAt(0).toUpperCase() + deck.formato.slice(1) : "";
-  ctx.font = "17px Arial, sans-serif"; ctx.fillStyle = fc;
-  ctx.fillText(fl, PAD, 96);
-  ctx.fillStyle = "rgba(167,79,255,0.55)";
-  ctx.fillText("  ·  ", PAD + ctx.measureText(fl).width, 96);
-  ctx.fillStyle = "#9d74e8";
-  ctx.fillText(`por ${ownerName || "—"}`, PAD + ctx.measureText(fl + "  ·  ").width, 96);
-
-  const mainCount = (deck.maindeck || []).reduce((s, c) => s + (c.quantidade || 1), 0);
-  const sideCount = sideCards.reduce((s, c) => s + (c.quantidade || 1), 0);
-  ctx.font = "14px Arial, sans-serif"; ctx.fillStyle = "rgba(167,79,255,0.5)";
-  ctx.fillText(sideCount > 0 ? `${mainCount} cartas  ·  ${sideCount} sideboard` : `${mainCount} cartas`, PAD, 120);
-
-  // CMC bars (top-right of header)
-  drawCmcBars(ctx, deck, cardDataMap, CANVAS_W - PAD - 8 * (26 + 4), 18, 26, 56);
-
-  // type stats
-  const typeCnt = {};
-  for (const c of deck.maindeck || []) {
-    const tg = getTypeGroup(cardDataMap[c.nome]?.typeLine);
-    typeCnt[tg] = (typeCnt[tg] || 0) + (c.quantidade || 1);
-  }
-  drawTypeBadges(ctx, CANVAS_W, HEADER_H, STATS_H, typeCnt);
-
-  // ── card list area ─────────────────────────────────────────────────────────
-  let curY = HEADER_H + STATS_H + SECTION_PAD;
-
-  function drawGroupHeader(g, x, y, colWidth, customLabel) {
-    const col = GROUP_COLOR[g] || "#e9d5ff";
-    const cards = grouped[g] || [];
-    const count = cards.reduce((s, c) => s + (c.quantidade || 1), 0);
-    const lbl = (customLabel || g).toUpperCase();
-
-    ctx.beginPath(); ctx.arc(x + 7, y + 10, 5, 0, Math.PI * 2);
-    ctx.fillStyle = col; ctx.fill();
-
-    ctx.font = "bold 13px Arial, sans-serif"; ctx.fillStyle = col; ctx.textAlign = "left";
-    ctx.fillText(lbl, x + 18, y + 14);
-    const lblW = ctx.measureText(lbl).width;
-    ctx.font = "13px Arial, sans-serif"; ctx.fillStyle = `${col}99`;
-    ctx.fillText(` · ${count}`, x + 18 + lblW, y + 14);
-
-    ctx.strokeStyle = `${col}25`; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, y + GROUP_LBL_H - 3); ctx.lineTo(x + colWidth, y + GROUP_LBL_H - 3); ctx.stroke();
-  }
-
-  function drawCardRow(card, x, y, colWidth, overrideGroup) {
-    const qty = card.quantidade || 1;
-    const g = overrideGroup || getTypeGroup(cardDataMap[card.nome]?.typeLine);
-    const col = GROUP_COLOR[g] || "#e9d5ff";
-    const nome = card.nome || "—";
-
-    const badgeH = 20, badgeY = y + (CARD_ROW_H - badgeH) / 2;
-    ctx.fillStyle = `${col}20`; rr(ctx, x, badgeY, QTY_W, badgeH, 4); ctx.fill();
-    ctx.strokeStyle = `${col}44`; ctx.lineWidth = 0.7; rr(ctx, x, badgeY, QTY_W, badgeH, 4); ctx.stroke();
-    ctx.font = "bold 12px Arial, sans-serif"; ctx.fillStyle = col; ctx.textAlign = "center";
-    ctx.fillText(String(qty), x + QTY_W / 2, badgeY + 14);
-    ctx.textAlign = "left";
-
-    const nameX = x + QTY_W + 9;
-    const maxW = colWidth - QTY_W - 9;
-    ctx.font = "16px Arial, sans-serif"; ctx.fillStyle = "#f0ecff";
-    let nomeTrunc = nome;
-    while (ctx.measureText(nomeTrunc).width > maxW && nomeTrunc.length > 1) nomeTrunc = nomeTrunc.slice(0, -1);
-    if (nomeTrunc !== nome) nomeTrunc += "…";
-    ctx.fillText(nomeTrunc, nameX, y + CARD_ROW_H - 8);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.04)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, y + CARD_ROW_H - 1); ctx.lineTo(x + colWidth, y + CARD_ROW_H - 1); ctx.stroke();
-  }
-
-  function drawColumn(keys, x, startY) {
-    let y = startY;
-    for (const g of keys) {
-      if (!grouped[g] || grouped[g].length === 0) continue;
-      drawGroupHeader(g, x, y, COL_W);
-      y += GROUP_LBL_H + 4;
-      for (const card of grouped[g]) { drawCardRow(card, x, y, COL_W); y += CARD_ROW_H; }
-      y += GROUP_GAP;
-    }
-    return y;
-  }
-
-  const col1End = drawColumn(col1Keys, PAD, curY);
-  const col2End = drawColumn(col2Keys, PAD + COL_W + COL_GAP, curY);
-  curY = Math.max(col1End, col2End) + GROUP_GAP;
-
-  // full-width divider between sections
-  function drawDivider(y) {
-    ctx.strokeStyle = "rgba(167,79,255,0.13)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(CANVAS_W - PAD, y); ctx.stroke();
-  }
-
-  // lands – full-width 2-col sub-grid
-  if (landCards.length > 0) {
-    drawDivider(curY); curY += 14;
-    const halfW = COL_W;
-    const col = GROUP_COLOR["Land"];
-    const lCount = landCards.reduce((s, c) => s + (c.quantidade || 1), 0);
-    ctx.beginPath(); ctx.arc(PAD + 7, curY + 10, 5, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
-    ctx.font = "bold 13px Arial, sans-serif"; ctx.fillStyle = col; ctx.textAlign = "left";
-    ctx.fillText("LAND", PAD + 18, curY + 14);
-    ctx.font = "13px Arial, sans-serif"; ctx.fillStyle = `${col}99`;
-    ctx.fillText(` · ${lCount}`, PAD + 18 + ctx.measureText("LAND").width, curY + 14);
-    ctx.strokeStyle = `${col}25`; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(PAD, curY + GROUP_LBL_H - 3); ctx.lineTo(CANVAS_W - PAD, curY + GROUP_LBL_H - 3); ctx.stroke();
-    curY += GROUP_LBL_H + 4;
-
-    for (let li = 0; li < landCards.length; li++) {
-      const isRight = li % 2 === 1;
-      const lx = isRight ? PAD + halfW + COL_GAP : PAD;
-      const ly = curY + Math.floor(li / 2) * CARD_ROW_H;
-      drawCardRow(landCards[li], lx, ly, halfW, "Land");
-    }
-    curY += Math.ceil(landCards.length / 2) * CARD_ROW_H + GROUP_GAP;
-  }
-
-  // sideboard
-  if (sideCards.length > 0) {
-    drawDivider(curY); curY += 14;
-    const halfW = COL_W;
-    const sCol = "#a78bfa";
-    ctx.beginPath(); ctx.arc(PAD + 7, curY + 10, 5, 0, Math.PI * 2); ctx.fillStyle = sCol; ctx.fill();
-    ctx.font = "bold 13px Arial, sans-serif"; ctx.fillStyle = sCol; ctx.textAlign = "left";
-    ctx.fillText("SIDEBOARD", PAD + 18, curY + 14);
-    ctx.font = "13px Arial, sans-serif"; ctx.fillStyle = `${sCol}99`;
-    ctx.fillText(` · ${sideCount}`, PAD + 18 + ctx.measureText("SIDEBOARD").width, curY + 14);
-    ctx.strokeStyle = `${sCol}25`; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(PAD, curY + GROUP_LBL_H - 3); ctx.lineTo(CANVAS_W - PAD, curY + GROUP_LBL_H - 3); ctx.stroke();
-    curY += GROUP_LBL_H + 4;
-
-    for (let si = 0; si < sideCards.length; si++) {
-      const isRight = si % 2 === 1;
-      const sx = isRight ? PAD + halfW + COL_GAP : PAD;
-      const sy = curY + Math.floor(si / 2) * CARD_ROW_H;
-      const card = sideCards[si];
-      const g = getTypeGroup(cardDataMap[card.nome]?.typeLine);
-      drawCardRow(card, sx, sy, halfW, g || "Other");
-    }
-  }
-
-  drawWatermark(ctx, CANVAS_W, CANVAS_H);
-  drawFooter(ctx, CANVAS_W, CANVAS_H, FOOTER_H);
-  return canvas;
-}

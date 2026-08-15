@@ -26,7 +26,7 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { logError } from "../utils/logger";
 import { chaveMetagameLista, ordenarListasPorRecencia } from "../utils/metagameListas";
 
-const DIAS_OPCOES = [7, 14, 30, 90, 365];
+const DIAS_OPCOES = [7, 14, 30, 90];
 const DIAS_PADRAO = 30;
 
 function parseDias(valor) {
