@@ -1,5 +1,6 @@
 import { isAdSenseEnabled } from "../../constants/adsense";
 import { AdSenseUnit } from "./AdSenseUnit";
+import { useCookieConsent } from "./CookieConsentBanner";
 
 /** Mesmas medidas do conteudo principal (Home / PageShell). */
 export const ADSENSE_CONTENT_SHELL =
@@ -29,13 +30,15 @@ function AdSenseBottomBanner() {
 /** Anuncios alinhados ao conteudo central, abaixo da navbar fixa. */
 export function AdSenseLayout({ children }) {
   const adsEnabled = isAdSenseEnabled();
+  const { decided } = useCookieConsent();
+  const showAds = adsEnabled && decided;
 
   return (
     <div className={`w-full min-w-0 ${NAV_OFFSET}`}>
       <div className={`${ADSENSE_CONTENT_SHELL} pb-12`}>
-        {adsEnabled && <AdSenseTopBanner />}
+        {showAds && <AdSenseTopBanner />}
         {children}
-        {adsEnabled && <AdSenseBottomBanner />}
+        {showAds && <AdSenseBottomBanner />}
       </div>
     </div>
   );

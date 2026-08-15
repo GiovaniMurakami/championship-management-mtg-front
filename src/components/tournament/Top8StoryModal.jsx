@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
-import { resolveTop8BackgroundUrl, formatTop8StoryDate, loadTop8BackgroundImage } from "../../utils/top8Story";
+import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
 
@@ -39,20 +39,44 @@ function drawCoverImage(ctx, img, x, y, w, h) {
   return true;
 }
 
-/** Data centralizada abaixo dos jogadores (PNG 1080×1920 ou vídeo escalado). */
-function drawStoryFooterDate(ctx, { width, height, tournamentDate }) {
-  const dateLabel = String(tournamentDate || "").trim();
-  if (!dateLabel) return;
+/** Data e quantidade de jogadores em uma única linha, acima do 1º lugar. */
+function drawStoryHeadline(ctx, { width, y, headline }) {
+  const label = String(headline || "").trim();
+  if (!label) return;
 
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${Math.round(width * 0.028)}px Arial, sans-serif`;
+  let fontSize = Math.round(width * 0.038);
+  const maxW = width * 0.88;
+  ctx.font = `${fontSize}px Arial, sans-serif`;
+  while (ctx.measureText(label).width > maxW && fontSize > 12) {
+    fontSize -= 1;
+    ctx.font = `${fontSize}px Arial, sans-serif`;
+  }
   ctx.fillStyle = "#c4b5fd";
   ctx.shadowColor = "rgba(0,0,0,0.7)";
-  ctx.shadowBlur = Math.round(width * 0.008);
-  ctx.fillText(dateLabel, width / 2, height - Math.round(height * 0.016));
+  ctx.shadowBlur = Math.round(width * 0.006);
+  ctx.fillText(label, width / 2, y, maxW);
   ctx.restore();
+}
+
+function storyContentLayout(canvasH, n, nominalCardH) {
+  const headerEndY = Math.round(canvasH * TOP8_CONTENT_START_RATIO);
+  const metaBand = Math.round(canvasH * 0.055);
+  const layout = calcLayout(
+    canvasH,
+    headerEndY + metaBand,
+    Math.round(canvasH * 0.025),
+    n,
+    nominalCardH,
+  );
+  return {
+    ...layout,
+    headerEndY,
+    metaBand,
+    headlineY: headerEndY + metaBand * 0.48,
+  };
 }
 
 /**
@@ -71,7 +95,7 @@ function calcLayout(canvasH, headerEndY, bottomReserve, n, nominalCardH) {
 
 //  Static PNG (1080 � 1920) 
 
-async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, tournamentDate } = {}) {
+async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, headline } = {}) {
   const W = 1080;
   const H = 1920;
   const canvas = document.createElement("canvas");
@@ -85,15 +109,17 @@ async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, tour
     ctx.fillRect(0, 0, W, H);
   }
 
-  // Layout
   const n = players.length;
-  const { cardH, cardGap, startY } = calcLayout(H, Math.round(H * TOP8_CONTENT_START_RATIO), 110, n, 150);
+  const { cardH, cardGap, startY, headlineY } = storyContentLayout(H, n, 150);
   const fontScale = Math.min(1, cardH / 150);
+
+  drawStoryHeadline(ctx, { width: W, y: headlineY, headline });
 
   players.forEach((player, i) => {
     const pos = player.posicao ?? i + 1;
     const name = player.usuario?.nome || player.nome || "Jogador";
-    const deck = player.deckNome || "";
+    const deck = player.deckNome || "—";
+    const record = formatTop8StoryRecord(player);
     const isGold = pos === 1;
     const isSilver = pos === 2;
     const isBronze = pos === 3;
@@ -127,26 +153,29 @@ async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, tour
     ctx.fillText(`#${pos}`, 100, y + cardH * 0.65);
 
     const nameFs = Math.round((isGold ? 62 : 56) * fontScale);
+    const deckFs = Math.round(44 * fontScale);
+    const { nameY, deckY } = top8StoryNameDeckLayout(cardH, nameFs, deckFs);
     ctx.font = `bold ${nameFs}px Arial, sans-serif`;
     ctx.fillStyle = isGold ? "#fff8e0" : "#f0e6ff";
+    ctx.textBaseline = "alphabetic";
     let dName = name;
     while (ctx.measureText(dName).width > 620 && dName.length > 1) dName = dName.slice(0, -1);
-    if (dName !== name) dName += "&";
-    ctx.fillText(dName, 290, y + cardH * 0.43);
+    if (dName !== name) dName += "…";
+    ctx.fillText(dName, 290, y + nameY);
 
-    const deckFs = Math.round(44 * fontScale);
     ctx.font = `${deckFs}px Arial, sans-serif`;
     ctx.fillStyle = isGold ? "#fcd34d" : "#a78bfa";
     let dDeck = deck;
-    while (ctx.measureText(dDeck).width > 660 && dDeck.length > 1) dDeck = dDeck.slice(0, -1);
-    if (dDeck !== deck) dDeck += "&";
-    ctx.fillText(dDeck, 290, y + cardH * 0.78);
-  });
+    while (ctx.measureText(dDeck).width > 520 && dDeck.length > 1) dDeck = dDeck.slice(0, -1);
+    if (dDeck !== deck) dDeck += "…";
+    ctx.fillText(dDeck, 290, y + deckY);
 
-  drawStoryFooterDate(ctx, {
-    width: W,
-    height: H,
-    tournamentDate,
+    const recFs = Math.round((isGold ? 48 : 42) * fontScale);
+    ctx.font = `bold ${recFs}px Arial, sans-serif`;
+    ctx.fillStyle = isGold ? "#fde68a" : "#e8dfff";
+    ctx.textAlign = "right";
+    ctx.fillText(record, W - 90, y + cardH * 0.62);
+    ctx.textAlign = "left";
   });
 
   const link = document.createElement("a");
@@ -167,11 +196,11 @@ function gifDrawBackground(ctx, backgroundImage) {
   }
 }
 
-function gifDrawFooterDate(ctx, tournamentDate) {
-  drawStoryFooterDate(ctx, {
+function gifDrawHeadline(ctx, headline, headlineY) {
+  drawStoryHeadline(ctx, {
     width: GW,
-    height: GH,
-    tournamentDate,
+    y: headlineY,
+    headline,
   });
 }
 
@@ -193,6 +222,7 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
   const posFs = Math.round((isGold ? 36 : 32) * fontScale);
   const nameFs = Math.round((isGold ? 27 : 24) * fontScale);
   const deckFs = Math.round(19 * fontScale);
+  const { nameY, deckY } = top8StoryNameDeckLayout(cardH, nameFs, deckFs);
 
   ctx.save();
   ctx.translate(xOffset, 0);
@@ -242,19 +272,27 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
   const name = player.usuario?.nome || player.nome || "Jogador";
   ctx.font = `bold ${nameFs}px Arial, sans-serif`;
   ctx.fillStyle = isGold ? "#fff8e0" : "#f0e6ff";
-  const maxNameW = CARD_W - 110;
+  ctx.textBaseline = "alphabetic";
+  const maxNameW = CARD_W - 155;
   let dName = name;
   while (ctx.measureText(dName).width > maxNameW && dName.length > 1) dName = dName.slice(0, -1);
-  if (dName !== name) dName += "&";
-  ctx.fillText(dName, 129, y + cardH * 0.43);
+  if (dName !== name) dName += "…";
+  ctx.fillText(dName, 129, y + nameY);
 
-  const deck = player.deckNome || "";
+  const deck = player.deckNome || "—";
   ctx.font = `${deckFs}px Arial, sans-serif`;
   ctx.fillStyle = isGold ? "#fcd34d" : "#a78bfa";
   let dDeck = deck;
   while (ctx.measureText(dDeck).width > maxNameW + 10 && dDeck.length > 1) dDeck = dDeck.slice(0, -1);
-  if (dDeck !== deck) dDeck += "&";
-  ctx.fillText(dDeck, 129, y + cardH * 0.78);
+  if (dDeck !== deck) dDeck += "…";
+  ctx.fillText(dDeck, 129, y + deckY);
+
+  const recFs = Math.round((isGold ? 22 : 20) * fontScale);
+  ctx.font = `bold ${recFs}px Arial, sans-serif`;
+  ctx.fillStyle = isGold ? "#fde68a" : "#e8dfff";
+  ctx.textAlign = "right";
+  ctx.fillText(formatTop8StoryRecord(player), CARD_LEFT + CARD_W - 14, y + cardH * 0.62);
+  ctx.textAlign = "left";
 
   ctx.restore();
 }
@@ -296,7 +334,7 @@ function renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta
       layout);
   }
 
-  gifDrawFooterDate(ctx, headerMeta?.tournamentDate);
+  gifDrawHeadline(ctx, headerMeta?.headline, layout.headlineY);
 }
 
 //  Animated MP4 (1080 � 1920, 10 fps) 
@@ -309,14 +347,14 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
   const backgroundImage = await loadBackground(options.backgroundUrl);
   const headerMeta = {
     tournamentName,
-    tournamentDate: options.tournamentDate || "",
+    headline: options.headline || "",
   };
 
   const revealOrder = players
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
     .reverse();
 
-  const layout = calcLayout(GH, Math.round(GH * TOP8_CONTENT_START_RATIO), 40, n, 66);
+  const layout = storyContentLayout(GH, n, 66);
 
   // Render at 1080�1920 by scaling the GW/GH coordinate space �2.25
   const OUT_W = 1080, OUT_H = 1920;
@@ -513,11 +551,10 @@ export function Top8StoryModal({
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
 
   const players = allPlayers.slice(0, topN);
-  const previewLayout = calcLayout(1920, Math.round(1920 * TOP8_CONTENT_START_RATIO), 110, Math.max(players.length, 1), 150);
+  const previewLayout = storyContentLayout(1920, Math.max(players.length, 1), 150);
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
-  const dateLabel = formatTop8StoryDate(torneioHorario);
-  // Passa a URL original do torneio (não a já resolvida) para o loader poder cair no padrão só se o custom falhar.
-  const exportOptions = { backgroundUrl: storyFundoUrl, tournamentDate: dateLabel };
+  const headline = formatTop8StoryHeadline(torneioHorario, allPlayers.length);
+  const exportOptions = { backgroundUrl: storyFundoUrl, headline };
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
@@ -634,7 +671,7 @@ export function Top8StoryModal({
 
         {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
         <div
-          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center"
+          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
           style={{ backgroundImage: `url("${backgroundUrl}")` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}
@@ -645,12 +682,12 @@ export function Top8StoryModal({
 
           {/* story-players: list-none m-0 px-[0.65rem] py-[0.3rem] flex-col gap-[0.3rem] flex-1 overflow-hidden */}
           <ul
-            className="absolute inset-0 list-none m-0 p-0 overflow-hidden [container-type:size]"
+            className="absolute inset-0 list-none m-0 p-0 overflow-hidden"
           >
             {players.map((player, i) => {
               const pos = player.posicao ?? i + 1;
               const name = player.usuario?.nome || player.nome || "Jogador";
-              const deck = player.deckNome || "�";
+              const deck = player.deckNome || "—";
               const tier = getPlayerVisualTier(pos);
               const cardY = previewLayout.startY + i * (previewLayout.cardH + previewLayout.cardGap);
               const isPodium = pos <= 3;
@@ -696,20 +733,21 @@ export function Top8StoryModal({
                   >
                     #{pos}
                   </span>
-                  {/* story-player-details: flex-col gap-[0.06rem] min-w-0 */}
                   <span
-                    className="absolute left-[23.9584%] top-[20%] max-w-[64.5834%] overflow-hidden text-ellipsis whitespace-nowrap font-bold leading-[1.12]"
-                    style={{
-                      color: tier.nameColor,
-                      fontSize: pxToPreviewWidth(nameFs),
-                    }}
+                    className="absolute left-[23.9584%] top-1/2 flex max-w-[52%] -translate-y-1/2 flex-col justify-center min-w-0"
+                    style={{ gap: pxToPreviewWidth(Math.max(8, Math.round(nameFs * 0.12))) }}
                   >
-                    {/* story-player-name: clamp 0.7rem0.98rem font-bold text-[#f0e6ff] (gold: #fff8e0) truncate */}
+                    <span
+                      className="overflow-hidden text-ellipsis whitespace-nowrap font-bold leading-[1.2]"
+                      style={{
+                        color: tier.nameColor,
+                        fontSize: pxToPreviewWidth(nameFs),
+                      }}
+                    >
                       {name}
                     </span>
-                    {/* story-player-deck: clamp 0.6rem0.8rem text-[#a78bfa] (gold: #fcd34d) truncate */}
                     <span
-                      className="absolute left-[23.9584%] top-[57%] max-w-[68.75%] overflow-hidden text-ellipsis whitespace-nowrap leading-[1.12]"
+                      className="overflow-hidden text-ellipsis whitespace-nowrap leading-[1.15]"
                       style={{
                         color: tier.deckColor,
                         fontSize: pxToPreviewWidth(deckFs),
@@ -717,14 +755,32 @@ export function Top8StoryModal({
                     >
                       {deck}
                     </span>
+                  </span>
+                    <span
+                      className="absolute right-[5%] top-1/2 -translate-y-1/2 font-bold leading-none tabular-nums"
+                      style={{
+                        color: pos === 1 ? "#fde68a" : "#e8dfff",
+                        fontSize: pxToPreviewWidth(Math.round((pos === 1 ? 48 : 42) * fontScale)),
+                      }}
+                    >
+                      {formatTop8StoryRecord(player)}
+                    </span>
                 </li>
               );
             })}
           </ul>
 
-          {dateLabel ? (
-            <p className="absolute inset-x-0 bottom-[1.2%] z-10 m-0 px-4 text-center text-[clamp(0.65rem,2.8cqw,0.9rem)] font-medium text-[#c4b5fd] drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] pointer-events-none">
-              {dateLabel}
+          {headline ? (
+            <p
+              className="absolute inset-x-0 z-10 m-0 px-[6%] text-center font-semibold text-[#c4b5fd] drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] pointer-events-none whitespace-nowrap overflow-hidden text-ellipsis"
+              style={{
+                top: pxToPercent(previewLayout.headlineY, 1920),
+                transform: "translateY(-50%)",
+                fontSize: pxToPreviewWidth(Math.round(1080 * 0.038)),
+                lineHeight: 1,
+              }}
+            >
+              {headline}
             </p>
           ) : null}
 

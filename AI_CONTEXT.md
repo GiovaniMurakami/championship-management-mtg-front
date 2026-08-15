@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.33** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.34** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -181,12 +181,12 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Deck builder | `hooks/useDeckBuilder.js`, `components/deck/`, `utils/parseDeckTxt.js`, `utils/deckPayload.js` |
 | Lista de torneios | `pages/TournamentPage.jsx` |
 | Detalhe de torneio | `hooks/useTournamentDetail.js`, `pages/TournamentDetailPage.jsx`, `components/tournament/` (auto-drop em `PlayerProfile`) |
-| Standings | `StandingsTable.jsx` (largura full / sem clip lateral; sem scroll vertical interno) |
+| Standings | `StandingsTable.jsx` (largura full / sem clip lateral; sem scroll vertical interno; story Top 8: jogadores + data acima do 1º, recorde V-D no card) |
 | Usuário excluído | `components/ui/UsuarioExcluidoTag.jsx` + flags `excluido` nos payloads |
 | Fluxo de rodadas/top cut | `utils/tournamentFlow.js`, `hooks/useTournamentQueries.js` |
 | Realtime Ably | `services/ablyService.js`, handlers em `useTournamentDetail` e `TournamentPage` |
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
-| Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` |
+| Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin escolhe `cartaRepresentativa` no detalhe do arquétipo) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
 | Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
@@ -264,14 +264,16 @@ Canal por torneio: `torneio-{torneioId}`
 
 Eventos (`ablyService.js`):
 ```
-rodada_iniciada, resultado_registrado, standings_atualizados,
+rodada_iniciada, resultado_registrado,
 torneio_finalizado, participante_inscrito, checkin_realizado,
 deck_inserido, resultado_contestado, torneio_iniciado, jogador_dropou,
 resultado_ajustado, corte_iniciado, jogador_ingressou,
-total_rodadas_alterado, checkin_rodada_aberto, rodada_refeita
+total_rodadas_alterado, rodada_refeita
 ```
 
 Auth Ably: preferir `VITE_ABLY_AUTH_URL` em produção; fallback `VITE_ABLY_API_KEY`.
+
+Conexão só com usuário **logado**, a partir de **15 min antes do `horario`** e enquanto o status não for `finalizado` (`em_andamento` entra na hora). Sem canais ativos o cliente Realtime é fechado. Inscrições/check-in muito antes do horário continuam via REST.
 
 **Sempre** fazer `unsubscribeFromTournament(channel)` no cleanup do `useEffect`.
 
@@ -324,6 +326,7 @@ Limites de deck (`constants/auth.js`):
 ### Conta excluída / LGPD
 - Soft-delete no backend; front mostra tag `UsuarioExcluidoTag` / `UsuarioNomeExibicao`
 - Copy de exclusão em `EditProfileModal` e política em `constants/privacyPolicy.js` (`/privacidade`)
+- Banner LGPD de cookies: `CookieConsentBanner`; AdSense após a escolha — personalizado se aceitar ads, NPA se recusar (`utils/cookieConsent.js`)
 
 ### Acentuação em badges
 - Evitar `uppercase` CSS em textos com acento (pode virar “VOCE”); preferir literal acentuado (`VOCÊ`, `CAPITÃO`, etc.)
@@ -451,4 +454,4 @@ npm run preview
 
 ---
 
-*Última revisão: agosto/2026 — alinhado com v1.2.33 (metagame mostra a primeira lista do arquétipo)*
+*Última revisão: agosto/2026 — alinhado com v1.2.34 (story Top 8 e arte do arquétipo)*

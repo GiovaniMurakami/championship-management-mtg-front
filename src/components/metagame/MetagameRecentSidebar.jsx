@@ -1,5 +1,16 @@
 import { Link } from "react-router-dom";
 import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
+import { isUsuarioExcluido } from "../ui/UsuarioExcluidoTag";
+
+export function rotuloDeckRecente(deck) {
+  const nomeDeck = String(deck?.nome || "").trim();
+  if (isUsuarioExcluido(deck?.usuario)) {
+    return nomeDeck ? `Usuário excluído — ${nomeDeck}` : "Usuário excluído";
+  }
+  const nomeJogador = String(deck?.usuario?.nome || "").trim();
+  if (nomeJogador && nomeDeck) return `${nomeJogador} — ${nomeDeck}`;
+  return nomeJogador || nomeDeck;
+}
 
 function formatDate(iso) {
   if (!iso) return "";
@@ -60,9 +71,9 @@ export function MetagameRecentSidebar({
                       <Link
                         className="text-[#d9b4ff] font-semibold no-underline truncate hover:underline"
                         to={`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(deck.slug)}?dias=${dias}`}
-                        title={deck.usuario?.nome ? `${deck.nome} · ${deck.usuario.nome}` : deck.nome}
+                        title={rotuloDeckRecente(deck)}
                       >
-                        {deck.nome}
+                        {rotuloDeckRecente(deck)}
                       </Link>
                     </div>
                   ))}

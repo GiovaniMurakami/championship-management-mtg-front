@@ -7,6 +7,7 @@ import { useActionGuard } from "../hooks/useActionGuard";
 import { useToast } from "../context/ToastContext";
 import { useRequestSequence } from "../hooks/useRequestSequence";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
+import { earliestMsUntilAblyWindow, isTournamentAblyWindowOpen } from "../utils/ablyTournamentWindow";
 import { SkeletonTorneioCard } from "../components";
 import { EmptyState } from "../components/ui/EmptyState";
 import { InlineAlert } from "../components/ui/InlineAlert";
@@ -75,6 +76,7 @@ export function TournamentPage() {
   const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
   const [abaAtiva, setAbaAtiva] = useState(() => resolveAba(searchParams));
+  const [ablyWindowTick, setAblyWindowTick] = useState(0);
   const channelsRef = useRef({});
   const navigate = useNavigate();
 
@@ -165,7 +167,7 @@ export function TournamentPage() {
     loadTorneios();
   }, [loadTorneios]);
 
-  // Subscreve apenas torneios ativos (finalizados não emitem mais eventos) — só autenticado
+  // Ably: só autenticado, 15 min antes do horário e durante o torneio
   useEffect(() => {
     if (!token) {
       Object.values(channelsRef.current).forEach((channel) => {
@@ -174,8 +176,18 @@ export function TournamentPage() {
       channelsRef.current = {};
       return undefined;
     }
-    const ativos = torneios.filter((t) => t.status !== "finalizado");
-    ativos.forEach((torneio) => {
+
+    const naJanela = torneios.filter((t) => isTournamentAblyWindowOpen(t));
+    const idsNaJanela = new Set(naJanela.map((t) => t.id));
+
+    Object.keys(channelsRef.current).forEach((id) => {
+      if (!idsNaJanela.has(id)) {
+        unsubscribeFromTournament(channelsRef.current[id]);
+        delete channelsRef.current[id];
+      }
+    });
+
+    naJanela.forEach((torneio) => {
       if (!channelsRef.current[torneio.id]) {
         const channel = subscribeToTournament(torneio.id, {
           onRodadaIniciada: (message) => handleRodadaIniciada(torneio.id, message.data),
@@ -187,13 +199,22 @@ export function TournamentPage() {
         channelsRef.current[torneio.id] = channel;
       }
     });
+
+    const wait = earliestMsUntilAblyWindow(torneios);
+    const timer = wait != null
+      ? setTimeout(() => setAblyWindowTick((tick) => tick + 1), wait)
+      : undefined;
     return () => {
-      Object.values(channelsRef.current).forEach((channel) => {
-        if (channel) unsubscribeFromTournament(channel);
-      });
-      channelsRef.current = {};
+      if (timer) clearTimeout(timer);
     };
-  }, [token, torneios, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
+  }, [token, torneios, ablyWindowTick, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
+
+  useEffect(() => () => {
+    Object.values(channelsRef.current).forEach((channel) => {
+      if (channel) unsubscribeFromTournament(channel);
+    });
+    channelsRef.current = {};
+  }, []);
 
   const handleInscrever = guard(async (torneioId, authOverride) => {
     const authToken = authOverride?.token ?? token;

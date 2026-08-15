@@ -1,9 +1,9 @@
-import { resolveTop8BackgroundUrl, formatTop8StoryDate } from "../../utils/top8Story";
+import { resolveTop8BackgroundUrl, formatTop8StoryHeadline } from "../../utils/top8Story";
 
 const SAMPLE_PLAYERS = [
-  { pos: 1, nome: "Jogador 1", deck: "Deck exemplo", gold: true },
-  { pos: 2, nome: "Jogador 2", deck: "Deck exemplo", silver: true },
-  { pos: 3, nome: "Jogador 3", deck: "Deck exemplo", bronze: true },
+  { pos: 1, nome: "Jogador 1", deck: "Deck exemplo", record: "4-0", gold: true },
+  { pos: 2, nome: "Jogador 2", deck: "Deck exemplo", record: "3-1", silver: true },
+  { pos: 3, nome: "Jogador 3", deck: "Deck exemplo", record: "3-1", bronze: true },
 ];
 
 function sampleCardClass({ gold, silver, bronze }) {
@@ -21,7 +21,7 @@ function samplePosClass({ gold, silver, bronze }) {
 }
 
 /**
- * Pré-visualização 9:16 do story Top 8 — só a data abaixo dos jogadores.
+ * Pré-visualização 9:16 do story Top 8 — jogadores + data acima do 1º, recorde no card.
  */
 export function Top8StoryPreview({
   horario = "",
@@ -29,7 +29,7 @@ export function Top8StoryPreview({
   className = "",
 }) {
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
-  const dataLabel = formatTop8StoryDate(horario);
+  const headline = formatTop8StoryHeadline(horario, 32) || "32 jogadores";
 
   return (
     <div className={`flex flex-col gap-2 ${className}`.trim()}>
@@ -40,7 +40,12 @@ export function Top8StoryPreview({
         role="img"
         aria-label="Pré-visualização do story Top 8"
       >
-        <ul className="absolute inset-x-0 top-[28%] bottom-[10%] list-none m-0 px-2 py-0 flex flex-col justify-evenly gap-1">
+        <div className="absolute inset-x-0 top-[26%] px-2 text-center">
+          <span className="text-[0.78rem] font-semibold text-[#c4b5fd] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] whitespace-nowrap">
+            {headline}
+          </span>
+        </div>
+        <ul className="absolute inset-x-0 top-[32%] bottom-[8%] list-none m-0 px-2 py-0 flex flex-col justify-evenly gap-1">
           {SAMPLE_PLAYERS.map((player) => (
             <li
               key={player.pos}
@@ -49,21 +54,19 @@ export function Top8StoryPreview({
               <span className={`text-[0.72rem] font-black shrink-0 ${samplePosClass(player)}`}>
                 #{player.pos}
               </span>
-              <span className="min-w-0 flex flex-col leading-tight">
-                <span className="text-[0.58rem] font-bold text-[#f0e6ff] truncate">{player.nome}</span>
-                <span className="text-[0.52rem] text-[#a78bfa] truncate">{player.deck}</span>
+              <span className="min-w-0 flex-1 flex flex-col gap-0.5">
+                <span className="text-[0.58rem] font-bold text-[#f0e6ff] truncate leading-[1.2]">{player.nome}</span>
+                <span className="text-[0.52rem] text-[#a78bfa] truncate leading-[1.15]">{player.deck}</span>
+              </span>
+              <span className={`text-[0.58rem] font-bold tabular-nums shrink-0 ${player.gold ? "text-[#fde68a]" : "text-[#e8dfff]"}`}>
+                {player.record}
               </span>
             </li>
           ))}
         </ul>
-        <div className="absolute inset-x-0 bottom-[1%] px-2 text-center">
-          <span className="text-[0.62rem] font-medium text-[#c4b5fd] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
-            {dataLabel || "Data do torneio"}
-          </span>
-        </div>
       </div>
       <p className="text-[0.75rem] text-[#8f82ad] m-0 max-w-[220px]">
-        Escolha um fundo cadastrado ou cadastre um novo com nome. A data aparece abaixo do Top 8.
+        Escolha um fundo cadastrado ou cadastre um novo com nome. A quantidade de jogadores e a data ficam acima do 1º lugar.
       </p>
     </div>
   );

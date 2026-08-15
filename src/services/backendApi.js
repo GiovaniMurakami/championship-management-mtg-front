@@ -307,10 +307,10 @@ export const deletarLiga = (ligaId, token) =>
 
 export const getRankingLiga = async (ligaId, token, options = {}) => {
   const params = {
-    limiteJogadores: options.limiteJogadores ?? 50,
     limiteCartas: options.limiteCartas ?? 50,
     limiteDecks: options.limiteDecks ?? 50,
   };
+  if (options.limiteJogadores != null) params.limiteJogadores = options.limiteJogadores;
   if (options.limiteTimes != null) params.limiteTimes = options.limiteTimes;
 
   const response = await httpClient.get(`/liga/${ligaId}/ranking`, {

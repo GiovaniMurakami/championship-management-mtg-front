@@ -2,6 +2,7 @@ import { Realtime } from "ably";
 import { logError } from "../utils/logger";
 
 let ablyClient = null;
+let attachedChannels = 0;
 
 export const getAblyClient = () => {
     if (!ablyClient) {
@@ -38,7 +39,6 @@ export const subscribeToTournament = (torneioId, callbacks = {}) => {
 
     subscribeIfPresent(channel, "rodada_iniciada", callbacks.onRodadaIniciada);
     subscribeIfPresent(channel, "resultado_registrado", callbacks.onResultadoRegistrado);
-    subscribeIfPresent(channel, "standings_atualizados", callbacks.onStandingsAtualizados);
     subscribeIfPresent(channel, "torneio_finalizado", callbacks.onTorneioFinalizado);
     subscribeIfPresent(channel, "participante_inscrito", callbacks.onParticipanteInscrito);
     subscribeIfPresent(channel, "checkin_realizado", callbacks.onCheckinRealizado);
@@ -50,14 +50,24 @@ export const subscribeToTournament = (torneioId, callbacks = {}) => {
     subscribeIfPresent(channel, "corte_iniciado", callbacks.onCorteIniciado);
     subscribeIfPresent(channel, "jogador_ingressou", callbacks.onJogadorIngressou);
     subscribeIfPresent(channel, "total_rodadas_alterado", callbacks.onTotalRodadasAlterado);
-    subscribeIfPresent(channel, "checkin_rodada_aberto", callbacks.onCheckinRodadaAberto);
     subscribeIfPresent(channel, "rodada_refeita", callbacks.onRodadaRefeita);
 
+    attachedChannels += 1;
     return channel;
 };
 
+function closeAblyIfIdle() {
+    if (attachedChannels > 0 || !ablyClient) return;
+    ablyClient.close();
+    ablyClient = null;
+}
+
 export const unsubscribeFromTournament = (channel) => {
-    if (channel) {
-        channel.unsubscribe();
+    if (!channel) return;
+    channel.unsubscribe();
+    if (typeof channel.detach === "function") {
+        channel.detach();
     }
+    attachedChannels = Math.max(0, attachedChannels - 1);
+    closeAblyIfIdle();
 };

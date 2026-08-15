@@ -1,13 +1,6 @@
 import { getMatchPlayerName, isMatchPlayerExcluido } from "../../utils/matchDisplay";
+import { getFirstEliminationRound } from "../../utils/tournamentFlow";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
-
-function getFirstCutRound(torneio) {
-  const corteTop = Number(torneio?.corteTop || 0);
-  const totalRodadas = Number(torneio?.totalRodadas || 0);
-  const cutRounds = Math.log2(corteTop);
-  if (!Number.isInteger(cutRounds) || cutRounds <= 0 || totalRodadas <= 0) return null;
-  return totalRodadas - cutRounds + 1;
-}
 
 function getRoundLabel(participants) {
   if (participants >= 16) return "Oitavas";
@@ -87,7 +80,7 @@ function BracketMatch({ partida, matchIndex }) {
 
 export function EliminationBracket({ torneio, partidas }) {
   const corteTop = Number(torneio?.corteTop || 0);
-  const firstCutRound = getFirstCutRound(torneio);
+  const firstCutRound = getFirstEliminationRound(torneio);
   if (!corteTop || !firstCutRound) return null;
 
   const cutMatches = (partidas || [])

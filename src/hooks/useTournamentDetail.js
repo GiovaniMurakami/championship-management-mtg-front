@@ -41,6 +41,7 @@ import {
 } from "./useTournamentQueries";
 import { normalizeRoundSoundUrl } from "../constants/roundSounds";
 import { playRoundSound, unlockRoundSoundPlayer } from "../utils/roundSoundPlayer";
+import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../utils/ablyTournamentWindow";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin, requireAuth } = useAuth();
@@ -79,7 +80,7 @@ export function useTournamentDetail() {
     const [successMsg, setSuccessMsg] = useState("");
     const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
     const [corteInfo, setCorteInfo] = useState(null); // { corteTop, jogadoresClassificados }
-    const [checkinRodadaAberto, setCheckinRodadaAberto] = useState(false);
+    const [ablyWindowTick, setAblyWindowTick] = useState(0);
     const toastTimeoutRef = useRef(null);
 
     const needsMyDecks = Boolean(
@@ -258,10 +259,15 @@ export function useTournamentDetail() {
         }
     }, [torneioId, standingsQuery]);
 
-    // Initial load — wait for all three before hiding skeleton
-    // Ably realtime subscriptions (somente autenticado)
+    // Ably: autenticado, 15 min antes do horário e enquanto o torneio não finalizar
     useEffect(() => {
-        if (!torneioId || !token) return;
+        if (!torneioId || !token || !torneio) return undefined;
+        if (!isTournamentAblyWindowOpen(torneio)) {
+            const wait = msUntilTournamentAblyWindow(torneio);
+            if (wait == null || wait === 0) return undefined;
+            const timer = setTimeout(() => setAblyWindowTick((tick) => tick + 1), wait);
+            return () => clearTimeout(timer);
+        }
         const channel = subscribeToTournament(torneioId, {
             onRodadaIniciada: (msg) => {
                 const data = msg?.data || {};
@@ -273,7 +279,6 @@ export function useTournamentDetail() {
                     ...(data.rodadaIniciadaEm !== undefined ? { rodadaIniciadaEm: data.rodadaIniciadaEm } : {}),
                     ...(data.status !== undefined ? { status: data.status } : {}),
                 } : prev);
-                setCheckinRodadaAberto(false);
                 loadTournament();
                 loadStandings();
                 loadPartidas();
@@ -298,7 +303,6 @@ export function useTournamentDetail() {
                 if (!updated) loadPartidas();
                 loadStandings();
             },
-            onStandingsAtualizados: () => loadStandings(),
             onTorneioFinalizado: () => {
                 setTorneio((prev) => (prev ? { ...prev, status: "finalizado" } : prev));
                 loadTournament();
@@ -447,9 +451,6 @@ export function useTournamentDetail() {
                 setTorneio((prev) => prev ? { ...prev, totalRodadas: data.totalRodadas } : prev);
                 showToast(`Total de rodadas atualizado para ${data.totalRodadas}.`, "info");
             },
-            onCheckinRodadaAberto: () => {
-                setCheckinRodadaAberto(true);
-            },
             onRodadaRefeita: (msg) => {
                 const data = msg?.data || {};
                 setTorneio((prev) => prev ? {
@@ -468,10 +469,9 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, token, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
+    }, [torneioId, token, torneio?.status, torneio?.horario, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
-    const dismissCheckinBanner = useCallback(() => setCheckinRodadaAberto(false), []);
 
     // Find the current player entry in standings
     const currentPlayer = useMemo(() => {
@@ -1163,8 +1163,6 @@ export function useTournamentDetail() {
         dismissRealtimeToast,
         corteInfo,
         dismissCorteInfo,
-        checkinRodadaAberto,
-        dismissCheckinBanner,
         usuario,
         isAdmin,
         token,

@@ -8,6 +8,7 @@ export { FormPageCard } from "./FormPageCard";
 export { FormSection } from "./FormSection";
 export { InlineAlert } from "./InlineAlert";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { CookieConsentBanner } from "./CookieConsentBanner";
 export { Footer } from "./Footer";
 export { Hero } from "./Hero";
 export { LandingHeader } from "./LandingHeader";
