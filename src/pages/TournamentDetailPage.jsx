@@ -13,6 +13,7 @@ import {
   RoundTimer,
   TournamentEditModal,
   TournamentHostModal,
+  TournamentLiveEmbeds,
 } from "../components/tournament";
 import { SkeletonTournamentDetail } from "../components";
 import { PageShell } from "../components/ui/PageShell";
@@ -141,42 +142,7 @@ export function TournamentDetailPage() {
         )}
       </div>
 
-      {torneio && (() => {
-        const url = torneio.linkLive || "https://twitch.tv/tiagofuguete";
-        const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/);
-        const twitchMatch = url.match(/(?:twitch\.tv\/)([\w]+)/);
-        const twitchParent = typeof window !== "undefined" ? window.location.hostname : "localhost";
-        if (ytMatch) {
-          return (
-            <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
-              <iframe
-                src={`https://www.youtube.com/embed/${ytMatch[1]}`}
-                height="450"
-                width="100%"
-                allowFullScreen
-                title="Live"
-                className="block border-none w-full max-md:h-[200px] max-sm:h-[180px]"
-              />
-            </div>
-          );
-        }
-        if (twitchMatch || !torneio.linkLive) {
-          const twitchChannel = twitchMatch?.[1] || "tiagofuguete";
-          return (
-            <div className="w-full bg-black border-b-2 border-[rgba(145,71,255,0.4)] overflow-hidden mt-2">
-              <iframe
-                src={`https://player.twitch.tv/?channel=${twitchChannel}&parent=${twitchParent}&muted=true`}
-                height="450"
-                width="100%"
-                allowFullScreen
-                title="Live"
-                className="block border-none w-full max-md:h-[200px] max-sm:h-[180px]"
-              />
-            </div>
-          );
-        }
-        return null;
-      })()}
+      {torneio && <TournamentLiveEmbeds linkLive={torneio.linkLive} />}
 
       {(error || successMsg) && (
         <InlineAlert type={error ? "error" : "success"} className="mb-5">
