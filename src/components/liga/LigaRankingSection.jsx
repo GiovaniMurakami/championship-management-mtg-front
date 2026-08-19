@@ -35,48 +35,17 @@ function calcWinRate(vitorias, derrotas, empates) {
   return total > 0 ? Math.round((vitorias / total) * 100) : null;
 }
 
+function formatRecordeVd(vitorias = 0, derrotas = 0, empates = 0) {
+  if (empates > 0) return `${vitorias}/${derrotas}/${empates}`;
+  return `${vitorias}/${derrotas}`;
+}
+
 function winRateStyle(rate) {
   if (rate === null) return { color: "rgba(190,175,215,0.4)", track: "rgba(217,180,255,0.08)" };
   if (rate >= 60) return { color: "#22c55e", track: "rgba(34,197,94,0.18)" };
   if (rate >= 40) return { color: "#fbbf24", track: "rgba(251,191,36,0.18)" };
   return { color: "#ef4444", track: "rgba(239,68,68,0.18)" };
 }
-
-// ── Podium config per position ─────────────────────────────────────────────────
-
-const PODIUM_CFG = {
-  1: {
-    border: "border-[rgba(251,191,36,0.5)]",
-    bg: "bg-[rgba(251,191,36,0.05)]",
-    shadow: "shadow-[0_0_28px_rgba(251,191,36,0.14)]",
-    badgeBg: "bg-[rgba(251,191,36,0.2)]",
-    badgeBorder: "border-[rgba(251,191,36,0.6)]",
-    ptsColor: "#f0b429",
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="#fbbf24" aria-hidden="true">
-        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-      </svg>
-    ),
-  },
-  2: {
-    border: "border-[rgba(148,163,184,0.35)]",
-    bg: "bg-[rgba(148,163,184,0.03)]",
-    shadow: "",
-    badgeBg: "bg-[rgba(148,163,184,0.15)]",
-    badgeBorder: "border-[rgba(148,163,184,0.4)]",
-    ptsColor: "#94a3b8",
-    icon: <span className="text-[0.75rem] font-bold text-[#94a3b8]">2</span>,
-  },
-  3: {
-    border: "border-[rgba(205,127,50,0.35)]",
-    bg: "bg-[rgba(205,127,50,0.03)]",
-    shadow: "",
-    badgeBg: "bg-[rgba(205,127,50,0.15)]",
-    badgeBorder: "border-[rgba(205,127,50,0.4)]",
-    ptsColor: "#cd9a5c",
-    icon: <span className="text-[0.75rem] font-bold text-[#cd9a5c]">3</span>,
-  },
-};
 
 // ── Shared sub-components ──────────────────────────────────────────────────────
 
@@ -167,7 +136,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
     lider && {
       label: "Líder",
       value: lider.jogador?.nome || "—",
-      detail: `${lider.pontos ?? 0} pts · ${lider.vitorias ?? 0}V`,
+      detail: `${lider.pontos ?? 0} pts · ${formatRecordeVd(lider.vitorias ?? 0, lider.derrotas ?? 0, lider.empates ?? 0)}`,
       accent: "#fbbf24",
     },
     topDeck && {
@@ -339,101 +308,15 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
   );
 }
 
-function VDEBadges({ vitorias, derrotas, empates }) {
+function RecordeVd({ vitorias, derrotas, empates, className = "" }) {
   return (
-    <div className="flex items-center gap-[0.3rem]">
-      <span className="text-[0.7rem] font-semibold text-[#22c55e] bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-        {vitorias}V
-      </span>
-      {empates > 0 && (
-        <span className="text-[0.7rem] font-semibold text-[#fbbf24] bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-          {empates}E
-        </span>
-      )}
-      <span className="text-[0.7rem] font-semibold text-[#ef4444] bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-        {derrotas}D
-      </span>
-    </div>
+    <span className={`text-[0.8rem] font-semibold tabular-nums text-[#c4b5fd] ${className}`}>
+      {formatRecordeVd(vitorias, derrotas, empates)}
+    </span>
   );
 }
 
-// ── Podium card (top 3 players) ────────────────────────────────────────────────
-
-function PodiumCard({ jogador, idx, isLogado, elevated = false }) {
-  const pos = jogador.posicao;
-  const cfg = PODIUM_CFG[pos] ?? PODIUM_CFG[3];
-  const nome = jogador.jogador?.nome || "—";
-  const excluido = Boolean(jogador.jogador?.excluido);
-  const pts = jogador.pontos ?? 0;
-  const wins = jogador.vitorias ?? 0;
-  const losses = jogador.derrotas ?? 0;
-  const draws = jogador.empates ?? 0;
-  const winRate = calcWinRate(wins, losses, draws);
-  const wr = winRateStyle(winRate);
-
-  return (
-    <div
-      className={`relative rounded-[1rem] border ${cfg.border} ${cfg.bg} ${cfg.shadow} p-5 flex flex-col items-center gap-3 transition-all duration-200 hover:scale-[1.015] hover:brightness-110 ${elevated ? "sm:-translate-y-3" : "sm:translate-y-2"}`}
-    >
-      {/* Logged-in user indicator */}
-      {isLogado && (
-        <div className="absolute top-3 right-3">
-          <VoceBadge />
-        </div>
-      )}
-
-      {/* Position badge */}
-      <div className={`w-10 h-10 rounded-full ${cfg.badgeBg} border ${cfg.badgeBorder} flex items-center justify-center`}>
-        {cfg.icon}
-      </div>
-
-      {/* Avatar */}
-      <div
-        className={`w-14 h-14 rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center text-[1rem] font-bold text-white select-none ring-2 ring-white/10`}
-      >
-        {getInitials(excluido ? "UE" : nome)}
-      </div>
-
-      {/* Name */}
-      <p className="m-0 font-semibold text-[#f5edff] text-[0.95rem] leading-snug text-center truncate max-w-[150px] w-full">
-        <UsuarioNomeExibicao nome={nome} excluido={excluido} />
-      </p>
-
-      {/* Points */}
-      <div className="text-center -mt-1">
-        <p
-          className="m-0 font-['Bebas_Neue',sans-serif] text-[2.2rem] leading-none tracking-[0.02em]"
-          style={{ color: cfg.ptsColor }}
-        >
-          {pts}
-        </p>
-        <p className="m-0 text-[0.62rem] uppercase tracking-[0.09em] text-[rgba(190,175,215,0.45)] mt-[0.1rem]">
-          pontos
-        </p>
-      </div>
-
-      {/* W/D/L */}
-      <VDEBadges vitorias={wins} derrotas={losses} empates={draws} />
-
-      {/* Win rate */}
-      {winRate !== null && (
-        <div className="w-full space-y-[0.35rem]">
-          <div className="flex items-center justify-between">
-            <span className="text-[0.63rem] text-[rgba(190,175,215,0.45)] uppercase tracking-[0.07em]">
-              taxa vitória
-            </span>
-            <span className="text-[0.75rem] font-semibold" style={{ color: wr.color }}>
-              {winRate}%
-            </span>
-          </div>
-          <WinRateBar rate={winRate} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Player list row (positions 4+) ─────────────────────────────────────────────
+// ── Player list row ────────────────────────────────────────────────────────────
 
 function PlayerRow({ jogador, idx, isLogado }) {
   const pos = jogador.posicao;
@@ -444,7 +327,6 @@ function PlayerRow({ jogador, idx, isLogado }) {
   const losses = jogador.derrotas ?? 0;
   const draws = jogador.empates ?? 0;
   const winRate = calcWinRate(wins, losses, draws);
-  const wr = winRateStyle(winRate);
 
   return (
     <li
@@ -455,14 +337,12 @@ function PlayerRow({ jogador, idx, isLogado }) {
     >
       <MedalBadge pos={pos} />
 
-      {/* Avatar */}
       <span
         className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center text-[0.72rem] font-bold text-white flex-shrink-0 select-none`}
       >
         {getInitials(excluido ? "UE" : nome)}
       </span>
 
-      {/* Name */}
       <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
         <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
           <UsuarioNomeExibicao nome={nome} excluido={excluido} />
@@ -470,32 +350,19 @@ function PlayerRow({ jogador, idx, isLogado }) {
         {isLogado && <VoceBadge />}
       </div>
 
-      {/* W/D/L (hide on small) */}
-      <div className="hidden min-[520px]:flex items-center gap-[0.3rem] flex-shrink-0">
-        <span className="text-[0.7rem] font-semibold text-[#22c55e] bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-          {wins}V
-        </span>
-        {draws > 0 && (
-          <span className="text-[0.7rem] font-semibold text-[#fbbf24] bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-            {draws}E
-          </span>
-        )}
-        <span className="text-[0.7rem] font-semibold text-[#ef4444] bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-          {losses}D
-        </span>
+      <div className="hidden min-[520px]:flex items-center flex-shrink-0 min-w-[3.5rem] justify-end">
+        <RecordeVd vitorias={wins} derrotas={losses} empates={draws} />
       </div>
 
-      {/* Win rate */}
       {winRate !== null && (
         <div className="hidden min-[480px]:flex flex-col flex-shrink-0 w-[4.5rem] gap-[0.25rem]">
-          <span className="text-[0.75rem] font-semibold text-right" style={{ color: wr.color }}>
+          <span className="text-[0.75rem] font-semibold text-right text-[#beafd7]">
             {winRate}%
           </span>
           <WinRateBar rate={winRate} />
         </div>
       )}
 
-      {/* Points */}
       <span className="font-['Bebas_Neue',sans-serif] text-[1.3rem] tracking-[0.04em] flex-shrink-0 w-[3rem] text-right text-[rgba(240,180,41,0.7)]">
         {pts}
       </span>
@@ -559,10 +426,8 @@ function DeckRow({ deck, cardImageUrl, maxUsos, onCardHover, onCardLeave }) {
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
             V/D
           </p>
-          <p className="m-0 text-[0.88rem] font-semibold">
-            <span className="text-[#22c55e]">{wins}</span>
-            <span className="text-[rgba(190,175,215,0.4)] mx-[0.2rem]">/</span>
-            <span className="text-[#ef4444]">{losses}</span>
+          <p className="m-0 text-[0.88rem] font-semibold text-[#c4b5fd] tabular-nums">
+            {formatRecordeVd(wins, losses, deck.empates ?? 0)}
           </p>
         </div>
         {winRate !== null && (
@@ -649,7 +514,7 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
           <table className="w-full border-collapse min-w-[640px]">
             <thead>
               <tr className="bg-white/[0.03] text-left">
-                {["Posição", "Time", "Vitórias", "Derrotas", "Empates", "Pontos"].map((column) => (
+                {["Posição", "Time", "V/D", "Pontos"].map((column) => (
                   <th
                     key={column}
                     scope="col"
@@ -668,9 +533,13 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
                 >
                   <td className="px-5 py-4 text-[0.88rem] font-semibold text-[#f5edff]">{time.posicao ?? idx + 1}</td>
                   <td className="px-5 py-4 text-[0.9rem] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
-                  <td className="px-5 py-4 text-[0.88rem] text-[#22c55e]">{time.vitorias ?? 0}</td>
-                  <td className="px-5 py-4 text-[0.88rem] text-[#ef4444]">{time.derrotas ?? 0}</td>
-                  <td className="px-5 py-4 text-[0.88rem] text-[#fbbf24]">{time.empates ?? 0}</td>
+                  <td className="px-5 py-4">
+                    <RecordeVd
+                      vitorias={time.vitorias ?? 0}
+                      derrotas={time.derrotas ?? 0}
+                      empates={time.empates ?? 0}
+                    />
+                  </td>
                   <td className="px-5 py-4 font-['Bebas_Neue',sans-serif] text-[1.2rem] tracking-[0.04em] text-[rgba(240,180,41,0.8)]">
                     {time.pontos ?? 0}
                   </td>
@@ -797,12 +666,10 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   // Ensure active tab is valid
   const activeTab = tabs.find((t) => t.key === subAba) ? subAba : tabs[0]?.key ?? "jogadores";
 
-  const top3 = jogadores.slice(0, Math.min(3, jogadores.length));
-  const restoAll = jogadores.slice(3);
-  const restoTotal = restoAll.length;
-  const restoPages = Math.ceil(restoTotal / PAGE_SIZE);
-  const restoClamped = Math.min(jogadoresPage, restoPages || 1);
-  const resto = restoAll.slice((restoClamped - 1) * PAGE_SIZE, restoClamped * PAGE_SIZE);
+  const jogadoresTotal = jogadores.length;
+  const jogadoresPages = Math.ceil(jogadoresTotal / PAGE_SIZE);
+  const jogadoresClamped = Math.min(jogadoresPage, jogadoresPages || 1);
+  const jogadoresPagina = jogadores.slice((jogadoresClamped - 1) * PAGE_SIZE, jogadoresClamped * PAGE_SIZE);
 
   const decksAll = decks;
   const decksTotal = decksAll.length;
@@ -818,25 +685,8 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
   const meuRanking = userId ? jogadores.find((j) => j.jogador?.id === userId) : null;
 
-  const podiumDisplay =
-    top3.length === 3
-      ? [
-          { jogador: top3[1], idx: 1, elevated: false },
-          { jogador: top3[0], idx: 0, elevated: true },
-          { jogador: top3[2], idx: 2, elevated: false },
-        ]
-      : top3.map((jogador, idx) => ({ jogador, idx, elevated: false }));
-
   const cardClass =
     "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden";
-
-  // Podium grid: classic 2-1-3 on desktop
-  const podiumGridClass =
-    top3.length === 1
-      ? "grid grid-cols-1 max-w-[240px] mx-auto"
-      : top3.length === 2
-        ? "grid grid-cols-2 max-w-sm mx-auto gap-3"
-        : "grid grid-cols-1 sm:grid-cols-3 gap-3 items-end";
   const teamRankingSection = isTeamLeague ? (
     <section className="space-y-3" aria-label="Ranking coletivo">
       <div>
@@ -887,57 +737,41 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {/* ── Jogadores ── */}
       {activeTab === "jogadores" && (
         <div className="space-y-4">
-          {/* Podium */}
-          {top3.length > 0 && (
-            <div className={podiumGridClass}>
-              {podiumDisplay.map(({ jogador, idx, elevated }) => (
-                <PodiumCard
-                  key={jogador.jogador?.id ?? idx}
-                  jogador={jogador}
-                  idx={idx}
-                  elevated={elevated}
-                  isLogado={Boolean(userId && jogador.jogador?.id === userId)}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Rest of ranking */}
-          {restoAll.length > 0 && (
+          {jogadoresTotal > 0 && (
             <div className={cardClass}>
               <SectionInfo
-                count={restoTotal}
-                label={`jogador${restoTotal !== 1 ? "es" : ""} restante${restoTotal !== 1 ? "s" : ""}`}
-                hint="ordenado por pontos"
+                count={jogadoresTotal}
+                label={`jogador${jogadoresTotal !== 1 ? "es" : ""}`}
+                hint="ordenado por pontos · desempate % vitória"
               />
               <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
-                {resto.map((j, idx) => (
+                {jogadoresPagina.map((j, idx) => (
                   <PlayerRow
                     key={j.jogador?.id ?? idx}
                     jogador={j}
-                    idx={(restoClamped - 1) * PAGE_SIZE + idx + 3}
+                    idx={(jogadoresClamped - 1) * PAGE_SIZE + idx}
                     isLogado={Boolean(userId && j.jogador?.id === userId)}
                   />
                 ))}
               </ul>
-              {restoPages > 1 && (
+              {jogadoresPages > 1 && (
                 <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
                   <button
                     type="button"
                     className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                     onClick={() => setJogadoresPage((p) => Math.max(1, p - 1))}
-                    disabled={restoClamped <= 1}
+                    disabled={jogadoresClamped <= 1}
                   >
                     ←
                   </button>
                   <span className="text-[0.8rem] text-[#beafd7]">
-                    {restoClamped} / {restoPages}
+                    {jogadoresClamped} / {jogadoresPages}
                   </span>
                   <button
                     type="button"
                     className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
-                    onClick={() => setJogadoresPage((p) => Math.min(restoPages, p + 1))}
-                    disabled={restoClamped >= restoPages}
+                    onClick={() => setJogadoresPage((p) => Math.min(jogadoresPages, p + 1))}
+                    disabled={jogadoresClamped >= jogadoresPages}
                   >
                     →
                   </button>
@@ -946,7 +780,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
             </div>
           )}
 
-          {meuRanking && meuRanking.posicao > 3 && !resto.some((j) => j.jogador?.id === userId) && (
+          {meuRanking && !jogadoresPagina.some((j) => j.jogador?.id === userId) && (
             <div className="rounded-[0.85rem] border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <MedalBadge pos={meuRanking.posicao} />
@@ -959,7 +793,9 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                 <p className="m-0 font-['Bebas_Neue',sans-serif] text-[1.4rem] text-[rgba(240,180,41,0.85)] leading-none">
                   {meuRanking.pontos ?? 0}
                 </p>
-                <p className="m-0 text-[0.65rem] text-[rgba(190,175,215,0.4)] uppercase tracking-[0.07em]">pontos</p>
+                <p className="m-0 text-[0.68rem] text-[rgba(190,175,215,0.45)]">
+                  {formatRecordeVd(meuRanking.vitorias ?? 0, meuRanking.derrotas ?? 0, meuRanking.empates ?? 0)}
+                </p>
               </div>
             </div>
           )}

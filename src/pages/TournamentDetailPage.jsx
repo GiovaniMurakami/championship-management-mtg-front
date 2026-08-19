@@ -304,7 +304,7 @@ export function TournamentDetailPage() {
           </>
         );
 
-        const shouldShowPlayerProfile = Boolean(currentPlayer) || (!isOngoing && !isFinished);
+        const shouldShowPlayerProfile = Boolean(usuario?.id) && (Boolean(currentPlayer) || (!isOngoing && !isFinished));
 
         // ── Ongoing: standings compact sidebar on left, everything else on right ──
         if (isOngoing) {

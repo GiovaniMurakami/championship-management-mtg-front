@@ -41,9 +41,10 @@ import {
 } from "./useTournamentQueries";
 import { normalizeRoundSoundUrl } from "../constants/roundSounds";
 import { playRoundSound, unlockRoundSoundPlayer } from "../utils/roundSoundPlayer";
+import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../utils/ablyTournamentWindow";
 
 export function useTournamentDetail() {
-    const { token, usuario, isAdmin } = useAuth();
+    const { token, usuario, isAdmin, requireAuth } = useAuth();
     const { addToast } = useToast();
     const { id: torneioId } = useParams();
 
@@ -79,10 +80,16 @@ export function useTournamentDetail() {
     const [successMsg, setSuccessMsg] = useState("");
     const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
     const [corteInfo, setCorteInfo] = useState(null); // { corteTop, jogadoresClassificados }
-    const [checkinRodadaAberto, setCheckinRodadaAberto] = useState(false);
+    const [ablyWindowTick, setAblyWindowTick] = useState(0);
     const toastTimeoutRef = useRef(null);
 
-    const { decks } = useMyDecks(token, usuario?.id);
+    const needsMyDecks = Boolean(
+      token
+      && usuario?.id
+      && torneio
+      && (torneio.status === "inscricoes_abertas" || torneio.status === "em_andamento"),
+    );
+    const { decks } = useMyDecks(token, usuario?.id, { enabled: needsMyDecks });
     const {
         tournamentQuery,
         standingsQuery,
@@ -197,15 +204,15 @@ export function useTournamentDetail() {
     }, [teamsQuery.data]);
 
     useEffect(() => {
-        if (!torneioId || !token) {
+        if (!torneioId) {
             setLoading(false);
             return;
         }
         setLoading(tournamentQuery.isLoading || standingsQuery.isLoading || matchesQuery.isLoading);
-    }, [torneioId, token, tournamentQuery.isLoading, standingsQuery.isLoading, matchesQuery.isLoading]);
+    }, [torneioId, tournamentQuery.isLoading, standingsQuery.isLoading, matchesQuery.isLoading]);
 
     const loadTournament = useCallback(async () => {
-        if (!torneioId || !token) return;
+        if (!torneioId) return;
         setError("");
         try {
             const { data } = await tournamentQuery.refetch();
@@ -215,10 +222,10 @@ export function useTournamentDetail() {
         } catch {
             setError("Erro ao carregar dados do torneio.");
         }
-    }, [torneioId, token, tournamentQuery]);
+    }, [torneioId, tournamentQuery]);
 
     const loadPartidas = useCallback(async () => {
-        if (!torneioId || !token) return;
+        if (!torneioId) return;
 
         try {
             const { data } = await matchesQuery.refetch();
@@ -230,10 +237,10 @@ export function useTournamentDetail() {
         } catch {
             // Fallback: manter partidas carregadas por buscarTorneio/standings.
         }
-    }, [torneioId, token, matchesQuery]);
+    }, [torneioId, matchesQuery]);
 
     const loadStandings = useCallback(async () => {
-        if (!torneioId || !token) return;
+        if (!torneioId) return;
         try {
             const { data } = await standingsQuery.refetch();
             if (!data) return;
@@ -250,12 +257,17 @@ export function useTournamentDetail() {
         } catch {
             // Mantem o estado atual se a revalidacao falhar.
         }
-    }, [torneioId, token, standingsQuery]);
+    }, [torneioId, standingsQuery]);
 
-    // Initial load — wait for all three before hiding skeleton
-    // Ably realtime subscriptions
+    // Ably: autenticado, 15 min antes do horário e enquanto o torneio não finalizar
     useEffect(() => {
-        if (!torneioId) return;
+        if (!torneioId || !token || !torneio) return undefined;
+        if (!isTournamentAblyWindowOpen(torneio)) {
+            const wait = msUntilTournamentAblyWindow(torneio);
+            if (wait == null || wait === 0) return undefined;
+            const timer = setTimeout(() => setAblyWindowTick((tick) => tick + 1), wait);
+            return () => clearTimeout(timer);
+        }
         const channel = subscribeToTournament(torneioId, {
             onRodadaIniciada: (msg) => {
                 const data = msg?.data || {};
@@ -267,7 +279,6 @@ export function useTournamentDetail() {
                     ...(data.rodadaIniciadaEm !== undefined ? { rodadaIniciadaEm: data.rodadaIniciadaEm } : {}),
                     ...(data.status !== undefined ? { status: data.status } : {}),
                 } : prev);
-                setCheckinRodadaAberto(false);
                 loadTournament();
                 loadStandings();
                 loadPartidas();
@@ -292,7 +303,6 @@ export function useTournamentDetail() {
                 if (!updated) loadPartidas();
                 loadStandings();
             },
-            onStandingsAtualizados: () => loadStandings(),
             onTorneioFinalizado: () => {
                 setTorneio((prev) => (prev ? { ...prev, status: "finalizado" } : prev));
                 loadTournament();
@@ -441,9 +451,6 @@ export function useTournamentDetail() {
                 setTorneio((prev) => prev ? { ...prev, totalRodadas: data.totalRodadas } : prev);
                 showToast(`Total de rodadas atualizado para ${data.totalRodadas}.`, "info");
             },
-            onCheckinRodadaAberto: () => {
-                setCheckinRodadaAberto(true);
-            },
             onRodadaRefeita: (msg) => {
                 const data = msg?.data || {};
                 setTorneio((prev) => prev ? {
@@ -462,32 +469,35 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
+    }, [torneioId, token, torneio?.status, torneio?.horario, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
-    const dismissCheckinBanner = useCallback(() => setCheckinRodadaAberto(false), []);
 
     // Find the current player entry in standings
     const currentPlayer = useMemo(() => {
+        const userId = normalizeId(usuario?.id);
+        if (!userId) return null;
         return (
             standings.find(
                 (p) =>
-                    normalizeId(p.usuario?.id) === normalizeId(usuario?.id) ||
-                    normalizeId(p.usuarioId) === normalizeId(usuario?.id) ||
-                    normalizeId(p.id) === normalizeId(usuario?.id)
+                    normalizeId(p.usuario?.id) === userId ||
+                    normalizeId(p.usuarioId) === userId ||
+                    normalizeId(p.id) === userId
             ) || null
         );
     }, [standings, usuario?.id]);
 
-    const isOwner = useMemo(
-        () => normalizeId(torneio?.donoId) === normalizeId(usuario?.id),
-        [torneio?.donoId, usuario?.id],
-    );
+    const isOwner = useMemo(() => {
+        const userId = normalizeId(usuario?.id);
+        if (!userId) return false;
+        return normalizeId(torneio?.donoId) === userId;
+    }, [torneio?.donoId, usuario?.id]);
 
-    const isAnfitriao = useMemo(
-        () => Boolean(torneio?.anfitriaoId) && normalizeId(torneio?.anfitriaoId) === normalizeId(usuario?.id),
-        [torneio?.anfitriaoId, usuario?.id],
-    );
+    const isAnfitriao = useMemo(() => {
+        const userId = normalizeId(usuario?.id);
+        if (!userId || !torneio?.anfitriaoId) return false;
+        return normalizeId(torneio.anfitriaoId) === userId;
+    }, [torneio?.anfitriaoId, usuario?.id]);
 
     const canManageTournament = useMemo(
         () => isOwner || isAdmin || isAnfitriao,
@@ -605,11 +615,18 @@ export function useTournamentDetail() {
         }
     };
 
-    const handleInscrever = async () => {
+    const handleInscrever = async (authOverride) => {
         if (!torneioId) return;
 
+        const authToken = authOverride?.token ?? token;
+        const authUsuario = authOverride?.usuario ?? usuario;
+        if (!authToken) {
+            requireAuth((auth) => handleInscrever(auth));
+            return;
+        }
+
         // Proactive check: require nickMTGO before attempting API call
-        if (!usuario?.nickMTGO) {
+        if (!authUsuario?.nickMTGO) {
             setError("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever. Acesse seu perfil pelo menu superior.");
             clearMessages();
             return;
@@ -619,7 +636,7 @@ export function useTournamentDetail() {
         setError("");
         try {
             const payload = selectedTimeId ? { timeId: selectedTimeId } : {};
-            await inscreverTorneio(torneioId, token, payload);
+            await inscreverTorneio(torneioId, authToken, payload);
             setSuccessMsg("Inscrição realizada com sucesso!");
             await loadTournament();
             await loadStandings();
@@ -642,9 +659,17 @@ export function useTournamentDetail() {
         }
     };
 
-    const handleInscreverTarde = async () => {
+    const handleInscreverTarde = async (authOverride) => {
         if (!torneioId) return;
-        if (!usuario?.nickMTGO) {
+
+        const authToken = authOverride?.token ?? token;
+        const authUsuario = authOverride?.usuario ?? usuario;
+        if (!authToken) {
+            requireAuth((auth) => handleInscreverTarde(auth));
+            return;
+        }
+
+        if (!authUsuario?.nickMTGO) {
             setError("É necessário configurar um nick do MTGO no seu perfil antes de se inscrever.");
             clearMessages();
             return;
@@ -653,7 +678,7 @@ export function useTournamentDetail() {
         setError("");
         try {
             const payload = selectedTimeId ? { timeId: selectedTimeId } : {};
-            await inscreverTardio(torneioId, token, payload);
+            await inscreverTardio(torneioId, authToken, payload);
             setSuccessMsg("Inscrição tardia realizada! Você recebeu um bye nesta rodada.");
             await loadTournament();
             await loadStandings();
@@ -1138,8 +1163,6 @@ export function useTournamentDetail() {
         dismissRealtimeToast,
         corteInfo,
         dismissCorteInfo,
-        checkinRodadaAberto,
-        dismissCheckinBanner,
         usuario,
         isAdmin,
         token,

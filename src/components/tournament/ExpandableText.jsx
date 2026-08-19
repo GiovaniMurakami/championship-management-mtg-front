@@ -1,5 +1,12 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { truncateGraphemes } from "../../utils/graphemeText";
+
+const LINE_CLAMP_CLASS = {
+  2: "line-clamp-2",
+  3: "line-clamp-3",
+  4: "line-clamp-4",
+  5: "line-clamp-5",
+};
 
 function ToggleArrow({ expanded }) {
   return (
@@ -13,6 +20,7 @@ function ToggleArrow({ expanded }) {
 export function ExpandableText({
   text,
   maxLength = 180,
+  maxLines,
   className = "",
   buttonClassName = "",
   label,
@@ -25,19 +33,46 @@ export function ExpandableText({
   collapsedLabel = "Mostrar",
   expandedLabel = "Ocultar",
 }) {
+  const textRef = useRef(null);
   const [expanded, setExpanded] = useState(initialExpanded);
+  const [lineOverflow, setLineOverflow] = useState(false);
   const normalized = (text || "").trim();
+  const clampLines = Number(maxLines) > 0 ? Number(maxLines) : 0;
+  const clampWhenCollapsed = clampLines > 0 && collapseMode !== "section";
 
-  const { preview, shouldCollapse } = useMemo(() => {
-    const { text: previewText, truncated } = truncateGraphemes(normalized, maxLength);
-    return { preview: previewText, shouldCollapse: truncated };
+  const { preview, truncated } = useMemo(() => {
+    const { text: previewText, truncated: isTruncated } = truncateGraphemes(normalized, maxLength);
+    return { preview: previewText, truncated: isTruncated };
   }, [maxLength, normalized]);
+
+  useLayoutEffect(() => {
+    if (!clampWhenCollapsed || expanded) return undefined;
+    const el = textRef.current;
+    if (!el) return undefined;
+
+    const measure = () => {
+      setLineOverflow(el.scrollHeight > el.clientHeight + 1);
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [clampWhenCollapsed, expanded, normalized, clampLines]);
 
   if (!normalized) return null;
 
+  const extraLines = (normalized.match(/\n/g) || []).length;
+  const likelyOverflow = clampWhenCollapsed && extraLines >= clampLines;
+  const shouldCollapse = clampWhenCollapsed ? (lineOverflow || likelyOverflow || truncated) : truncated;
   const canToggle = shouldCollapse || alwaysToggle || collapseMode === "section";
-  const visibleText = expanded || !shouldCollapse || collapseMode === "section" ? normalized : preview;
+  const visibleText = clampWhenCollapsed || expanded || !truncated || collapseMode === "section"
+    ? normalized
+    : preview;
   const showBody = collapseMode !== "section" || expanded;
+  const clampClass = clampWhenCollapsed && !expanded
+    ? (LINE_CLAMP_CLASS[clampLines] || "line-clamp-3")
+    : "";
 
   if (label) {
     return (
@@ -63,7 +98,9 @@ export function ExpandableText({
 
   return (
     <div className={className}>
-      <p className="m-0 whitespace-pre-line leading-relaxed">{visibleText}</p>
+      <p ref={textRef} className={`m-0 whitespace-pre-line leading-relaxed ${clampClass}`.trim()}>
+        {visibleText}
+      </p>
       {shouldCollapse && (
         <button
           type="button"

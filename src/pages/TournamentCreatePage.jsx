@@ -14,6 +14,28 @@ function addOneWeek(dateStr) {
   return toDatetimeLocalBrasilia(d.toISOString());
 }
 
+/** Campos reutilizáveis ao copiar um torneio para criar outro. */
+export function buildCopyTournamentInitialValues(copyFrom) {
+  if (!copyFrom) return undefined;
+  return {
+    nome: copyFrom.nome || "",
+    horario: addOneWeek(copyFrom.horario || copyFrom.dataInicio || copyFrom.data),
+    formato: copyFrom.formato || "standard",
+    descricao: copyFrom.descricao || copyFrom.premio || "",
+    regras: copyFrom.regras || "",
+    maxJogadores: copyFrom.maxJogadores ? String(copyFrom.maxJogadores) : "",
+    maxRodadas: copyFrom.maxRodadas ? String(copyFrom.maxRodadas) : "",
+    corteTop: copyFrom.corteTop ? String(copyFrom.corteTop) : "",
+    bannerUrl: copyFrom.bannerUrl || "",
+    linkBanner: copyFrom.linkBanner || "",
+    somRodada: copyFrom.somRodada || "",
+    linkLive: copyFrom.linkLive || "",
+    storyFundoUrl: copyFrom.storyFundoUrl || "",
+    secreto: Boolean(copyFrom.secreto),
+    exibirNomeJogador: copyFrom.exibirNomeJogador || "nome",
+  };
+}
+
 export function TournamentCreatePage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,22 +44,7 @@ export function TournamentCreatePage() {
   usePageTitle(PAGE_TITLES.criarTorneio);
 
   const copyFrom = location.state?.copyFrom;
-  const initialValues = copyFrom
-    ? {
-      nome: copyFrom.nome || "",
-      horario: addOneWeek(copyFrom.horario || copyFrom.dataInicio || copyFrom.data),
-      formato: copyFrom.formato || "standard",
-      descricao: copyFrom.descricao || copyFrom.premio || "",
-      regras: copyFrom.regras || "",
-      maxJogadores: copyFrom.maxJogadores ? String(copyFrom.maxJogadores) : "",
-      maxRodadas: copyFrom.maxRodadas ? String(copyFrom.maxRodadas) : "",
-      corteTop: copyFrom.corteTop ? String(copyFrom.corteTop) : "",
-      linkBanner: copyFrom.bannerUrl || copyFrom.linkBanner || "",
-      somRodada: copyFrom.somRodada || "",
-      linkLive: copyFrom.linkLive || "",
-      storyFundoUrl: copyFrom.storyFundoUrl || "",
-    }
-    : undefined;
+  const initialValues = buildCopyTournamentInitialValues(copyFrom);
 
   const handleTournamentCreated = () => {
     navigate("/");

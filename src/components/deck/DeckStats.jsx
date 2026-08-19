@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Tooltip } from "../ui/Tooltip";
+import { isLandType } from "../../utils/cardTypeGroup";
 
 export function DeckStats({ mainDeck }) {
   const stats = useMemo(() => {
@@ -32,17 +33,20 @@ export function DeckStats({ mainDeck }) {
         colorDistribution.C += quantity; // Incolor
       }
 
-      // Tipos de carta
+      // Tipos de carta — terrenos (inclusive artefato) contam só como terreno
       const typeLine = card.typeLine || "";
       const matchedTypes = [];
 
-      if (typeLine.includes("Creature")) matchedTypes.push("Criatura");
-      if (typeLine.includes("Instant")) matchedTypes.push("Instant");
-      if (typeLine.includes("Sorcery")) matchedTypes.push("Sorcery");
-      if (typeLine.includes("Enchantment")) matchedTypes.push("Encantamento");
-      if (typeLine.includes("Artifact")) matchedTypes.push("Artefato");
-      if (typeLine.includes("Planeswalker")) matchedTypes.push("Planeswalker");
-      if (typeLine.includes("Land")) matchedTypes.push("Terreno");
+      if (isLandType(typeLine)) {
+        matchedTypes.push("Terreno");
+      } else {
+        if (typeLine.includes("Creature")) matchedTypes.push("Criatura");
+        if (typeLine.includes("Instant")) matchedTypes.push("Instant");
+        if (typeLine.includes("Sorcery")) matchedTypes.push("Sorcery");
+        if (typeLine.includes("Enchantment")) matchedTypes.push("Encantamento");
+        if (typeLine.includes("Artifact")) matchedTypes.push("Artefato");
+        if (typeLine.includes("Planeswalker")) matchedTypes.push("Planeswalker");
+      }
 
       if (matchedTypes.length === 0) {
         matchedTypes.push("Outro");

@@ -1,3 +1,5 @@
+import { isScryfallId } from "../utils/scryfallId";
+
 // Cache em memoria com TTL de 10 minutos por query/nome.
 const _cache = new Map();
 const _pending = new Map();
@@ -59,6 +61,7 @@ function normalizeCard(card) {
 
   return {
     id: card.id,
+    oracleId: card.oracle_id || "",
     nome: card.name,
     set: card.set_name,
     imagem:
@@ -66,6 +69,10 @@ function normalizeCard(card) {
       || card.image_uris?.large
       || card.card_faces?.[0]?.image_uris?.normal
       || card.card_faces?.[0]?.image_uris?.large
+      || "",
+    artCrop:
+      card.image_uris?.art_crop
+      || card.card_faces?.[0]?.image_uris?.art_crop
       || "",
     isBasicLand,
     legalities: {
@@ -78,6 +85,9 @@ function normalizeCard(card) {
       pauper: card.legalities?.pauper === "legal",
     },
     colors: card.colors || [],
+    colorIdentity: Array.isArray(card.color_identity) && card.color_identity.length > 0
+      ? card.color_identity
+      : (card.colors || []),
     cmc,
     manaCost: card.mana_cost || "",
     typeLine: card.type_line || "",
@@ -174,11 +184,72 @@ export async function buscarCartasMTG(termo, options = {}) {
   });
 }
 
+export async function buscarCartaPorId(id, options = {}) {
+  const scryfallId = String(id || "").trim();
+  if (!isScryfallId(scryfallId)) return null;
+
+  const cacheKey = `id:${scryfallId.toLowerCase()}`;
+  const cached = getCached(cacheKey);
+  if (cached !== undefined) return cached;
+
+  return withPending(cacheKey, async () => {
+    let data;
+    try {
+      data = await fetchJson(`https://api.scryfall.com/cards/${scryfallId}`, { signal: options.signal });
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      return null;
+    }
+    if (!data) return null;
+    const result = normalizeCard(data);
+    setCache(cacheKey, result);
+    setCache(`named:${normalizeNameKey(result.nome)}`, result);
+    return result;
+  });
+}
+
+export async function buscarArtesDaCarta(cartaOuNome, options = {}) {
+  const nome = typeof cartaOuNome === "string" ? cartaOuNome : cartaOuNome?.nome;
+  const oracleId = typeof cartaOuNome === "object" && cartaOuNome ? cartaOuNome.oracleId : "";
+  const query = oracleId
+    ? `oracleid:${oracleId}`
+    : (nome?.trim() ? `!"${nome.trim().replace(/"/g, "")}"` : "");
+
+  if (!query) return [];
+
+  const cacheKey = `arts:${query.toLowerCase()}`;
+  const cached = getCached(cacheKey);
+  if (cached !== undefined) return cached;
+
+  return withPending(cacheKey, async () => {
+    const url = new URL("https://api.scryfall.com/cards/search");
+    url.searchParams.set("q", query);
+    url.searchParams.set("unique", "art");
+    url.searchParams.set("order", "released");
+
+    let data;
+    try {
+      data = await fetchJson(url.toString(), { signal: options.signal });
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      return [];
+    }
+
+    const results = Array.isArray(data?.data) ? data.data.map(normalizeCard) : [];
+    setCache(cacheKey, results);
+    return results;
+  });
+}
+
 export async function buscarCartaPorNome(nome, options = {}) {
   const query = nome?.trim();
 
   if (!query) {
     return null;
+  }
+
+  if (isScryfallId(query)) {
+    return buscarCartaPorId(query, options);
   }
 
   const cacheKey = `named:${query.toLowerCase()}`;

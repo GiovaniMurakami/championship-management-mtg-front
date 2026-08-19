@@ -17,9 +17,10 @@ import { InlineAlert } from "../components/ui/InlineAlert";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { formatBrasiliaDate } from "../utils/brasiliaTime";
 
 export function LigaDetailPage() {
-  const LIMITE_RANKING_TIMES = 10;
+  const LIMITE_RANKING_TIMES = 50;
   const { id: ligaId } = useParams();
   const { token, isAdmin, usuario } = useAuth();
   const { addToast } = useToast();
@@ -30,12 +31,12 @@ export function LigaDetailPage() {
   const [loadError, setLoadError] = useState("");
   const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingError, setRankingError] = useState("");
-  const [abaAtiva, setAbaAtiva] = useState("torneios");
+  const [abaAtiva, setAbaAtiva] = useState("ranking");
 
   usePageTitle(liga?.nome, { loading, fallback: "Liga" });
 
   const loadLiga = useCallback(async () => {
-    if (!ligaId || !token) return;
+    if (!ligaId) return;
     setLoading(true);
     setLoadError("");
     try {
@@ -52,7 +53,7 @@ export function LigaDetailPage() {
   }, [ligaId, token, addToast]);
 
   const loadRanking = useCallback(async () => {
-    if (!ligaId || !token) return;
+    if (!ligaId) return;
     setRankingLoading(true);
     setRankingError("");
     try {
@@ -81,7 +82,9 @@ export function LigaDetailPage() {
   const isOwner = liga && usuario && String(liga.donoId) === String(usuario.id);
   const canManage = isOwner || isAdmin;
 
-  const torneios = liga?.torneios || [];
+  const torneios = [...(liga?.torneios || [])].sort(
+    (a, b) => new Date(a.horario || 0) - new Date(b.horario || 0),
+  );
 
   return (
     <PageShell>
@@ -142,8 +145,8 @@ export function LigaDetailPage() {
           </div>
 
           <Tabs value={abaAtiva} onChange={setAbaAtiva}>
-            <Tabs.Item value="torneios" label="Torneios" count={torneios.length} />
             <Tabs.Item value="ranking" label="Ranking" />
+            <Tabs.Item value="torneios" label="Torneios" count={torneios.length} />
           </Tabs>
 
           {/* Torneios tab */}
@@ -184,11 +187,9 @@ export function LigaDetailPage() {
                             <line x1="8" y1="2" x2="8" y2="6" />
                             <line x1="3" y1="10" x2="21" y2="10" />
                           </svg>
-                          {torneio.data
-                            ? new Date(torneio.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
-                            : torneio.dataInicio
-                              ? new Date(torneio.dataInicio).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
-                              : "Data não definida"}
+                          {torneio.horario
+                            ? formatBrasiliaDate(torneio.horario)
+                            : "Data não definida"}
                           {(torneio.totalInscritos != null || torneio.maxJogadores != null) && (
                             <>
                               <span className="text-[rgba(190,175,215,0.3)]">·</span>

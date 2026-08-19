@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { ADSENSE_CLIENT, ADSENSE_UNITS, isAdSenseEnabled } from "../../constants/adsense";
-import { loadAdSenseScript } from "../../utils/adsenseScript";
+import { applyAdSensePersonalization, loadAdSenseScript } from "../../utils/adsenseScript";
+import { useCookieConsent } from "./CookieConsentBanner";
 
 const BASE_CLASS = "overflow-hidden";
 
@@ -22,7 +23,8 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
   const config = ADSENSE_UNITS[unit];
   const containerRef = useRef(null);
   const pushed = useRef(false);
-  const enabled = isAdSenseEnabled();
+  const { decided, marketing } = useCookieConsent();
+  const enabled = isAdSenseEnabled() && decided;
 
   useEffect(() => {
     if (!config || !enabled) return undefined;
@@ -36,12 +38,15 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
     const tryPush = async () => {
       if (pushed.current || cancelled || container.offsetWidth <= 0) return;
 
+      applyAdSensePersonalization(marketing);
+
       const ins = container.querySelector("ins.adsbygoogle");
       if (ins?.getAttribute("data-adsbygoogle-status")) return;
 
       const loaded = await loadAdSenseScript();
       if (!loaded || cancelled || pushed.current || container.offsetWidth <= 0) return;
 
+      applyAdSensePersonalization(marketing);
       pushed.current = true;
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -60,7 +65,7 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
       cancelled = true;
       observer.disconnect();
     };
-  }, [config, enabled, unit]);
+  }, [config, enabled, marketing, unit]);
 
   if (!config || !enabled) return null;
 

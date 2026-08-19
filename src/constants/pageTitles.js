@@ -27,6 +27,7 @@ export const PAGE_TITLES = {
   ferramentas: "Ferramentas",
   contadorVida: "Contador de vida",
   calculadoraSwiss: "Calculadora de top 8 suíço",
+  metagame: "Metagame",
   naoEncontrada: "Página não encontrada",
   carregando: "Carregando...",
 };

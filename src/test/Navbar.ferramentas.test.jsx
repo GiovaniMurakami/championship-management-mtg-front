@@ -31,7 +31,7 @@ describe("Navbar — dropdown Ferramentas", () => {
     );
   });
 
-  it("sem login, Ferramentas abre o modal de autenticação", () => {
+  it("sem login, Ferramentas continua pública e lista as páginas", () => {
     const onOpenAuth = vi.fn();
     render(
       <MemoryRouter>
@@ -46,6 +46,11 @@ describe("Navbar — dropdown Ferramentas", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
-    expect(onOpenAuth).toHaveBeenCalledWith("login");
+
+    expect(onOpenAuth).not.toHaveBeenCalled();
+    expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
+      "href",
+      "/ferramentas/contador-vida",
+    );
   });
 });

@@ -62,6 +62,18 @@ describe("resolveExternalNavigationTarget", () => {
     });
   });
 
+  it("redireciona rota externa de metagame preservando filtros", () => {
+    const target = resolveExternalNavigationTarget({
+      pathname: "/",
+      search: "?rota=metagame&formato=pauper&dias=30",
+    });
+
+    expect(target).toEqual({
+      pathname: "/metagame",
+      search: "?formato=pauper&dias=30",
+    });
+  });
+
   it("redireciona rota externa de termos de uso", () => {
     const target = resolveExternalNavigationTarget({
       pathname: "/",
@@ -170,7 +182,7 @@ describe("getWordpressEmbedOrigins", () => {
   });
 
   it("inclui variantes com e sem www do WordPress", async () => {
-    vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "https://www.tiagofuguete.com.br/app-torneios");
+    vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "https://www.tiagofuguete.com.br/torneios");
     vi.resetModules();
 
     const { getWordpressEmbedOrigins } = await import("../utils/externalNavigation");
@@ -189,7 +201,7 @@ describe("build wordpress embed urls", () => {
   it("gera url do embed WordPress para sincronizar rota com o parent", async () => {
     const { buildWordpressEmbedUrlForPath } = await loadExternalNavigationWithDefaults();
     expect(buildWordpressEmbedUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
-      "https://tiagofuguete.com.br/app-torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
+      "https://tiagofuguete.com.br/torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
     );
   });
 });

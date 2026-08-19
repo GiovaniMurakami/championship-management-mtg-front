@@ -1,5 +1,5 @@
 const DEFAULT_APP_PUBLIC_URL = "https://app.tiagofuguete.com.br";
-const DEFAULT_WORDPRESS_EMBED_URL = "https://tiagofuguete.com.br/app-torneios";
+const DEFAULT_WORDPRESS_EMBED_URL = "https://tiagofuguete.com.br/torneios";
 
 const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
 
@@ -211,6 +211,8 @@ export function resolveExternalNavigationTarget(locationLike) {
       return withSearch("/times/criar", searchParams);
     case "ligas":
       return withSearch("/ligas", searchParams);
+    case "metagame":
+      return withSearch("/metagame", searchParams);
     case "criar-liga":
       return withSearch("/ligas/criar", searchParams);
     case "blog":

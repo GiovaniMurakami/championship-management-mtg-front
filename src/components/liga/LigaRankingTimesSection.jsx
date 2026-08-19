@@ -3,11 +3,9 @@ function calcWinRate(vitorias, derrotas, empates) {
   return total > 0 ? Math.round(((vitorias ?? 0) / total) * 100) : null;
 }
 
-function winRateStyle(rate) {
-  if (rate === null) return { color: "rgba(190,175,215,0.4)" };
-  if (rate >= 60) return { color: "#22c55e" };
-  if (rate >= 40) return { color: "#fbbf24" };
-  return { color: "#ef4444" };
+function formatRecordeVd(vitorias = 0, derrotas = 0, empates = 0) {
+  if (empates > 0) return `${vitorias}/${derrotas}/${empates}`;
+  return `${vitorias}/${derrotas}`;
 }
 
 const AVATAR_PALETTES = [
@@ -74,7 +72,6 @@ export function LigaRankingTimesSection({ ranking, loading }) {
           const losses = time.derrotas ?? 0;
           const draws = time.empates ?? 0;
           const winRate = calcWinRate(wins, losses, draws);
-          const wr = winRateStyle(winRate);
 
           return (
             <li
@@ -117,32 +114,16 @@ export function LigaRankingTimesSection({ ranking, loading }) {
                 )}
               </div>
 
-              {/* W/D/L */}
-              <div className="hidden min-[520px]:flex items-center gap-[0.3rem] flex-shrink-0">
-                <span className="text-[0.7rem] font-semibold text-[#22c55e] bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-                  {wins}V
-                </span>
-                {draws > 0 && (
-                  <span className="text-[0.7rem] font-semibold text-[#fbbf24] bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-                    {draws}E
-                  </span>
-                )}
-                <span className="text-[0.7rem] font-semibold text-[#ef4444] bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.25)] rounded-full px-[0.5rem] py-[0.1rem]">
-                  {losses}D
-                </span>
-              </div>
+              <span className="hidden min-[520px]:inline text-[0.8rem] font-semibold tabular-nums text-[#c4b5fd] flex-shrink-0 min-w-[3.5rem] text-right">
+                {formatRecordeVd(wins, losses, draws)}
+              </span>
 
-              {/* Win rate */}
               {winRate !== null && (
-                <span
-                  className="hidden min-[600px]:block text-[0.75rem] font-semibold flex-shrink-0 w-[3.2rem] text-right"
-                  style={{ color: wr.color }}
-                >
+                <span className="hidden min-[600px]:block text-[0.75rem] font-semibold flex-shrink-0 w-[3.2rem] text-right text-[#beafd7]">
                   {winRate}%
                 </span>
               )}
 
-              {/* Points */}
               <span className="font-['Bebas_Neue',sans-serif] text-[1.3rem] tracking-[0.04em] flex-shrink-0 w-[3rem] text-right text-[rgba(240,180,41,0.7)]">
                 {pts}
               </span>

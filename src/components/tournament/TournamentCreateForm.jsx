@@ -51,10 +51,15 @@ function FieldLabel({ htmlFor, children, hint }) {
 }
 
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
-  const { storyFundoUrl: initialStoryFundoUrl, ...formInitialValues } = initialValues ?? {};
+  const {
+    storyFundoUrl: initialStoryFundoUrl = "",
+    bannerUrl: initialBannerUrl = "",
+    ...formInitialValues
+  } = initialValues ?? {};
   const [createForm, setCreateForm] = useState(() => ({ ...INITIAL_FORM, ...formInitialValues }));
   const [bannerFile, setBannerFile] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState(initialValues?.linkBanner ?? null);
+  const [bannerPreview, setBannerPreview] = useState(initialBannerUrl || null);
+  const [existingBannerUrl, setExistingBannerUrl] = useState(initialBannerUrl || "");
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bannerError, setBannerError] = useState("");
@@ -89,6 +94,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       return;
     }
     setBannerFile(file);
+    setExistingBannerUrl("");
     const reader = new FileReader();
     reader.onloadend = () => setBannerPreview(reader.result);
     reader.readAsDataURL(file);
@@ -97,6 +103,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
   const removeBanner = () => {
     setBannerFile(null);
     setBannerPreview(null);
+    setExistingBannerUrl("");
     setBannerError("");
     setUploadProgress(0);
     if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -110,7 +117,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
     setStoryError("");
 
     try {
-      let bannerUrl;
+      let bannerUrl = existingBannerUrl || undefined;
       let storyFundoUrl;
 
       if (bannerFile) {
@@ -133,7 +140,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         linkBanner: optionalTrimmed(createForm.linkBanner),
         somRodada: optionalTrimmed(createForm.somRodada),
         linkLive: optionalTrimmed(createForm.linkLive),
-        ...(bannerUrl !== undefined ? { bannerUrl } : {}),
+        ...(bannerUrl ? { bannerUrl } : {}),
         ...(storyFundoUrl ? { storyFundoUrl } : {}),
         maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
         maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,

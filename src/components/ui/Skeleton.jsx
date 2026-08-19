@@ -33,11 +33,12 @@ export function SkeletonCard() {
 
 export function SkeletonTorneioCard() {
   return (
-    <div className="bg-gradient-to-br from-[#2a2a3e] to-[#1e1e2e] rounded-xl p-6 border border-white/10 flex flex-col gap-[0.65rem]">
-      <Skeleton width="60%" height="1.3rem" />
-      <Skeleton width="40%" height="0.9rem" />
-      <Skeleton width="50%" height="0.9rem" />
-      <Skeleton width="35%" height="0.9rem" />
+    <div className="bg-gradient-to-br from-[#2a2a3e] to-[#1e1e2e] rounded-[0.95rem] p-4 border border-white/10 flex flex-col gap-[0.5rem]">
+      <Skeleton width="100%" height="140px" radius="0.6rem" />
+      <Skeleton width="60%" height="1.1rem" />
+      <Skeleton width="40%" height="0.8rem" />
+      <Skeleton width="50%" height="0.8rem" />
+      <Skeleton width="35%" height="0.8rem" />
       <Skeleton width="45%" height="0.9rem" />
       <div className="flex gap-3 mt-2">
         <Skeleton width="100px" height="2rem" radius="0.6rem" />

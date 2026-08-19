@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.29** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.34** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -13,6 +13,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Construtor e CRUD de decks (validação via Scryfall)
 - Torneios Swiss com top cut, pareamentos, resultados e check-in por rodada
 - Ligas (rankings de jogadores, decks, cartas e times)
+- Metagame público por formato (arquétipos, matchups, listas)
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
@@ -55,6 +56,7 @@ src/
 │   ├── deck/               # DeckBuilder, CardSearch, HandSimulator, etc.
 │   ├── tournament/         # MatchPanel, StandingsTable, OwnerControlPanel, etc.
 │   ├── liga/               # Ranking sections
+│   ├── metagame/           # Lista e detalhe de arquétipos
 │   └── ui/                 # Navbar, Footer, Spinner, modais base, etc.
 ├── hooks/                  # Lógica de negócio reutilizável
 ├── context/
@@ -131,6 +133,9 @@ BrowserRouter
 - Aguarda `authInitialized` antes de decidir
 - Se não autenticado: abre `AuthModal` automaticamente
 - `requireAdmin` bloqueia não-admins com mensagem estática
+- Usado só em rotas de **ação** (criar/editar) e admin — leitura de decks/torneios/ligas/times é pública
+
+`requireAuth(action)` em `AuthContext`: abre o modal e, após login/cadastro, retoma a ação (ex.: inscrever-se).
 
 ---
 
@@ -140,19 +145,23 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 
 | Rota | Proteção | Página |
 |---|---|---|
-| `/` | auth | `TournamentPage` (lista de torneios = home) |
-| `/decks` | auth | `MyDecksPage` |
+| `/` | público (leitura) | `TournamentPage` (lista de torneios = home) |
+| `/decks` | público (leitura) | `MyDecksPage` |
 | `/decks/criar` | auth | `DeckBuilderPage` (criar) |
-| `/editar-deck/:id` | auth | `DeckBuilderPage` (editar) |
+| `/editar-deck/:id` | público (leitura); edição só se dono/admin autenticado | `DeckBuilderPage` (editar/visualizar) |
 | `/torneios/criar` | auth + admin | `TournamentCreatePage` |
-| `/torneios/:id` | auth | `TournamentDetailPage` |
+| `/torneios/:id` | público (leitura) | `TournamentDetailPage` |
 | `/torneio/ingressar/:token` | público | `TournamentJoinPage` |
 | `/dashboard` | auth + admin | `DashboardPage` (anúncios) |
 | `/dashboard/bloqueios` | auth + admin | `DashboardBloqueiosPage` |
 | `/termos-de-uso` | público | `TermosDeUsoPage` |
 | `/privacidade` | público | `PrivacidadePage` (LGPD) |
-| `/times`, `/times/criar`, `/times/:id`, `/times/:id/editar` | auth | Time pages |
-| `/ligas`, `/ligas/criar`, `/ligas/:id`, `/ligas/:id/editar` | auth (+ admin criar/editar) | Liga pages |
+| `/times`, `/times/:id` | público (leitura) | Time pages |
+| `/times/criar`, `/times/:id/editar` | auth | Time create/edit |
+| `/ligas`, `/ligas/:id` | público (leitura) | Liga pages |
+| `/metagame`, `/metagame/:formato/:slug` | público | Metagame (slug não é UUID) |
+| `/ligas/criar`, `/ligas/:id/editar` | auth + admin | Liga create/edit |
+| `/ferramentas/*` | público | Contador de vida / Calculadora Swiss |
 | `/esqueci-senha`, `/reset-senha` | público | Reset senha |
 | `/blog`, `/sobre-mim`, `/parceiros` | público (layout bare) | Landing pages |
 | `*` | — | `NotFoundPage` |
@@ -172,11 +181,12 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Deck builder | `hooks/useDeckBuilder.js`, `components/deck/`, `utils/parseDeckTxt.js`, `utils/deckPayload.js` |
 | Lista de torneios | `pages/TournamentPage.jsx` |
 | Detalhe de torneio | `hooks/useTournamentDetail.js`, `pages/TournamentDetailPage.jsx`, `components/tournament/` (auto-drop em `PlayerProfile`) |
-| Standings | `StandingsTable.jsx` (largura full / sem clip lateral; sem scroll vertical interno) |
+| Standings | `StandingsTable.jsx` (largura full / sem clip lateral; sem scroll vertical interno; story Top 8: jogadores + data acima do 1º, recorde V-D no card) |
 | Usuário excluído | `components/ui/UsuarioExcluidoTag.jsx` + flags `excluido` nos payloads |
 | Fluxo de rodadas/top cut | `utils/tournamentFlow.js`, `hooks/useTournamentQueries.js` |
 | Realtime Ably | `services/ablyService.js`, handlers em `useTournamentDetail` e `TournamentPage` |
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
+| Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin escolhe `cartaRepresentativa` no detalhe do arquétipo) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
 | Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
@@ -225,6 +235,13 @@ Torneios: POST /torneio/criar, /:id/inscrever
           DELETE /torneio/:id
 
 Ligas:    CRUD /liga/* + GET /liga/:id/ranking
+          (`jogador.nome` = nick MOL)
+
+Metagame: GET /metagame?formato=&dias=30
+          GET /metagame/:formato/:slug?dias=30   (público; sem JWT)
+          (`usuario.nome` = nick MOL)
+
+Decks:    CRUD /deck/* — `usuario.nome` em listar/buscar = nick MOL
 
 Times:    CRUD /time/* + entrar, sair, convite, solicitar, aprovar, rejeitar
 
@@ -247,14 +264,16 @@ Canal por torneio: `torneio-{torneioId}`
 
 Eventos (`ablyService.js`):
 ```
-rodada_iniciada, resultado_registrado, standings_atualizados,
+rodada_iniciada, resultado_registrado,
 torneio_finalizado, participante_inscrito, checkin_realizado,
 deck_inserido, resultado_contestado, torneio_iniciado, jogador_dropou,
 resultado_ajustado, corte_iniciado, jogador_ingressou,
-total_rodadas_alterado, checkin_rodada_aberto, rodada_refeita
+total_rodadas_alterado, rodada_refeita
 ```
 
 Auth Ably: preferir `VITE_ABLY_AUTH_URL` em produção; fallback `VITE_ABLY_API_KEY`.
+
+Conexão só com usuário **logado**, a partir de **15 min antes do `horario`** e enquanto o status não for `finalizado` (`em_andamento` entra na hora). Sem canais ativos o cliente Realtime é fechado. Inscrições/check-in muito antes do horário continuam via REST.
 
 **Sempre** fazer `unsubscribeFromTournament(channel)` no cleanup do `useEffect`.
 
@@ -307,6 +326,7 @@ Limites de deck (`constants/auth.js`):
 ### Conta excluída / LGPD
 - Soft-delete no backend; front mostra tag `UsuarioExcluidoTag` / `UsuarioNomeExibicao`
 - Copy de exclusão em `EditProfileModal` e política em `constants/privacyPolicy.js` (`/privacidade`)
+- Banner LGPD de cookies: `CookieConsentBanner`; AdSense após a escolha — personalizado se aceitar ads, NPA se recusar (`utils/cookieConsent.js`)
 
 ### Acentuação em badges
 - Evitar `uppercase` CSS em textos com acento (pode virar “VOCE”); preferir literal acentuado (`VOCÊ`, `CAPITÃO`, etc.)
@@ -321,9 +341,10 @@ Arquitetura:
 
 `src/utils/externalNavigation.js`:
 - `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados e acesso direto ao app
-- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/app-torneios`)
+- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/torneios`)
 - Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
 - `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
+- `ScrollToTop` em `App.jsx` volta o scroll ao topo a cada mudança de `pathname`
 
 Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalNavigationTarget()`.
 
@@ -342,7 +363,7 @@ VITE_YOUTUBE_CHANNEL_ID=...
 VITE_YOUTUBE_API_KEY=...
 VITE_SITE_PASSWORD=...          # gate opcional
 VITE_APP_URL=...                # URL publica do front (default app.tiagofuguete.com.br)
-VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/app-torneios)
+VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/torneios)
 ```
 
 Copiar de `.env.example`. **Nunca commitar `.env`.**
@@ -357,12 +378,12 @@ npm run lint      # eslint
 ```
 
 Testes em `src/test/`:
-- `backendApi.test.js`, `scryfallApi.test.js`
-- `tournamentFlow.test.js`
-- Componentes: `OwnerControlPanel.test.jsx`, `ReviewRoundModal.test.jsx`, `TournamentCreateForm.test.jsx`
+- API: `backendApi.test.js`, `backendApi.torneioMutations.test.js`, `backendApi.metagame.test.js`, `scryfallApi.test.js`
+- Utils: `deckColors.test.js`, `cardTypeGroup.test.js`, `tournamentFlow.test.js`, `externalNavigation.test.js`
+- UI: `ScrollToTop.test.jsx`, `ExpandableText.test.jsx`, `OwnerControlPanel.test.jsx`, `Navbar.*.test.jsx`
 - Setup: `src/test/setupTests.js`
 
-Config de teste embutida em `vite.config.js` (ambiente jsdom).
+Config de teste embutida em `vite.config.js` (ambiente jsdom). Sem limiar global de cobertura; o backend é quem tem `coverageThreshold`.
 
 ---
 
@@ -433,4 +454,4 @@ npm run preview
 
 ---
 
-*Última revisão: agosto/2026 — alinhado com v1.2.29 (soft-delete UI, auto-drop, standings full-width, acentuação de badges)*
+*Última revisão: agosto/2026 — alinhado com v1.2.34 (story Top 8 e arte do arquétipo)*

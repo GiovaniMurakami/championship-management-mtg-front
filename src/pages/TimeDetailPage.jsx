@@ -32,7 +32,7 @@ const getTotalMembros = (time) =>
 
 export function TimeDetailPage() {
   const { id: timeId } = useParams();
-  const { token, usuario, isAdmin } = useAuth();
+  const { token, usuario, isAdmin, requireAuth } = useAuth();
   const navigate = useNavigate();
 
   const [time, setTime] = useState(null);
@@ -50,7 +50,7 @@ export function TimeDetailPage() {
   usePageTitle(time?.nome, { loading, fallback: "Time" });
 
   const loadTime = useCallback(async () => {
-    if (!timeId || !token) return;
+    if (!timeId) return;
     setLoading(true);
     try {
       const data = await buscarTime(timeId, token);
@@ -125,11 +125,16 @@ export function TimeDetailPage() {
     });
   };
 
-  const handleSolicitar = async () => {
+  const handleSolicitar = async (authOverride) => {
+    const authToken = authOverride?.token ?? token;
+    if (!authToken) {
+      requireAuth((auth) => handleSolicitar(auth));
+      return;
+    }
     setActionLoading(true);
     setError("");
     try {
-      await solicitarEntradaTime(timeId, token);
+      await solicitarEntradaTime(timeId, authToken);
       await loadTime();
     } catch (err) {
       setError(err.message || "Erro ao enviar solicitação.");
