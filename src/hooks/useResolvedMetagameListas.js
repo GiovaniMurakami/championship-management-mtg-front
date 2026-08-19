@@ -25,7 +25,7 @@ export function useResolvedMetagameListas(listas) {
     }
 
     let cancelled = false;
-    buscarCartasPorNome(nomes)
+    buscarCartasPorNome(nomes, { fallbackIndividual: false })
       .then((cartas) => {
         if (cancelled) return;
         const porNome = new Map();

@@ -402,11 +402,13 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
     }
   }
 
-  const unresolvedNames = normalizedNames.filter((name) => !resultsByName.has(normalizeNameKey(name)));
+  if (options.fallbackIndividual !== false) {
+    const unresolvedNames = normalizedNames.filter((name) => !resultsByName.has(normalizeNameKey(name)));
 
-  for (const name of unresolvedNames) {
-    const card = await buscarCartaPorNome(name, options);
-    resultsByName.set(normalizeNameKey(name), card);
+    for (const name of unresolvedNames) {
+      const card = await buscarCartaPorNome(name, options);
+      resultsByName.set(normalizeNameKey(name), card);
+    }
   }
 
   return normalizedNames.map((name) => resultsByName.get(normalizeNameKey(name)) || null);
