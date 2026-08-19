@@ -78,10 +78,31 @@ function buildPlayerHistory(player, partidas = []) {
         id: partida.id,
         rodada: partida.rodada,
         opponentName,
-        score: partida.status === "finalizada" ? `${v1}-${v2}` : "VS",
+        score: partida.status === "finalizada" ? `${ownWins}-${opponentWins}` : "VS",
         result,
       };
     });
+}
+
+function getHistoryResultClass(result) {
+  if (result === "Vitoria" || result === "BYE") {
+    return "text-[#86efac]";
+  }
+  if (result === "Derrota") {
+    return "text-[#fca5a5]";
+  }
+  if (result === "Empate") {
+    return "text-[#fde68a]";
+  }
+  return "text-[#c4b5fd]";
+}
+
+function getHistoryResultLabel(result) {
+  if (result === "Vitoria" || result === "BYE") return "W";
+  if (result === "Derrota") return "L";
+  if (result === "Empate") return "D";
+  if (result === "Pendente") return "P";
+  return result;
 }
 
 function PlayerHistoryTooltip({ player, partidas, children }) {
@@ -93,23 +114,33 @@ function PlayerHistoryTooltip({ player, partidas, children }) {
 
   return (
     <Tooltip
-      placement="right"
+      placement="bottom"
       ariaLabel={`Ultimas partidas de ${player?.usuario?.nome || player?.nome || "jogador"}`}
-      tooltipClassName="max-w-[18rem] min-w-[15rem] text-left px-3 py-2"
+      tooltipClassName="max-w-[22rem] min-w-[18rem] text-left px-3 py-2.5"
       content={(
         <span className="block">
-          <span className="mb-1.5 block text-[0.72rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
-            Ultimas partidas
+          <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
+            Ultimas partidas deste torneio
           </span>
-          <span className="grid gap-1">
+          <span className="grid gap-1.5">
             {history.map((match) => (
-              <span key={match.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-2 text-[0.72rem] text-[#f5edff]">
+              <span
+                key={match.id}
+                className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-0.5 rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2 py-1.5 text-[0.72rem] text-[#f5edff]"
+              >
                 <span className="font-bold text-[#c4b5fd]">R{match.rodada}</span>
-                <span className="truncate text-[#fef3c7]">{match.opponentName}</span>
-                <span className="font-bold tabular-nums text-[#fff]">{match.score}</span>
-                <span className="col-span-3 text-[0.66rem] text-[#beafd7]">{match.result}</span>
+                <span className="min-w-0 truncate text-[#fef3c7]">vs {match.opponentName}</span>
+                <span className="font-bold tabular-nums text-white">
+                  {match.score}
+                  <span className={`ml-1 ${getHistoryResultClass(match.result)}`}>
+                    ({getHistoryResultLabel(match.result)})
+                  </span>
+                </span>
               </span>
             ))}
+          </span>
+          <span className="mt-2 block text-[0.64rem] leading-snug text-[#8f82ad]">
+            Placar exibido na perspectiva do jogador.
           </span>
         </span>
       )}
