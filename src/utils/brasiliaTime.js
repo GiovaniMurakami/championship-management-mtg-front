@@ -37,6 +37,24 @@ export function formatBrasiliaDateTimeShort(dateString) {
   });
 }
 
+/** Substitui timestamps ISO presentes em mensagens da API por horário legível de Brasília. */
+export function formatIsoDatesInMessage(message) {
+  if (typeof message !== "string" || !message) return message;
+  const isoPattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})/g;
+  let converted = false;
+  const formatted = message.replace(isoPattern, (iso) => {
+    const value = formatBrasiliaDateTimeShort(iso);
+    if (value === "—") return iso;
+    converted = true;
+    return value.replace(", ", " às ");
+  });
+  if (!converted || /horário de brasília/i.test(formatted)) return formatted;
+  if (/\)\s*[.!?]?$/.test(formatted)) {
+    return formatted.replace(/\)(\s*[.!?]?)$/, ", horário de Brasília)$1");
+  }
+  return formatted.replace(/([.!?])?$/, " (horário de Brasília)$1");
+}
+
 /** Converte ISO para valor de input datetime-local em horário de Brasília. */
 export function toDatetimeLocalBrasilia(dateStr) {
   if (!dateStr) return "";

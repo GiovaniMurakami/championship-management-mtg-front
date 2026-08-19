@@ -43,6 +43,7 @@ import {
 import { normalizeRoundSoundUrl } from "../constants/roundSounds";
 import { playRoundSound, unlockRoundSoundPlayer } from "../utils/roundSoundPlayer";
 import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../utils/ablyTournamentWindow";
+import { formatIsoDatesInMessage } from "../utils/brasiliaTime";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin, requireAuth } = useAuth();
@@ -77,12 +78,16 @@ export function useTournamentDetail() {
     const [selectedDeckId, setSelectedDeckId] = useState("");
     const [selectedTimeId, setSelectedTimeId] = useState("");
     const [times, setTimes] = useState([]);
-    const [error, setError] = useState("");
+    const [error, setErrorState] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
     const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
     const [corteInfo, setCorteInfo] = useState(null); // { corteTop, jogadoresClassificados }
     const [ablyWindowTick, setAblyWindowTick] = useState(0);
     const toastTimeoutRef = useRef(null);
+    const torneioRealtimeWindow = useMemo(() => ({
+        status: torneio?.status,
+        horario: torneio?.horario,
+    }), [torneio?.status, torneio?.horario]);
 
     const needsMyDecks = Boolean(
       token
@@ -107,6 +112,12 @@ export function useTournamentDetail() {
         setRealtimeToast({ msg, type });
         toastTimeoutRef.current = setTimeout(() => setRealtimeToast(null), 5000);
     }, [addToast]);
+
+    const setError = useCallback((message) => {
+        const friendlyMessage = formatIsoDatesInMessage(message);
+        setErrorState(friendlyMessage);
+        if (friendlyMessage) showToast(friendlyMessage, "error");
+    }, [showToast]);
 
     const dismissRealtimeToast = useCallback(() => {
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -223,7 +234,7 @@ export function useTournamentDetail() {
         } catch {
             setError("Erro ao carregar dados do torneio.");
         }
-    }, [torneioId, tournamentQuery]);
+    }, [torneioId, tournamentQuery, setError]);
 
     const loadPartidas = useCallback(async () => {
         if (!torneioId) return;
@@ -262,9 +273,9 @@ export function useTournamentDetail() {
 
     // Ably: autenticado, 15 min antes do horário e enquanto o torneio não finalizar
     useEffect(() => {
-        if (!torneioId || !token || !torneio) return undefined;
-        if (!isTournamentAblyWindowOpen(torneio)) {
-            const wait = msUntilTournamentAblyWindow(torneio);
+        if (!torneioId || !token || !torneioRealtimeWindow.status) return undefined;
+        if (!isTournamentAblyWindowOpen(torneioRealtimeWindow)) {
+            const wait = msUntilTournamentAblyWindow(torneioRealtimeWindow);
             if (wait == null || wait === 0) return undefined;
             const timer = setTimeout(() => setAblyWindowTick((tick) => tick + 1), wait);
             return () => clearTimeout(timer);
@@ -488,7 +499,7 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, token, torneio?.status, torneio?.horario, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
+    }, [torneioId, token, torneioRealtimeWindow, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState, playTorneioRoundSound]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
 
@@ -575,7 +586,7 @@ export function useTournamentDetail() {
 
     const clearMessages = () => {
         setTimeout(() => {
-            setError("");
+            setErrorState("");
             setSuccessMsg("");
         }, 3000);
     };
