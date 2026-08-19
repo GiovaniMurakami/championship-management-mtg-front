@@ -81,7 +81,9 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
           : (fundos.find((f) => f.id === selectedId)?.url || valueUrl || "");
   const selectedFundo = fundos.find((f) => f.id === selectedId);
   const previewTextoRodape =
-    selectedId === MODE_NEW
+    selectedId === MODE_DEFAULT
+      ? "escuro"
+      : selectedId === MODE_NEW
       ? novoTextoRodape
       : selectedFundo?.textoRodape || "claro";
 
@@ -98,7 +100,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
       const { selectedId: mode, fundos: list, novoNome: nomeRaw, novoTextoRodape: textoRodape, novoFile: file, valueUrl: fallback } =
         stateRef.current;
 
-      if (mode === MODE_DEFAULT) return { url: "", textoRodape: "claro" };
+      if (mode === MODE_DEFAULT) return { url: "", textoRodape: "escuro" };
       if (mode === MODE_EXISTING) return { url: fallback || "", textoRodape: "claro" };
 
       if (mode !== MODE_NEW) {

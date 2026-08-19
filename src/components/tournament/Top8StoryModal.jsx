@@ -350,7 +350,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
   const headerMeta = {
     tournamentName,
     headline: options.headline || "",
-    textoRodape: options.textoRodape || "claro",
+    textoRodape: options.textoRodape || "escuro",
   };
 
   const revealOrder = players
@@ -539,7 +539,7 @@ export function Top8StoryModal({
   torneioNome,
   torneioHorario,
   storyFundoUrl,
-  storyFundoTextoRodape = "claro",
+  storyFundoTextoRodape = "escuro",
   deckNameOverrides = {},
   onClose,
 }) {

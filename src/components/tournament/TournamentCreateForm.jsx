@@ -120,7 +120,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
     try {
       let bannerUrl = existingBannerUrl || undefined;
       let storyFundoUrl;
-      let storyFundoTextoRodape = "claro";
+      let storyFundoTextoRodape = "escuro";
 
       if (bannerFile) {
         setUploadingBanner(true);
@@ -133,7 +133,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       setStoryUploadProgress(0);
       const storyResult = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress);
       storyFundoUrl = storyResult?.url || "";
-      storyFundoTextoRodape = storyResult?.textoRodape || "claro";
+      storyFundoTextoRodape = storyResult?.textoRodape || "escuro";
       setUploadingStory(false);
 
       const payload = {

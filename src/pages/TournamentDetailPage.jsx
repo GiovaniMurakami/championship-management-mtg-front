@@ -251,7 +251,7 @@ export function TournamentDetailPage() {
             torneioNome={torneio?.nome}
             torneioHorario={torneio?.horario}
             storyFundoUrl={torneio?.storyFundoUrl}
-            storyFundoTextoRodape={torneio?.storyFundoTextoRodape || torneio?.storyFundo?.textoRodape || "claro"}
+            storyFundoTextoRodape={torneio?.storyFundoTextoRodape || torneio?.storyFundo?.textoRodape || "escuro"}
             partidas={partidas}
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}

@@ -34,7 +34,7 @@ export function formatTop8StoryHeadline(horario, playerCount) {
     : "";
   return [dateLabel, countLabel].filter(Boolean).join(" · ");
 }
-export function getTop8StoryTextTheme(textoRodape = "claro") {
+export function getTop8StoryTextTheme(textoRodape = "escuro") {
   return textoRodape === "escuro"
     ? {
         color: "#1f1633",

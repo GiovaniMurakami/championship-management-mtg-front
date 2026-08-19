@@ -26,7 +26,7 @@ function samplePosClass({ gold, silver, bronze }) {
 export function Top8StoryPreview({
   horario = "",
   storyFundoUrl = "",
-  textoRodape = "claro",
+  textoRodape = "escuro",
   className = "",
 }) {
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);

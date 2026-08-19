@@ -162,7 +162,7 @@ export function StandingsTable({
   torneioNome = "",
   torneioHorario = "",
   storyFundoUrl = "",
-  storyFundoTextoRodape = "claro",
+  storyFundoTextoRodape = "escuro",
   partidas = [],
   compact = false,
   totalInscritos,
