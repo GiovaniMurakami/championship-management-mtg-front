@@ -6,6 +6,9 @@ const _pending = new Map();
 const CACHE_TTL = 10 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 const COLLECTION_BATCH_SIZE = 75;
+const SCRYFALL_MIN_INTERVAL_MS = 110;
+let _lastScryfallRequestAt = 0;
+let _scryfallQueue = Promise.resolve();
 
 function normalizeNameKey(name) {
   return name?.trim().replace(/\s*\/\/\s*/g, " // ").replace(/\s+/g, " ").toLowerCase();
@@ -54,6 +57,24 @@ function isAbortError(error) {
   return error?.name === "AbortError";
 }
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function enqueueScryfallRequest(factory) {
+  const run = _scryfallQueue.then(async () => {
+    const elapsed = Date.now() - _lastScryfallRequestAt;
+    if (elapsed < SCRYFALL_MIN_INTERVAL_MS) {
+      await wait(SCRYFALL_MIN_INTERVAL_MS - elapsed);
+    }
+    _lastScryfallRequestAt = Date.now();
+    return factory();
+  });
+
+  _scryfallQueue = run.catch(() => undefined);
+  return run;
+}
+
 function normalizeCard(card) {
   const isBasicLand =
     card.type_line?.includes("Basic") && card.type_line?.includes("Land");
@@ -62,6 +83,8 @@ function normalizeCard(card) {
   return {
     id: card.id,
     oracleId: card.oracle_id || "",
+    mtgoId: card.mtgo_id || null,
+    mtgoIds: card.mtgo_ids || [],
     nome: card.name,
     set: card.set_name,
     imagem:
@@ -110,14 +133,14 @@ async function fetchJson(url, options = {}) {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await enqueueScryfallRequest(() => fetch(url, {
       ...rest,
       headers: {
         Accept: "application/json",
         ...headers,
       },
       signal: controller.signal,
-    });
+    }));
 
     if (!response.ok) {
       return null;
@@ -379,12 +402,138 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
     }
   }
 
-  const unresolvedNames = normalizedNames.filter((name) => !resultsByName.has(normalizeNameKey(name)));
+  if (options.fallbackIndividual !== false) {
+    const unresolvedNames = normalizedNames.filter((name) => !resultsByName.has(normalizeNameKey(name)));
 
-  for (const name of unresolvedNames) {
-    const card = await buscarCartaPorNome(name, options);
-    resultsByName.set(normalizeNameKey(name), card);
+    for (const name of unresolvedNames) {
+      const card = await buscarCartaPorNome(name, options);
+      resultsByName.set(normalizeNameKey(name), card);
+    }
   }
 
   return normalizedNames.map((name) => resultsByName.get(normalizeNameKey(name)) || null);
+}
+
+function normalizeImportIdentifier(entry) {
+  if (typeof entry === "string") {
+    const name = entry.trim();
+    return name ? { key: `name:${normalizeNameKey(name)}`, name } : null;
+  }
+
+  const name = entry?.nome?.trim();
+  const mtgoId = Number(entry?.mtgoId);
+
+  if (Number.isInteger(mtgoId) && mtgoId > 0) {
+    return { key: `mtgo:${mtgoId}`, name, mtgoId };
+  }
+
+  return name ? { key: `name:${normalizeNameKey(name)}`, name } : null;
+}
+
+function collectionIdentifierForImport(entry) {
+  if (entry.mtgoId) return { mtgo_id: entry.mtgoId };
+  return { name: entry.name };
+}
+
+function cacheImportCard(entry, card, resultsByKey) {
+  if (!card) return;
+
+  resultsByKey.set(entry.key, card);
+  setCache(`named:${normalizeNameKey(card.nome)}`, card);
+  if (entry.name) {
+    resultsByKey.set(`name:${normalizeNameKey(entry.name)}`, card);
+    setCache(`named:${normalizeNameKey(entry.name)}`, card);
+  }
+}
+
+export async function buscarCartasPorEntradas(entries = [], options = {}) {
+  const normalizedEntries = entries
+    .map(normalizeImportIdentifier)
+    .filter(Boolean);
+
+  if (normalizedEntries.length === 0) {
+    return [];
+  }
+
+  const uniqueEntries = [];
+  const seen = new Set();
+  const resultsByKey = new Map();
+
+  normalizedEntries.forEach((entry) => {
+    if (entry.name) {
+      const cached = getCached(`named:${normalizeNameKey(entry.name)}`);
+      if (cached !== undefined) {
+        resultsByKey.set(entry.key, cached);
+        return;
+      }
+    }
+
+    if (!seen.has(entry.key)) {
+      seen.add(entry.key);
+      uniqueEntries.push(entry);
+    }
+  });
+
+  for (let index = 0; index < uniqueEntries.length; index += COLLECTION_BATCH_SIZE) {
+    const batch = uniqueEntries.slice(index, index + COLLECTION_BATCH_SIZE);
+    const batchKey = `collection-entries:${batch.map((entry) => entry.key).sort().join("|")}`;
+
+    const cards = await withPending(batchKey, async () => {
+      let data;
+      try {
+        data = await fetchJson("https://api.scryfall.com/cards/collection", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            identifiers: batch.map(collectionIdentifierForImport),
+          }),
+          signal: options.signal,
+        });
+      } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+        return [];
+      }
+
+      if (!Array.isArray(data?.data)) {
+        return [];
+      }
+
+      return data.data.map(normalizeCard);
+    });
+
+    cards.forEach((card) => {
+      const matchByName = batch.find((entry) => entry.name && cardMatchesName(card, entry.name));
+      if (matchByName) {
+        cacheImportCard(matchByName, card, resultsByKey);
+      }
+
+      const mtgoIds = new Set([
+        ...(card?.mtgoId ? [Number(card.mtgoId)] : []),
+        ...((card?.mtgoIds || []).map(Number)),
+      ].filter((id) => Number.isInteger(id) && id > 0));
+
+      batch.forEach((entry) => {
+        if (entry.mtgoId && mtgoIds.has(entry.mtgoId)) {
+          cacheImportCard(entry, card, resultsByKey);
+        }
+      });
+    });
+  }
+
+  const unresolved = normalizedEntries.filter((entry) => !resultsByKey.has(entry.key));
+  for (const entry of unresolved) {
+    if (!entry.name) {
+      resultsByKey.set(entry.key, null);
+      continue;
+    }
+
+    const card = await buscarCartaPorNome(entry.name, options);
+    resultsByKey.set(entry.key, card);
+  }
+
+  return normalizedEntries.map((entry) => resultsByKey.get(entry.key) || null);
 }

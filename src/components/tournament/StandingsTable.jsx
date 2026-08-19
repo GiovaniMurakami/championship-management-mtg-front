@@ -30,6 +30,126 @@ function CollapseToggle({ collapsed, onToggle, label = "standings" }) {
   );
 }
 
+function getPlayerId(player) {
+  return player?.usuario?.id || player?.usuarioId || player?.userId || player?.id;
+}
+
+function getMatchPlayerName(match, playerId) {
+  if ((match?.jogador1Id || match?.jogador1?.id) === playerId) {
+    return match?.jogador1Nome || match?.jogador1?.nome || "Jogador";
+  }
+  return match?.jogador2Nome || match?.jogador2?.nome || "Jogador";
+}
+
+function buildPlayerHistory(player, partidas = []) {
+  const playerId = getPlayerId(player);
+  if (!playerId) return [];
+
+  return (partidas || [])
+    .filter((partida) =>
+      partida?.jogador1Id === playerId ||
+      partida?.jogador1?.id === playerId ||
+      partida?.jogador2Id === playerId ||
+      partida?.jogador2?.id === playerId
+    )
+    .sort((a, b) => Number(b?.rodada || 0) - Number(a?.rodada || 0))
+    .slice(0, 5)
+    .map((partida) => {
+      const isJ1 = (partida.jogador1Id || partida.jogador1?.id) === playerId;
+      const opponentId = isJ1
+        ? (partida.jogador2Id || partida.jogador2?.id)
+        : (partida.jogador1Id || partida.jogador1?.id);
+      const opponentName = opponentId ? getMatchPlayerName(partida, opponentId) : "BYE";
+      const v1 = Number(partida.vitoriasJogador1 ?? 0);
+      const v2 = Number(partida.vitoriasJogador2 ?? 0);
+      const ownWins = isJ1 ? v1 : v2;
+      const opponentWins = isJ1 ? v2 : v1;
+      const result = partida.status !== "finalizada"
+        ? "Pendente"
+        : opponentName === "BYE"
+          ? "BYE"
+          : ownWins > opponentWins
+            ? "Vitoria"
+            : ownWins < opponentWins
+              ? "Derrota"
+              : "Empate";
+
+      return {
+        id: partida.id,
+        rodada: partida.rodada,
+        opponentName,
+        score: partida.status === "finalizada" ? `${ownWins}-${opponentWins}` : "VS",
+        result,
+      };
+    });
+}
+
+function getHistoryResultClass(result) {
+  if (result === "Vitoria" || result === "BYE") {
+    return "text-[#86efac]";
+  }
+  if (result === "Derrota") {
+    return "text-[#fca5a5]";
+  }
+  if (result === "Empate") {
+    return "text-[#fde68a]";
+  }
+  return "text-[#c4b5fd]";
+}
+
+function getHistoryResultLabel(result) {
+  if (result === "Vitoria" || result === "BYE") return "W";
+  if (result === "Derrota") return "L";
+  if (result === "Empate") return "D";
+  if (result === "Pendente") return "P";
+  return result;
+}
+
+function PlayerHistoryTooltip({ player, partidas, children }) {
+  const history = buildPlayerHistory(player, partidas);
+
+  if (history.length === 0) {
+    return children;
+  }
+
+  return (
+    <Tooltip
+      placement="bottom"
+      ariaLabel={`Ultimas partidas de ${player?.usuario?.nome || player?.nome || "jogador"}`}
+      tooltipClassName="max-w-[22rem] min-w-[18rem] text-left px-3 py-2.5"
+      content={(
+        <span className="block">
+          <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
+            Ultimas partidas deste torneio
+          </span>
+          <span className="grid gap-1.5">
+            {history.map((match) => (
+              <span
+                key={match.id}
+                className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-0.5 rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2 py-1.5 text-[0.72rem] text-[#f5edff]"
+              >
+                <span className="font-bold text-[#c4b5fd]">R{match.rodada}</span>
+                <span className="min-w-0 truncate text-[#fef3c7]">vs {match.opponentName}</span>
+                <span className="font-bold tabular-nums text-white">
+                  {match.score}
+                  <span className={`ml-1 ${getHistoryResultClass(match.result)}`}>
+                    ({getHistoryResultLabel(match.result)})
+                  </span>
+                </span>
+              </span>
+            ))}
+          </span>
+          <span className="mt-2 block text-[0.64rem] leading-snug text-[#8f82ad]">
+            Placar exibido na perspectiva do jogador.
+          </span>
+        </span>
+      )}
+    >
+      {children}
+    </Tooltip>
+  );
+}
+
 export function StandingsTable({
   standings,
   isFinished = false,
@@ -42,6 +162,8 @@ export function StandingsTable({
   torneioNome = "",
   torneioHorario = "",
   storyFundoUrl = "",
+  storyFundoTextoRodape = "escuro",
+  partidas = [],
   compact = false,
   totalInscritos,
 }) {
@@ -201,10 +323,14 @@ export function StandingsTable({
                         />
                       )}
                       <span className="truncate">
-                        <UsuarioNomeExibicao
-                          nome={getPlayerName(player)}
-                          excluido={isPlayerExcluido(player)}
-                        />
+                        <PlayerHistoryTooltip player={player} partidas={partidas}>
+                          <span>
+                            <UsuarioNomeExibicao
+                              nome={getPlayerName(player)}
+                              excluido={isPlayerExcluido(player)}
+                            />
+                          </span>
+                        </PlayerHistoryTooltip>
                       </span>
                       {expressiveBadge(player)}
                     </span>
@@ -333,10 +459,14 @@ export function StandingsTable({
                               />
                             )}
                             <span className="truncate min-w-0">
-                              <UsuarioNomeExibicao
-                                nome={getPlayerName(player)}
-                                excluido={isPlayerExcluido(player)}
-                              />
+                              <PlayerHistoryTooltip player={player} partidas={partidas}>
+                                <span>
+                                  <UsuarioNomeExibicao
+                                    nome={getPlayerName(player)}
+                                    excluido={isPlayerExcluido(player)}
+                                  />
+                                </span>
+                              </PlayerHistoryTooltip>
                             </span>
                             {expressiveBadge(player)}
                           </span>
@@ -441,10 +571,14 @@ export function StandingsTable({
                             />
                           )}
                           <span className="break-words">
-                            <UsuarioNomeExibicao
-                              nome={getPlayerName(player)}
-                              excluido={isPlayerExcluido(player)}
-                            />
+                            <PlayerHistoryTooltip player={player} partidas={partidas}>
+                              <span>
+                                <UsuarioNomeExibicao
+                                  nome={getPlayerName(player)}
+                                  excluido={isPlayerExcluido(player)}
+                                />
+                              </span>
+                            </PlayerHistoryTooltip>
                           </span>
                           {expressiveBadge(player)}
                         </span>
@@ -521,6 +655,7 @@ export function StandingsTable({
           torneioNome={torneioNome}
           torneioHorario={torneioHorario}
           storyFundoUrl={storyFundoUrl}
+          storyFundoTextoRodape={storyFundoTextoRodape}
           deckNameOverrides={deckNameOverrides}
           onClose={() => setShowStory(false)}
         />

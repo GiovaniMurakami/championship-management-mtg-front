@@ -19,6 +19,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
     valueUrl = "",
     disabled = false,
     onPreviewUrlChange,
+    onTextoRodapeChange,
   },
   ref,
 ) {
@@ -26,6 +27,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(() => (valueUrl ? MODE_EXISTING : MODE_DEFAULT));
   const [novoNome, setNovoNome] = useState("");
+  const [novoTextoRodape, setNovoTextoRodape] = useState("claro");
   const [novoFile, setNovoFile] = useState(null);
   const [novoPreview, setNovoPreview] = useState(null);
   const [localError, setLocalError] = useState("");
@@ -77,25 +79,33 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
         : selectedId === MODE_EXISTING
           ? (valueUrl || "")
           : (fundos.find((f) => f.id === selectedId)?.url || valueUrl || "");
+  const selectedFundo = fundos.find((f) => f.id === selectedId);
+  const previewTextoRodape =
+    selectedId === MODE_DEFAULT
+      ? "escuro"
+      : selectedId === MODE_NEW
+      ? novoTextoRodape
+      : selectedFundo?.textoRodape || "claro";
 
   useEffect(() => {
     if (loading) return;
     onPreviewUrlChange?.(previewUrl);
-  }, [previewUrl, onPreviewUrlChange, loading]);
+    onTextoRodapeChange?.(previewTextoRodape);
+  }, [previewUrl, previewTextoRodape, onPreviewUrlChange, onTextoRodapeChange, loading]);
 
-  stateRef.current = { selectedId, fundos, novoNome, novoFile, valueUrl };
+  stateRef.current = { selectedId, fundos, novoNome, novoTextoRodape, novoFile, valueUrl };
 
   useImperativeHandle(ref, () => ({
     async resolveForSubmit(onProgress) {
-      const { selectedId: mode, fundos: list, novoNome: nomeRaw, novoFile: file, valueUrl: fallback } =
+      const { selectedId: mode, fundos: list, novoNome: nomeRaw, novoTextoRodape: textoRodape, novoFile: file, valueUrl: fallback } =
         stateRef.current;
 
-      if (mode === MODE_DEFAULT) return "";
-      if (mode === MODE_EXISTING) return fallback || "";
+      if (mode === MODE_DEFAULT) return { url: "", textoRodape: "escuro" };
+      if (mode === MODE_EXISTING) return { url: fallback || "", textoRodape: "claro" };
 
       if (mode !== MODE_NEW) {
         const fundo = list.find((f) => f.id === mode);
-        return fundo?.url || fallback || "";
+        return { url: fundo?.url || fallback || "", textoRodape: fundo?.textoRodape || "claro" };
       }
 
       const nome = String(nomeRaw || "").trim();
@@ -111,7 +121,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
       }
 
       const url = await uploadStoryFundoImage(file, token, onProgress);
-      const criado = await cadastrarStoryFundo({ nome, url }, token);
+      const criado = await cadastrarStoryFundo({ nome, url, textoRodape }, token);
       const criadoData = criado?.data ?? criado;
       setFundos((prev) => {
         const next = [...prev.filter((f) => f.id !== criadoData.id), criadoData];
@@ -122,11 +132,13 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
       setNovoFile(null);
       setNovoPreview(null);
       setNovoNome("");
-      return criadoData.url;
+      setNovoTextoRodape("claro");
+      return { url: criadoData.url, textoRodape: criadoData.textoRodape || textoRodape || "claro" };
     },
     clear() {
       setSelectedId(MODE_DEFAULT);
       setNovoNome("");
+      setNovoTextoRodape("claro");
       setNovoFile(null);
       setNovoPreview(null);
       setLocalError("");
@@ -142,6 +154,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
       setNovoFile(null);
       setNovoPreview(null);
       setNovoNome("");
+      setNovoTextoRodape("claro");
       if (fileRef.current) fileRef.current.value = "";
     }
   };
@@ -206,6 +219,26 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
             className={TOURNAMENT_INPUT_CLASS}
             required
           />
+          <fieldset className="grid gap-2 border-0 p-0 m-0">
+            <legend className={FORM_LABEL_CLASS}>Texto da data e jogadores</legend>
+            <div className="inline-grid grid-cols-2 gap-1 rounded-lg border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] p-1 max-w-[240px]">
+              {[
+                { value: "claro", label: "Claro" },
+                { value: "escuro", label: "Escuro" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`rounded-md px-3 py-1.5 text-[0.78rem] font-semibold transition-colors ${novoTextoRodape === option.value ? "bg-[#f5edff] text-[#160b2a]" : "text-[#beafd7] hover:bg-white/[0.08] hover:text-white"}`}
+                  onClick={() => setNovoTextoRodape(option.value)}
+                  disabled={disabled}
+                  aria-pressed={novoTextoRodape === option.value}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
           {novoPreview ? (
             <div className="relative max-w-[220px] overflow-hidden rounded-lg border border-[rgba(79,70,229,0.3)]">
               <img src={novoPreview} alt="Novo fundo" className="block w-full max-h-[160px] object-cover" />

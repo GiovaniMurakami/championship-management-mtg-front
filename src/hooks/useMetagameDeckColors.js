@@ -25,7 +25,7 @@ export function useMetagameDeckColors(arquetipos, formato) {
     if (nomes.length === 0) return undefined;
 
     let cancelled = false;
-    buscarCartasPorNome(nomes)
+    buscarCartasPorNome(nomes, { fallbackIndividual: false })
       .then((cartas) => {
         if (cancelled) return;
         const indexadas = nomes

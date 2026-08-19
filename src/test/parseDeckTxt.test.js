@@ -52,4 +52,20 @@ Commander
     expect(result.mainEntries).toHaveLength(2);
     expect(result.sideEntries).toEqual([{ quantidade: 1, nome: "Grafdigger's Cage" }]);
   });
+
+  it("importa arquivo .dek XML do MTGO com CatID e Sideboard", () => {
+    const result = parseDeckTxt(`<?xml version="1.0" encoding="utf-8"?>
+<Deck xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Cards CatID="139657" Quantity="2" Sideboard="false" Name="Winternight Stories" />
+  <Cards CatID="139657" Quantity="1" Sideboard="false" Name="Winternight Stories" />
+  <Cards CatID="123" Quantity="3" Sideboard="true" Name="Duress" />
+</Deck>`);
+
+    expect(result.mainEntries).toEqual([
+      { quantidade: 3, nome: "Winternight Stories", mtgoId: 139657 },
+    ]);
+    expect(result.sideEntries).toEqual([
+      { quantidade: 3, nome: "Duress", mtgoId: 123 },
+    ]);
+  });
 });

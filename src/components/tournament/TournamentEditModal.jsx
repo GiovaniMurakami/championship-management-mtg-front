@@ -44,6 +44,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bannerError, setBannerError] = useState("");
   const [storyPreview, setStoryPreview] = useState("");
+  const [storyPreviewTextoRodape, setStoryPreviewTextoRodape] = useState("claro");
   const [uploadingStory, setUploadingStory] = useState(false);
   const [storyUploadProgress, setStoryUploadProgress] = useState(0);
   const [storyError, setStoryError] = useState("");
@@ -66,6 +67,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     setBannerError("");
     setUploadProgress(0);
     setStoryPreview(torneio.storyFundoUrl || "");
+    setStoryPreviewTextoRodape(torneio.storyFundoTextoRodape || "claro");
     setStoryError("");
     setStoryUploadProgress(0);
     setForm({
@@ -144,11 +146,14 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     }
 
     let storyFundoUrl = existingStoryUrlRef.current || "";
+    let storyFundoTextoRodape = torneio?.storyFundoTextoRodape || "claro";
     if (token) {
       setUploadingStory(true);
       setStoryUploadProgress(0);
       try {
-        storyFundoUrl = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress) ?? "";
+        const storyResult = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress);
+        storyFundoUrl = storyResult?.url || "";
+        storyFundoTextoRodape = storyResult?.textoRodape || "claro";
       } catch (err) {
         setStoryError(err.userMessage || err.message || "Falha ao salvar o fundo do story.");
         setUploadingStory(false);
@@ -176,6 +181,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
     if (storyFundoUrl || torneio?.storyFundoUrl) {
       payload.storyFundoUrl = storyFundoUrl || "";
+      payload.storyFundoTextoRodape = storyFundoTextoRodape;
     }
 
     onSubmit(payload);
@@ -328,6 +334,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                   valueUrl={torneio?.storyFundoUrl || ""}
                   disabled={isDisabled}
                   onPreviewUrlChange={handleStoryPreviewUrlChange}
+                  onTextoRodapeChange={setStoryPreviewTextoRodape}
                 />
                 {storyError ? <FormFeedback message={storyError} variant="error" /> : null}
                 {uploadingStory && (
@@ -345,6 +352,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               <Top8StoryPreview
                 horario={form.horario}
                 storyFundoUrl={storyPreview || ""}
+                textoRodape={storyPreviewTextoRodape}
               />
             </div>
           </FormSection>

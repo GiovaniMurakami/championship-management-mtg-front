@@ -16,6 +16,7 @@ import {
     encerrarTorneio,
     refazerRodada,
     dropJogador,
+    undropJogador,
     atualizarTorneio,
     deletarTorneio,
     definirAnfitriaoTorneio,
@@ -42,6 +43,7 @@ import {
 import { normalizeRoundSoundUrl } from "../constants/roundSounds";
 import { playRoundSound, unlockRoundSoundPlayer } from "../utils/roundSoundPlayer";
 import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../utils/ablyTournamentWindow";
+import { formatIsoDatesInMessage } from "../utils/brasiliaTime";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin, requireAuth } = useAuth();
@@ -76,12 +78,16 @@ export function useTournamentDetail() {
     const [selectedDeckId, setSelectedDeckId] = useState("");
     const [selectedTimeId, setSelectedTimeId] = useState("");
     const [times, setTimes] = useState([]);
-    const [error, setError] = useState("");
+    const [error, setErrorState] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
     const [realtimeToast, setRealtimeToast] = useState(null); // { msg, type: "success"|"info"|"warning" }
     const [corteInfo, setCorteInfo] = useState(null); // { corteTop, jogadoresClassificados }
     const [ablyWindowTick, setAblyWindowTick] = useState(0);
     const toastTimeoutRef = useRef(null);
+    const torneioRealtimeWindow = useMemo(() => ({
+        status: torneio?.status,
+        horario: torneio?.horario,
+    }), [torneio?.status, torneio?.horario]);
 
     const needsMyDecks = Boolean(
       token
@@ -106,6 +112,12 @@ export function useTournamentDetail() {
         setRealtimeToast({ msg, type });
         toastTimeoutRef.current = setTimeout(() => setRealtimeToast(null), 5000);
     }, [addToast]);
+
+    const setError = useCallback((message) => {
+        const friendlyMessage = formatIsoDatesInMessage(message);
+        setErrorState(friendlyMessage);
+        if (friendlyMessage) showToast(friendlyMessage, "error");
+    }, [showToast]);
 
     const dismissRealtimeToast = useCallback(() => {
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -222,7 +234,7 @@ export function useTournamentDetail() {
         } catch {
             setError("Erro ao carregar dados do torneio.");
         }
-    }, [torneioId, tournamentQuery]);
+    }, [torneioId, tournamentQuery, setError]);
 
     const loadPartidas = useCallback(async () => {
         if (!torneioId) return;
@@ -261,9 +273,9 @@ export function useTournamentDetail() {
 
     // Ably: autenticado, 15 min antes do horário e enquanto o torneio não finalizar
     useEffect(() => {
-        if (!torneioId || !token || !torneio) return undefined;
-        if (!isTournamentAblyWindowOpen(torneio)) {
-            const wait = msUntilTournamentAblyWindow(torneio);
+        if (!torneioId || !token || !torneioRealtimeWindow.status) return undefined;
+        if (!isTournamentAblyWindowOpen(torneioRealtimeWindow)) {
+            const wait = msUntilTournamentAblyWindow(torneioRealtimeWindow);
             if (wait == null || wait === 0) return undefined;
             const timer = setTimeout(() => setAblyWindowTick((tick) => tick + 1), wait);
             return () => clearTimeout(timer);
@@ -388,6 +400,24 @@ export function useTournamentDetail() {
                 showToast(`${jogadorNome || "Jogador"} saiu do torneio.`, "warning");
                 loadStandings();
             },
+            onJogadorVoltou: (msg) => {
+                const data = msg?.data || {};
+                const { jogadorId, jogadorNome, partidasReabertas } = data;
+                setStandings((prev) => prev.map((p) => {
+                    const pId = normalizeId(p.usuario?.id || p.usuarioId || p.id);
+                    if (pId !== normalizeId(jogadorId)) return p;
+                    return { ...p, dropped: false, droppedRodada: null };
+                }));
+                if (Array.isArray(partidasReabertas)) {
+                    const reopened = new Set(partidasReabertas.map((id) => normalizeId(id)));
+                    setPartidas((prev) => prev.map((p) => reopened.has(normalizeId(p.id))
+                        ? { ...p, status: "pendente", vitoriasJogador1: 0, vitoriasJogador2: 0, confirmadoPor: [] }
+                        : p
+                    ));
+                }
+                showToast(`${jogadorNome || "Jogador"} voltou ao torneio.`, "info");
+                loadStandings();
+            },
             onResultadoAjustado: (msg) => {
                 const data = msg?.data || {};
                 mergePartidaState({
@@ -469,7 +499,7 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, token, torneio?.status, torneio?.horario, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
+    }, [torneioId, token, torneioRealtimeWindow, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState, playTorneioRoundSound]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
 
@@ -556,7 +586,7 @@ export function useTournamentDetail() {
 
     const clearMessages = () => {
         setTimeout(() => {
-            setError("");
+            setErrorState("");
             setSuccessMsg("");
         }, 3000);
     };
@@ -1031,6 +1061,29 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleUndropPlayer = async (jogadorId) => {
+        if (!torneioId || !canManageTournament || !jogadorId) return;
+        setActionLoading(true);
+        setAdminActionKey("undrop-player");
+        setDroppingPlayerId(jogadorId);
+        setError("");
+        try {
+            await undropJogador(torneioId, jogadorId, token);
+            setSuccessMsg("Jogador voltou ao torneio.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao voltar jogador ao torneio.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
     const handleSelfDrop = async () => {
         if (!torneioId || !usuario?.id || !currentPlayer || currentPlayer.dropped) return;
         if (torneio?.status === "finalizado") return;
@@ -1154,6 +1207,7 @@ export function useTournamentDetail() {
         handleEncerrarTorneio: guard(handleEncerrarTorneio),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayer: guard(handleDropPlayer),
+        handleUndropPlayer: guard(handleUndropPlayer),
         handleSelfDrop: guard(handleSelfDrop),
         handleEditTorneio: guard(handleEditTorneio),
         handleDefinirAnfitriao: guard(handleDefinirAnfitriao),

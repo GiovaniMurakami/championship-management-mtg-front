@@ -106,6 +106,22 @@ describe("buscarCartasPorNome", () => {
     });
   });
 
+  it("nao faz consultas individuais quando o fallback esta desativado", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [] }),
+    });
+
+    const cards = await buscarCartasPorNome(
+      ["Carta inexistente exclusiva do teste"],
+      { fallbackIndividual: false },
+    );
+
+    expect(cards).toEqual([null]);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(String(globalThis.fetch.mock.calls[0][0])).toBe("https://api.scryfall.com/cards/collection");
+  });
+
   it("usa fuzzy como fallback quando exact nao encontra a carta", async () => {
     globalThis.fetch = vi
       .fn()
