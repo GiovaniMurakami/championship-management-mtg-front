@@ -145,9 +145,9 @@ export function TournamentDetailPage() {
 
       {torneio && <TournamentLiveEmbeds linkLive={torneio.linkLive} />}
 
-      {(error || successMsg) && (
-        <InlineAlert type={error ? "error" : "success"} className="mb-5">
-          {error || successMsg}
+      {successMsg && (
+        <InlineAlert type="success" className="mb-5">
+          {successMsg}
         </InlineAlert>
       )}
 
@@ -347,7 +347,9 @@ export function TournamentDetailPage() {
       {/* Realtime toast */}
       {realtimeToast && (
         <div
-          className={`fixed bottom-6 right-6 z-[200] max-w-[340px] flex items-start gap-3 px-4 py-3 rounded-[0.8rem] shadow-[0_8px_24px_rgba(0,0,0,0.5)] border animate-[slide-up_300ms_ease-out] max-md:left-4 max-md:right-4 max-md:bottom-4 max-md:max-w-none ${realtimeToast.type === "success"
+          className={`fixed bottom-6 right-6 z-[200] max-w-[340px] flex items-start gap-3 px-4 py-3 rounded-[0.8rem] shadow-[0_8px_24px_rgba(0,0,0,0.5)] border animate-[slide-up_300ms_ease-out] max-md:left-4 max-md:right-4 max-md:bottom-4 max-md:max-w-none ${realtimeToast.type === "error"
+            ? "bg-[rgba(239,68,68,0.16)] border-[rgba(248,113,113,0.5)] text-[#fca5a5]"
+            : realtimeToast.type === "success"
             ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.45)] text-[#86efac]"
             : realtimeToast.type === "warning"
               ? "bg-[rgba(251,191,36,0.13)] border-[rgba(251,191,36,0.45)] text-[#fde68a]"
@@ -397,6 +399,7 @@ export function TournamentDetailPage() {
           </>
         }
       />
+
     </PageShell>
   );
 }
