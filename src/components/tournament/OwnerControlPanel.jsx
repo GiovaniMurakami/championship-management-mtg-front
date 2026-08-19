@@ -148,6 +148,7 @@ export function OwnerControlPanel({
   onDropPlayersWithoutDeck,
   onDropPlayersWithoutCheckin,
   onDropPlayer,
+  onUndropPlayer,
   onEditResult,
   onAdjustResult,
   onGerarLinkIngresso,
@@ -216,6 +217,7 @@ export function OwnerControlPanel({
   if (!canManage || (!isRegistrationOpen && !isOngoing)) return null;
 
   const jogadoresAtivos = (standings || []).filter((p) => !p?.dropped);
+  const jogadoresDropadosMesmaRodada = (standings || []).filter((p) => p?.dropped && Number(p?.droppedRodada) === Number(torneio?.rodadaAtual));
   const jogadoresSemDeck = jogadoresAtivos.filter((player) => !hasConfirmedDeck(player));
   const jogadoresSemCheckinInicial = jogadoresAtivos.filter((player) => !hasInitialCheckin(player));
   const pendentesCheckin = pendingCheckinPlayers || [];
@@ -561,6 +563,31 @@ export function OwnerControlPanel({
 
           {playersListOpen && (
             <div className="grid gap-1.5 border-t border-[rgba(251,191,36,0.12)] p-3">
+          {jogadoresDropadosMesmaRodada.length > 0 && (
+            <div className="grid gap-1.5 rounded-[0.65rem] border border-[rgba(34,197,94,0.22)] bg-[rgba(34,197,94,0.055)] p-2">
+              <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">Dropados nesta rodada</p>
+              {jogadoresDropadosMesmaRodada.map((player) => {
+                const playerId = getPlayerId(player);
+                const normalizedId = normalizeId(playerId);
+                const isMe = normalizeId(playerId) === normalizeId(usuarioId);
+                return (
+                  <div key={`dropado-${normalizedId || getPlayerName(player)}`} className="flex justify-between items-center gap-[0.65rem] rounded-[0.55rem] border border-[rgba(34,197,94,0.18)] bg-[rgba(34,197,94,0.05)] px-[0.6rem] py-[0.38rem]">
+                    <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[0.88rem] font-semibold text-white">
+                      {getPlayerName(player)}{isMe ? " (Você)" : ""}
+                    </span>
+                    <button
+                      className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(34,197,94,0.45)] rounded-[0.55rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#86efac] bg-[rgba(34,197,94,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.22)] hover:not-disabled:border-[rgba(34,197,94,0.75)]"
+                      type="button"
+                      onClick={() => onUndropPlayer?.(playerId)}
+                      disabled={actionLoading || !playerId}
+                    >
+                      {droppingPlayerId && normalizeId(droppingPlayerId) === normalizedId && adminActionKey === "undrop-player" ? "Voltando..." : "Voltar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {jogadoresAtivos.length === 0 ? (
             <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador ativo.</p>
           ) : (
@@ -612,7 +639,7 @@ export function OwnerControlPanel({
                     disabled={actionLoading || !playerId}
                   >
                     {droppingPlayerId && normalizeId(droppingPlayerId) === normalizedId
-                      ? "Dropando..."
+                      ? (adminActionKey === "undrop-player" ? "Voltando..." : "Dropando...")
                       : "Drop"}
                   </button>
                 </div>

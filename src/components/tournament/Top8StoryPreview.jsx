@@ -1,4 +1,4 @@
-import { resolveTop8BackgroundUrl, formatTop8StoryHeadline } from "../../utils/top8Story";
+import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, getTop8StoryTextTheme } from "../../utils/top8Story";
 
 const SAMPLE_PLAYERS = [
   { pos: 1, nome: "Jogador 1", deck: "Deck exemplo", record: "4-0", gold: true },
@@ -26,10 +26,12 @@ function samplePosClass({ gold, silver, bronze }) {
 export function Top8StoryPreview({
   horario = "",
   storyFundoUrl = "",
+  textoRodape = "claro",
   className = "",
 }) {
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
   const headline = formatTop8StoryHeadline(horario, 32) || "32 jogadores";
+  const textTheme = getTop8StoryTextTheme(textoRodape);
 
   return (
     <div className={`flex flex-col gap-2 ${className}`.trim()}>
@@ -41,7 +43,7 @@ export function Top8StoryPreview({
         aria-label="Pré-visualização do story Top 8"
       >
         <div className="absolute inset-x-0 top-[26%] px-2 text-center">
-          <span className="text-[0.78rem] font-semibold text-[#c4b5fd] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] whitespace-nowrap">
+          <span className={`text-[0.78rem] font-semibold whitespace-nowrap ${textTheme.previewClass}`}>
             {headline}
           </span>
         </div>

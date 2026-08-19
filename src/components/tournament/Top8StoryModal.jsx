@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
-import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
+import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
 
@@ -40,9 +40,10 @@ function drawCoverImage(ctx, img, x, y, w, h) {
 }
 
 /** Data e quantidade de jogadores em uma única linha, acima do 1º lugar. */
-function drawStoryHeadline(ctx, { width, y, headline }) {
+function drawStoryHeadline(ctx, { width, y, headline, textoRodape }) {
   const label = String(headline || "").trim();
   if (!label) return;
+  const textTheme = getTop8StoryTextTheme(textoRodape);
 
   ctx.save();
   ctx.textAlign = "center";
@@ -54,8 +55,8 @@ function drawStoryHeadline(ctx, { width, y, headline }) {
     fontSize -= 1;
     ctx.font = `${fontSize}px Arial, sans-serif`;
   }
-  ctx.fillStyle = "#c4b5fd";
-  ctx.shadowColor = "rgba(0,0,0,0.7)";
+  ctx.fillStyle = textTheme.color;
+  ctx.shadowColor = textTheme.shadowColor;
   ctx.shadowBlur = Math.round(width * 0.006);
   ctx.fillText(label, width / 2, y, maxW);
   ctx.restore();
@@ -95,7 +96,7 @@ function calcLayout(canvasH, headerEndY, bottomReserve, n, nominalCardH) {
 
 //  Static PNG (1080 � 1920) 
 
-async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, headline } = {}) {
+async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, headline, textoRodape } = {}) {
   const W = 1080;
   const H = 1920;
   const canvas = document.createElement("canvas");
@@ -113,7 +114,7 @@ async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, head
   const { cardH, cardGap, startY, headlineY } = storyContentLayout(H, n, 150);
   const fontScale = Math.min(1, cardH / 150);
 
-  drawStoryHeadline(ctx, { width: W, y: headlineY, headline });
+  drawStoryHeadline(ctx, { width: W, y: headlineY, headline, textoRodape });
 
   players.forEach((player, i) => {
     const pos = player.posicao ?? i + 1;
@@ -196,11 +197,12 @@ function gifDrawBackground(ctx, backgroundImage) {
   }
 }
 
-function gifDrawHeadline(ctx, headline, headlineY) {
+function gifDrawHeadline(ctx, headline, headlineY, textoRodape) {
   drawStoryHeadline(ctx, {
     width: GW,
     y: headlineY,
     headline,
+    textoRodape,
   });
 }
 
@@ -334,7 +336,7 @@ function renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta
       layout);
   }
 
-  gifDrawHeadline(ctx, headerMeta?.headline, layout.headlineY);
+  gifDrawHeadline(ctx, headerMeta?.headline, layout.headlineY, headerMeta?.textoRodape);
 }
 
 //  Animated MP4 (1080 � 1920, 10 fps) 
@@ -348,6 +350,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
   const headerMeta = {
     tournamentName,
     headline: options.headline || "",
+    textoRodape: options.textoRodape || "claro",
   };
 
   const revealOrder = players
@@ -536,6 +539,7 @@ export function Top8StoryModal({
   torneioNome,
   torneioHorario,
   storyFundoUrl,
+  storyFundoTextoRodape = "claro",
   deckNameOverrides = {},
   onClose,
 }) {
@@ -554,7 +558,8 @@ export function Top8StoryModal({
   const previewLayout = storyContentLayout(1920, Math.max(players.length, 1), 150);
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
   const headline = formatTop8StoryHeadline(torneioHorario, allPlayers.length);
-  const exportOptions = { backgroundUrl: storyFundoUrl, headline };
+  const textTheme = getTop8StoryTextTheme(storyFundoTextoRodape);
+  const exportOptions = { backgroundUrl: storyFundoUrl, headline, textoRodape: storyFundoTextoRodape };
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
@@ -772,7 +777,7 @@ export function Top8StoryModal({
 
           {headline ? (
             <p
-              className="absolute inset-x-0 z-10 m-0 px-[6%] text-center font-semibold text-[#c4b5fd] drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] pointer-events-none whitespace-nowrap overflow-hidden text-ellipsis"
+              className={`absolute inset-x-0 z-10 m-0 px-[6%] text-center font-semibold pointer-events-none whitespace-nowrap overflow-hidden text-ellipsis ${textTheme.previewClass}`}
               style={{
                 top: pxToPercent(previewLayout.headlineY, 1920),
                 transform: "translateY(-50%)",

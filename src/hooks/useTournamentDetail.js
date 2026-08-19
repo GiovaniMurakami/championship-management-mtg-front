@@ -16,6 +16,7 @@ import {
     encerrarTorneio,
     refazerRodada,
     dropJogador,
+    undropJogador,
     atualizarTorneio,
     deletarTorneio,
     definirAnfitriaoTorneio,
@@ -386,6 +387,24 @@ export function useTournamentDetail() {
                     });
                 }
                 showToast(`${jogadorNome || "Jogador"} saiu do torneio.`, "warning");
+                loadStandings();
+            },
+            onJogadorVoltou: (msg) => {
+                const data = msg?.data || {};
+                const { jogadorId, jogadorNome, partidasReabertas } = data;
+                setStandings((prev) => prev.map((p) => {
+                    const pId = normalizeId(p.usuario?.id || p.usuarioId || p.id);
+                    if (pId !== normalizeId(jogadorId)) return p;
+                    return { ...p, dropped: false, droppedRodada: null };
+                }));
+                if (Array.isArray(partidasReabertas)) {
+                    const reopened = new Set(partidasReabertas.map((id) => normalizeId(id)));
+                    setPartidas((prev) => prev.map((p) => reopened.has(normalizeId(p.id))
+                        ? { ...p, status: "pendente", vitoriasJogador1: 0, vitoriasJogador2: 0, confirmadoPor: [] }
+                        : p
+                    ));
+                }
+                showToast(`${jogadorNome || "Jogador"} voltou ao torneio.`, "info");
                 loadStandings();
             },
             onResultadoAjustado: (msg) => {
@@ -1031,6 +1050,29 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleUndropPlayer = async (jogadorId) => {
+        if (!torneioId || !canManageTournament || !jogadorId) return;
+        setActionLoading(true);
+        setAdminActionKey("undrop-player");
+        setDroppingPlayerId(jogadorId);
+        setError("");
+        try {
+            await undropJogador(torneioId, jogadorId, token);
+            setSuccessMsg("Jogador voltou ao torneio.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+        } catch (err) {
+            setError(err.message || "Erro ao voltar jogador ao torneio.");
+            clearMessages();
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
     const handleSelfDrop = async () => {
         if (!torneioId || !usuario?.id || !currentPlayer || currentPlayer.dropped) return;
         if (torneio?.status === "finalizado") return;
@@ -1154,6 +1196,7 @@ export function useTournamentDetail() {
         handleEncerrarTorneio: guard(handleEncerrarTorneio),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayer: guard(handleDropPlayer),
+        handleUndropPlayer: guard(handleUndropPlayer),
         handleSelfDrop: guard(handleSelfDrop),
         handleEditTorneio: guard(handleEditTorneio),
         handleDefinirAnfitriao: guard(handleDefinirAnfitriao),

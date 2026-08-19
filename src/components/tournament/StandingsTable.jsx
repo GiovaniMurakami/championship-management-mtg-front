@@ -30,6 +30,95 @@ function CollapseToggle({ collapsed, onToggle, label = "standings" }) {
   );
 }
 
+function getPlayerId(player) {
+  return player?.usuario?.id || player?.usuarioId || player?.userId || player?.id;
+}
+
+function getMatchPlayerName(match, playerId) {
+  if ((match?.jogador1Id || match?.jogador1?.id) === playerId) {
+    return match?.jogador1Nome || match?.jogador1?.nome || "Jogador";
+  }
+  return match?.jogador2Nome || match?.jogador2?.nome || "Jogador";
+}
+
+function buildPlayerHistory(player, partidas = []) {
+  const playerId = getPlayerId(player);
+  if (!playerId) return [];
+
+  return (partidas || [])
+    .filter((partida) =>
+      partida?.jogador1Id === playerId ||
+      partida?.jogador1?.id === playerId ||
+      partida?.jogador2Id === playerId ||
+      partida?.jogador2?.id === playerId
+    )
+    .sort((a, b) => Number(b?.rodada || 0) - Number(a?.rodada || 0))
+    .slice(0, 5)
+    .map((partida) => {
+      const isJ1 = (partida.jogador1Id || partida.jogador1?.id) === playerId;
+      const opponentId = isJ1
+        ? (partida.jogador2Id || partida.jogador2?.id)
+        : (partida.jogador1Id || partida.jogador1?.id);
+      const opponentName = opponentId ? getMatchPlayerName(partida, opponentId) : "BYE";
+      const v1 = Number(partida.vitoriasJogador1 ?? 0);
+      const v2 = Number(partida.vitoriasJogador2 ?? 0);
+      const ownWins = isJ1 ? v1 : v2;
+      const opponentWins = isJ1 ? v2 : v1;
+      const result = partida.status !== "finalizada"
+        ? "Pendente"
+        : opponentName === "BYE"
+          ? "BYE"
+          : ownWins > opponentWins
+            ? "Vitoria"
+            : ownWins < opponentWins
+              ? "Derrota"
+              : "Empate";
+
+      return {
+        id: partida.id,
+        rodada: partida.rodada,
+        opponentName,
+        score: partida.status === "finalizada" ? `${v1}-${v2}` : "VS",
+        result,
+      };
+    });
+}
+
+function PlayerHistoryTooltip({ player, partidas, children }) {
+  const history = buildPlayerHistory(player, partidas);
+
+  if (history.length === 0) {
+    return children;
+  }
+
+  return (
+    <Tooltip
+      placement="right"
+      ariaLabel={`Ultimas partidas de ${player?.usuario?.nome || player?.nome || "jogador"}`}
+      tooltipClassName="max-w-[18rem] min-w-[15rem] text-left px-3 py-2"
+      content={(
+        <span className="block">
+          <span className="mb-1.5 block text-[0.72rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
+            Ultimas partidas
+          </span>
+          <span className="grid gap-1">
+            {history.map((match) => (
+              <span key={match.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-2 text-[0.72rem] text-[#f5edff]">
+                <span className="font-bold text-[#c4b5fd]">R{match.rodada}</span>
+                <span className="truncate text-[#fef3c7]">{match.opponentName}</span>
+                <span className="font-bold tabular-nums text-[#fff]">{match.score}</span>
+                <span className="col-span-3 text-[0.66rem] text-[#beafd7]">{match.result}</span>
+              </span>
+            ))}
+          </span>
+        </span>
+      )}
+    >
+      {children}
+    </Tooltip>
+  );
+}
+
 export function StandingsTable({
   standings,
   isFinished = false,
@@ -42,6 +131,8 @@ export function StandingsTable({
   torneioNome = "",
   torneioHorario = "",
   storyFundoUrl = "",
+  storyFundoTextoRodape = "claro",
+  partidas = [],
   compact = false,
   totalInscritos,
 }) {
@@ -201,10 +292,14 @@ export function StandingsTable({
                         />
                       )}
                       <span className="truncate">
-                        <UsuarioNomeExibicao
-                          nome={getPlayerName(player)}
-                          excluido={isPlayerExcluido(player)}
-                        />
+                        <PlayerHistoryTooltip player={player} partidas={partidas}>
+                          <span>
+                            <UsuarioNomeExibicao
+                              nome={getPlayerName(player)}
+                              excluido={isPlayerExcluido(player)}
+                            />
+                          </span>
+                        </PlayerHistoryTooltip>
                       </span>
                       {expressiveBadge(player)}
                     </span>
@@ -333,10 +428,14 @@ export function StandingsTable({
                               />
                             )}
                             <span className="truncate min-w-0">
-                              <UsuarioNomeExibicao
-                                nome={getPlayerName(player)}
-                                excluido={isPlayerExcluido(player)}
-                              />
+                              <PlayerHistoryTooltip player={player} partidas={partidas}>
+                                <span>
+                                  <UsuarioNomeExibicao
+                                    nome={getPlayerName(player)}
+                                    excluido={isPlayerExcluido(player)}
+                                  />
+                                </span>
+                              </PlayerHistoryTooltip>
                             </span>
                             {expressiveBadge(player)}
                           </span>
@@ -441,10 +540,14 @@ export function StandingsTable({
                             />
                           )}
                           <span className="break-words">
-                            <UsuarioNomeExibicao
-                              nome={getPlayerName(player)}
-                              excluido={isPlayerExcluido(player)}
-                            />
+                            <PlayerHistoryTooltip player={player} partidas={partidas}>
+                              <span>
+                                <UsuarioNomeExibicao
+                                  nome={getPlayerName(player)}
+                                  excluido={isPlayerExcluido(player)}
+                                />
+                              </span>
+                            </PlayerHistoryTooltip>
                           </span>
                           {expressiveBadge(player)}
                         </span>
@@ -521,6 +624,7 @@ export function StandingsTable({
           torneioNome={torneioNome}
           torneioHorario={torneioHorario}
           storyFundoUrl={storyFundoUrl}
+          storyFundoTextoRodape={storyFundoTextoRodape}
           deckNameOverrides={deckNameOverrides}
           onClose={() => setShowStory(false)}
         />

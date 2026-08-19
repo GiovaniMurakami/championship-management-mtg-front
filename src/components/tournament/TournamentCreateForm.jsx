@@ -64,6 +64,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bannerError, setBannerError] = useState("");
   const [storyPreview, setStoryPreview] = useState(initialStoryFundoUrl || "");
+  const [storyPreviewTextoRodape, setStoryPreviewTextoRodape] = useState("claro");
   const [uploadingStory, setUploadingStory] = useState(false);
   const [storyUploadProgress, setStoryUploadProgress] = useState(0);
   const [storyError, setStoryError] = useState("");
@@ -119,6 +120,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
     try {
       let bannerUrl = existingBannerUrl || undefined;
       let storyFundoUrl;
+      let storyFundoTextoRodape = "claro";
 
       if (bannerFile) {
         setUploadingBanner(true);
@@ -129,7 +131,9 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
       setUploadingStory(true);
       setStoryUploadProgress(0);
-      storyFundoUrl = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress);
+      const storyResult = await storyFundoPickerRef.current?.resolveForSubmit(setStoryUploadProgress);
+      storyFundoUrl = storyResult?.url || "";
+      storyFundoTextoRodape = storyResult?.textoRodape || "claro";
       setUploadingStory(false);
 
       const payload = {
@@ -142,6 +146,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         linkLive: optionalTrimmed(createForm.linkLive),
         ...(bannerUrl ? { bannerUrl } : {}),
         ...(storyFundoUrl ? { storyFundoUrl } : {}),
+        storyFundoTextoRodape,
         maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
         maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
         corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
@@ -344,6 +349,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                   valueUrl={initialStoryFundoUrl || ""}
                   disabled={isSubmitting}
                   onPreviewUrlChange={handleStoryPreviewUrlChange}
+                  onTextoRodapeChange={setStoryPreviewTextoRodape}
                 />
                 {storyError ? <FormFeedback message={storyError} variant="error" /> : null}
                 {uploadingStory && (
@@ -362,6 +368,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               <Top8StoryPreview
                 horario={createForm.horario}
                 storyFundoUrl={storyPreview || ""}
+                textoRodape={storyPreviewTextoRodape}
               />
             </div>
           </FormSection>

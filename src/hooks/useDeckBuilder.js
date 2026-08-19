@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
-import { buscarCartasPorNome } from "../services/scryfallApi";
+import { buscarCartasPorEntradas } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
 import { parseDeckTxt } from "../utils/parseDeckTxt";
 import {
@@ -294,7 +294,7 @@ export function useDeckBuilder() {
   };
 
   const resolveImportedCards = async (entries) => {
-    const cards = await buscarCartasPorNome(entries.map((entry) => entry.nome));
+    const cards = await buscarCartasPorEntradas(entries);
 
     return cards
       .map((card, index) => {
