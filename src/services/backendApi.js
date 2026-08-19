@@ -239,6 +239,11 @@ export const dropJogador = (torneioId, jogadorId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const undropJogador = (torneioId, jogadorId, token) =>
+  httpClient.post(`/torneio/${torneioId}/undrop`, jogadorId ? { jogadorId } : {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const getStandings = (torneioId, token) =>
   httpClient.get(`/torneio/${torneioId}/standings`, optionalAuthConfig(token));
 

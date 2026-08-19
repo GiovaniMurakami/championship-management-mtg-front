@@ -46,6 +46,7 @@ export const subscribeToTournament = (torneioId, callbacks = {}) => {
     subscribeIfPresent(channel, "resultado_contestado", callbacks.onResultadoContestado);
     subscribeIfPresent(channel, "torneio_iniciado", callbacks.onTorneioIniciado);
     subscribeIfPresent(channel, "jogador_dropou", callbacks.onJogadorDropou);
+    subscribeIfPresent(channel, "jogador_voltou", callbacks.onJogadorVoltou);
     subscribeIfPresent(channel, "resultado_ajustado", callbacks.onResultadoAjustado);
     subscribeIfPresent(channel, "corte_iniciado", callbacks.onCorteIniciado);
     subscribeIfPresent(channel, "jogador_ingressou", callbacks.onJogadorIngressou);

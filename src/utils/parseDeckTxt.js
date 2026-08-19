@@ -54,11 +54,89 @@ function parsePrefixedLine(line) {
   return { section, quantidade, nome };
 }
 
+function decodeXmlEntity(value) {
+  return String(value || "")
+    .replace(/&quot;/g, "\"")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function parseXmlAttributes(tag) {
+  const attrs = {};
+  const attrRegex = /([A-Za-z_:][A-Za-z0-9_:.-]*)\s*=\s*"([^"]*)"/g;
+  let match;
+
+  while ((match = attrRegex.exec(tag))) {
+    attrs[match[1].toLowerCase()] = decodeXmlEntity(match[2]);
+  }
+
+  return attrs;
+}
+
+function addEntry(entries, entry) {
+  const nome = String(entry?.nome || "").trim();
+  const quantidade = Number(entry?.quantidade || 0);
+
+  if (!nome || !Number.isFinite(quantidade) || quantidade <= 0) {
+    return;
+  }
+
+  const existing = entries.find((item) => item.nome.toLowerCase() === nome.toLowerCase());
+  if (existing) {
+    existing.quantidade += quantidade;
+  } else {
+    entries.push(entry.mtgoId ? { quantidade, nome, mtgoId: entry.mtgoId } : { quantidade, nome });
+  }
+}
+
+function looksLikeDekXml(content) {
+  const text = String(content || "").trimStart();
+  return text.startsWith("<?xml") || /^<Deck\b/i.test(text);
+}
+
+function parseDeckXml(content) {
+  const mainEntries = [];
+  const sideEntries = [];
+  const commanderEntries = [];
+  const cardRegex = /<Cards\b[^>]*\/?>/gi;
+  let match;
+
+  while ((match = cardRegex.exec(String(content || "")))) {
+    const attrs = parseXmlAttributes(match[0]);
+    const nome = attrs.name?.trim();
+    const quantidade = Number(attrs.quantity);
+
+    if (!nome || !Number.isFinite(quantidade) || quantidade <= 0) {
+      continue;
+    }
+
+    const entry = {
+      quantidade,
+      nome,
+      mtgoId: attrs.catid ? Number(attrs.catid) : undefined,
+    };
+
+    if (String(attrs.sideboard || "").toLowerCase() === "true") {
+      addEntry(sideEntries, entry);
+    } else {
+      addEntry(mainEntries, entry);
+    }
+  }
+
+  return { mainEntries, sideEntries, commanderEntries };
+}
+
 /**
  * Parseia listas de deck em texto (.txt / .dek / .deck / paste).
  * Suporta headers Arena/Moxfield, prefixos MTGO (SB:/CM:) e ignora comentários // e #.
  */
 export function parseDeckTxt(content) {
+  if (looksLikeDekXml(content)) {
+    return parseDeckXml(content);
+  }
+
   const lines = String(content || "").split(/\r?\n/);
   const mainEntries = [];
   const sideEntries = [];
@@ -132,11 +210,11 @@ export function parseDeckTxt(content) {
     }
 
     if (section === "main") {
-      mainEntries.push(parsed);
+      addEntry(mainEntries, parsed);
     } else if (section === "side") {
-      sideEntries.push(parsed);
+      addEntry(sideEntries, parsed);
     } else {
-      commanderEntries.push(parsed);
+      addEntry(commanderEntries, parsed);
     }
   }
 

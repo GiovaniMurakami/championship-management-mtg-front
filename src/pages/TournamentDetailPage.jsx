@@ -59,6 +59,7 @@ export function TournamentDetailPage() {
     handleEncerrarTorneio,
     handleBulkDropPlayers,
     handleDropPlayer,
+    handleUndropPlayer,
     handleSelfDrop,
     handleEditTorneio,
     handleDefinirAnfitriao,
@@ -187,6 +188,7 @@ export function TournamentDetailPage() {
             errorMessage: "Erro ao dropar jogadores sem check-in.",
           }),
           onDropPlayer: handleDropPlayer,
+          onUndropPlayer: handleUndropPlayer,
           onEditResult: handleReportResult,
           onAdjustResult: handleAdjustResult,
           onGerarLinkIngresso: handleGerarLinkIngresso,
@@ -249,6 +251,8 @@ export function TournamentDetailPage() {
             torneioNome={torneio?.nome}
             torneioHorario={torneio?.horario}
             storyFundoUrl={torneio?.storyFundoUrl}
+            storyFundoTextoRodape={torneio?.storyFundoTextoRodape || torneio?.storyFundo?.textoRodape || "escuro"}
+            partidas={partidas}
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
             totalInscritos={torneio?.totalInscritos}
