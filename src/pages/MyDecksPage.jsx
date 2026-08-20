@@ -451,21 +451,6 @@ export function MyDecksPage() {
                           >
                             Editar
                           </button>
-                          <Tooltip content="Gerar imagem do deck para compartilhar" focusable={false}>
-                            <button
-                              className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
-                              type="button"
-                              aria-label="Gerar imagem do deck para compartilhar"
-                              onClick={() => setImageModal(deck)}
-                            >
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                <polyline points="21 15 16 10 5 21" />
-                              </svg>
-                              Imagem
-                            </button>
-                          </Tooltip>
                           <button
                             className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(252,88,119,0.4)] rounded-xl cursor-pointer font-bold bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] transition-all duration-[220ms] hover:bg-[rgba(252,88,119,0.28)] hover:border-[rgba(252,88,119,0.7)] hover:text-white"
                             type="button"
@@ -483,6 +468,21 @@ export function MyDecksPage() {
                           Visualizar
                         </button>
                       )}
+                      <Tooltip content="Gerar imagem do deck para compartilhar" focusable={false}>
+                        <button
+                          className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
+                          type="button"
+                          aria-label="Gerar imagem do deck para compartilhar"
+                          onClick={() => setImageModal(deck)}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                          </svg>
+                          Imagem
+                        </button>
+                      </Tooltip>
                     </div>
                   </div>
                 </div>
@@ -523,7 +523,7 @@ export function MyDecksPage() {
       {imageModal && (
         <DeckImageModal
           deck={imageModal}
-          ownerName={usuario?.nome}
+          ownerName={imageModal.usuario?.nome || (isOwner(imageModal) ? usuario?.nome : "")}
           onClose={() => setImageModal(null)}
         />
       )}
