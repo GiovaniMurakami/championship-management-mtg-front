@@ -65,6 +65,8 @@ export function MyDecksPage() {
 
   const [buscaInput, setBuscaInput] = useState("");
   const [busca, setBusca] = useState("");
+  const [jogadorInput, setJogadorInput] = useState("");
+  const [jogador, setJogador] = useState("");
   const [somenteMyDecks, setSomenteMyDecks] = useState(false);
   const [pagina, setPagina] = useState(1);
   const [tabTotals, setTabTotals] = useState({ todos: null, meus: null });
@@ -112,6 +114,7 @@ export function MyDecksPage() {
       const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };
       if (somenteMyDecks && usuario?.id) params.usuarioId = usuario.id;
       if (busca.trim()) params.nome = busca.trim();
+      if (jogador.trim()) params.jogador = jogador.trim();
       const data = await listarDecks(tokenRef.current, params);
       if (!request.isCurrent()) return;
       setDecks(data.decks);
@@ -127,7 +130,7 @@ export function MyDecksPage() {
     } finally {
       if (request.isCurrent()) setLoading(false);
     }
-  }, [pagina, somenteMyDecks, usuario?.id, busca, listRequest]);
+  }, [pagina, somenteMyDecks, usuario?.id, busca, jogador, listRequest]);
 
   useEffect(() => {
     loadDecks();
@@ -159,11 +162,14 @@ export function MyDecksPage() {
     e.preventDefault();
     setPagina(1);
     setBusca(buscaInput);
+    setJogador(jogadorInput);
   };
 
   const handleLimparFiltros = () => {
     setBusca("");
     setBuscaInput("");
+    setJogador("");
+    setJogadorInput("");
     setPagina(1);
   };
 
@@ -221,7 +227,7 @@ export function MyDecksPage() {
     });
   };
 
-  const temFiltrosAtivos = Boolean(busca);
+  const temFiltrosAtivos = Boolean(busca || jogador);
 
   return (
     <PageShell>
@@ -252,12 +258,19 @@ export function MyDecksPage() {
 
       {/* Filtros */}
       <div className="flex flex-col gap-3 mb-2">
-        <form onSubmit={handleBusca} className="flex gap-2">
+        <form onSubmit={handleBusca} className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             placeholder="Buscar deck por nome..."
             value={buscaInput}
             onChange={(e) => setBuscaInput(e.target.value)}
+            className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
+          />
+          <input
+            type="text"
+            placeholder="Buscar por jogador..."
+            value={jogadorInput}
+            onChange={(e) => setJogadorInput(e.target.value)}
             className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
           />
           <button

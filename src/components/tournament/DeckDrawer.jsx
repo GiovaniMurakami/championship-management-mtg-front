@@ -1,10 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { Tooltip } from "../ui/Tooltip";
 import { DeckGroupedList, DeckTypeBadges } from "../deck/DeckGroupedList";
+import { DeckImageModal } from "../deck/DeckImageModal";
 import { groupCardsByType, MANA_COLOR_MAP, MANA_COLOR_LABELS } from "../../utils/deckTypeGroups";
 
 export const RANK_BADGE = {
@@ -25,12 +27,14 @@ const FORMAT_LABELS = {
 };
 
 function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }) {
+  const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [visible, setVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
@@ -254,6 +258,21 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
             <span className="text-[0.72rem] text-[#beafd7]">
               {totalMain} main{totalSide > 0 ? ` · ${totalSide} side` : ""}
             </span>
+            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowImageModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 border border-[rgba(255,215,0,0.4)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.75rem] font-semibold cursor-pointer hover:bg-[rgba(255,215,0,0.2)]"
+            >
+              Imagem
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(`/editar-deck/${deckId}?modo=visualizar`)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 border border-[rgba(199,149,255,0.4)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.75rem] font-semibold cursor-pointer hover:bg-[rgba(167,79,255,0.22)]"
+            >
+              Abrir lista
+            </button>
             <button
               type="button"
               onClick={handleCopy}
@@ -275,9 +294,17 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
                 </>
               )}
             </button>
+            </div>
           </div>
         )}
       </div>
+      {showImageModal && deck && (
+        <DeckImageModal
+          deck={{ ...deck, nome: deckNome || deck.nome }}
+          ownerName={playerName || deck.usuario?.nome || ""}
+          onClose={() => setShowImageModal(false)}
+        />
+      )}
     </div>,
     document.body
   );

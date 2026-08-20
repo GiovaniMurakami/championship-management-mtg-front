@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
+import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { useAuth } from "../context/AuthContext";
@@ -26,6 +27,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const readOnly = modoVisualizar || forcedReadOnly;
   const [analysisTab, setAnalysisTab] = useState("mao");
   const [originalDeck, setOriginalDeck] = useState(location.state?.deck ?? null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const {
     deckForm, setDeckForm, mainDeck, setMainDeck, sideboard, setSideboard, commander, setCommander,
@@ -140,6 +142,13 @@ export function DeckBuilderPage({ isEditMode = false }) {
                 : "Sem partidas registradas"}
             </div>
           )}
+          <button
+            type="button"
+            onClick={() => setShowImageModal(true)}
+            className="ml-auto inline-flex items-center gap-2 px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.82rem] font-semibold cursor-pointer hover:bg-[rgba(167,79,255,0.24)]"
+          >
+            Gerar imagem
+          </button>
         </div>
       )}
 
@@ -207,6 +216,20 @@ export function DeckBuilderPage({ isEditMode = false }) {
       </div>
 
       <CardPreviewModal card={previewCard} />
+      {showImageModal && originalDeck && (
+        <DeckImageModal
+          deck={{
+            ...originalDeck,
+            nome: deckForm.nome || originalDeck.nome,
+            formato: deckForm.formato || originalDeck.formato,
+            maindeck: mainDeck,
+            sideboard,
+            commander,
+          }}
+          ownerName={originalDeck.usuario?.nome || usuario?.nome || ""}
+          onClose={() => setShowImageModal(false)}
+        />
+      )}
     </PageShell>
   );
 }
