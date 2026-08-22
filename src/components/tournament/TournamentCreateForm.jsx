@@ -53,6 +53,7 @@ function FieldLabel({ htmlFor, children, hint }) {
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
   const {
     storyFundoUrl: initialStoryFundoUrl = "",
+    storyFundoTextoRodape: initialStoryFundoTextoRodape = "claro",
     bannerUrl: initialBannerUrl = "",
     ...formInitialValues
   } = initialValues ?? {};
@@ -64,7 +65,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bannerError, setBannerError] = useState("");
   const [storyPreview, setStoryPreview] = useState(initialStoryFundoUrl || "");
-  const [storyPreviewTextoRodape, setStoryPreviewTextoRodape] = useState("claro");
+  const [storyPreviewTextoRodape, setStoryPreviewTextoRodape] = useState(initialStoryFundoTextoRodape);
   const [uploadingStory, setUploadingStory] = useState(false);
   const [storyUploadProgress, setStoryUploadProgress] = useState(0);
   const [storyError, setStoryError] = useState("");
@@ -347,6 +348,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                   ref={storyFundoPickerRef}
                   token={token}
                   valueUrl={initialStoryFundoUrl || ""}
+                  valueTextoRodape={initialStoryFundoTextoRodape}
                   disabled={isSubmitting}
                   onPreviewUrlChange={handleStoryPreviewUrlChange}
                   onTextoRodapeChange={setStoryPreviewTextoRodape}
