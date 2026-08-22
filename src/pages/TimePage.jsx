@@ -273,19 +273,15 @@ export function TimePage() {
             {times.map((time) => (
               <div
                 key={time.id}
-                className="bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.15)] rounded-[0.9rem] p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.35)] hover:bg-white/[0.055] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(0,0,0,0.3)] cursor-pointer group"
+                className="min-h-[176px] h-full bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.15)] rounded-[0.9rem] p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.35)] hover:bg-white/[0.055] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(0,0,0,0.3)] cursor-pointer group flex flex-col"
                 onClick={() => navigate(`/times/${time.id}`)}
               >
-                <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex min-h-10 items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {time.imagemUrl && (
-                      <img
-                        src={time.imagemUrl}
-                        alt={time.nome}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-9 h-9 rounded-lg object-cover border border-[rgba(199,149,255,0.2)] flex-shrink-0"
-                      />
+                      <Tooltip content={time.nome} placement="top" ariaLabel={`Time ${time.nome}`}>
+                        <img src={time.imagemUrl} alt="" loading="lazy" decoding="async" className="w-9 h-9 rounded-lg object-cover border border-[rgba(199,149,255,0.2)] flex-shrink-0" />
+                      </Tooltip>
                     )}
                     <h3 className="m-0 text-[#f5edff] font-semibold text-[1rem] leading-snug group-hover:text-white transition-colors">
                       {time.nome}
@@ -295,14 +291,12 @@ export function TimePage() {
                     {getTotalMembros(time)} membros
                   </span>
                 </div>
-                {time.descricao && (
-                  <p className="m-0 mb-3 text-[#beafd7] text-[0.82rem] leading-relaxed line-clamp-2">
-                    {time.descricao}
-                  </p>
-                )}
+                <p className={`m-0 mb-3 min-h-[2.6rem] text-[#beafd7] text-[0.82rem] leading-relaxed line-clamp-2 ${time.descricao ? "" : "invisible"}`} aria-hidden={!time.descricao}>
+                  {time.descricao || "Sem descrição"}
+                </p>
                 {canManage(time) && (
                   <div
-                    className="flex items-center gap-2 mt-3 pt-3 border-t border-[rgba(217,180,255,0.1)]"
+                    className="flex items-center gap-2 mt-auto pt-3 border-t border-[rgba(217,180,255,0.1)]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button

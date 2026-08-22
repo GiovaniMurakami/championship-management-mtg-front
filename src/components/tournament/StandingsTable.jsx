@@ -316,11 +316,9 @@ export function StandingsTable({
                     </span>
                     <span className="flex items-center gap-[0.35rem] text-[0.82rem] font-semibold truncate min-w-0 text-white">
                       {player.time?.imagemUrl && (
-                        <img
-                          src={player.time.imagemUrl}
-                          alt={player.time.nome}
-                          className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
-                        />
+                        <Tooltip content={player.time.nome || "Time"} ariaLabel={`Time ${player.time.nome || "do jogador"}`}>
+                          <img src={player.time.imagemUrl} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90" />
+                        </Tooltip>
                       )}
                       <span className="truncate">
                         <PlayerHistoryTooltip player={player} partidas={partidas}>
@@ -452,11 +450,9 @@ export function StandingsTable({
                         <td className="px-2 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-[#f5edff] font-semibold min-w-0">
                           <span className="inline-flex items-center gap-[0.35rem] max-w-full min-w-0">
                             {player.time?.imagemUrl && (
-                              <img
-                                src={player.time.imagemUrl}
-                                alt={player.time.nome}
-                                className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
-                              />
+                              <Tooltip content={player.time.nome || "Time"} ariaLabel={`Time ${player.time.nome || "do jogador"}`}>
+                                <img src={player.time.imagemUrl} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90" />
+                              </Tooltip>
                             )}
                             <span className="truncate min-w-0">
                               <PlayerHistoryTooltip player={player} partidas={partidas}>
@@ -564,11 +560,9 @@ export function StandingsTable({
                         )}
                         <span className="inline-flex items-center gap-[0.35rem] font-semibold text-white min-w-0 break-words">
                           {player.time?.imagemUrl && (
-                            <img
-                              src={player.time.imagemUrl}
-                              alt={player.time.nome}
-                              className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90"
-                            />
+                            <Tooltip content={player.time.nome || "Time"} ariaLabel={`Time ${player.time.nome || "do jogador"}`}>
+                              <img src={player.time.imagemUrl} alt="" className="w-5 h-5 rounded object-cover flex-shrink-0 opacity-90" />
+                            </Tooltip>
                           )}
                           <span className="break-words">
                             <PlayerHistoryTooltip player={player} partidas={partidas}>

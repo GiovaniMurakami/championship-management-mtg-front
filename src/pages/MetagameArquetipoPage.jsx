@@ -57,9 +57,9 @@ export function MetagameArquetipoPage() {
   usePageTitle(data?.nome ? `${data.nome} | Metagame` : "Metagame");
   const { imagem } = useScryfallArt(data?.cartaRepresentativa);
   const arquetiposCores = useMemo(() => (data ? [data] : []), [data]);
-  const coresPorSlug = useMetagameDeckColors(arquetiposCores, formato);
+  const { cores: coresPorSlug, carregando: carregandoCores } = useMetagameDeckColors(arquetiposCores, formato);
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
-  const listasResolvidas = useResolvedMetagameListas(data?.listas);
+  const { listas: listasResolvidas, carregando: carregandoListas } = useResolvedMetagameListas(data?.listas);
   const listasOrdenadas = useMemo(
     () => ordenarListasPorRecencia(listasResolvidas, data?.resultados),
     [listasResolvidas, data?.resultados],
@@ -160,7 +160,11 @@ export function MetagameArquetipoPage() {
             <div>
               <h1 className="m-0 text-white text-[2rem] font-bold flex items-center gap-2 flex-wrap">
                 {data.nome}
-                <MetagameManaPips colors={coresPorSlug[data.slug]} />
+                {carregandoCores ? (
+                  <span className="inline-block h-4 w-20 rounded bg-white/10 animate-pulse" aria-label="Calculando cores do deck" />
+                ) : (
+                  <MetagameManaPips colors={coresPorSlug[data.slug]} />
+                )}
               </h1>
               <p className="m-0 mt-1 text-[#beafd7]">
                 {getTournamentFormatLabel(formato)} · meta {data.metaPct}% ({data.copias}) · winrate {data.winrate}%
@@ -228,8 +232,9 @@ export function MetagameArquetipoPage() {
             ) : (
               listasOrdenadas.map((lista) => {
                 const chave = chaveMetagameLista(lista);
-                return (
-                  <MetagameListaCard
+                return carregandoListas ? (
+                    <div key={chave} className="h-64 rounded-xl border border-white/10 bg-white/[0.03] animate-pulse" aria-label="Carregando dados das cartas do deck" />
+                  ) : <MetagameListaCard
                     key={chave}
                     lista={lista}
                     expandida={chave === listaAberta}
@@ -249,8 +254,7 @@ export function MetagameArquetipoPage() {
                         setSalvandoDeckId("");
                       }
                     } : undefined}
-                  />
-                );
+                  />;
               })
             )}
           </div>

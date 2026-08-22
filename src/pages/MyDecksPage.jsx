@@ -28,7 +28,7 @@ const FORMAT_META = {
   pauper: { label: "Pauper", color: "#cbd5e1", bg: "rgba(148,163,184,0.18)", border: "rgba(148,163,184,0.45)" },
 };
 
-const LIMITE = 20;
+const LIMITE = 18;
 
 function calcularTotalCartas(cartas) {
   return cartas?.reduce((total, carta) => total + (carta.quantidade || 1), 0) || 0;
@@ -307,7 +307,7 @@ export function MyDecksPage() {
       {/* Conteúdo */}
       <div aria-busy={loading} aria-live="polite">
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-6 max-sm:grid-cols-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
           {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
         </div>
       ) : error ? (
@@ -348,7 +348,7 @@ export function MyDecksPage() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-6 max-sm:grid-cols-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
             {decksPagina.map((deck) => {
               const owner = isOwner(deck);
               return (
