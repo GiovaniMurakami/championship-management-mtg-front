@@ -354,9 +354,25 @@ export function TournamentPage() {
                     <span className="font-['Bebas_Neue',sans-serif] text-[0.95rem] tracking-[0.12em] text-[#c795ff]">
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
-                    <span className={`inline-block px-2.5 py-0.5 rounded-[20px] text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
-                      {STATUS_LABEL[torneio.status] ?? torneio.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-[20px] text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
+                        {STATUS_LABEL[torneio.status] ?? torneio.status}
+                      </span>
+                      {isAdmin && (
+                        <button
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-[#beafd7] transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                          type="button"
+                          onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
+                          aria-label={`Copiar ${torneio.nome}`}
+                          title="Copiar torneio"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <h3 className="text-[#f5edff] m-0 mb-2.5 font-['Bebas_Neue',sans-serif] text-[1.25rem] tracking-[0.03em] leading-[1.1] px-3.5 pt-3">
@@ -415,20 +431,6 @@ export function TournamentPage() {
                     >
                       Ver Torneio
                     </button>
-
-                    {isAdmin && (
-                      <button
-                        className="px-3 py-1.5 border border-[rgba(167,79,255,0.5)] rounded-md text-[0.78rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(167,79,255,0.08)] text-[#c795ff] transition-all duration-300 hover:bg-[rgba(167,79,255,0.22)] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full flex items-center justify-center gap-[0.35rem]"
-                        type="button"
-                        onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                          <rect x="9" y="9" width="13" height="13" rx="2" />
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                        </svg>
-                        Copiar
-                      </button>
-                    )}
 
                     {torneio.status === "inscricoes_abertas" && (
                       <button

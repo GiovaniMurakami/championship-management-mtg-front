@@ -325,32 +325,35 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                     )}
                 </div>
 
-                {showRoundPicker && (
-                    <div className="flex items-center gap-[0.3rem] flex-wrap max-md:w-full min-w-0 max-w-full" role="tablist" aria-label="Selecionar rodada">
-                        {roundNumbers.map((r) => (
-                            <button
-                                key={r}
-                                type="button"
-                                role="tab"
-                                aria-selected={Number(selectedRound) === r}
-                                className={`border rounded-full px-[0.6rem] py-[0.25rem] min-w-[2.2rem] text-[0.75rem] font-bold cursor-pointer transition-all duration-150 flex-shrink-0 ${Number(selectedRound) === r ? "bg-[rgba(56,189,248,0.22)] border-[rgba(56,189,248,0.7)] text-white" : "border-[rgba(125,211,252,0.3)] bg-[rgba(125,211,252,0.06)] text-[#93c5fd] hover:bg-[rgba(125,211,252,0.16)] hover:border-[rgba(125,211,252,0.5)] hover:text-[#bae6fd]"}`}
-                                onClick={() => setSelectedRoundOverride(r)}
-                            >
-                                R{r}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <div className="flex items-center justify-end gap-2 max-md:w-full max-md:flex-col max-md:items-stretch">
+                    {showRoundPicker && (
+                        <div className="inline-flex h-9 items-center overflow-hidden rounded-md border border-[rgba(125,211,252,0.28)] bg-black/10 max-md:w-full" role="tablist" aria-label="Selecionar rodada">
+                            {roundNumbers.map((r) => (
+                                <button
+                                    key={r}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={Number(selectedRound) === r}
+                                    className={`h-full min-w-[2.55rem] border-0 border-r border-r-[rgba(125,211,252,0.18)] px-2 text-[0.75rem] font-bold cursor-pointer transition-colors duration-150 last:border-r-0 max-md:flex-1 ${Number(selectedRound) === r ? "bg-[#0ea5e9] text-[#071521]" : "bg-transparent text-[#93c5fd] hover:bg-[rgba(125,211,252,0.12)] hover:text-[#e0f2fe]"}`}
+                                    onClick={() => setSelectedRoundOverride(r)}
+                                >
+                                    R{r}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
-                {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
-                    <button
-                        type="button"
-                        className="inline-flex items-center justify-center gap-[0.4rem] px-3 py-[0.45rem] rounded-[0.7rem] border border-[rgba(125,211,252,0.35)] bg-[rgba(56,189,248,0.08)] text-[#7dd3fc] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.16)] max-md:w-full"
-                        onClick={handleOpenPairingsEditor}
-                    >
-                        Editar pareamentos
-                    </button>
-                )}
+                    {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
+                        <button
+                            type="button"
+                            className="inline-flex h-9 items-center justify-center gap-2 px-3 rounded-md border border-[rgba(125,211,252,0.42)] bg-[rgba(56,189,248,0.12)] text-[#bae6fd] text-[0.78rem] font-semibold cursor-pointer transition-colors duration-150 hover:bg-[rgba(56,189,248,0.22)] hover:text-white"
+                            onClick={handleOpenPairingsEditor}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                            Editar pareamentos
+                        </button>
+                    )}
+                </div>
             </div>
 
             {isTopCut && total > 0 && (
