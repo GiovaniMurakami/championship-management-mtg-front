@@ -78,7 +78,7 @@ export function MetagameCartaRepresentativaEditor({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[0.72rem] uppercase tracking-wide text-[#8f82ad] font-semibold">
+      <span className="text-[0.72rem] uppercase tracking-wide text-text-muted font-semibold">
         Carta representativa
       </span>
       <p className="m-0 text-[0.85rem] text-[#e8dfff]">
@@ -96,11 +96,11 @@ export function MetagameCartaRepresentativaEditor({
       />
       {erroBusca ? <p className="m-0 text-[0.75rem] text-[#fca5a5]">{erroBusca}</p> : null}
       {carregandoArtes ? (
-        <p className="m-0 text-[0.8rem] text-[#beafd7]">Buscando artes...</p>
+        <p className="m-0 text-[0.8rem] text-text-soft">Buscando artes...</p>
       ) : null}
       {artes.length > 0 ? (
         <div className="flex flex-col gap-1.5">
-          <span className="text-[0.72rem] uppercase tracking-wide text-[#8f82ad] font-semibold">
+          <span className="text-[0.72rem] uppercase tracking-wide text-text-muted font-semibold">
             Escolha a arte
           </span>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -117,7 +117,7 @@ export function MetagameCartaRepresentativaEditor({
                   className={`flex flex-col overflow-hidden rounded-lg border text-left cursor-pointer bg-[rgba(14,9,28,0.8)] disabled:opacity-45 disabled:cursor-not-allowed ${
                     selecionada
                       ? "border-[#c795ff] ring-2 ring-[rgba(199,149,255,0.55)]"
-                      : "border-[rgba(217,180,255,0.18)] hover:border-[rgba(199,149,255,0.55)]"
+                      : "border-line hover:border-[rgba(199,149,255,0.55)]"
                   }`}
                 >
                   {(arte.artCrop || arte.imagem) ? (
@@ -129,7 +129,7 @@ export function MetagameCartaRepresentativaEditor({
                   ) : (
                     <div className="w-full aspect-[16/9] bg-[#1a102c]" />
                   )}
-                  <span className="px-1.5 py-1 text-[0.68rem] text-[#beafd7] truncate">
+                  <span className="px-1.5 py-1 text-[0.68rem] text-text-soft truncate">
                     {arte.set || arte.nome}
                   </span>
                 </button>
@@ -151,12 +151,12 @@ export function MetagameCartaRepresentativaEditor({
           type="button"
           disabled={salvando || !atual}
           onClick={() => onSalvar(null)}
-          className="px-3 py-1.5 border border-[rgba(217,180,255,0.28)] rounded-lg bg-transparent text-[#beafd7] text-[0.8rem] font-bold cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed hover:not-disabled:bg-white/[0.04]"
+          className="px-3 py-1.5 border border-[rgba(217,180,255,0.28)] rounded-lg bg-transparent text-text-soft text-[0.8rem] font-bold cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed hover:not-disabled:bg-white/[0.04]"
         >
           Limpar
         </button>
       </span>
-      {dica && <p className="m-0 text-[0.75rem] text-[#8f82ad]">{dica}</p>}
+      {dica && <p className="m-0 text-[0.75rem] text-text-muted">{dica}</p>}
     </div>
   );
 }

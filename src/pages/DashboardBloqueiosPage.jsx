@@ -107,13 +107,13 @@ export function DashboardBloqueiosPage() {
   return (
     <PageShell className="mx-auto max-w-4xl px-4 pb-16 pt-28">
       <header className="mb-6">
-        <p className="m-0 text-[0.75rem] font-bold uppercase tracking-[0.1em] text-[#9f91bd]">
+        <p className="m-0 text-[0.75rem] font-bold uppercase tracking-[0.1em] text-text-subtle">
           Dashboard
         </p>
         <h1 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[2.2rem] tracking-[0.04em] text-white">
           Bloqueio de usuários
         </h1>
-        <p className="m-0 mt-2 max-w-2xl text-[0.95rem] leading-6 text-[#beafd7]">
+        <p className="m-0 mt-2 max-w-2xl text-[0.95rem] leading-6 text-text-soft">
           Bloqueados não podem se inscrever nem ingressar em torneios. Ao bloquear, a inscrição
           é removida apenas de torneios com status &quot;inscrições abertas&quot;.
         </p>
@@ -151,13 +151,13 @@ export function DashboardBloqueiosPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-[rgba(217,180,255,0.15)] bg-[rgba(14,9,28,0.55)]">
+      <div className="overflow-hidden rounded-2xl border border-line-soft bg-[rgba(14,9,28,0.55)]">
         {loading ? (
           <div className="flex justify-center py-12">
             <Spinner text="Buscando usuários..." />
           </div>
         ) : usuarios.length === 0 ? (
-          <p className="m-0 px-4 py-10 text-center text-sm text-[#8f82ad]">
+          <p className="m-0 px-4 py-10 text-center text-sm text-text-muted">
             Nenhum usuário encontrado.
           </p>
         ) : (
@@ -172,7 +172,7 @@ export function DashboardBloqueiosPage() {
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="m-0 truncate text-[0.98rem] font-semibold text-[#f5edff]">
+                      <p className="m-0 truncate text-[0.98rem] font-semibold text-text-main">
                         {usuario.nome}
                       </p>
                       {bloqueado && (
@@ -181,9 +181,9 @@ export function DashboardBloqueiosPage() {
                         </span>
                       )}
                     </div>
-                    <p className="m-0 mt-0.5 truncate text-[0.82rem] text-[#beafd7]">{usuario.email}</p>
+                    <p className="m-0 mt-0.5 truncate text-[0.82rem] text-text-soft">{usuario.email}</p>
                     {(usuario.nickMTGO || usuario.nickArena) && (
-                      <p className="m-0 mt-1 text-[0.75rem] text-[#8f82ad]">
+                      <p className="m-0 mt-1 text-[0.75rem] text-text-muted">
                         {[usuario.nickMTGO && `MTGO: ${usuario.nickMTGO}`, usuario.nickArena && `Arena: ${usuario.nickArena}`]
                           .filter(Boolean)
                           .join(" · ")}
@@ -212,11 +212,11 @@ export function DashboardBloqueiosPage() {
             onClick={() => setPagina((p) => Math.max(1, p - 1))}
             disabled={pagina === 1}
             aria-label="Página anterior"
-            className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+            className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
           >
             ←
           </button>
-          <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+          <span className="text-text-soft text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
             {pagina} / {totalPaginas}
           </span>
           <button
@@ -224,7 +224,7 @@ export function DashboardBloqueiosPage() {
             onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
             disabled={pagina === totalPaginas}
             aria-label="Próxima página"
-            className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+            className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
           >
             →
           </button>

@@ -29,7 +29,7 @@ export function TermsAcceptanceField({
           <Link
             to="/termos-de-uso"
             onClick={handleLegalLinkClick}
-            className="font-semibold text-[#c795ff] underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
+            className="font-semibold text-brand underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
           >
             Termos de Uso
           </Link>
@@ -40,7 +40,7 @@ export function TermsAcceptanceField({
           <Link
             to="/privacidade"
             onClick={handleLegalLinkClick}
-            className="font-semibold text-[#c795ff] underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
+            className="font-semibold text-brand underline underline-offset-2 decoration-[#c795ff]/50 transition-colors hover:text-[#e8dfff]"
           >
             Política de Privacidade (LGPD)
           </Link>

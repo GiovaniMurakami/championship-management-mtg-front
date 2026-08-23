@@ -189,10 +189,10 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="bg-[#110a22] border border-[rgba(217,180,255,0.2)] rounded-2xl w-full max-w-[620px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(217,180,255,0.15)]">
+      <div className="bg-[#110a22] border border-line rounded-2xl w-full max-w-[620px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line-soft">
           <h2 className="text-white font-semibold text-[1.2rem] m-0">Editar Torneio</h2>
-          <button type="button" className="text-[#beafd7] hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={onClose} aria-label="Fechar">X</button>
+          <button type="button" className="text-text-soft hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={onClose} aria-label="Fechar">X</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 grid gap-5">
@@ -214,7 +214,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 onChange={handleChange}
                 disabled={isDisabled}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#c795ff]"
+                iconClassName="text-brand"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
@@ -229,7 +229,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               onChange={handleChange}
               disabled={isDisabled}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#c795ff]"
+              iconClassName="text-brand"
               options={TOURNAMENT_FORMATS.map((item) => ({
                 value: item.value,
                 label: item.label,
@@ -246,7 +246,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               <input name="maxJogadores" type="number" min="2" value={form.maxJogadores} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} placeholder="Max. jogadores" />
               <div className="grid gap-1.5">
                 <label htmlFor="edit-maxRodadas" className="text-[#e0e0e0] font-medium text-[0.9rem]">
-                  Total de rodadas Swiss <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span>
+                  Total de rodadas Swiss <span className="text-text-soft text-[0.8rem]">(opcional)</span>
                 </label>
                 <input
                   id="edit-maxRodadas"
@@ -277,7 +277,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               onChange={handleChange}
               disabled={isDisabled}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#c795ff]"
+              iconClassName="text-brand"
               options={TOP_CUT_OPTIONS.map((option) => ({
                 value: option.value,
                 label: option.label,
@@ -290,7 +290,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             {bannerPreview ? (
               <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
                 <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[160px] object-cover" />
-                <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isDisabled}>X Remover</button>
+                <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-md py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isDisabled}>X Remover</button>
               </div>
             ) : (
               <button type="button" className="flex items-center justify-center gap-[0.6rem] w-full py-[0.75rem] px-4 border-2 border-dashed border-[rgba(79,70,229,0.4)] rounded-lg bg-[rgba(79,70,229,0.04)] text-[#a5b4fc] text-[0.85rem] cursor-pointer transition-all duration-200 hover:border-[#a5b4fc] hover:bg-[rgba(79,70,229,0.1)] hover:text-[#c7d2fe] disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => bannerInputRef.current?.click()} disabled={isDisabled}>

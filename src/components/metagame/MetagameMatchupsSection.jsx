@@ -36,7 +36,7 @@ function SortHeader({ label, column, sort, onSort, align = "left" }) {
     >
       <button
         type="button"
-        className={`inline-flex items-center gap-1 border-none bg-transparent p-0 cursor-pointer uppercase tracking-[0.06em] text-[0.7rem] font-bold text-[#c795ff] hover:text-white ${
+        className={`inline-flex items-center gap-1 border-none bg-transparent p-0 cursor-pointer uppercase tracking-[0.06em] text-[0.7rem] font-bold text-brand hover:text-white ${
           align === "right" ? "ml-auto" : ""
         }`}
         onClick={() => onSort(column)}
@@ -75,15 +75,15 @@ export function MetagameMatchupsSection({ matchups = [], formato, dias }) {
   return (
     <section className="mb-8">
       <div className="mb-3">
-        <h2 className="m-0 text-[#f5edff] text-[1.25rem]">Matchups</h2>
-        <p className="m-0 mt-1 text-[0.82rem] text-[#8f82ad]">
+        <h2 className="m-0 text-text-main text-[1.25rem]">Matchups</h2>
+        <p className="m-0 mt-1 text-[0.82rem] text-text-muted">
           Desempenho contra cada arquétipo neste período.
         </p>
       </div>
       {ordenados.length === 0 ? (
-        <p className="m-0 text-[#beafd7]">Ainda não há confrontos registrados neste período.</p>
+        <p className="m-0 text-text-soft">Ainda não há confrontos registrados neste período.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-[rgba(217,180,255,0.14)] bg-white/[0.02]">
+        <div className="overflow-x-auto rounded-xl border border-line-soft bg-white/[0.02]">
           <table className="w-full text-left text-[0.9rem] border-collapse">
             <thead className="bg-[#21133a]">
               <tr>
@@ -97,7 +97,7 @@ export function MetagameMatchupsSection({ matchups = [], formato, dias }) {
               {ordenados.map((m) => (
                 <tr
                   key={m.slug}
-                  className="border-t border-[rgba(217,180,255,0.1)] hover:bg-[rgba(167,79,255,0.06)] transition-colors"
+                  className="border-t border-line-soft hover:bg-[rgba(167,79,255,0.06)] transition-colors"
                 >
                   <td className="px-3 py-3">
                     <Link
@@ -107,9 +107,9 @@ export function MetagameMatchupsSection({ matchups = [], formato, dias }) {
                       {m.nome}
                     </Link>
                   </td>
-                  <td className="px-3 py-3 text-[#f5edff] tabular-nums">
+                  <td className="px-3 py-3 text-text-main tabular-nums">
                     {m.partidas}
-                    <span className="ml-1 text-[0.72rem] text-[#8f82ad] font-normal">
+                    <span className="ml-1 text-[0.72rem] text-text-muted font-normal">
                       {m.partidas === 1 ? "jogo" : "jogos"}
                     </span>
                   </td>

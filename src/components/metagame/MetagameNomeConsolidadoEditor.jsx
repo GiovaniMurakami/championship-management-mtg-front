@@ -21,7 +21,7 @@ export function MetagameNomeConsolidadoEditor({
       }}
     >
       <label className="flex flex-col gap-1 min-w-0">
-        <span className="text-[0.72rem] uppercase tracking-wide text-[#8f82ad] font-semibold">
+        <span className="text-[0.72rem] uppercase tracking-wide text-text-muted font-semibold">
           Nome consolidado
         </span>
         <span className="flex flex-wrap gap-2 items-center">
@@ -42,7 +42,7 @@ export function MetagameNomeConsolidadoEditor({
           </button>
         </span>
       </label>
-      {dica && <p className="m-0 text-[0.75rem] text-[#8f82ad]">{dica}</p>}
+      {dica && <p className="m-0 text-[0.75rem] text-text-muted">{dica}</p>}
     </form>
   );
 }

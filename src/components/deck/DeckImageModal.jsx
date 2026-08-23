@@ -128,7 +128,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
             {deck.nome}
           </span>
 
-          <div className="flex items-center gap-[2px] bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.15)] rounded-lg p-[3px] flex-shrink-0">
+          <div className="flex items-center gap-[2px] bg-[rgba(255,255,255,0.04)] border border-line-soft rounded-lg p-[3px] flex-shrink-0">
             {[
               { key: "16x9", label: "16:9" },
               { key: "9x16", label: "9:16" },
@@ -137,7 +137,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                 key={key}
                 type="button"
                 onClick={() => setRatio(key)}
-                className={`px-[0.65rem] py-[0.3rem] rounded-[0.4rem] text-[0.75rem] font-semibold transition-all duration-150 ${
+                className={`px-[0.65rem] py-[0.3rem] rounded-md text-[0.75rem] font-semibold transition-all duration-150 ${
                   ratio === key
                     ? "bg-[rgba(79,70,229,0.4)] text-white border border-[rgba(99,102,241,0.5)]"
                     : "text-[#888] hover:text-[#c0bfff] border border-transparent"
@@ -160,7 +160,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               </Tooltip>
             )}
             <button
-              className="w-8 h-8 flex items-center justify-center border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-[#beafd7] text-[1.2rem] cursor-pointer transition-[background,color] duration-150 flex-shrink-0 hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"
+              className="w-8 h-8 flex items-center justify-center border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-text-soft text-[1.2rem] cursor-pointer transition-[background,color] duration-150 flex-shrink-0 hover:bg-[rgba(255,255,255,0.08)] hover:text-text-main"
               onClick={onClose}
               aria-label="Fechar"
             >
@@ -177,7 +177,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                 style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }}
               />
             </div>
-            <p className="text-[0.8rem] text-[#beafd7] m-0">
+            <p className="text-[0.8rem] text-text-soft m-0">
               {stage === "meta"
                 ? `Buscando dados das cartas… ${progress}%`
                 : `Carregando imagens… ${progress}%`}
@@ -186,7 +186,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
         )}
 
         <div
-          className="rounded-[0.85rem] border border-[rgba(199,149,255,0.2)] overflow-hidden"
+          className="rounded-lg border border-[rgba(199,149,255,0.2)] overflow-hidden"
           style={{ background: "#09050f", minHeight: "40vh" }}
         >
           {previewUrl ? (
@@ -203,7 +203,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                       style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }}
                     />
                   </div>
-                  <p className="text-[0.8rem] text-[#beafd7] m-0">
+                  <p className="text-[0.8rem] text-text-soft m-0">
                     {stage === "meta" ? `Buscando dados… ${progress}%` : `Carregando imagens… ${progress}%`}
                   </p>
                 </>

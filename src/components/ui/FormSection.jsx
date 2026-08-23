@@ -7,7 +7,7 @@ export function FormSection({ title, subtitle, children, className = "" }) {
         <h3 className={FORM_SECTION_TITLE_CLASS}>
           {title}
           {subtitle ? (
-            <span className="text-[#8f82ad] text-[0.75rem] normal-case tracking-normal font-normal">
+            <span className="text-text-muted text-[0.75rem] normal-case tracking-normal font-normal">
               {" "}
               {subtitle}
             </span>

@@ -91,7 +91,7 @@ export function TournamentSection() {
             return (
               <article
                 key={item.id}
-                className="relative border border-[rgba(217,180,255,0.18)] rounded-[1.1rem] bg-[linear-gradient(160deg,rgba(22,12,46,0.98),rgba(14,8,30,0.98))] shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer card-hover-glow"
+                className="relative border border-line rounded-xl bg-[linear-gradient(160deg,rgba(22,12,46,0.98),rgba(14,8,30,0.98))] shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer card-hover-glow"
                 style={{ "--format-color": cor, "--glow-color": cor }}
                 onClick={() => navigate(`/torneios/${item.id}`)}
               >
@@ -145,11 +145,11 @@ export function TournamentSection() {
                     )}
                   </div>
 
-                  <h3 className="m-0 mb-3 font-['Bebas_Neue',sans-serif] text-[1.45rem] tracking-[0.04em] leading-[1.1] text-[#f5edff]">
+                  <h3 className="m-0 mb-3 font-['Bebas_Neue',sans-serif] text-[1.45rem] tracking-[0.04em] leading-[1.1] text-text-main">
                     {item.nome}
                   </h3>
 
-                  <p className="flex items-center gap-[0.4rem] m-0 mb-[0.55rem] text-[#beafd7] text-[0.82rem]">
+                  <p className="flex items-center gap-[0.4rem] m-0 mb-[0.55rem] text-text-soft text-[0.82rem]">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                       <rect x="3" y="4" width="18" height="18" rx="2" />
                       <line x1="16" y1="2" x2="16" y2="6" />
@@ -160,13 +160,13 @@ export function TournamentSection() {
                   </p>
 
                   {descricao && (
-                    <p className="m-0 mt-[0.6rem] pt-[0.65rem] border-t border-[rgba(217,180,255,0.2)] text-[0.83rem] leading-[1.45] text-[#e9defb] line-clamp-3">
+                    <p className="m-0 mt-[0.6rem] pt-[0.65rem] border-t border-line text-[0.83rem] leading-[1.45] text-[#e9defb] line-clamp-3">
                       {descricao}
                     </p>
                   )}
 
                   {item.visualizacoes != null && (
-                    <div className="flex items-center gap-[0.35rem] mt-[0.75rem] text-[0.76rem] text-[#beafd7]">
+                    <div className="flex items-center gap-[0.35rem] mt-[0.75rem] text-[0.76rem] text-text-soft">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" style={{ color: cor, flexShrink: 0 }}>
                         <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
                         <circle cx="12" cy="12" r="3" />

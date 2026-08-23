@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
@@ -674,9 +674,9 @@ export function Top8StoryModal({
           </div>
         )}
 
-        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
+        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-2xl overflow-hidden flex-col items-stretch relative shadow */}
         <div
-          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
+          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-2xl overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
           style={{ backgroundImage: `url("${backgroundUrl}")` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}

@@ -283,7 +283,7 @@ export function MyDecksPage() {
             <button
               type="button"
               onClick={handleLimparFiltros}
-              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors whitespace-nowrap"
+              className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors whitespace-nowrap"
             >
               Limpar
             </button>
@@ -354,7 +354,7 @@ export function MyDecksPage() {
               return (
                 <div
                   key={deck.id}
-                  className="border border-[rgba(217,180,255,0.2)] rounded-xl overflow-hidden bg-[rgba(14,9,28,0.9)] flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:border-[rgba(199,149,255,0.3)]"
+                  className="border border-line rounded-xl overflow-hidden bg-[rgba(14,9,28,0.9)] flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:border-[rgba(199,149,255,0.3)]"
                 >
                   <div
                     className="relative h-40 overflow-hidden bg-[radial-gradient(circle_at_70%_40%,rgba(87,20,166,0.5),transparent_60%),linear-gradient(135deg,#1a0d36,#0d071e)] bg-cover bg-[center_top]"
@@ -368,7 +368,7 @@ export function MyDecksPage() {
                     <div className="absolute top-[0.7rem] left-[0.75rem] right-[0.75rem] flex items-start justify-between gap-2">
                       <FormatBadge formato={deck.formato} />
                       {deck.usuario?.nome && (
-                        <span className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-[rgba(217,180,255,0.2)] backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap ${owner ? "text-[#c795ff]" : "text-text-soft"}`}>
+                        <span className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-line backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap ${owner ? "text-brand" : "text-text-soft"}`}>
                           {owner ? "Meu deck" : (
                             <UsuarioNomeExibicao
                               nome={deck.usuario.nome}
@@ -417,14 +417,14 @@ export function MyDecksPage() {
                     </h3>
 
                     <div className="flex flex-wrap gap-[0.4rem] mb-[0.85rem]">
-                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[0.76rem] text-text-soft">
+                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <rect x="2" y="4" width="20" height="16" rx="2" />
                           <path d="M8 4v16M16 4v16" />
                         </svg>
                         <span>{calcularTotalCartas(deck.maindeck)} main</span>
                       </div>
-                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[0.76rem] text-text-soft">
+                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <polyline points="16 3 21 3 21 8" />
                           <line x1="4" y1="20" x2="21" y2="3" />
@@ -433,7 +433,7 @@ export function MyDecksPage() {
                         </svg>
                         <span>{calcularTotalCartas(deck.sideboard)} side</span>
                       </div>
-                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[0.76rem] text-text-soft ml-auto">
+                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft ml-auto">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                           <line x1="16" y1="2" x2="16" y2="6" />
@@ -511,11 +511,11 @@ export function MyDecksPage() {
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
                 aria-label="Página anterior"
-                className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 ←
               </button>
-              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+              <span className="text-text-soft text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
                 {pagina} / {totalPaginas}
               </span>
               <button
@@ -523,7 +523,7 @@ export function MyDecksPage() {
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
                 aria-label="Próxima página"
-                className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 →
               </button>

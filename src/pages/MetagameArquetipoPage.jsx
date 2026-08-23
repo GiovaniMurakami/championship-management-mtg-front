@@ -152,7 +152,7 @@ export function MetagameArquetipoPage() {
               <img
                 src={imagem}
                 alt=""
-                className="w-[96px] h-[70px] object-cover object-top rounded-xl border border-[rgba(217,180,255,0.18)] cursor-default"
+                className="w-[96px] h-[70px] object-cover object-top rounded-xl border border-line cursor-default"
                 onMouseEnter={() => openCardPreview({ nome: data.cartaRepresentativa, imagem })}
                 onMouseLeave={closeCardPreview}
               />
@@ -166,7 +166,7 @@ export function MetagameArquetipoPage() {
                   <MetagameManaPips colors={coresPorSlug[data.slug]} />
                 )}
               </h1>
-              <p className="m-0 mt-1 text-[#beafd7]">
+              <p className="m-0 mt-1 text-text-soft">
                 {getTournamentFormatLabel(formato)} · meta {data.metaPct}% ({data.copias}) · winrate {data.winrate}%
                 ({data.vitorias}-{data.derrotas}-{data.empates})
               </p>
@@ -180,7 +180,7 @@ export function MetagameArquetipoPage() {
           </div>
 
           {isAdmin && token && (
-            <div className="mb-6 rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(167,79,255,0.06)] p-3 flex flex-col gap-5">
+            <div className="mb-6 rounded-xl border border-line-soft bg-[rgba(167,79,255,0.06)] p-3 flex flex-col gap-5">
               <MetagameNomeConsolidadoEditor
                 key={`arquetipo-${data.nome}`}
                 valorInicial={data.nome === "Outros" ? "" : data.nome}
@@ -225,10 +225,10 @@ export function MetagameArquetipoPage() {
 
           <MetagameMatchupsSection matchups={data.matchups} formato={formato} dias={dias} />
 
-          <h2 className="m-0 mb-3 text-[#f5edff] text-[1.25rem]">Listas</h2>
+          <h2 className="m-0 mb-3 text-text-main text-[1.25rem]">Listas</h2>
           <div className="flex flex-col gap-3 mb-8">
             {listasOrdenadas.length === 0 ? (
-              <p className="text-[#beafd7]">Nenhuma lista neste período.</p>
+              <p className="text-text-soft">Nenhuma lista neste período.</p>
             ) : (
               listasOrdenadas.map((lista) => {
                 const chave = chaveMetagameLista(lista);

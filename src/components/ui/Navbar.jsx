@@ -7,7 +7,7 @@ function NavAvatar({ nome }) {
   const initial = (nome?.[0] ?? "?").toUpperCase();
   return (
     <span
-      className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[rgba(167,79,255,0.35)] border border-[rgba(199,149,255,0.4)] text-[0.78rem] font-bold text-[#f5edff] shrink-0 select-none"
+      className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[rgba(167,79,255,0.35)] border border-[rgba(199,149,255,0.4)] text-[0.78rem] font-bold text-text-main shrink-0 select-none"
       aria-hidden="true"
     >
       {initial}
@@ -95,15 +95,15 @@ const IconLogout = () => (
 );
 
 const mobileLinkClass = ({ isActive }) =>
-  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
-    ? "bg-[rgba(167,79,255,0.18)] text-[#f5edff]"
-    : "text-[#beafd7] hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff]"
+  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-lg no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
+    ? "bg-[rgba(167,79,255,0.18)] text-text-main"
+    : "text-text-soft hover:bg-[rgba(167,79,255,0.1)] hover:text-text-main"
   }`;
 
 const desktopLinkClass = ({ isActive }) =>
   `no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${isActive
     ? "text-white [text-shadow:0_0_18px_rgba(167,79,255,0.6)]"
-    : "text-[#beafd7] hover:text-white"
+    : "text-text-soft hover:text-white"
   }`;
 
 export function Navbar({
@@ -154,7 +154,7 @@ export function Navbar({
   return (
     <header
       ref={navRef}
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.72)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)] max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:rounded-2xl max-nav:top-[0.7rem] max-nav:row-gap-[0.6rem]"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-line bg-[rgba(14,9,28,0.72)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)] max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:rounded-2xl max-nav:top-[0.7rem] max-nav:row-gap-[0.6rem]"
     >
       {/* Brand */}
       <a
@@ -174,7 +174,7 @@ export function Navbar({
           }}
         />
         <span
-          className="hidden font-['Bebas_Neue',sans-serif] text-[1.3rem] tracking-[0.12em] text-[#c795ff]"
+          className="hidden font-['Bebas_Neue',sans-serif] text-[1.3rem] tracking-[0.12em] text-brand"
           style={{ viewTransitionName: "brand-logo" }}
         >
           MTG Champion
@@ -207,7 +207,7 @@ export function Navbar({
           <button
             type="button"
             className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
-              toolsOpen ? "text-white" : "text-[#beafd7] hover:text-white"
+              toolsOpen ? "text-white" : "text-text-soft hover:text-white"
             }`}
             aria-expanded={toolsOpen}
             aria-haspopup="menu"
@@ -226,7 +226,7 @@ export function Navbar({
               <NavLink
                 role="menuitem"
                 to="/ferramentas/contador-vida"
-                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
                 onClick={close}
               >
                 Contador de vida
@@ -234,7 +234,7 @@ export function Navbar({
               <NavLink
                 role="menuitem"
                 to="/ferramentas/calculadora-swiss"
-                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
                 onClick={close}
               >
                 Calculadora Swiss / Top 8
@@ -248,7 +248,7 @@ export function Navbar({
             <button
               type="button"
               className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
-                dashboardOpen ? "text-white" : "text-[#beafd7] hover:text-white"
+                dashboardOpen ? "text-white" : "text-text-soft hover:text-white"
               }`}
               aria-expanded={dashboardOpen}
               aria-haspopup="menu"
@@ -267,7 +267,7 @@ export function Navbar({
                 <NavLink
                   role="menuitem"
                   to="/dashboard"
-                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
                   onClick={close}
                 >
                   Anúncios
@@ -275,7 +275,7 @@ export function Navbar({
                 <NavLink
                   role="menuitem"
                   to="/dashboard/bloqueios"
-                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-[#beafd7] no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-[#f5edff]"
+                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
                   onClick={close}
                 >
                   Bloqueio de usuários
@@ -292,18 +292,18 @@ export function Navbar({
           <>
             <Tooltip content="Editar perfil" placement="bottom" focusable={false}>
               <button
-                className="inline-flex items-center gap-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.8rem] py-[0.45rem] text-[0.85rem] text-[#f5edff] cursor-pointer"
+                className="inline-flex items-center gap-2 border border-line rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.8rem] py-[0.45rem] text-[0.85rem] text-text-main cursor-pointer"
                 type="button"
                 onClick={() => { onOpenEditProfile(); close(); }}
                 aria-label="Editar perfil"
               >
                 <NavAvatar nome={usuario.nome} />
-                <span className="text-[0.84rem] font-semibold text-[#f5edff]">{usuario.nome}</span>
+                <span className="text-[0.84rem] font-semibold text-text-main">{usuario.nome}</span>
               </button>
             </Tooltip>
             <Tooltip content="Sair" placement="bottom" focusable={false}>
               <button
-                className="inline-flex items-center gap-[0.35rem] px-[0.75rem] py-[0.45rem] border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(255,255,255,0.04)] text-[#beafd7] text-[0.84rem] font-semibold cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(252,88,119,0.12)] hover:border-[rgba(252,88,119,0.35)] hover:text-[#ffa8b8]"
+                className="inline-flex items-center gap-[0.35rem] px-[0.75rem] py-[0.45rem] border border-line rounded-xl bg-[rgba(255,255,255,0.04)] text-text-soft text-[0.84rem] font-semibold cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(252,88,119,0.12)] hover:border-[rgba(252,88,119,0.35)] hover:text-[#ffa8b8]"
                 type="button"
                 onClick={() => { onLogout(); close(); }}
                 aria-label="Sair"
@@ -316,7 +316,7 @@ export function Navbar({
         ) : (
           <>
             <button
-              className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:text-[#f5edff] hover:bg-[rgba(167,79,255,0.08)]"
+              className="border border-line rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-text-soft transition-all duration-200 hover:border-line-strong hover:text-text-main hover:bg-[rgba(167,79,255,0.08)]"
               type="button"
               onClick={() => { onOpenAuth("register"); close(); }}
             >
@@ -335,7 +335,7 @@ export function Navbar({
 
       {/* Hamburger */}
       <button
-        className="hidden max-nav:inline-flex relative items-center justify-center w-[2.35rem] h-[2.35rem] border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(167,79,255,0.22)] cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.32)] hover:border-[rgba(199,149,255,0.55)] active:bg-[rgba(167,79,255,0.4)] ml-auto"
+        className="hidden max-nav:inline-flex relative items-center justify-center w-[2.35rem] h-[2.35rem] border border-line rounded-xl bg-[rgba(167,79,255,0.22)] cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.32)] hover:border-[rgba(199,149,255,0.55)] active:bg-[rgba(167,79,255,0.4)] ml-auto"
         type="button"
         aria-expanded={menuOpen}
         aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
@@ -359,7 +359,7 @@ export function Navbar({
       {
         menuOpen && (
           <div
-            className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)] animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] max-nav:col-span-full"
+            className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-line rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)] animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] max-nav:col-span-full"
             role="dialog"
             aria-label="Menu de navegação"
           >
@@ -403,7 +403,7 @@ export function Navbar({
 
               {isAuthenticated && isAdmin && (
                 <div className="flex flex-col gap-0.5">
-                  <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#9f91bd]">
+                  <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-text-subtle">
                     <IconDashboard />
                     <span>Dashboard</span>
                   </p>
@@ -423,19 +423,19 @@ export function Navbar({
               {usuario ? (
                 <>
                   <button
-                    className="flex items-center gap-3 px-[0.75rem] py-[0.6rem] rounded-[0.65rem] border border-[rgba(217,180,255,0.2)] bg-[rgba(167,79,255,0.1)] cursor-pointer w-full text-left text-[#f5edff] transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
+                    className="flex items-center gap-3 px-[0.75rem] py-[0.6rem] rounded-lg border border-line bg-[rgba(167,79,255,0.1)] cursor-pointer w-full text-left text-text-main transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
                     type="button"
                     onClick={() => { onOpenEditProfile(); close(); }}
                   >
                     <NavAvatar nome={usuario.nome} />
                     <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
-                      <span className="text-[0.9rem] font-semibold text-[#f5edff] whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
-                      <span className="text-[0.74rem] text-[#beafd7]">Editar perfil</span>
+                      <span className="text-[0.9rem] font-semibold text-text-main whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
+                      <span className="text-[0.74rem] text-text-soft">Editar perfil</span>
                     </div>
                     <IconEdit />
                   </button>
                   <button
-                    className="flex items-center justify-center gap-2 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-[rgba(255,255,255,0.03)] text-[#f5edff]"
+                    className="flex items-center justify-center gap-2 border border-line rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-[rgba(255,255,255,0.03)] text-text-main"
                     type="button"
                     onClick={() => { onLogout(); close(); }}
                   >
@@ -446,7 +446,7 @@ export function Navbar({
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    className="border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:text-[#f5edff] hover:bg-[rgba(167,79,255,0.08)] min-h-[44px]"
+                    className="border border-line rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-transparent text-text-soft transition-all duration-200 hover:border-line-strong hover:text-text-main hover:bg-[rgba(167,79,255,0.08)] min-h-[44px]"
                     type="button"
                     onClick={() => { onOpenAuth("register"); close(); }}
                   >

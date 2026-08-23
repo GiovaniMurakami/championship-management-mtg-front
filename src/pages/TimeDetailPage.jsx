@@ -193,7 +193,7 @@ export function TimeDetailPage() {
     <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <button
-          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06]"
+          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-line rounded-xl bg-white/[0.03] text-text-soft text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-line-strong hover:bg-white/[0.06]"
           onClick={() => navigate("/times")}
         >
           ← Voltar para times
@@ -230,10 +230,10 @@ export function TimeDetailPage() {
           </h1>
         </div>
         {time.descricao && (
-          <p className="m-0 text-[#beafd7] text-[0.95rem] leading-relaxed max-w-[680px] mb-4">{time.descricao}</p>
+          <p className="m-0 text-text-soft text-[0.95rem] leading-relaxed max-w-[680px] mb-4">{time.descricao}</p>
         )}
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="inline-flex items-center gap-[0.4rem] text-[0.8rem] text-[#beafd7]">
+          <span className="inline-flex items-center gap-[0.4rem] text-[0.8rem] text-text-soft">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -256,19 +256,19 @@ export function TimeDetailPage() {
         <div className="mb-6 flex flex-wrap gap-2">
           {isMember ? (
             <button
-              className="inline-flex items-center justify-center px-5 py-[0.6rem] border border-[rgba(239,68,68,0.4)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#fca5a5] bg-[rgba(239,68,68,0.1)] hover:bg-[rgba(239,68,68,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center px-5 py-[0.6rem] border border-[rgba(239,68,68,0.4)] rounded-lg text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#fca5a5] bg-[rgba(239,68,68,0.1)] hover:bg-[rgba(239,68,68,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSair}
               disabled={actionLoading}
             >
               {actionLoading ? "Aguarde..." : "Sair do Time"}
             </button>
           ) : jaSolicitou ? (
-            <span className="inline-flex items-center px-5 py-[0.6rem] border border-[rgba(251,191,36,0.35)] rounded-[0.7rem] text-[0.9rem] font-semibold text-[#fde68a] bg-[rgba(251,191,36,0.08)]">
+            <span className="inline-flex items-center px-5 py-[0.6rem] border border-[rgba(251,191,36,0.35)] rounded-lg text-[0.9rem] font-semibold text-[#fde68a] bg-[rgba(251,191,36,0.08)]">
               ⏳ Solicitação enviada
             </span>
           ) : (
             <button
-              className="inline-flex items-center justify-center px-5 py-[0.6rem] border border-[rgba(167,79,255,0.4)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#c4b5fd] bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.16)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center px-5 py-[0.6rem] border border-[rgba(167,79,255,0.4)] rounded-lg text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#c4b5fd] bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.16)] disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSolicitar}
               disabled={actionLoading}
             >
@@ -299,7 +299,7 @@ export function TimeDetailPage() {
               <button
                 type="button"
                 onClick={() => { setConviteToken(null); setConviteCopied(false); }}
-                className="self-start text-[0.75rem] text-[rgba(190,175,215,0.5)] hover:text-[#beafd7] transition-colors"
+                className="self-start text-[0.75rem] text-[rgba(190,175,215,0.5)] hover:text-text-soft transition-colors"
               >
                 Fechar
               </button>
@@ -309,7 +309,7 @@ export function TimeDetailPage() {
               type="button"
               onClick={handleGerarConvite}
               disabled={conviteLoading}
-              className="inline-flex items-center gap-2 px-5 py-[0.6rem] border border-[rgba(199,149,255,0.3)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#c4b5fd] bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.16)] hover:border-[rgba(199,149,255,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-[0.6rem] border border-[rgba(199,149,255,0.3)] rounded-lg text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#c4b5fd] bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.16)] hover:border-line-strong disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {conviteLoading ? "Gerando..." : "🔗 Gerar Convite"}
             </button>
@@ -319,7 +319,7 @@ export function TimeDetailPage() {
 
       {/* Solicitações pendentes (dono) */}
       {canManage && solicitacoes.length > 0 && (
-        <div className="mb-6 bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(251,191,36,0.2)] overflow-hidden">
+        <div className="mb-6 bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-[rgba(251,191,36,0.2)] overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-[0.6rem] border-b border-[rgba(251,191,36,0.15)] bg-[rgba(251,191,36,0.04)]">
             <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#fbbf24]">
               Solicitações Pendentes
@@ -331,7 +331,7 @@ export function TimeDetailPage() {
           <ul className="divide-y divide-[rgba(251,191,36,0.08)] m-0 p-0 list-none">
             {solicitacoes.map((s) => (
               <li key={s.id} className="flex items-center gap-3 px-5 py-[0.75rem]">
-                <span className="flex-1 min-w-0 text-[0.92rem] font-semibold text-[#f5edff] overflow-hidden text-ellipsis whitespace-nowrap">
+                <span className="flex-1 min-w-0 text-[0.92rem] font-semibold text-text-main overflow-hidden text-ellipsis whitespace-nowrap">
                   {s.nome || s.id}
                 </span>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -359,10 +359,10 @@ export function TimeDetailPage() {
       )}
 
       {/* Membros */}
-      <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-[rgba(217,180,255,0.1)] bg-white/[0.015]">
-          <span className="text-[0.78rem] text-[#beafd7]">
-            <span className="font-semibold text-[#f5edff]">{totalMembros}</span> membro{totalMembros !== 1 ? "s" : ""}
+      <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-line-soft overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-line-soft bg-white/[0.015]">
+          <span className="text-[0.78rem] text-text-soft">
+            <span className="font-semibold text-text-main">{totalMembros}</span> membro{totalMembros !== 1 ? "s" : ""}
           </span>
         </div>
         {membros.length === 0 ? (
@@ -400,7 +400,7 @@ export function TimeDetailPage() {
                     )}
                   </div>
                   {!excluido && membro.nickMTGO && (
-                    <span className="text-[0.72rem] text-[#c795ff] font-mono flex-shrink-0">{membro.nickMTGO}</span>
+                    <span className="text-[0.72rem] text-brand font-mono flex-shrink-0">{membro.nickMTGO}</span>
                   )}
                 </li>
               );

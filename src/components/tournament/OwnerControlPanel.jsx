@@ -17,14 +17,14 @@ function ScoreStepper({ value, onChange }) {
     <div className="flex items-center gap-[0.3rem]">
       <button
         type="button"
-        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-[0.45rem] bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
+        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-md bg-[rgba(255,255,255,0.05)] text-text-main text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
         onClick={() => onChange(Math.max(0, value - 1))}
         aria-label="Diminuir"
       >−</button>
       <span className="font-['Bebas_Neue',sans-serif] text-[1.8rem] text-white min-w-[1.6rem] text-center leading-none tabular-nums">{value}</span>
       <button
         type="button"
-        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-[0.45rem] bg-[rgba(255,255,255,0.05)] text-[#f5edff] text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
+        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-md bg-[rgba(255,255,255,0.05)] text-text-main text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
         onClick={() => onChange(Math.min(2, value + 1))}
         aria-label="Aumentar"
       >+</button>
@@ -61,12 +61,12 @@ function MatchEditRow({ partida, onSave, saving }) {
 
   if (editing && !isBye) {
     return (
-      <div className="border border-[rgba(199,149,255,0.4)] bg-[rgba(167,79,255,0.06)] rounded-[0.65rem] px-4 py-3 flex flex-col gap-3">
+      <div className="border border-[rgba(199,149,255,0.4)] bg-[rgba(167,79,255,0.06)] rounded-lg px-4 py-3 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[0.75rem] font-bold text-[#c795ff]">Mesa {mesa}</span>
+          <span className="text-[0.75rem] font-bold text-brand">Mesa {mesa}</span>
           <button
             type="button"
-            className="text-[#beafd7] text-[1rem] leading-none cursor-pointer bg-transparent border-none hover:text-[#f5edff] transition-colors"
+            className="text-text-soft text-[1rem] leading-none cursor-pointer bg-transparent border-none hover:text-text-main transition-colors"
             onClick={() => { setV1(partida.vitoriasJogador1 ?? 0); setV2(partida.vitoriasJogador2 ?? 0); setEditing(false); }}
             aria-label="Cancelar edição"
           >✕</button>
@@ -74,19 +74,19 @@ function MatchEditRow({ partida, onSave, saving }) {
 
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 max-md:grid-cols-1 max-md:gap-2">
           <div className="flex flex-col items-center gap-1">
-            <span className="text-[0.72rem] font-semibold text-[#beafd7] uppercase tracking-[0.04em] text-center truncate w-full">{nome1}</span>
+            <span className="text-[0.72rem] font-semibold text-text-soft uppercase tracking-[0.04em] text-center truncate w-full">{nome1}</span>
             <ScoreStepper value={v1} onChange={setV1} />
           </div>
-          <span className="text-[#beafd7] font-bold text-[1.1rem] pb-1">–</span>
+          <span className="text-text-soft font-bold text-[1.1rem] pb-1">–</span>
           <div className="flex flex-col items-center gap-1">
-            <span className="text-[0.72rem] font-semibold text-[#beafd7] uppercase tracking-[0.04em] text-center truncate w-full">{nome2}</span>
+            <span className="text-[0.72rem] font-semibold text-text-soft uppercase tracking-[0.04em] text-center truncate w-full">{nome2}</span>
             <ScoreStepper value={v2} onChange={setV2} />
           </div>
         </div>
 
         <button
           type="button"
-          className="inline-flex items-center justify-center w-full py-[0.45rem] text-[0.85rem] border border-[rgba(199,149,255,0.5)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:shadow-[0_6px_18px_rgba(167,79,255,0.4)]"
+          className="inline-flex items-center justify-center w-full py-[0.45rem] text-[0.85rem] border border-[rgba(199,149,255,0.5)] rounded-lg font-semibold cursor-pointer transition-all duration-[220ms] text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:shadow-[0_6px_18px_rgba(167,79,255,0.4)]"
           onClick={async () => {
             await onSave(partida.id, { vitoriasJogador1: v1, vitoriasJogador2: v2 });
             setEditing(false);
@@ -100,11 +100,11 @@ function MatchEditRow({ partida, onSave, saving }) {
   }
 
   return (
-    <div className="flex items-center gap-[0.6rem] border rounded-[0.65rem] px-[0.65rem] py-2 flex-wrap max-md:flex-col max-md:items-stretch min-w-0 max-w-full overflow-hidden border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
-      <span className="text-[0.75rem] font-bold text-[#c795ff] whitespace-nowrap shrink-0">Mesa {mesa}</span>
+    <div className="flex items-center gap-[0.6rem] border rounded-lg px-[0.65rem] py-2 flex-wrap max-md:flex-col max-md:items-stretch min-w-0 max-w-full overflow-hidden border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
+      <span className="text-[0.75rem] font-bold text-brand whitespace-nowrap shrink-0">Mesa {mesa}</span>
 
       <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap max-md:w-full max-md:flex-col max-md:items-center max-md:gap-2">
-        <span className="text-[0.85rem] text-[#f5edff] min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome1}</span>
+        <span className="text-[0.85rem] text-text-main min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome1}</span>
         {isFinalizada && !isBye && (
           <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
         )}
@@ -113,7 +113,7 @@ function MatchEditRow({ partida, onSave, saving }) {
             ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
             : "VS"}
         </span>
-        <span className="text-[0.85rem] text-[#f5edff] min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome2}</span>
+        <span className="text-[0.85rem] text-text-main min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome2}</span>
         {isFinalizada && !isBye && (
           <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
         )}
@@ -125,7 +125,7 @@ function MatchEditRow({ partida, onSave, saving }) {
       {!isBye && (
         <button
           type="button"
-          className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#f5edff] bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(199,149,255,0.5)] ml-auto max-md:ml-0 max-md:w-full"
+          className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-line rounded-lg font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-main bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-line-strong ml-auto max-md:ml-0 max-md:w-full"
           onClick={() => setEditing(true)}
         >
           Editar
@@ -269,7 +269,7 @@ export function OwnerControlPanel({
     <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-w-full min-w-0 overflow-x-clip">
       <div className="flex items-start justify-between gap-4 mb-4 flex-wrap max-md:flex-col">
         <div className="min-w-0">
-          <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Painel do Administrador</h2>
+          <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main">Painel do Administrador</h2>
           {isOngoing ? (
             <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
               Rodada {torneio?.rodadaAtual ?? "—"} de {torneio?.totalRodadas ?? "—"}
@@ -299,7 +299,7 @@ export function OwnerControlPanel({
           )}
           {isRegistrationOpen && (
             <button
-              className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
+              className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
               type="button"
               onClick={onStartTournament}
               disabled={actionLoading}
@@ -310,7 +310,7 @@ export function OwnerControlPanel({
           {isOngoing && (
             <div className="flex flex-wrap gap-2 justify-end max-md:w-full">
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)] max-md:flex-1"
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)] max-md:flex-1"
                 type="button"
                 onClick={handleRedoRound}
                 disabled={actionLoading || !canRedoRound}
@@ -319,7 +319,7 @@ export function OwnerControlPanel({
                 {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
               </button>
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)] max-md:flex-1"
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)] max-md:flex-1"
                 type="button"
                 onClick={() => setReviewModalOpen(true)}
                 disabled={actionLoading}
@@ -327,7 +327,7 @@ export function OwnerControlPanel({
                 Revisar Rodada
               </button>
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)] max-md:flex-1"
+                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)] max-md:flex-1"
                 type="button"
                 onClick={handleEndTournament}
                 disabled={actionLoading}
@@ -342,7 +342,7 @@ export function OwnerControlPanel({
       {/* Secret tournament warning + links */}
       <div className="flex flex-wrap gap-2 mb-4">
         {torneio?.secreto && (
-          <div className="flex items-center gap-[0.5rem] px-3 py-[0.5rem] rounded-[0.7rem] border border-[rgba(167,79,255,0.35)] bg-[rgba(167,79,255,0.1)] text-[#c795ff] text-[0.82rem] font-medium flex-1 min-w-0">
+          <div className="flex items-center gap-[0.5rem] px-3 py-[0.5rem] rounded-lg border border-[rgba(167,79,255,0.35)] bg-[rgba(167,79,255,0.1)] text-brand text-[0.82rem] font-medium flex-1 min-w-0">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="flex-shrink-0">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -352,7 +352,7 @@ export function OwnerControlPanel({
         )}
         <button
           type="button"
-          className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(217,180,255,0.25)] rounded-[0.7rem] text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#beafd7] bg-transparent hover:bg-[rgba(255,255,255,0.06)] hover:text-[#f5edff]"
+          className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(217,180,255,0.25)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-soft bg-transparent hover:bg-[rgba(255,255,255,0.06)] hover:text-text-main"
           onClick={handleCopyTournamentLink}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -364,7 +364,7 @@ export function OwnerControlPanel({
         {isOngoing && (
           <button
             type="button"
-            className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(34,197,94,0.4)] rounded-[0.7rem] text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.08)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
+            className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(34,197,94,0.4)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.08)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
             onClick={handleGenerateJoinLink}
             disabled={generatingJoinLink}
           >
@@ -380,17 +380,17 @@ export function OwnerControlPanel({
       {/* Join link modal */}
       {joinLinkModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setJoinLinkModal(null); }}>
-          <div className="bg-[#110a22] border border-[rgba(217,180,255,0.2)] rounded-2xl w-full max-w-[480px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+          <div className="bg-[#110a22] border border-line rounded-2xl w-full max-w-[480px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-semibold text-[1.1rem] m-0">Link de Ingresso</h3>
-              <button type="button" className="text-[#beafd7] hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={() => setJoinLinkModal(null)} aria-label="Fechar">✕</button>
+              <button type="button" className="text-text-soft hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={() => setJoinLinkModal(null)} aria-label="Fechar">✕</button>
             </div>
-            <p className="text-[#beafd7] text-[0.85rem] mb-3">Compartilhe este link para permitir que um jogador ingresse no torneio em andamento:</p>
+            <p className="text-text-soft text-[0.85rem] mb-3">Compartilhe este link para permitir que um jogador ingresse no torneio em andamento:</p>
             <div className="flex items-stretch gap-2 max-md:flex-col">
               <input
                 readOnly
                 value={joinLinkModal}
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/[0.05] border border-[rgba(217,180,255,0.2)] text-[#f5edff] text-[0.82rem] font-mono select-all max-md:text-[0.75rem]"
+                className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/[0.05] border border-line text-text-main text-[0.82rem] font-mono select-all max-md:text-[0.75rem]"
                 onFocus={(e) => e.target.select()}
               />
               <button
@@ -408,14 +408,14 @@ export function OwnerControlPanel({
 
       <div className="grid gap-3 mb-4 min-[720px]:grid-cols-2">
         {isRegistrationOpen && (
-          <div className="rounded-[0.9rem] border border-[rgba(239,68,68,0.24)] bg-[rgba(239,68,68,0.08)] p-4">
+          <div className="rounded-xl border border-[rgba(239,68,68,0.24)] bg-[rgba(239,68,68,0.08)] p-4">
             <p className="m-0 text-[0.78rem] tracking-[0.08em] text-[#fca5a5] font-semibold">PENDÊNCIA DE DECK</p>
             <p className="mt-2 mb-3 text-[0.88rem] text-[#f5d5d8]">
               {jogadoresSemDeck.length} jogador(es) inscrito(s) ainda não enviaram deck.
             </p>
             <button
               type="button"
-              className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fecaca] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.22)]"
+              className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fecaca] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.22)]"
               onClick={() => onDropPlayersWithoutDeck(jogadoresSemDeck.map(getPlayerId))}
               disabled={actionLoading || jogadoresSemDeck.length === 0}
             >
@@ -425,7 +425,7 @@ export function OwnerControlPanel({
         )}
 
         {canDropByCheckin && (
-          <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.24)] bg-[rgba(251,191,36,0.08)] p-4">
+          <div className="rounded-xl border border-[rgba(251,191,36,0.24)] bg-[rgba(251,191,36,0.08)] p-4">
             <p className="m-0 text-[0.78rem] tracking-[0.08em] text-[#fde68a] font-semibold">PENDÊNCIA DE CHECK-IN</p>
             <p className="mt-2 mb-3 text-[0.88rem] text-[#f6ebc4]">
               {isRegistrationOpen
@@ -434,7 +434,7 @@ export function OwnerControlPanel({
             </p>
             <button
               type="button"
-              className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
+              className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
               onClick={() => onDropPlayersWithoutCheckin(jogadoresSemCheckin.map(getPlayerId))}
               disabled={actionLoading || jogadoresSemCheckin.length === 0}
             >
@@ -444,11 +444,11 @@ export function OwnerControlPanel({
         )}
       </div>
 
-      <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-[rgba(217,180,255,0.2)] pb-0 flex-wrap min-w-0 max-w-full px-1">
+      <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-line pb-0 flex-wrap min-w-0 max-w-full px-1">
         {isOngoing && (
           <button
             type="button"
-            className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+            className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-text-soft border-b-transparent hover:text-text-main"}`}
             onClick={() => setActiveTab("mesas")}
           >
             Mesas
@@ -460,7 +460,7 @@ export function OwnerControlPanel({
         {isOngoing && contestadas.length > 0 && (
           <button
             type="button"
-            className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "contestadas" ? "text-[#f87171] border-b-[#f87171]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+            className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "contestadas" ? "text-[#f87171] border-b-[#f87171]" : "text-text-soft border-b-transparent hover:text-text-main"}`}
             onClick={() => setActiveTab("contestadas")}
           >
             Contestadas
@@ -469,7 +469,7 @@ export function OwnerControlPanel({
         )}
         <button
           type="button"
-          className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "jogadores" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-[#beafd7] border-b-transparent hover:text-[#f5edff]"}`}
+          className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "jogadores" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-text-soft border-b-transparent hover:text-text-main"}`}
           onClick={() => setActiveTab("jogadores")}
         >
           Jogadores
@@ -480,10 +480,10 @@ export function OwnerControlPanel({
       </div>
 
       {activeTab === "mesas" && (
-        <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.18)] bg-[rgba(255,255,255,0.025)] overflow-hidden">
+        <div className="rounded-xl border border-[rgba(251,191,36,0.18)] bg-[rgba(255,255,255,0.025)] overflow-hidden">
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer text-[#f5edff] transition-colors duration-180 hover:bg-[rgba(251,191,36,0.06)]"
+            className="flex w-full items-center justify-between gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer text-text-main transition-colors duration-180 hover:bg-[rgba(251,191,36,0.06)]"
             onClick={() => setTablesListOpen((value) => !value)}
             aria-expanded={tablesListOpen}
           >
@@ -510,7 +510,7 @@ export function OwnerControlPanel({
           {tablesListOpen && (
             <div className="border-t border-[rgba(251,191,36,0.12)] p-3">
               {partidasRodada.length === 0 ? (
-                <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
+                <p className="text-text-soft text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
               ) : (
                 <>
                   <div className="flex gap-2 mb-[0.65rem] flex-wrap">
@@ -539,10 +539,10 @@ export function OwnerControlPanel({
       )}
 
       {activeTab === "jogadores" && (
-        <div className="rounded-[0.9rem] border border-[rgba(251,191,36,0.18)] bg-[rgba(255,255,255,0.025)] overflow-hidden">
+        <div className="rounded-xl border border-[rgba(251,191,36,0.18)] bg-[rgba(255,255,255,0.025)] overflow-hidden">
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer text-[#f5edff] transition-colors duration-180 hover:bg-[rgba(251,191,36,0.06)]"
+            className="flex w-full items-center justify-between gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer text-text-main transition-colors duration-180 hover:bg-[rgba(251,191,36,0.06)]"
             onClick={() => setPlayersListOpen((value) => !value)}
             aria-expanded={playersListOpen}
           >
@@ -564,19 +564,19 @@ export function OwnerControlPanel({
           {playersListOpen && (
             <div className="grid gap-1.5 border-t border-[rgba(251,191,36,0.12)] p-3">
           {jogadoresDropadosMesmaRodada.length > 0 && (
-            <div className="grid gap-1.5 rounded-[0.65rem] border border-[rgba(34,197,94,0.22)] bg-[rgba(34,197,94,0.055)] p-2">
+            <div className="grid gap-1.5 rounded-lg border border-[rgba(34,197,94,0.22)] bg-[rgba(34,197,94,0.055)] p-2">
               <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">Dropados nesta rodada</p>
               {jogadoresDropadosMesmaRodada.map((player) => {
                 const playerId = getPlayerId(player);
                 const normalizedId = normalizeId(playerId);
                 const isMe = normalizeId(playerId) === normalizeId(usuarioId);
                 return (
-                  <div key={`dropado-${normalizedId || getPlayerName(player)}`} className="flex justify-between items-center gap-[0.65rem] rounded-[0.55rem] border border-[rgba(34,197,94,0.18)] bg-[rgba(34,197,94,0.05)] px-[0.6rem] py-[0.38rem]">
+                  <div key={`dropado-${normalizedId || getPlayerName(player)}`} className="flex justify-between items-center gap-[0.65rem] rounded-md border border-[rgba(34,197,94,0.18)] bg-[rgba(34,197,94,0.05)] px-[0.6rem] py-[0.38rem]">
                     <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[0.88rem] font-semibold text-white">
                       {getPlayerName(player)}{isMe ? " (Você)" : ""}
                     </span>
                     <button
-                      className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(34,197,94,0.45)] rounded-[0.55rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#86efac] bg-[rgba(34,197,94,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.22)] hover:not-disabled:border-[rgba(34,197,94,0.75)]"
+                      className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(34,197,94,0.45)] rounded-md font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#86efac] bg-[rgba(34,197,94,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.22)] hover:not-disabled:border-[rgba(34,197,94,0.75)]"
                       type="button"
                       onClick={() => onUndropPlayer?.(playerId)}
                       disabled={actionLoading || !playerId}
@@ -589,7 +589,7 @@ export function OwnerControlPanel({
             </div>
           )}
           {jogadoresAtivos.length === 0 ? (
-            <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador ativo.</p>
+            <p className="text-text-soft text-[0.9rem] m-0">Nenhum jogador ativo.</p>
           ) : (
             jogadoresAtivos.map((player) => {
               const playerId = getPlayerId(player);
@@ -601,7 +601,7 @@ export function OwnerControlPanel({
               return (
                 <div
                   key={normalizedId || getPlayerName(player)}
-                  className="flex justify-between items-center gap-[0.65rem] border border-[rgba(251,191,36,0.16)] rounded-[0.55rem] px-[0.6rem] py-[0.38rem] bg-[rgba(251,191,36,0.035)]"
+                  className="flex justify-between items-center gap-[0.65rem] border border-[rgba(251,191,36,0.16)] rounded-md px-[0.6rem] py-[0.38rem] bg-[rgba(251,191,36,0.035)]"
                 >
                   <div className="grid gap-[0.15rem] min-w-0">
                     <span className="text-white text-[0.88rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap leading-tight">
@@ -633,7 +633,7 @@ export function OwnerControlPanel({
                   </div>
 
                   <button
-                    className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(239,68,68,0.45)] rounded-[0.55rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.25)] hover:not-disabled:border-[rgba(239,68,68,0.8)]"
+                    className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(239,68,68,0.45)] rounded-md font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.25)] hover:not-disabled:border-[rgba(239,68,68,0.8)]"
                     type="button"
                     onClick={() => onDropPlayer(playerId)}
                     disabled={actionLoading || !playerId}
@@ -654,7 +654,7 @@ export function OwnerControlPanel({
       {activeTab === "contestadas" && (
         <div>
           {contestadas.length === 0 ? (
-            <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma partida contestada.</p>
+            <p className="text-text-soft text-[0.9rem] m-0">Nenhuma partida contestada.</p>
           ) : (
             <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
               <p className="text-[#fca5a5] text-[0.8rem] m-0 mb-1">Ajuste o resultado para resolver a contestação.</p>
@@ -697,7 +697,7 @@ export function OwnerControlPanel({
         ariaLabelledBy="refazer-rodada-title"
         ariaDescribedBy="refazer-rodada-desc"
       >
-        <h2 id="refazer-rodada-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-[#f5edff]">
+        <h2 id="refazer-rodada-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-text-main">
           Refazer rodada {torneio?.rodadaAtual ?? ""}
         </h2>
         <p id="refazer-rodada-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
@@ -706,7 +706,7 @@ export function OwnerControlPanel({
         <div className="flex gap-3 max-md:flex-col">
           <button
             type="button"
-            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
             onClick={() => setRedoModalOpen(false)}
             disabled={isRedoingRound}
           >
@@ -729,7 +729,7 @@ export function OwnerControlPanel({
         ariaLabelledBy="encerrar-torneio-title"
         ariaDescribedBy="encerrar-torneio-desc"
       >
-        <h2 id="encerrar-torneio-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-[#f5edff]">
+        <h2 id="encerrar-torneio-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-text-main">
           Encerrar torneio
         </h2>
         <p id="encerrar-torneio-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
@@ -738,7 +738,7 @@ export function OwnerControlPanel({
         <div className="flex gap-3 max-md:flex-col">
           <button
             type="button"
-            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
             onClick={() => setEndModalOpen(false)}
             disabled={isEndingTournament}
           >

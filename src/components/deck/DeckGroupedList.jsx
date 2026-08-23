@@ -26,14 +26,14 @@ function CardRow({ card, muted = false, onCardMouseEnter, onCardMouseLeave }) {
       )}
       <span
         className={`flex-1 text-[0.83rem] truncate group-hover:text-white transition-colors duration-100 ${
-          muted ? "text-[#beafd7] group-hover:text-[#e8d5ff]" : "text-[#e8d5ff]"
+          muted ? "text-text-soft group-hover:text-[#e8d5ff]" : "text-[#e8d5ff]"
         }`}
       >
         {card.nome}
       </span>
       <span
         className={`text-[0.8rem] font-bold flex-shrink-0 tabular-nums ${
-          muted ? "text-[rgba(199,149,255,0.55)]" : "text-[#c795ff]"
+          muted ? "text-[rgba(199,149,255,0.55)]" : "text-brand"
         }`}
       >
         {card.quantidade}
@@ -46,7 +46,7 @@ function TypeSection({ type, cards, total, onCardMouseEnter, onCardMouseLeave })
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[0.67rem] font-bold uppercase tracking-widest text-[#c795ff]">
+        <span className="text-[0.67rem] font-bold uppercase tracking-widest text-brand">
           {DECK_TYPE_LABELS[type] || type}
         </span>
         <span className="text-[0.65rem] text-[rgba(190,175,215,0.6)]">{total}</span>
@@ -70,8 +70,8 @@ function ExtraSection({ titulo, cards, onCardMouseEnter, onCardMouseLeave }) {
   const total = cards.reduce((sum, card) => sum + (card.quantidade || 1), 0);
   return (
     <div className="pt-1">
-      <div className="flex items-center justify-between mb-1.5 pt-3 border-t border-[rgba(217,180,255,0.12)]">
-        <span className="text-[0.67rem] font-bold uppercase tracking-widest text-[#c795ff]">{titulo}</span>
+      <div className="flex items-center justify-between mb-1.5 pt-3 border-t border-line-soft">
+        <span className="text-[0.67rem] font-bold uppercase tracking-widest text-brand">{titulo}</span>
         <span className="text-[0.65rem] text-[rgba(190,175,215,0.6)]">{total}</span>
       </div>
       <ul className="m-0 p-0 list-none flex flex-col">
@@ -96,7 +96,7 @@ export function DeckTypeBadges({ grouped }) {
       {grouped.map(({ type, cards, total }) => (
         <span
           key={type}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[rgba(167,79,255,0.1)] border border-[rgba(199,149,255,0.22)] text-[0.65rem] text-[#beafd7] leading-none"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[rgba(167,79,255,0.1)] border border-[rgba(199,149,255,0.22)] text-[0.65rem] text-text-soft leading-none"
         >
           <span className="font-bold text-[#c4b5fd]">{total ?? cards.reduce((s, c) => s + (c.quantidade || 1), 0)}</span>
           {DECK_TYPE_LABELS[type] || type}

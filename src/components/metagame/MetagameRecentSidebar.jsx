@@ -32,7 +32,7 @@ export function MetagameRecentSidebar({
     <aside className="flex flex-col gap-5 lg:sticky lg:top-24">
       <div>
         <label className="flex flex-col gap-1.5">
-          <span className="text-[0.75rem] uppercase tracking-wide text-[#8f82ad] font-semibold">
+          <span className="text-[0.75rem] uppercase tracking-wide text-text-muted font-semibold">
             Buscar arquétipo
           </span>
           <input
@@ -45,27 +45,27 @@ export function MetagameRecentSidebar({
         </label>
       </div>
 
-      <div className="rounded-xl border border-[rgba(217,180,255,0.12)] bg-white/[0.02] p-3">
-        <h2 className="m-0 mb-3 text-[#f5edff] text-[1rem] font-bold">Decks recentes</h2>
+      <div className="rounded-xl border border-line-soft bg-white/[0.02] p-3">
+        <h2 className="m-0 mb-3 text-text-main text-[1rem] font-bold">Decks recentes</h2>
         {(!recentes || recentes.length === 0) ? (
-          <p className="m-0 text-[0.85rem] text-[#8f82ad]">Nenhum resultado neste período.</p>
+          <p className="m-0 text-[0.85rem] text-text-muted">Nenhum resultado neste período.</p>
         ) : (
           <div className="flex flex-col gap-4">
             {recentes.map((evento) => (
               <div key={evento.torneioId}>
                 <Link
                   to={`/torneios/${evento.torneioId}`}
-                  className="block mb-2 text-[0.78rem] text-[#beafd7] no-underline hover:text-[#d9b4ff]"
+                  className="block mb-2 text-[0.78rem] text-text-soft no-underline hover:text-[#d9b4ff]"
                 >
                   {evento.torneioNome}
                   {evento.horario ? ` · ${formatDate(evento.horario)}` : ""}
                 </Link>
                 <div className="grid grid-cols-[2.4rem_minmax(0,1fr)] gap-x-2 gap-y-1.5 text-[0.82rem]">
-                  <span className="text-[0.65rem] uppercase tracking-wide text-[#8f82ad]">Rec</span>
-                  <span className="text-[0.65rem] uppercase tracking-wide text-[#8f82ad]">Deck</span>
+                  <span className="text-[0.65rem] uppercase tracking-wide text-text-muted">Rec</span>
+                  <span className="text-[0.65rem] uppercase tracking-wide text-text-muted">Deck</span>
                   {evento.decks.map((deck, idx) => (
                     <div key={`${evento.torneioId}-${deck.slug}-${idx}`} className="contents">
-                      <span className="text-[#beafd7] tabular-nums">
+                      <span className="text-text-soft tabular-nums">
                         {deck.vitorias}-{deck.derrotas}
                       </span>
                       <Link

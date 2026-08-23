@@ -40,14 +40,14 @@ function PlatformStats() {
   ];
 
   return (
-    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-[rgba(217,180,255,0.1)] bg-white/[0.02] max-md:flex-col max-md:items-start max-md:gap-3">
+    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-line-soft bg-white/[0.02] max-md:flex-col max-md:items-start max-md:gap-3">
       {items.map((stat, i, arr) => (
         <div key={stat.label} className="flex items-center gap-4 max-md:w-full">
           <div className="flex flex-col">
-            <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#c795ff] leading-none">
+            <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-brand leading-none">
               {loading ? "—" : formatSiteStatValue(stat.value)}
             </span>
-            <span className="text-[#beafd7] text-[0.7rem]">{stat.label}</span>
+            <span className="text-text-soft text-[0.7rem]">{stat.label}</span>
           </div>
           {i < arr.length - 1 && (
             <div className="w-px h-7 bg-[rgba(217,180,255,0.15)] max-md:hidden" />
@@ -333,7 +333,7 @@ export function TournamentPage() {
               return (
                 <div
                   key={torneio.id}
-                  className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[0.95rem] shadow-[0_5px_22px_rgba(0,0,0,0.32)] border border-[rgba(217,180,255,0.2)] transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(0,0,0,0.42)] hover:border-[rgba(167,79,255,0.3)]"
+                  className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[0.95rem] shadow-[0_5px_22px_rgba(0,0,0,0.32)] border border-line transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(0,0,0,0.42)] hover:border-[rgba(167,79,255,0.3)]"
                 >
                   {/* Banner image */}
                   {torneio.bannerUrl && (
@@ -350,17 +350,17 @@ export function TournamentPage() {
                   )}
 
                   {/* Card header */}
-                  <div className="flex items-center justify-between gap-2 px-3.5 py-[0.65rem] pb-2 border-b border-[rgba(217,180,255,0.2)] bg-white/[0.02] max-md:flex-wrap">
-                    <span className="font-['Bebas_Neue',sans-serif] text-[0.95rem] tracking-[0.12em] text-[#c795ff]">
+                  <div className="flex items-center justify-between gap-2 px-3.5 py-[0.65rem] pb-2 border-b border-line bg-white/[0.02] max-md:flex-wrap">
+                    <span className="font-['Bebas_Neue',sans-serif] text-[0.95rem] tracking-[0.12em] text-brand">
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-[20px] text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
+                      <span className={`inline-block px-2.5 py-0.5 rounded-2xl text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
                         {STATUS_LABEL[torneio.status] ?? torneio.status}
                       </span>
                       {isAdmin && (
                         <button
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-[#beafd7] transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
                           type="button"
                           onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
                           aria-label={`Copiar ${torneio.nome}`}
@@ -375,7 +375,7 @@ export function TournamentPage() {
                     </div>
                   </div>
 
-                  <h3 className="text-[#f5edff] m-0 mb-2.5 font-['Bebas_Neue',sans-serif] text-[1.25rem] tracking-[0.03em] leading-[1.1] px-3.5 pt-3">
+                  <h3 className="text-text-main m-0 mb-2.5 font-['Bebas_Neue',sans-serif] text-[1.25rem] tracking-[0.03em] leading-[1.1] px-3.5 pt-3">
                     {torneio.nome}
                   </h3>
 
@@ -385,10 +385,10 @@ export function TournamentPage() {
                         text={torneio.descricao}
                         maxLines={2}
                         className="text-[#d7d0e6] text-[0.78rem]"
-                        buttonClassName="mt-1.5 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#c795ff] text-[0.72rem] font-semibold cursor-pointer hover:text-white transition-colors"
+                        buttonClassName="mt-1.5 inline-flex items-center gap-2 border-none bg-transparent p-0 text-brand text-[0.72rem] font-semibold cursor-pointer hover:text-white transition-colors"
                       />
                     )}
-                    <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                    <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                         <rect x="3" y="4" width="18" height="18" rx="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
@@ -397,7 +397,7 @@ export function TournamentPage() {
                       </svg>
                       <span>{formatDate(torneio.horario)}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                    <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 0v2" />
                         <circle cx="9" cy="7" r="4" />
@@ -407,7 +407,7 @@ export function TournamentPage() {
                       <span>{torneio.totalInscritos ?? "—"} inscritos</span>
                     </div>
                     {torneio.status !== "inscricoes_abertas" && (
-                      <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                      <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                           <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
                           <polyline points="17 6 23 6 23 12" />
@@ -416,7 +416,7 @@ export function TournamentPage() {
                       </div>
                     )}
                     {torneio.visualizacoes != null && (
-                      <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                      <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                         <span>👁</span>
                         <span>{torneio.visualizacoes} visualizações</span>
                       </div>
@@ -424,7 +424,7 @@ export function TournamentPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-auto px-3.5 py-[0.7rem] pb-[0.85rem] border-t border-[rgba(217,180,255,0.2)] bg-white/[0.015] flex gap-2 flex-wrap max-md:flex-col">
+                  <div className="mt-auto px-3.5 py-[0.7rem] pb-[0.85rem] border-t border-line bg-white/[0.015] flex gap-2 flex-wrap max-md:flex-col">
                     <button
                       className="px-3 py-1.5 border border-[#4f46e5] rounded-md text-[0.78rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(79,70,229,0.1)] text-[#4f46e5] transition-all duration-300 hover:bg-[#4f46e5] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full"
                       onClick={() => handleViewTournament(torneio.id)}
@@ -460,11 +460,11 @@ export function TournamentPage() {
               onClick={() => setPagina((p) => Math.max(1, p - 1))}
               disabled={pagina === 1}
               aria-label="Página anterior"
-              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+              className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
             >
               ←
             </button>
-            <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+            <span className="text-text-soft text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
               {pagina} / {totalPaginas}
             </span>
             <button
@@ -472,7 +472,7 @@ export function TournamentPage() {
               onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
               disabled={pagina === totalPaginas}
               aria-label="Próxima página"
-              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+              className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
             >
               →
             </button>

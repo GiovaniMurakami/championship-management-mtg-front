@@ -191,7 +191,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         <label className={FORM_LABEL_CLASS} htmlFor="story-fundo-select">
-          Fundo do story <span className="font-normal normal-case tracking-normal text-[#8f82ad]">(opcional)</span>
+          Fundo do story <span className="font-normal normal-case tracking-normal text-text-muted">(opcional)</span>
         </label>
         <SelectField
           id="story-fundo-select"
@@ -200,10 +200,10 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
           onChange={handleSelect}
           disabled={disabled || loading}
           className={TOURNAMENT_SELECT_CLASS}
-          iconClassName="text-[#c795ff]"
+          iconClassName="text-brand"
           options={options}
         />
-        {loading ? <p className="m-0 text-[0.78rem] text-[#8f82ad]">Carregando fundos…</p> : null}
+        {loading ? <p className="m-0 text-[0.78rem] text-text-muted">Carregando fundos…</p> : null}
       </div>
 
       {selectedId === MODE_NEW && (
@@ -224,7 +224,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
           />
           <fieldset className="grid gap-2 border-0 p-0 m-0">
             <legend className={FORM_LABEL_CLASS}>Texto da data e jogadores</legend>
-            <div className="inline-grid grid-cols-2 gap-1 rounded-lg border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] p-1 max-w-[240px]">
+            <div className="inline-grid grid-cols-2 gap-1 rounded-lg border border-line bg-[rgba(255,255,255,0.04)] p-1 max-w-[240px]">
               {[
                 { value: "claro", label: "Claro" },
                 { value: "escuro", label: "Escuro" },
@@ -232,7 +232,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
                 <button
                   key={option.value}
                   type="button"
-                  className={`rounded-md px-3 py-1.5 text-[0.78rem] font-semibold transition-colors ${novoTextoRodape === option.value ? "bg-[#f5edff] text-[#160b2a]" : "text-[#beafd7] hover:bg-white/[0.08] hover:text-white"}`}
+                  className={`rounded-md px-3 py-1.5 text-[0.78rem] font-semibold transition-colors ${novoTextoRodape === option.value ? "bg-[#f5edff] text-[#160b2a]" : "text-text-soft hover:bg-white/[0.08] hover:text-white"}`}
                   onClick={() => setNovoTextoRodape(option.value)}
                   disabled={disabled}
                   aria-pressed={novoTextoRodape === option.value}
@@ -247,7 +247,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
               <img src={novoPreview} alt="Novo fundo" className="block w-full max-h-[160px] object-cover" />
               <button
                 type="button"
-                className="absolute top-2 right-2 rounded-[6px] border border-[rgba(239,68,68,0.4)] bg-[rgba(0,0,0,0.65)] px-[10px] py-[3px] text-[0.75rem] font-semibold text-[#fca5a5]"
+                className="absolute top-2 right-2 rounded-md border border-[rgba(239,68,68,0.4)] bg-[rgba(0,0,0,0.65)] px-[10px] py-[3px] text-[0.75rem] font-semibold text-[#fca5a5]"
                 onClick={() => {
                   setNovoFile(null);
                   setNovoPreview(null);
@@ -276,7 +276,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
             onChange={handleFile}
             disabled={disabled}
           />
-          <p className="m-0 text-[0.75rem] text-[#8f82ad]">
+          <p className="m-0 text-[0.75rem] text-text-muted">
             O nome fica salvo no catálogo para reutilizar em outros torneios.
           </p>
         </div>

@@ -7,10 +7,10 @@ const getTotalMembros = (time) =>
   time.totalMembros ?? time.membroIds?.length ?? time.membros?.length ?? 0;
 
 const fieldClass =
-  "w-full border border-[rgba(217,180,255,0.22)] rounded-[0.75rem] bg-white/[0.04] text-[#f5edff] px-3 py-[0.7rem] outline-none transition-[border-color,background-color,box-shadow] duration-200 hover:border-[rgba(199,149,255,0.5)] focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.06]";
+  "w-full border border-[rgba(217,180,255,0.22)] rounded-lg bg-white/[0.04] text-text-main px-3 py-[0.7rem] outline-none transition-[border-color,background-color,box-shadow] duration-200 hover:border-line-strong focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.06]";
 
 const buttonBase =
-  "inline-flex items-center justify-center gap-2 rounded-[0.75rem] px-4 py-[0.65rem] text-[0.9rem] font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-[0.65rem] text-[0.9rem] font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
 function StatusPill({ tone = "neutral", children }) {
   const tones = {
@@ -29,9 +29,9 @@ function StatusPill({ tone = "neutral", children }) {
 
 function SectionBlock({ title, aside, children }) {
   return (
-    <div className="rounded-[0.9rem] border border-[rgba(217,180,255,0.16)] bg-black/[0.14] p-3.5">
+    <div className="rounded-xl border border-line-soft bg-black/[0.14] p-3.5">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.1em] text-[#beafd7]">{title}</h3>
+        <h3 className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.1em] text-text-soft">{title}</h3>
         {aside}
       </div>
       {children}
@@ -46,7 +46,7 @@ function Notice({ tone = "neutral", children }) {
     neutral: "border-[rgba(96,165,250,0.28)] bg-[rgba(59,130,246,0.08)] text-[#bfdbfe]",
   };
 
-  return <p className={`m-0 rounded-[0.7rem] border px-3 py-2 text-[0.82rem] leading-relaxed ${tones[tone]}`}>{children}</p>;
+  return <p className={`m-0 rounded-lg border px-3 py-2 text-[0.82rem] leading-relaxed ${tones[tone]}`}>{children}</p>;
 }
 
 function SummaryItem({ label, value, tone = "neutral" }) {
@@ -54,11 +54,11 @@ function SummaryItem({ label, value, tone = "neutral" }) {
     success: "text-[#86efac]",
     warning: "text-[#fde68a]",
     danger: "text-[#fca5a5]",
-    neutral: "text-[#f5edff]",
+    neutral: "text-text-main",
   }[tone];
 
   return (
-    <div className="min-w-0 rounded-[0.75rem] border border-[rgba(217,180,255,0.14)] bg-white/[0.035] px-3 py-2.5">
+    <div className="min-w-0 rounded-lg border border-line-soft bg-white/[0.035] px-3 py-2.5">
       <p className="m-0 text-[0.68rem] font-bold uppercase tracking-[0.09em] text-[#9284ad]">{label}</p>
       <p className={`m-0 mt-1 truncate text-[0.88rem] font-bold ${valueTone}`}>{value}</p>
     </div>
@@ -164,10 +164,10 @@ export function PlayerProfile({
   const statusLabel = dropped ? "Dropado" : currentPlayer ? "Inscrito" : canLateJoin ? "Entrada tardia" : "Não inscrito";
 
   return (
-    <section className="rounded-2xl border border-[rgba(217,180,255,0.2)] bg-[linear-gradient(160deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] p-5 shadow-[0_16px_38px_rgba(3,2,8,0.32)] animate-[slide-up_400ms_ease-out] max-md:p-4">
+    <section className="rounded-2xl border border-line bg-[linear-gradient(160deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] p-5 shadow-[0_16px_38px_rgba(3,2,8,0.32)] animate-[slide-up_400ms_ease-out] max-md:p-4">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.75rem] tracking-[0.04em] text-[#f5edff]">Minha inscrição</h2>
+          <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.75rem] tracking-[0.04em] text-text-main">Minha inscrição</h2>
           <p className="m-0 mt-0.5 truncate text-[0.82rem] text-[#a99cbe]">{displayName || "Jogador"}</p>
         </div>
         <StatusPill tone={statusTone}>{statusLabel}</StatusPill>
@@ -176,9 +176,9 @@ export function PlayerProfile({
       {!currentPlayer ? (
         <div className="grid gap-3">
           {torneio?.maxJogadores != null && (
-            <div className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[rgba(217,180,255,0.14)] bg-white/[0.035] px-3.5 py-3">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-line-soft bg-white/[0.035] px-3.5 py-3">
               <div>
-                <p className="m-0 text-[0.88rem] font-bold text-[#f5edff]">{isFull ? "Torneio lotado" : "Inscrições disponíveis"}</p>
+                <p className="m-0 text-[0.88rem] font-bold text-text-main">{isFull ? "Torneio lotado" : "Inscrições disponíveis"}</p>
                 <p className="m-0 mt-0.5 text-[0.76rem] text-[#a99cbe]">{torneio.totalInscritos ?? 0} de {torneio.maxJogadores} vagas preenchidas</p>
               </div>
               <StatusPill tone={isFull ? "danger" : "success"}>{torneio.totalInscritos ?? 0}/{torneio.maxJogadores}</StatusPill>
@@ -241,7 +241,7 @@ export function PlayerProfile({
           {!isOngoing && !isFinished && !dropped && !isCheckedIn && (
             <SectionBlock title="Próximo passo" aside={<StatusPill tone="warning">Check-in pendente</StatusPill>}>
               <div className="grid gap-2">
-                <p className="m-0 text-[0.82rem] leading-relaxed text-[#beafd7]">Confirme sua presença antes do início do torneio.</p>
+                <p className="m-0 text-[0.82rem] leading-relaxed text-text-soft">Confirme sua presença antes do início do torneio.</p>
                 <button
                   className={`${buttonBase} w-full border border-[rgba(199,149,255,0.55)] bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5`}
                   disabled={actionLoading}
@@ -256,19 +256,19 @@ export function PlayerProfile({
           {times.length > 0 && (
             <SectionBlock title="Time" aside={selectedTeam ? <StatusPill tone="success">Selecionado</StatusPill> : <StatusPill tone="neutral">Opcional</StatusPill>}>
               {selectedTeam ? (
-                <p className="m-0 text-[0.92rem] font-bold text-[#f5edff]">{selectedTeam.nome}</p>
+                <p className="m-0 text-[0.92rem] font-bold text-text-main">{selectedTeam.nome}</p>
               ) : (
                 <div className="grid max-h-[160px] gap-2 overflow-y-auto pr-1">
                   {times.map((time) => (
                     <button
                       key={time.id}
                       type="button"
-                      className={`flex w-full items-center justify-between gap-2 rounded-[0.7rem] border px-3 py-2 text-left text-[0.88rem] transition-colors duration-150 ${selectedTimeId === time.id ? "border-[rgba(199,149,255,0.72)] bg-[rgba(199,149,255,0.14)] text-[#f5edff]" : "border-[rgba(217,180,255,0.18)] bg-white/[0.03] text-[#e9ddff] hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.06]"}`}
+                      className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-[0.88rem] transition-colors duration-150 ${selectedTimeId === time.id ? "border-[rgba(199,149,255,0.72)] bg-[rgba(199,149,255,0.14)] text-text-main" : "border-line bg-white/[0.03] text-[#e9ddff] hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.06]"}`}
                       onClick={() => onTimeChange?.(time.id)}
                       disabled={actionLoading || dropped}
                     >
                       <span className="min-w-0 truncate font-bold">{time.nome}</span>
-                      <span className="shrink-0 text-[0.72rem] text-[#beafd7]">{getTotalMembros(time)} membros</span>
+                      <span className="shrink-0 text-[0.72rem] text-text-soft">{getTotalMembros(time)} membros</span>
                     </button>
                   ))}
                 </div>
@@ -279,15 +279,15 @@ export function PlayerProfile({
           {canEditDeck && !dropped && (
             <SectionBlock title={isDeckConfirmed ? "Alterar deck" : "Escolher deck"} aside={!isDeckConfirmed ? <StatusPill tone="warning">Necessário</StatusPill> : null}>
               {decks.length === 0 ? (
-                <p className="m-0 text-[0.85rem] text-[#beafd7]">
-                  Você não tem decks cadastrados. <a href="/decks/criar" className="font-bold text-[#c795ff] underline">Criar deck</a>
+                <p className="m-0 text-[0.85rem] text-text-soft">
+                  Você não tem decks cadastrados. <a href="/decks/criar" className="font-bold text-brand underline">Criar deck</a>
                 </p>
               ) : deckOptions.length === 0 ? (
                 <Notice tone="warning">Você não tem decks compatíveis com o formato deste torneio.</Notice>
               ) : (
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[0.78rem] text-[#beafd7]">Ordenar decks</span>
+                    <span className="text-[0.78rem] text-text-soft">Ordenar decks</span>
                     <SelectField value={deckSort} size="compact" onChange={(event) => setDeckSort(event.target.value)}>
                       <option value="recente">Mais recentes</option>
                       <option value="nome">Nome (A-Z)</option>
@@ -319,7 +319,7 @@ export function PlayerProfile({
                   )}
 
                   <button
-                    className={`${buttonBase} w-full border border-[rgba(217,180,255,0.22)] bg-white/[0.06] text-[#f5edff] hover:not-disabled:border-[rgba(199,149,255,0.5)] hover:not-disabled:bg-white/[0.1]`}
+                    className={`${buttonBase} w-full border border-[rgba(217,180,255,0.22)] bg-white/[0.06] text-text-main hover:not-disabled:border-[rgba(199,149,255,0.5)] hover:not-disabled:bg-white/[0.1]`}
                     disabled={!selectedDeckId || actionLoading}
                     onClick={onChooseDeck}
                   >
@@ -335,12 +335,12 @@ export function PlayerProfile({
           )}
 
           {canSelfDrop && (
-            <details className="group rounded-[0.8rem] border border-[rgba(217,180,255,0.12)] bg-black/[0.08]">
+            <details className="group rounded-lg border border-line-soft bg-black/[0.08]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[0.8rem] font-bold text-[#a99cbe] transition-colors hover:text-[#e9ddff]">
                 Gerenciar inscrição
                 <span className="text-[1rem] transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
               </summary>
-              <div className="grid gap-3 border-t border-[rgba(217,180,255,0.1)] p-3.5">
+              <div className="grid gap-3 border-t border-line-soft p-3.5">
                 <Notice tone="warning">
                   {canEditDeck
                     ? "Ao cancelar, você sai da lista de inscritos deste torneio."
@@ -385,7 +385,7 @@ export function PlayerProfile({
           )}
 
           {dropped && (
-            <details className="group rounded-[0.8rem] border border-[rgba(248,113,113,0.25)] bg-[rgba(239,68,68,0.06)]">
+            <details className="group rounded-lg border border-[rgba(248,113,113,0.25)] bg-[rgba(239,68,68,0.06)]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[0.8rem] font-bold text-[#fca5a5]">
                 Gerenciar inscrição
                 <span className="text-[1rem] transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>

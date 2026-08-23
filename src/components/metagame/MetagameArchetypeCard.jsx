@@ -18,7 +18,7 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
   return (
     <Link
       to={to}
-      className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(18,12,32,0.72)] hover:border-[rgba(199,149,255,0.5)] hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
+      className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-line-soft bg-[rgba(18,12,32,0.72)] hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
     >
       <div
         className="aspect-[16/9] overflow-hidden bg-[rgba(20,12,36,0.9)]"
@@ -48,7 +48,7 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
           {cartasChave.map((carta) => (
             <li
               key={carta}
-              className="truncate cursor-default hover:text-[#f5edff]"
+              className="truncate cursor-default hover:text-text-main"
               onMouseEnter={(event) => {
                 event.preventDefault();
                 onCardMouseEnter?.({ nome: carta });
@@ -59,17 +59,17 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
             </li>
           ))}
         </ul>
-        <div className="mt-3 pt-2 border-t border-[rgba(217,180,255,0.1)] grid grid-cols-2 gap-2">
+        <div className="mt-3 pt-2 border-t border-line-soft grid grid-cols-2 gap-2">
           <div>
-            <div className="text-[0.65rem] uppercase tracking-wide text-[#8f82ad]">Meta %</div>
-            <div className="font-bold text-[#f5edff] text-[0.95rem]">
+            <div className="text-[0.65rem] uppercase tracking-wide text-text-muted">Meta %</div>
+            <div className="font-bold text-text-main text-[0.95rem]">
               {arquetipo.metaPct}%
-              <span className="ml-1 font-normal text-[0.78rem] text-[#beafd7]">({arquetipo.copias})</span>
+              <span className="ml-1 font-normal text-[0.78rem] text-text-soft">({arquetipo.copias})</span>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[0.65rem] uppercase tracking-wide text-[#8f82ad]">Winrate</div>
-            <div className="font-bold text-[#f5edff] text-[0.95rem]">{arquetipo.winrate}%</div>
+            <div className="text-[0.65rem] uppercase tracking-wide text-text-muted">Winrate</div>
+            <div className="font-bold text-text-main text-[0.95rem]">{arquetipo.winrate}%</div>
           </div>
         </div>
       </div>

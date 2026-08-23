@@ -62,7 +62,7 @@ export function DeckStats({ mainDeck }) {
 
   if (!stats) {
     return (
-      <div className="flex flex-col gap-4 border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full">
+      <div className="flex flex-col gap-4 border border-line rounded-lg p-4 bg-white/[0.01] w-full">
         <h3 className="text-[1.1rem] m-0 text-text-main">📊 Estatísticas do Deck</h3>
         <p className="text-text-soft text-[0.9rem] text-center m-0">Adicione cartas ao deck para ver estatísticas</p>
       </div>
@@ -95,12 +95,12 @@ export function DeckStats({ mainDeck }) {
   );
 
   return (
-    <div className="flex flex-col gap-4 border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full">
+    <div className="flex flex-col gap-4 border border-line rounded-lg p-4 bg-white/[0.01] w-full">
       <h3 className="text-[1.1rem] m-0 text-text-main">📊 Estatísticas do Deck</h3>
 
       {/* Curva de Mana */}
       <div className="mb-6">
-        <h4 className="text-[0.95rem] text-[#beafd7] mb-2 mt-0">Curva de Mana</h4>
+        <h4 className="text-[0.95rem] text-text-soft mb-2 mt-0">Curva de Mana</h4>
         {/* ds-curve-chart: flex items-end gap-[0.3rem] h-[148px], responsive h-[120px] */}
         <div className="flex items-end gap-[0.3rem] h-[148px] max-[600px]:h-[120px]">
           {curveBuckets.map((cmc) => {
@@ -139,7 +139,7 @@ export function DeckStats({ mainDeck }) {
 
       {/* Distribuição de Cores */}
       <div className="mb-6">
-        <h4 className="text-[0.95rem] text-[#beafd7] mb-2 mt-0">Distribuição de Cores</h4>
+        <h4 className="text-[0.95rem] text-text-soft mb-2 mt-0">Distribuição de Cores</h4>
         {/* ds-color-list: grid gap-[0.4rem] */}
         <div className="grid gap-[0.4rem]">
           {Object.entries(stats.colorDistribution)
@@ -184,7 +184,7 @@ export function DeckStats({ mainDeck }) {
 
       {/* Tipos de Carta — ds-section-last has mb-0 */}
       <div className="mb-0">
-        <h4 className="text-[0.95rem] text-[#beafd7] mb-2 mt-0">Tipos de Carta</h4>
+        <h4 className="text-[0.95rem] text-text-soft mb-2 mt-0">Tipos de Carta</h4>
         {/* ds-type-list: grid gap-[0.4rem] */}
         <div className="grid gap-[0.4rem]">
           {Object.entries(stats.typeDistribution)
@@ -192,10 +192,10 @@ export function DeckStats({ mainDeck }) {
             .map(([type, count]) => {
               const percent = ((count / stats.totalCards) * 100).toFixed(1);
               return (
-                /* ds-type-row: flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(167,79,255,0.08)] rounded-[0.4rem] border border-[rgba(167,79,255,0.2)] */
+                /* ds-type-row: flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(167,79,255,0.08)] rounded-md border border-[rgba(167,79,255,0.2)] */
                 <div
                   key={type}
-                  className="flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(44,207,180,0.06)] rounded-[0.4rem] border border-[rgba(44,207,180,0.18)]"
+                  className="flex justify-between items-center px-[0.5rem] py-[0.3rem] bg-[rgba(44,207,180,0.06)] rounded-md border border-[rgba(44,207,180,0.18)]"
                 >
                   {/* ds-type-name: text-[0.85rem] font-medium */}
                   <span className="text-[0.85rem] font-medium">{type}</span>

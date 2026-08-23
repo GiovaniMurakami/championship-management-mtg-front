@@ -263,7 +263,7 @@ export function LigaCreatePage({ editMode = false }) {
                 disabled={loading}
               />
               <div className="grid gap-2">
-                <span className={FORM_LABEL_CLASS}>Banner da liga <span className="normal-case tracking-normal font-normal text-[#8f82ad]">(opcional)</span></span>
+                <span className={FORM_LABEL_CLASS}>Banner da liga <span className="normal-case tracking-normal font-normal text-text-muted">(opcional)</span></span>
                 {bannerPreview ? (
                   <div className="grid gap-3">
                     <img src={bannerPreview} alt="Preview do banner da liga" className="h-36 w-full rounded-xl border border-[rgba(199,149,255,0.3)] object-cover" />
@@ -304,7 +304,7 @@ export function LigaCreatePage({ editMode = false }) {
                       className={`flex items-center gap-2 flex-1 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
                         form.tipo === value
                           ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.12)]"
-                          : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
+                          : "border-line-soft bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                       }`}
                     >
                       <input
@@ -316,7 +316,7 @@ export function LigaCreatePage({ editMode = false }) {
                         disabled={loading}
                         className="accent-[#8e39ed]"
                       />
-                      <span className="text-[#f5edff] text-[0.9rem] font-medium">{label}</span>
+                      <span className="text-text-main text-[0.9rem] font-medium">{label}</span>
                     </label>
                   ))}
                 </div>
@@ -391,7 +391,7 @@ export function LigaCreatePage({ editMode = false }) {
                     <button
                       type="button"
                       onClick={handleLimparFiltrosTorneio}
-                      className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
+                      className="px-4 py-2 rounded-lg border border-line bg-white/[0.03] text-text-soft text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
                     >
                       Limpar filtros
                     </button>
@@ -407,7 +407,7 @@ export function LigaCreatePage({ editMode = false }) {
                         className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
                           selected
                             ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.12)]"
-                            : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
+                            : "border-line-soft bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                         }`}
                       >
                         <input
@@ -418,13 +418,13 @@ export function LigaCreatePage({ editMode = false }) {
                           disabled={loading || loadingTorneios}
                         />
                         <div className="flex-1 min-w-0">
-                          <span className="flex items-center gap-2 text-[#f5edff] text-[0.88rem] font-medium min-w-0">
+                          <span className="flex items-center gap-2 text-text-main text-[0.88rem] font-medium min-w-0">
                             <span className="truncate">{torneio.nome}</span>
                             {torneio.horario && (
                               <span className="shrink-0 text-[0.74rem] font-normal text-[#a99cbe]">· {formatBrasiliaDate(torneio.horario)}</span>
                             )}
                           </span>
-                          <span className="text-[#beafd7] text-[0.77rem]">{(torneio.formato || "").toUpperCase()}</span>
+                          <span className="text-text-soft text-[0.77rem]">{(torneio.formato || "").toUpperCase()}</span>
                         </div>
                       </label>
                     );
@@ -432,7 +432,7 @@ export function LigaCreatePage({ editMode = false }) {
                 </div>
               )}
               {torneiosSelecionados.length > 0 && (
-                <p className="text-[#c795ff] text-[0.8rem] m-0">
+                <p className="text-brand text-[0.8rem] m-0">
                   {torneiosDisponiveis.length} filtrado(s), {torneiosSelecionados.length} selecionado(s)
                 </p>
               )}

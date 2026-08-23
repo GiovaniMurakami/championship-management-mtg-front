@@ -28,13 +28,13 @@ export function EditProfileModal({
     <>
       <BaseModal isOpen={isOpen && !showDeleteConfirm} onClose={handleClose}>
         <div className="mb-5 text-center">
-          <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+          <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
             Sua conta
           </p>
-          <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-[#f5edff] m-0">
+          <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-text-main m-0">
             Editar perfil
           </h2>
-          <p className="mt-1 text-[0.88rem] text-[#9f91bd]">
+          <p className="mt-1 text-[0.88rem] text-text-subtle">
             Atualize como você aparece nos torneios e pareamentos.
           </p>
         </div>
@@ -79,7 +79,7 @@ export function EditProfileModal({
               {isLoading ? "Salvando..." : "Salvar"}
             </button>
             <button
-              className={`flex-1 ${BTN_GHOST} border border-[rgba(217,180,255,0.2)]`}
+              className={`flex-1 ${BTN_GHOST} border border-line`}
               type="button"
               onClick={handleClose}
               disabled={isLoading || deleteLoading}
@@ -93,7 +93,7 @@ export function EditProfileModal({
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-[#ffa8b8]">
             Zona de risco
           </p>
-          <p className="mt-2 mb-3 text-[0.84rem] leading-relaxed text-[#beafd7]">
+          <p className="mt-2 mb-3 text-[0.84rem] leading-relaxed text-text-soft">
             A exclusão anonimiza sua conta e remove dados pessoais. Decks e
             participações em torneios são preservados e passam a aparecer como
             &quot;Usuário excluído&quot;. Esta ação é irreversível.

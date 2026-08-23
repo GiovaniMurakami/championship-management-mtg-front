@@ -25,15 +25,15 @@ const STATUS_CONFIG = {
 const DEFAULT_STATUS = {
   label: "—",
   dot: "#beafd7",
-  badge: "bg-[rgba(255,255,255,0.06)] text-[#beafd7] border border-[rgba(217,180,255,0.2)]",
+  badge: "bg-[rgba(255,255,255,0.06)] text-text-soft border border-line",
 };
 
 function StatChip({ icon, label, value, accent }) {
   return (
-    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.14)] min-w-0 max-md:basis-[calc(50%-0.25rem)] max-md:flex-1">
+    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-line-soft min-w-0 max-md:basis-[calc(50%-0.25rem)] max-md:flex-1">
       <span style={accent ? { color: accent } : undefined} className={`flex-shrink-0 ${accent ? undefined : "text-[#8b7aab]"}`}>{icon}</span>
       <span className="text-[0.78rem] text-[#8b7aab] font-medium whitespace-nowrap">{label}</span>
-      <span className="text-[0.85rem] font-semibold text-[#f5edff] break-words min-w-0">{value}</span>
+      <span className="text-[0.85rem] font-semibold text-text-main break-words min-w-0">{value}</span>
     </div>
   );
 }
@@ -79,7 +79,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
       </h1>
 
       {torneio?.descricao && (
-        <div className="mb-4 rounded-2xl border border-[rgba(217,180,255,0.16)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[#d8d1e9] text-[0.92rem]">
+        <div className="mb-4 rounded-2xl border border-line-soft bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[#d8d1e9] text-[0.92rem]">
           <ExpandableText
             label="Descrição"
             text={torneio.descricao}
@@ -90,7 +90,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
             expandedLabel="Ocultar"
             headerClassName="flex w-full items-center justify-between gap-3 border-none bg-transparent p-0 text-left text-[#a78bfa] cursor-pointer hover:text-white transition-colors"
             labelClassName="text-[0.72rem] uppercase tracking-[0.08em] font-semibold"
-            toggleTextClassName="text-[#c795ff]"
+            toggleTextClassName="text-brand"
           />
         </div>
       )}

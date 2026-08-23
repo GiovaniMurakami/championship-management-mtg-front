@@ -199,7 +199,7 @@ export function TimePage() {
           ) : (
             <>
               <button
-                className="px-4 py-2 border border-[rgba(199,149,255,0.3)] rounded-lg bg-white/[0.03] text-[#c4b5fd] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06]"
+                className="px-4 py-2 border border-[rgba(199,149,255,0.3)] rounded-lg bg-white/[0.03] text-[#c4b5fd] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 hover:border-line-strong hover:bg-white/[0.06]"
                 onClick={() => {
                   setShowConviteModal(true);
                   setConviteError("");
@@ -239,7 +239,7 @@ export function TimePage() {
           <button
             type="button"
             onClick={handleLimparBusca}
-            className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
           >
             ✕
           </button>
@@ -250,7 +250,7 @@ export function TimePage() {
       {loading ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-[140px] rounded-[0.9rem] bg-white/[0.04] animate-pulse" />
+            <div key={i} className="h-[140px] rounded-xl bg-white/[0.04] animate-pulse" />
           ))}
         </div>
       ) : times.length === 0 ? (
@@ -261,7 +261,7 @@ export function TimePage() {
             <button
               type="button"
               onClick={handleLimparBusca}
-              className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
+              className="px-4 py-2 rounded-lg border border-line bg-white/[0.03] text-text-soft text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
             >
               Limpar busca
             </button>
@@ -273,7 +273,7 @@ export function TimePage() {
             {times.map((time) => (
               <div
                 key={time.id}
-                className="min-h-[176px] h-full bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.15)] rounded-[0.9rem] p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.35)] hover:bg-white/[0.055] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(0,0,0,0.3)] cursor-pointer group flex flex-col"
+                className="min-h-[176px] h-full bg-[rgba(255,255,255,0.03)] border border-line-soft rounded-xl p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.35)] hover:bg-white/[0.055] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(0,0,0,0.3)] cursor-pointer group flex flex-col"
                 onClick={() => navigate(`/times/${time.id}`)}
               >
                 <div className="flex min-h-10 items-start justify-between gap-2 mb-2">
@@ -283,20 +283,20 @@ export function TimePage() {
                         <img src={time.imagemUrl} alt="" loading="lazy" decoding="async" className="w-9 h-9 rounded-lg object-cover border border-[rgba(199,149,255,0.2)] flex-shrink-0" />
                       </Tooltip>
                     )}
-                    <h3 className="m-0 text-[#f5edff] font-semibold text-[1rem] leading-snug group-hover:text-white transition-colors">
+                    <h3 className="m-0 text-text-main font-semibold text-[1rem] leading-snug group-hover:text-white transition-colors">
                       {time.nome}
                     </h3>
                   </div>
-                  <span className="inline-flex items-center gap-[0.3rem] text-[0.72rem] font-semibold text-[#c795ff] bg-[rgba(199,149,255,0.1)] border border-[rgba(199,149,255,0.2)] rounded-full px-[0.55rem] py-[0.12rem] flex-shrink-0">
+                  <span className="inline-flex items-center gap-[0.3rem] text-[0.72rem] font-semibold text-brand bg-[rgba(199,149,255,0.1)] border border-[rgba(199,149,255,0.2)] rounded-full px-[0.55rem] py-[0.12rem] flex-shrink-0">
                     {getTotalMembros(time)} membros
                   </span>
                 </div>
-                <p className={`m-0 mb-3 min-h-[2.6rem] text-[#beafd7] text-[0.82rem] leading-relaxed line-clamp-2 ${time.descricao ? "" : "invisible"}`} aria-hidden={!time.descricao}>
+                <p className={`m-0 mb-3 min-h-[2.6rem] text-text-soft text-[0.82rem] leading-relaxed line-clamp-2 ${time.descricao ? "" : "invisible"}`} aria-hidden={!time.descricao}>
                   {time.descricao || "Sem descrição"}
                 </p>
                 {canManage(time) && (
                   <div
-                    className="flex items-center gap-2 mt-auto pt-3 border-t border-[rgba(217,180,255,0.1)]"
+                    className="flex items-center gap-2 mt-auto pt-3 border-t border-line-soft"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -325,11 +325,11 @@ export function TimePage() {
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
                 aria-label="Página anterior"
-                className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 ←
               </button>
-              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+              <span className="text-text-soft text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
                 {pagina} / {totalPaginas}
               </span>
               <button
@@ -337,7 +337,7 @@ export function TimePage() {
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
                 aria-label="Próxima página"
-                className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 →
               </button>
@@ -366,21 +366,21 @@ export function TimePage() {
             if (e.target === e.currentTarget) setShowConviteModal(false);
           }}
         >
-          <div className="bg-[#110a22] border border-[rgba(217,180,255,0.2)] rounded-2xl w-full max-w-[420px] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out]">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(217,180,255,0.15)]">
+          <div className="bg-[#110a22] border border-line rounded-2xl w-full max-w-[420px] shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-line-soft">
               <h2 className="text-white font-semibold text-[1.1rem] m-0">
                 Entrar por Convite
               </h2>
               <button
                 type="button"
-                className="text-[#beafd7] hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]"
+                className="text-text-soft hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]"
                 onClick={() => setShowConviteModal(false)}
               >
                 ✕
               </button>
             </div>
             <form onSubmit={handleEntrarPorConvite} className="p-6 flex flex-col gap-4">
-              <p className="m-0 text-[#beafd7] text-[0.88rem]">
+              <p className="m-0 text-text-soft text-[0.88rem]">
                 Cole o token de convite fornecido pelo dono do time:
               </p>
               <input
@@ -411,7 +411,7 @@ export function TimePage() {
                   type="button"
                   onClick={() => setShowConviteModal(false)}
                   disabled={conviteLoading}
-                  className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 border border-line rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>

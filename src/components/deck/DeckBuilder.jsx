@@ -124,11 +124,11 @@ function ExportDropdown({ deckForm, mainDeck, sideboard, commander }) {
         type="button"
         className="
           inline-flex items-center gap-[0.35rem]
-          border border-line rounded-[0.75rem] px-4 py-[0.6rem]
+          border border-line rounded-lg px-4 py-[0.6rem]
           cursor-pointer font-bold
           bg-white/[0.03] text-text-main
           transition-all duration-[220ms]
-          hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]
+          hover:border-line-strong hover:bg-white/[0.08] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]
           active:translate-y-0
           disabled:opacity-60 disabled:cursor-not-allowed
         "
@@ -151,7 +151,7 @@ function ExportDropdown({ deckForm, mainDeck, sideboard, commander }) {
         <ul
           className="
             absolute top-[calc(100%+0.4rem)] left-0 z-50
-            bg-[#1a1030] border border-line rounded-[0.65rem]
+            bg-[#1a1030] border border-line rounded-lg
             py-[0.3rem] px-[0.3rem] m-0 list-none min-w-[180px]
             shadow-[0_8px_28px_rgba(0,0,0,0.5)]
             animate-[fadeInDown_0.14s_ease]
@@ -164,7 +164,7 @@ function ExportDropdown({ deckForm, mainDeck, sideboard, commander }) {
                 className="
                   w-full text-left bg-transparent border-none
                   text-text-soft px-[0.75rem] py-[0.5rem]
-                  rounded-[0.4rem] text-[0.88rem] cursor-pointer
+                  rounded-md text-[0.88rem] cursor-pointer
                   transition-[background,color] duration-[150ms]
                   hover:bg-[rgba(167,79,255,0.15)] hover:text-text-main
                 "
@@ -314,7 +314,7 @@ export function DeckBuilder({
   return (
     /* deck-builder: animate fade-in, border, rounded, padding, bg, mt */
     <section
-      className="animate-[fade-in_400ms_ease-out] border border-line rounded-[1.2rem] p-5 bg-[rgba(15,10,29,0.84)]"
+      className="animate-[fade-in_400ms_ease-out] border border-line rounded-2xl p-5 bg-[rgba(15,10,29,0.84)]"
       id="decks"
     >
       {/* deck-builder-header */}
@@ -384,18 +384,18 @@ export function DeckBuilder({
             `}
           >
             Formato
-            <div className={`relative format-select-wrapper ${invalidFields.formato ? "border border-[rgba(255,98,124,0.95)] shadow-[0_0_0_2px_rgba(255,98,124,0.2)] rounded-[0.7rem]" : ""}`}>
+            <div className={`relative format-select-wrapper ${invalidFields.formato ? "border border-[rgba(255,98,124,0.95)] shadow-[0_0_0_2px_rgba(255,98,124,0.2)] rounded-lg" : ""}`}>
               <SelectField
                 className="
                   w-full appearance-none
-                  border border-line rounded-[0.7rem]
+                  border border-line rounded-lg
                   bg-gradient-to-b from-white/[0.06] to-white/[0.02]
                   text-text-main px-[0.7rem] py-[0.65rem] pr-[2.1rem]
                   cursor-pointer
                   transition-[border-color,box-shadow,background-color] duration-[180ms]
                   hover:border-[rgba(199,149,255,0.6)]
                   focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.05]
-                  [&_option]:text-[#f5edff] [&_option]:bg-[#1a1129]
+                  [&_option]:text-text-main [&_option]:bg-[#1a1129]
                 "
                 value={deckForm.formato}
                 onChange={(event) => {
@@ -437,7 +437,7 @@ export function DeckBuilder({
             Link LigaMagic
             <input
               type="url"
-              className="border border-line rounded-[0.7rem] bg-white/[0.03] text-text-main px-[0.7rem] py-[0.65rem] w-full focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)]"
+              className="border border-line rounded-lg bg-white/[0.03] text-text-main px-[0.7rem] py-[0.65rem] w-full focus:outline-none focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)]"
               value={deckForm.linkLigaMagic || ""}
               onChange={(event) => {
                 onDeckFormChange((current) => ({ ...current, linkLigaMagic: event.target.value }));
@@ -451,7 +451,7 @@ export function DeckBuilder({
         )}
 
         {(deckForm.formato === "commander500" || deckForm.linkLigaMagic) && (
-          <div className="px-3 py-3 rounded-[0.7rem] border border-[rgba(96,165,250,0.28)] bg-[rgba(59,130,246,0.08)] text-[0.88rem]">
+          <div className="px-3 py-3 rounded-lg border border-[rgba(96,165,250,0.28)] bg-[rgba(59,130,246,0.08)] text-[0.88rem]">
             <span className="text-[#bfdbfe] font-semibold">LigaMagic:</span>{" "}
             {deckForm.linkLigaMagic ? (
               <a
@@ -469,7 +469,7 @@ export function DeckBuilder({
         )}
 
         {isCommander && (
-          <div className="px-3 py-3 rounded-[0.7rem] border border-[rgba(251,191,36,0.28)] bg-[rgba(251,191,36,0.08)] text-[#fde68a] text-[0.88rem]">
+          <div className="px-3 py-3 rounded-lg border border-[rgba(251,191,36,0.28)] bg-[rgba(251,191,36,0.08)] text-[#fde68a] text-[0.88rem]">
             {isCommander500 ? "Commander 500" : "Commander"} usa <strong>99 cartas no maindeck</strong>, <strong>1 comandante</strong> e pode manter sideboard separado, se o formato exigir.
           </div>
         )}
@@ -480,7 +480,7 @@ export function DeckBuilder({
           {/* picker-column (main) */}
           <div
             className="
-              border border-line rounded-[0.8rem] p-3
+              border border-line rounded-lg p-3
               bg-white/[0.01]
               min-h-[clamp(520px,calc(100vh-240px),760px)]
               flex flex-col overflow-hidden
@@ -519,7 +519,7 @@ export function DeckBuilder({
           {/* picker-column (side) */}
           <div
             className="
-              border border-line rounded-[0.8rem] p-3
+              border border-line rounded-lg p-3
               bg-white/[0.01]
               min-h-[clamp(520px,calc(100vh-240px),760px)]
               flex flex-col overflow-hidden
@@ -558,7 +558,7 @@ export function DeckBuilder({
           {isCommander && (
             <div
               className="
-                border border-line rounded-[0.8rem] p-3
+                border border-line rounded-lg p-3
                 bg-white/[0.01]
                 min-h-[clamp(520px,calc(100vh-240px),760px)]
                 flex flex-col overflow-hidden
@@ -604,11 +604,11 @@ export function DeckBuilder({
               <label
                 className="
                   inline-flex items-center justify-center gap-[0.4rem]
-                  border border-line rounded-[0.75rem] px-4 py-[0.6rem]
+                  border border-line rounded-lg px-4 py-[0.6rem]
                   cursor-pointer font-bold
                   bg-white/[0.03] text-text-main
                   transition-all duration-[220ms]
-                  hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]
+                  hover:border-line-strong hover:bg-white/[0.08] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]
                   active:translate-y-0
                   max-sm:w-full max-sm:py-[0.85rem] max-sm:text-base max-sm:min-h-[52px]
                 "
@@ -637,11 +637,11 @@ export function DeckBuilder({
                   type="button"
                   className="
                     inline-flex items-center justify-center gap-[0.4rem]
-                    border border-line rounded-[0.75rem] px-4 py-[0.6rem]
+                    border border-line rounded-lg px-4 py-[0.6rem]
                     cursor-pointer font-bold
                     bg-white/[0.03] text-text-main
                     transition-all duration-[220ms]
-                    hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08]
+                    hover:border-line-strong hover:bg-white/[0.08]
                     max-sm:w-full max-sm:py-[0.85rem]
                   "
                   onClick={() => setPasteOpen((open) => !open)}
@@ -659,7 +659,7 @@ export function DeckBuilder({
             /* btn primary */
             <button
               className="
-                border border-[rgba(199,149,255,0.6)] rounded-[0.75rem] px-4 py-[0.6rem]
+                border border-[rgba(199,149,255,0.6)] rounded-lg px-4 py-[0.6rem]
                 cursor-pointer font-bold
                 bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white
                 shadow-[0_4px_12px_rgba(167,79,255,0.25)]
@@ -686,13 +686,13 @@ export function DeckBuilder({
               onChange={(e) => setPasteText(e.target.value)}
               rows={8}
               placeholder={"4 Lightning Bolt\n...\nSB: 2 Rest in Peace"}
-              className="w-full bg-[rgba(255,255,255,0.04)] border border-line rounded-[0.75rem] px-3 py-2 text-[0.9rem] text-text-main placeholder:text-text-soft/50"
+              className="w-full bg-[rgba(255,255,255,0.04)] border border-line rounded-lg px-3 py-2 text-[0.9rem] text-text-main placeholder:text-text-soft/50"
               disabled={importLoading}
             />
             <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
-                className="px-3 py-2 rounded-[0.65rem] border border-[rgba(199,149,255,0.45)] text-[#c795ff] font-semibold disabled:opacity-50"
+                className="px-3 py-2 rounded-lg border border-[rgba(199,149,255,0.45)] text-brand font-semibold disabled:opacity-50"
                 onClick={handlePasteImport}
                 disabled={importLoading || !pasteText.trim()}
               >
@@ -700,7 +700,7 @@ export function DeckBuilder({
               </button>
               <button
                 type="button"
-                className="px-3 py-2 rounded-[0.65rem] border border-line text-text-soft font-semibold"
+                className="px-3 py-2 rounded-lg border border-line text-text-soft font-semibold"
                 onClick={() => { setPasteOpen(false); setPasteText(""); }}
                 disabled={importLoading}
               >
@@ -712,27 +712,27 @@ export function DeckBuilder({
 
         {/* feedback messages */}
         {importMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
             {importMessage}
           </p>
         ) : null}
 
         {deckMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
             {deckMessage}
           </p>
         ) : null}
 
         {/* feedback limit-warning */}
         {cardLimitMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
             {cardLimitMessage}
           </p>
         ) : null}
 
         {/* feedback illegal-warning */}
         {illegalCardMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-[0.6rem] bg-[rgba(255,107,107,0.18)] text-[#ffb3b3] text-[0.9rem] border-l-[3px] border-l-[#ff6b6b] animate-[fade-in_300ms_ease-out]">
+          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(255,107,107,0.18)] text-[#ffb3b3] text-[0.9rem] border-l-[3px] border-l-[#ff6b6b] animate-[fade-in_300ms_ease-out]">
             {illegalCardMessage}
           </p>
         ) : null}

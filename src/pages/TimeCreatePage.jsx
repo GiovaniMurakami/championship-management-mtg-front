@@ -144,8 +144,8 @@ export function TimeCreatePage({ editMode = false }) {
                 disabled={loading}
               />
               <div className="grid gap-2">
-                <span className="text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#9f91bd]">
-                  Imagem do Time <span className="normal-case tracking-normal font-normal text-[#8f82ad]">(opcional)</span>
+                <span className="text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-text-subtle">
+                  Imagem do Time <span className="normal-case tracking-normal font-normal text-text-muted">(opcional)</span>
                 </span>
                 {imagemPreview ? (
                   <div className="flex items-center gap-4">
@@ -168,7 +168,7 @@ export function TimeCreatePage({ editMode = false }) {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={loading}
-                    className="self-start px-4 py-2 border border-[rgba(199,149,255,0.3)] rounded-lg bg-white/[0.03] text-[#beafd7] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] disabled:opacity-50"
+                    className="self-start px-4 py-2 border border-[rgba(199,149,255,0.3)] rounded-lg bg-white/[0.03] text-text-soft text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:border-line-strong hover:bg-white/[0.06] disabled:opacity-50"
                   >
                     Selecionar imagem
                   </button>

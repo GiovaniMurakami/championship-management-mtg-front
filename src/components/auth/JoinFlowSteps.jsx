@@ -20,7 +20,7 @@ export function JoinFlowSteps({ currentStep }) {
                 ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.16)] text-[#e8dfff]"
                 : isDone
                   ? "border-[rgba(44,207,180,0.25)] bg-[rgba(44,207,180,0.08)] text-[#5eead4]"
-                  : "border-[rgba(217,180,255,0.12)] bg-transparent text-[#8f82ad]",
+                  : "border-line-soft bg-transparent text-text-muted",
             ].join(" ")}
           >
             <span className="block text-[0.65rem] opacity-80">Passo {step.id}</span>
