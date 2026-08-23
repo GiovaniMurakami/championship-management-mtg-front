@@ -7,6 +7,7 @@ import { formatTournamentRoundLabel, isEliminationPhase } from "../../utils/tour
 import { editarPareamentosRodada } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
+import { InlineAlert } from "../ui/InlineAlert";
 
 function getMesa(partida, index) {
     return partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? index + 1;
@@ -514,7 +515,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                         </div>
                     )}
 
-                    {pairingsError && <p className="text-[#fca5a5] text-[0.85rem] mt-4 mb-0">{pairingsError}</p>}
+                    {pairingsError ? <InlineAlert type="error" className="mt-4">{pairingsError}</InlineAlert> : null}
                     <div className="flex gap-3 mt-5 max-md:flex-col">
                         <button type="button" className="flex-1 px-4 py-2 border border-line rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors max-md:w-full" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
                         <button type="button" className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50 max-md:w-full" onClick={handleSavePairings} disabled={pairingsLoading}>{pairingsLoading ? "Salvando..." : "Salvar pareamentos"}</button>

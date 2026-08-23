@@ -3,12 +3,11 @@ import { criarTorneio } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
-import { SelectField, FormFeedback, FormSection } from "../ui";
+import { Button, SelectField, FormFeedback, FormSection } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
 import {
-  BTN_SUBMIT,
   FORM_COUNTER_CLASS,
   FORM_LABEL_CLASS,
   FORM_PAGE_SHELL_CLASS,
@@ -397,9 +396,9 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
           {error ? <FormFeedback message={error} variant="error" /> : null}
 
-          <button type="submit" className={BTN_SUBMIT} disabled={isSubmitting}>
+          <Button type="submit" size="lg" block loading={isSubmitting}>
             {uploadingBanner ? "Enviando banner..." : loading ? "Criando..." : "Criar Torneio"}
-          </button>
+          </Button>
         </form>
       </div>
     </section>

@@ -5,6 +5,7 @@ import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { useScryfallArt } from "../../hooks/useScryfallArt";
 import { buscarArtesDaCarta, buscarCartasMTG } from "../../services/scryfallApi";
 import { isScryfallId } from "../../utils/scryfallId";
+import { InlineAlert } from "../ui/InlineAlert";
 
 export function MetagameCartaRepresentativaEditor({
   valorInicial,
@@ -94,7 +95,7 @@ export function MetagameCartaRepresentativaEditor({
         onPreviewDismiss={onPreviewDismiss}
         readOnly={salvando}
       />
-      {erroBusca ? <p className="m-0 text-[0.75rem] text-[#fca5a5]">{erroBusca}</p> : null}
+      {erroBusca ? <InlineAlert type="error" className="py-2 text-[0.75rem]">{erroBusca}</InlineAlert> : null}
       {carregandoArtes ? (
         <p className="m-0 text-[0.8rem] text-text-soft">Buscando artes...</p>
       ) : null}

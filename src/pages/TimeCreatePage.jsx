@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { criarTime, atualizarTime, buscarTime } from "../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
 import { useAuth } from "../hooks/useAuth";
-import { BackButton, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
-import { BTN_SUBMIT, FORM_PAGE_SHELL_CLASS, FORM_PAGE_TITLE_CLASS } from "../styles/uiClasses";
+import { BackButton, Button, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
+import { FORM_PAGE_SHELL_CLASS, FORM_PAGE_TITLE_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -193,11 +193,11 @@ export function TimeCreatePage({ editMode = false }) {
 
             {error ? <FormFeedback message={error} variant="error" /> : null}
 
-            <button type="submit" className={BTN_SUBMIT} disabled={loading}>
+            <Button type="submit" size="lg" block loading={loading}>
               {loading
                 ? editMode ? "Salvando..." : "Criando..."
                 : editMode ? "Salvar Alterações" : "Criar Time"}
-            </button>
+            </Button>
           </form>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
+import { InlineAlert } from "../components/ui/InlineAlert";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -145,11 +146,7 @@ export function DashboardBloqueiosPage() {
         </label>
       </div>
 
-      {error && (
-        <p className="mb-4 rounded-xl border border-[rgba(252,88,119,0.35)] bg-[rgba(252,88,119,0.1)] px-3 py-2 text-sm text-[#ffa8b8]">
-          {error}
-        </p>
-      )}
+      {error ? <InlineAlert type="error" className="mb-4">{error}</InlineAlert> : null}
 
       <div className="overflow-hidden rounded-2xl border border-line-soft bg-[rgba(14,9,28,0.55)]">
         {loading ? (

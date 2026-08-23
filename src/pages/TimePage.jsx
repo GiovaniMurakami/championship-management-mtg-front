@@ -8,6 +8,8 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
+import { Button } from "../components/ui/Button";
+import { FormFeedback } from "../components/ui/FormFeedback";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
 import { isValidUuid } from "../utils/validateUuid";
@@ -198,8 +200,8 @@ export function TimePage() {
             </Tooltip>
           ) : (
             <>
-              <button
-                className="px-4 py-2 border border-[rgba(199,149,255,0.3)] rounded-lg bg-white/[0.03] text-[#c4b5fd] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 hover:border-line-strong hover:bg-white/[0.06]"
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setShowConviteModal(true);
                   setConviteError("");
@@ -208,13 +210,12 @@ export function TimePage() {
                 }}
               >
                 🔗 Entrar por Convite
-              </button>
-              <button
-                className="px-4 py-2 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] text-white rounded-lg text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)]"
+              </Button>
+              <Button
                 onClick={() => requireAuth(() => navigate("/times/criar"))}
               >
                 + Criar Time
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -229,12 +230,9 @@ export function TimePage() {
           onChange={(e) => setBuscaInput(e.target.value)}
           className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
         />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-[rgba(79,70,229,0.18)] border border-[rgba(79,70,229,0.4)] text-[#a5b4fc] rounded-lg font-semibold text-[0.9rem] hover:bg-[rgba(79,70,229,0.32)] transition-colors whitespace-nowrap"
-        >
+        <Button type="submit" variant="secondary" className="whitespace-nowrap">
           Buscar
-        </button>
+        </Button>
         {busca && (
           <button
             type="button"
@@ -396,16 +394,8 @@ export function TimePage() {
                 className={TOURNAMENT_INPUT_CLASS}
                 autoFocus
               />
-              {conviteError && (
-                <p className="m-0 text-[#fca5a5] text-[0.85rem] bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.25)] rounded-lg px-3 py-2">
-                  {conviteError}
-                </p>
-              )}
-              {conviteSuccess && (
-                <p className="m-0 text-[#86efac] text-[0.85rem] bg-[rgba(34,197,94,0.08)] border border-[rgba(34,197,94,0.25)] rounded-lg px-3 py-2">
-                  ✓ {conviteSuccess}
-                </p>
-              )}
+              {conviteError ? <FormFeedback message={conviteError} variant="error" /> : null}
+              {conviteSuccess ? <FormFeedback message={conviteSuccess} variant="success" /> : null}
               <div className="flex gap-3">
                 <button
                   type="button"

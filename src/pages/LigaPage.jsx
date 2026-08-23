@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
 import { SkeletonCard } from "../components/ui/Skeleton";
+import { Button } from "../components/ui/Button";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -83,13 +84,9 @@ export function LigaPage() {
           <p className="m-0 mt-1 text-[0.88rem] text-text-soft">Acompanhe rankings, arquétipos e torneios de cada circuito.</p>
         </div>
         {isAdmin && (
-          <button
-            className="px-4 py-[0.7rem] rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white"
-            type="button"
-            onClick={() => navigate("/ligas/criar")}
-          >
+          <Button onClick={() => navigate("/ligas/criar")}>
             + Criar Liga
-          </button>
+          </Button>
         )}
       </div>
 
@@ -104,13 +101,9 @@ export function LigaPage() {
           title="Nenhuma liga encontrada"
           description="As ligas criadas ficarão disponíveis nesta tela."
           action={isAdmin && (
-            <button
-              type="button"
-              onClick={() => navigate("/ligas/criar")}
-              className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] font-semibold hover:bg-[#4f46e5] hover:text-white transition-colors"
-            >
+            <Button onClick={() => navigate("/ligas/criar")}>
               Criar liga
-            </button>
+            </Button>
           )}
         />
       ) : (

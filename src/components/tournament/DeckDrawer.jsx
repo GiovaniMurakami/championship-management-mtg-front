@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { Tooltip } from "../ui/Tooltip";
+import { InlineAlert } from "../ui/InlineAlert";
 import { DeckGroupedList, DeckTypeBadges } from "../deck/DeckGroupedList";
 import { DeckImageModal } from "../deck/DeckImageModal";
 import { groupCardsByType, MANA_COLOR_MAP, MANA_COLOR_LABELS } from "../../utils/deckTypeGroups";
@@ -221,7 +222,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
             </div>
           )}
 
-          {error && <p className="px-5 py-5 m-0 text-[0.85rem] text-[#f87171]">{error}</p>}
+          {error ? <InlineAlert type="error" className="m-5">{error}</InlineAlert> : null}
 
           {!loading && !error && deck && (
             <div className="px-5 py-4 flex flex-col gap-5">
@@ -368,7 +369,7 @@ function DeckNameEditPopover({ deckId, currentName, currentNomeConsolidado, toke
         maxLength={60}
         placeholder="Nome do deck"
       />
-      {error && <p className="text-[0.73rem] text-[#f87171] m-0">{error}</p>}
+      {error ? <InlineAlert type="error" className="py-2 text-[0.73rem]">{error}</InlineAlert> : null}
       <div className="flex gap-[0.45rem] justify-end">
         <button className="px-[0.7rem] py-[0.3rem] border border-[rgba(199,149,255,0.25)] rounded-md bg-transparent text-text-soft text-[0.78rem] font-['inherit'] cursor-pointer transition-[background] duration-150 disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(255,255,255,0.06)]" onClick={onClose} disabled={loading}>
           Cancelar

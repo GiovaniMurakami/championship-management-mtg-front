@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
+import { FormFeedback } from "../components/ui/FormFeedback";
 import { useAuth } from "../context/AuthContext";
 import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
@@ -362,11 +363,7 @@ export function DashboardPage() {
 
           <DashboardAdsPreview ads={ads} />
 
-          {message && (
-            <div className="mb-5 rounded-lg border border-[rgba(199,149,255,0.25)] bg-[rgba(167,79,255,0.1)] px-4 py-3 text-sm text-[#e8dfff]">
-              {message}
-            </div>
-          )}
+          {message ? <FormFeedback message={message} className="mb-5" /> : null}
 
           <div className="grid gap-4">
             {ads.map((ad, index) => {

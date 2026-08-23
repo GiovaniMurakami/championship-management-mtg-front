@@ -1,5 +1,6 @@
 export { BackButton } from "./BackButton";
 export { BaseModal } from "./BaseModal";
+export { Button } from "./Button";
 export { DeleteConfirmModal } from "./DeleteConfirmModal";
 export { EmptyState } from "./EmptyState";
 export { FormFeedback } from "./FormFeedback";

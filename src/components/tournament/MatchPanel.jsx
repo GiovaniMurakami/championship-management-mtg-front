@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { getDisplaySides, getMatchScore } from "../../utils/matchDisplay";
+import { InlineAlert } from "../ui/InlineAlert";
 
 export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
@@ -307,16 +308,16 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
                                     Selecione o número de vitórias de cada jogador.
                                 </p>
                             )}
-                            {isInvalidScore && (
-                                <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
+                            {isInvalidScore ? (
+                                <InlineAlert type="error" className="mt-2 py-2 text-[0.82rem]">
                                     A soma das vitórias não pode ultrapassar 3.
-                                </p>
-                            )}
-                            {eliminationPhase && isTie && (winsPlayer1 > 0 || winsPlayer2 > 0) && (
-                                <p className="mt-2 text-[0.82rem] text-[#fca5a5] text-center">
+                                </InlineAlert>
+                            ) : null}
+                            {eliminationPhase && isTie && (winsPlayer1 > 0 || winsPlayer2 > 0) ? (
+                                <InlineAlert type="error" className="mt-2 py-2 text-[0.82rem]">
                                     Empates não são permitidos na fase eliminatória. Um jogador deve vencer a partida.
-                                </p>
-                            )}
+                                </InlineAlert>
+                            ) : null}
                         </div>
                     )}
                 </>

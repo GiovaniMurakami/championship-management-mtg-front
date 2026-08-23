@@ -10,6 +10,8 @@ import { ingressarComToken } from "../services/backendApi";
 import { useMyDecks } from "../hooks/useMyDecks";
 import { Spinner } from "../components/ui/Spinner";
 import { SelectField } from "../components/ui";
+import { FormFeedback } from "../components/ui/FormFeedback";
+import { Button } from "../components/ui/Button";
 import {
   AUTH_TABS_CLASS,
   BTN_GHOST,
@@ -301,14 +303,13 @@ export function TournamentJoinPage() {
                                     <span className="text-[2.5rem]" role="img" aria-label="Erro">❌</span>
                                 </div>
                                 <h2 className="text-white font-semibold text-[1.3rem] mb-2">Não foi possível ingressar</h2>
-                                <p className="text-[#fca5a5] text-[0.9rem] mb-5">{errorMsg}</p>
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center justify-center px-5 py-[0.65rem] border border-[rgba(217,180,255,0.3)] rounded-lg text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-text-soft bg-transparent hover:bg-white/[0.06] hover:text-white"
+                                <FormFeedback message={errorMsg} variant="error" className="mb-5 text-left" />
+                                <Button
+                                    variant="secondary"
                                     onClick={() => navigate("/")}
                                 >
                                     Ver torneios
-                                </button>
+                                </Button>
                             </div>
                         )}
 

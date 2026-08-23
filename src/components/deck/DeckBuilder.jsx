@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { CardSearch } from "./CardSearch";
 import { DeckList } from "./DeckList";
-import { SelectField } from "../ui";
+import { Button, SelectField } from "../ui";
 import { FORM_LABEL_CLASS, MODAL_INPUT_CLASS } from "../../styles/uiClasses";
 
 const FORMATS = [
@@ -656,26 +656,16 @@ export function DeckBuilder({
           <ExportDropdown deckForm={deckForm} mainDeck={mainDeck} sideboard={sideboard} commander={commander} />
 
           {!readOnly && (
-            /* btn primary */
-            <button
-              className="
-                border border-[rgba(199,149,255,0.6)] rounded-lg px-4 py-[0.6rem]
-                cursor-pointer font-bold
-                bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white
-                shadow-[0_4px_12px_rgba(167,79,255,0.25)]
-                transition-all duration-[220ms]
-                hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4),0_0_12px_rgba(199,149,255,0.3)] hover:border-[rgba(199,149,255,0.9)]
-                active:translate-y-0 active:shadow-[0_2px_8px_rgba(167,79,255,0.3)]
-                disabled:opacity-60 disabled:cursor-not-allowed
-                max-sm:w-full max-sm:py-[0.85rem] max-sm:text-base max-sm:min-h-[52px]
-              "
+            <Button
+              className="max-sm:w-full max-sm:min-h-[52px]"
               type="submit"
-              disabled={deckLoading || importLoading}
+              size="lg"
+              loading={deckLoading || importLoading}
             >
               {deckLoading
                 ? isEditMode ? "Atualizando..." : "Cadastrando..."
                 : isEditMode ? "Salvar deck" : "Criar deck"}
-            </button>
+            </Button>
           )}
         </div>
 

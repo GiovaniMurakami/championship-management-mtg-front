@@ -13,6 +13,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
+import { Button } from "../components/ui/Button";
 import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
 import { SponsorSection } from "../components";
 import { ExpandableText } from "../components/tournament";
@@ -263,13 +264,12 @@ export function TournamentPage() {
           Torneios
         </h1>
         {isAdmin && (
-          <button
-            className="px-4 py-[0.7rem] rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:w-full"
-            type="button"
+          <Button
+            className="max-md:w-full"
             onClick={() => navigate("/torneios/criar")}
           >
             + Criar Torneio
-          </button>
+          </Button>
         )}
       </div>
 
@@ -316,13 +316,9 @@ export function TournamentPage() {
             title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio encerrado encontrado"}
             description={abaAtiva === "disponiveis" ? "Quando houver torneios abertos ou em andamento, eles aparecerão aqui." : "Torneios finalizados ficarão disponíveis nesta aba."}
             action={isAdmin && abaAtiva === "disponiveis" && (
-              <button
-                type="button"
-                onClick={() => navigate("/torneios/criar")}
-                className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] font-semibold hover:bg-[#4f46e5] hover:text-white transition-colors"
-              >
+              <Button onClick={() => navigate("/torneios/criar")}>
                 Criar torneio
-              </button>
+              </Button>
             )}
           />
         ) : (

@@ -12,6 +12,7 @@ import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tabs } from "../components/ui/Tabs";
 import { Tooltip } from "../components/ui/Tooltip";
+import { Button } from "../components/ui/Button";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
@@ -243,9 +244,8 @@ export function MyDecksPage() {
             </p>
           )}
         </div>
-        <button
-          className="inline-flex items-center gap-[0.4rem] border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] max-sm:justify-center"
-          type="button"
+        <Button
+          className="max-sm:w-full"
           onClick={() => requireAuth(() => navigate("/decks/criar"))}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -253,7 +253,7 @@ export function MyDecksPage() {
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           Criar deck
-        </button>
+        </Button>
       </div>
 
       {/* Filtros */}
@@ -273,12 +273,9 @@ export function MyDecksPage() {
             onChange={(e) => setJogadorInput(e.target.value)}
             className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-[rgba(79,70,229,0.18)] border border-[rgba(79,70,229,0.4)] text-[#a5b4fc] rounded-lg font-semibold text-[0.9rem] hover:bg-[rgba(79,70,229,0.32)] transition-colors whitespace-nowrap"
-          >
+          <Button type="submit" variant="secondary" className="whitespace-nowrap">
             Buscar
-          </button>
+          </Button>
           {temFiltrosAtivos && (
             <button
               type="button"
@@ -337,13 +334,9 @@ export function MyDecksPage() {
               : "Crie seu primeiro deck para começar a jogar."
           }
           action={!temFiltrosAtivos && (
-            <button
-              className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
-              type="button"
-              onClick={() => requireAuth(() => navigate("/decks/criar"))}
-            >
+            <Button onClick={() => requireAuth(() => navigate("/decks/criar"))}>
               Criar primeiro deck
-            </button>
+            </Button>
           )}
         />
       ) : (

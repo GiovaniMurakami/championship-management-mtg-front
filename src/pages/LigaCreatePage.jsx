@@ -4,11 +4,10 @@ import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../service
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
-import { BackButton, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
+import { BackButton, Button, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
 import {
   BTN_PRIMARY,
   BTN_SECONDARY,
-  BTN_SUBMIT,
   FORM_LABEL_CLASS,
   FORM_PAGE_SHELL_CLASS,
   FORM_PAGE_TITLE_CLASS,
@@ -440,11 +439,11 @@ export function LigaCreatePage({ editMode = false }) {
 
             {error ? <FormFeedback message={error} variant="error" /> : null}
 
-            <button type="submit" className={BTN_SUBMIT} disabled={loading}>
+            <Button type="submit" size="lg" block loading={loading}>
               {loading
                 ? editMode ? "Salvando..." : "Criando..."
                 : editMode ? "Salvar Alterações" : "Criar Liga"}
-            </button>
+            </Button>
           </form>
         </div>
       </section>

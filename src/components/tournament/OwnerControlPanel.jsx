@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { BaseModal } from "../ui/BaseModal";
+import { InlineAlert } from "../ui/InlineAlert";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
@@ -657,7 +658,9 @@ export function OwnerControlPanel({
             <p className="text-text-soft text-[0.9rem] m-0">Nenhuma partida contestada.</p>
           ) : (
             <div className="grid gap-2 max-h-[480px] overflow-y-auto pr-[0.2rem]">
-              <p className="text-[#fca5a5] text-[0.8rem] m-0 mb-1">Ajuste o resultado para resolver a contestação.</p>
+              <InlineAlert type="warning" className="mb-1 py-2 text-[0.8rem]">
+                Ajuste o resultado para resolver a contestação.
+              </InlineAlert>
               {contestadas.map((partida) => (
                 <div key={partida.id} className="grid gap-1">
                   {partida.observacaoContestacao ? (
