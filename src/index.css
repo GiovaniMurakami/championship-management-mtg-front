@@ -223,6 +223,20 @@ button:disabled,
   color: white;
 }
 
+/* O iframe do AdSense pode exibir um fundo branco antes de receber conteúdo. */
+.adsbygoogle,
+.adsbygoogle iframe {
+  background: transparent !important;
+}
+
+.adsbygoogle[data-ad-status="unfilled"] {
+  display: none !important;
+}
+
+.adsense-banner-wrap:has(.adsbygoogle[data-ad-status="unfilled"]) {
+  display: none;
+}
+
 @keyframes field-shake {
   0% {
     transform: translateX(0);

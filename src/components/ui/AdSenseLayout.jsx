@@ -9,7 +9,7 @@ export const ADSENSE_CONTENT_SHELL =
 const NAV_OFFSET = "pt-[7.5rem] max-sm:pt-[6.5rem]";
 
 const BANNER_WRAP =
-  "w-full min-h-[50px] rounded-xl border border-line-soft bg-[rgba(14,9,28,0.35)] p-2 overflow-hidden";
+  "adsense-banner-wrap w-full min-h-[50px] rounded-xl border border-line-soft bg-[rgba(14,9,28,0.35)] p-2 overflow-hidden";
 
 function AdSenseTopBanner() {
   return (
