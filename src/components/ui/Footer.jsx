@@ -59,7 +59,17 @@ export function Footer() {
                 </nav>
 
                 <p className="text-[#6b5a8a] text-xs">© {new Date().getFullYear()} Tiago Fuguete — Todos os direitos reservados</p>
-                <p className="text-[#6b5a8a] text-xs">feito com <span className="text-[#c795ff]">♥</span> por Giovani</p>
+                <p className="text-[#6b5a8a] text-xs">
+                    feito com <span className="text-[#c795ff]">♥</span> por{" "}
+                    <a
+                        href="https://wa.me/5519997000527?text=Ol%C3%A1%2C%20Giovani!%20Preciso%20de%20ajuda%20com%20o%20desenvolvimento%20de%20um%20site.%20Podemos%20conversar%3F"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-[#8f7db8] no-underline transition-colors hover:text-[#c795ff]"
+                    >
+                        Giovani Murakami
+                    </a>
+                </p>
             </div>
         </footer>
     );
