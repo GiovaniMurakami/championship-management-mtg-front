@@ -3,12 +3,11 @@ import { criarTorneio } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
-import { SelectField, FormFeedback, FormSection } from "../ui";
+import { Button, SelectField, FormFeedback, FormSection } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
 import {
-  BTN_SUBMIT,
   FORM_COUNTER_CLASS,
   FORM_LABEL_CLASS,
   FORM_PAGE_SHELL_CLASS,
@@ -45,7 +44,7 @@ function FieldLabel({ htmlFor, children, hint }) {
   return (
     <label htmlFor={htmlFor} className={FORM_LABEL_CLASS}>
       {children}
-      {hint ? <span className="font-normal normal-case tracking-normal text-[#8f82ad]"> {hint}</span> : null}
+      {hint ? <span className="font-normal normal-case tracking-normal text-text-muted"> {hint}</span> : null}
     </label>
   );
 }
@@ -204,7 +203,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#c795ff]"
+                iconClassName="text-brand"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
@@ -230,7 +229,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#c795ff]"
+                iconClassName="text-brand"
                 options={TOURNAMENT_FORMATS.map((formato) => ({
                   value: formato.value,
                   label: formato.label,
@@ -239,13 +238,13 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">Descrição <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <label htmlFor="descricao" className="text-[#e0e0e0] font-medium text-[0.95rem]">Descrição <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
               <textarea id="descricao" name="descricao" rows="4" maxLength={4000} placeholder="Resumo do torneio, premiação e informações importantes..." value={createForm.descricao} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
               <span className={FORM_COUNTER_CLASS}>{createForm.descricao.length}/4000</span>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="regras" className="text-[#e0e0e0] font-medium text-[0.95rem]">Regras do Torneio <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <label htmlFor="regras" className="text-[#e0e0e0] font-medium text-[0.95rem]">Regras do Torneio <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
               <textarea id="regras" name="regras" rows="5" maxLength={4000} placeholder="Tempo de rodada, regras da casa, orientações e exceções..." value={createForm.regras} onChange={handleChange} disabled={isSubmitting} className={TEXTAREA_CLASS} />
               <span className={FORM_COUNTER_CLASS}>{createForm.regras.length}/4000</span>
             </div>
@@ -255,13 +254,13 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <div className="flex flex-col gap-2">
-                <label htmlFor="maxJogadores" className="text-[#e0e0e0] font-medium text-[0.95rem]">Max. Jogadores <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+                <label htmlFor="maxJogadores" className="text-[#e0e0e0] font-medium text-[0.95rem]">Max. Jogadores <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
                 <input id="maxJogadores" name="maxJogadores" type="number" min="2" placeholder="Ex: 32" value={createForm.maxJogadores} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
               </div>
 
               <div className="flex flex-col gap-2">
                 <label htmlFor="maxRodadas" className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                  Total de rodadas Swiss <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
+                  Total de rodadas Swiss <span className="text-text-soft text-[0.82rem]">(opcional)</span>
                 </label>
                 <input
                   id="maxRodadas"
@@ -283,7 +282,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="corteTop" className="text-[#e0e0e0] font-medium text-[0.95rem]">Corte para Top <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <label htmlFor="corteTop" className="text-[#e0e0e0] font-medium text-[0.95rem]">Corte para Top <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
               <SelectField
                 id="corteTop"
                 name="corteTop"
@@ -291,7 +290,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#c795ff]"
+                iconClassName="text-brand"
                 options={TOP_CUT_OPTIONS.map((option) => ({
                   value: option.value,
                   label: option.label,
@@ -303,12 +302,12 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
           <FormSection title="Banner">
 
             <div className="flex flex-col gap-2">
-              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Imagem do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Imagem do Banner <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
 
               {bannerPreview ? (
                 <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
                   <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[180px] object-cover" />
-                  <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isSubmitting} aria-label="Remover banner">
+                  <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-md py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isSubmitting} aria-label="Remover banner">
                     X Remover
                   </button>
                 </div>
@@ -336,7 +335,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="linkBanner" className="text-[#e0e0e0] font-medium text-[0.95rem]">Link do Banner <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <label htmlFor="linkBanner" className="text-[#e0e0e0] font-medium text-[0.95rem]">Link do Banner <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
               <input id="linkBanner" name="linkBanner" type="url" placeholder="https://..." value={createForm.linkBanner} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
             </div>
           </FormSection>
@@ -379,7 +378,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
             <div className="flex flex-col gap-2">
               <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                Som de Nova Rodada <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span>
+                Som de Nova Rodada <span className="text-text-soft text-[0.82rem]">(opcional)</span>
               </label>
               <RoundSoundPicker
                 idPrefix="create-som-rodada"
@@ -390,16 +389,16 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="linkLive" className="text-[#e0e0e0] font-medium text-[0.95rem]">Live no YouTube <span className="text-[#beafd7] text-[0.82rem]">(opcional)</span></label>
+              <label htmlFor="linkLive" className="text-[#e0e0e0] font-medium text-[0.95rem]">Live no YouTube <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
               <input id="linkLive" name="linkLive" type="url" placeholder="https://youtube.com/watch?v=..." value={createForm.linkLive} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />
             </div>
           </FormSection>
 
           {error ? <FormFeedback message={error} variant="error" /> : null}
 
-          <button type="submit" className={BTN_SUBMIT} disabled={isSubmitting}>
+          <Button type="submit" size="lg" block loading={isSubmitting}>
             {uploadingBanner ? "Enviando banner..." : loading ? "Criando..." : "Criar Torneio"}
-          </button>
+          </Button>
         </form>
       </div>
     </section>

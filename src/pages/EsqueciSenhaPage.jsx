@@ -63,7 +63,7 @@ export function EsqueciSenhaPage() {
     <FormPageCard>
       <BackButton className="mb-5 !px-0 !py-0 !border-none !bg-transparent hover:!bg-transparent" onClick={() => navigate(-1)} />
 
-      <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+      <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
         Tiago Fuguete · Torneios MTG
       </p>
       <h1 className={FORM_PAGE_TITLE_CLASS}>Esqueci minha senha</h1>

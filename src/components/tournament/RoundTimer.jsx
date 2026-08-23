@@ -74,14 +74,14 @@ export function RoundTimer({ torneioId, rodadaAtual, status, rodadaIniciadaEm })
       : "bg-[linear-gradient(90deg,#0d9488,#2ccfb4)]";
 
   return (
-    <div className={`border rounded-[0.9rem] bg-[rgba(14,9,28,0.85)] mt-5 mb-5 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>
+    <div className={`border rounded-xl bg-[rgba(14,9,28,0.85)] mt-5 mb-5 overflow-hidden transition-[border-color] duration-300 ${timerBorderClass}`}>
       <div className="flex items-center justify-between px-4 py-[0.65rem] gap-4 max-md:flex-col max-md:gap-2 max-md:text-center">
-        <div className="flex items-center gap-[0.45rem] text-[#beafd7] text-[0.85rem] font-semibold max-md:justify-center">
+        <div className="flex items-center gap-[0.45rem] text-text-soft text-[0.85rem] font-semibold max-md:justify-center">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          <span className="text-[#beafd7]">Rodada {rodadaAtual}</span>
+          <span className="text-text-soft">Rodada {rodadaAtual}</span>
         </div>
 
         <div className={`font-['Bebas_Neue',monospace] transition-[color] duration-300 ${displayColorClass} ${displaySizeClass}`}>

@@ -23,7 +23,7 @@ export function NotFoundPage() {
       <div className="flex gap-3 flex-wrap justify-center">
         <button
           type="button"
-          className="px-5 py-[0.6rem] border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-text-soft font-semibold text-[0.9rem] cursor-pointer transition-all duration-200 hover:text-text-main hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06]"
+          className="px-5 py-[0.6rem] border border-line rounded-xl bg-white/[0.03] text-text-soft font-semibold text-[0.9rem] cursor-pointer transition-all duration-200 hover:text-text-main hover:border-line-strong hover:bg-white/[0.06]"
           onClick={() => navigate(-1)}
         >
           ← Voltar

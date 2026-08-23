@@ -99,7 +99,7 @@ export function MetagamePage() {
             Metagame {getTournamentFormatLabel(formato)}
           </h1>
           {data?.totalTorneios != null && (
-            <p className="m-0 mt-1 text-[#beafd7] text-[0.9rem]">
+            <p className="m-0 mt-1 text-text-soft text-[0.9rem]">
               {data.totalTorneios} evento(s) · {data.totalDecks} deck(s)
             </p>
           )}

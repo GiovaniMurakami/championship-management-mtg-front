@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const GAP = 8;
@@ -61,7 +61,7 @@ export function Tooltip({
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     const trigger = triggerRef.current;
     const bubble = bubbleRef.current;
     if (!trigger || !bubble) return;
@@ -72,12 +72,12 @@ export function Tooltip({
       placement
     );
     setCoords(next);
-  };
+  }, [placement]);
 
   useLayoutEffect(() => {
     if (!open) return;
     updatePosition();
-  }, [open, placement, content]);
+  }, [open, content, updatePosition]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -89,7 +89,7 @@ export function Tooltip({
       window.removeEventListener("scroll", handleReposition, true);
       window.removeEventListener("resize", handleReposition);
     };
-  }, [open, placement]);
+  }, [open, updatePosition]);
 
   const show = () => setOpen(true);
   const hide = () => setOpen(false);

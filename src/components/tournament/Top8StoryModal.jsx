@@ -1,5 +1,6 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
+import { InlineAlert } from "../ui/InlineAlert";
 import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
@@ -380,9 +381,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
     try {
       muxerMod = await import("mp4-muxer");
     } catch {
-      alert("Erro ao carregar o encoder de MP4. Tente novamente.");
-      onDone?.();
-      return;
+      throw new Error("Erro ao carregar o encoder de MP4. Tente novamente.");
     }
     const { Muxer, ArrayBufferTarget } = muxerMod;
 
@@ -409,17 +408,13 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
       });
     } catch {
       encoder.close();
-      alert("Este navegador n�o suporta a codifica��o H.264. Tente no Chrome ou Safari.");
-      onDone?.();
-      return;
+      throw new Error("Este navegador não suporta a codificação H.264. Tente no Chrome ou Safari.");
     }
 
     for (let f = 0; f < totalFrames; f++) {
       if (encErr) {
-        alert("Erro ao codificar: " + encErr.message);
         encoder.close();
-        onDone?.();
-        return;
+        throw new Error(`Erro ao codificar o vídeo: ${encErr.message}`);
       }
       renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta);
       const timestamp = Math.round(f * (1_000_000 / FPS));
@@ -553,6 +548,7 @@ export function Top8StoryModal({
 
   const [topN, setTopN] = useState(defaultN);
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
+  const [exportError, setExportError] = useState("");
 
   const players = allPlayers.slice(0, topN);
   const previewLayout = storyContentLayout(1920, Math.max(players.length, 1), 150);
@@ -563,11 +559,15 @@ export function Top8StoryModal({
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
+    setExportError("");
     setVideoProgress(0);
-    await generateAnimatedMp4(players, torneioNome, setVideoProgress, () =>
-      setVideoProgress(null),
-      exportOptions,
-    );
+    try {
+      await generateAnimatedMp4(players, torneioNome, setVideoProgress, undefined, exportOptions);
+    } catch (error) {
+      setExportError(error?.message || "Não foi possível gerar o vídeo.");
+    } finally {
+      setVideoProgress(null);
+    }
   };
 
   return (
@@ -583,6 +583,11 @@ export function Top8StoryModal({
 
         {/* story-modal-bar: flex items-center justify-between w-full gap-3 flex-wrap */}
         <div className="flex w-full min-w-0 flex-col gap-3">
+          {exportError ? (
+            <InlineAlert type="error" onDismiss={() => setExportError("")}>
+              {exportError}
+            </InlineAlert>
+          ) : null}
           <div className="flex items-center justify-between w-full min-w-0 gap-2">
             <span className="text-[0.9rem] font-bold text-text-soft tracking-[0.05em] uppercase">Story</span>
             <button
@@ -674,9 +679,9 @@ export function Top8StoryModal({
           </div>
         )}
 
-        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
+        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-2xl overflow-hidden flex-col items-stretch relative shadow */}
         <div
-          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
+          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-2xl overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
           style={{ backgroundImage: `url("${backgroundUrl}")` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}

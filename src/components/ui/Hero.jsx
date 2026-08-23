@@ -10,7 +10,7 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
   ];
 
   return (
-    <section className="relative overflow-hidden border border-[rgba(217,180,255,0.18)] rounded-3xl mb-10 bg-[radial-gradient(ellipse_at_75%_0%,rgba(123,34,246,0.45),transparent_45%),radial-gradient(ellipse_at_10%_100%,rgba(81,24,164,0.55),transparent_40%),linear-gradient(145deg,#0f0920,#160c30_50%,#1e1040)]">
+    <section className="relative overflow-hidden border border-line rounded-3xl mb-10 bg-[radial-gradient(ellipse_at_75%_0%,rgba(123,34,246,0.45),transparent_45%),radial-gradient(ellipse_at_10%_100%,rgba(81,24,164,0.55),transparent_40%),linear-gradient(145deg,#0f0920,#160c30_50%,#1e1040)]">
 
       {/* Decorative grid overlay */}
       <div
@@ -38,7 +38,7 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
         </div>
 
         {/* Headline */}
-        <h1 className="mt-0 mb-4 mx-0 max-w-[720px] text-[clamp(2.4rem,5.5vw,4.2rem)] leading-[0.92] font-['Bebas_Neue',sans-serif] tracking-[0.03em] text-[#f5edff]">
+        <h1 className="mt-0 mb-4 mx-0 max-w-[720px] text-[clamp(2.4rem,5.5vw,4.2rem)] leading-[0.92] font-['Bebas_Neue',sans-serif] tracking-[0.03em] text-text-main">
           Torneios com energia de{" "}
           <span className="text-gradient-brand">stream</span>,{" "}
           foco competitivo e a vibe{" "}
@@ -46,7 +46,7 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
         </h1>
 
         {/* Subtitle */}
-        <p className="m-0 mb-7 max-w-[580px] text-[#beafd7] text-[1rem] leading-[1.65]">
+        <p className="m-0 mb-7 max-w-[580px] text-text-soft text-[1rem] leading-[1.65]">
           Participe dos torneios, construa seus decks e acompanhe as classificações em tempo real. A plataforma definitiva para jogadores competitivos.
         </p>
 
@@ -81,7 +81,7 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
         )}
 
         {/* Stats row */}
-        <div className="flex flex-wrap gap-x-6 gap-y-3 mt-7 pt-6 border-t border-[rgba(217,180,255,0.12)]">
+        <div className="flex flex-wrap gap-x-6 gap-y-3 mt-7 pt-6 border-t border-line-soft">
           {statItems.map((stat) => (
             <div key={stat.label} className="flex flex-col gap-[0.15rem]">
               <span

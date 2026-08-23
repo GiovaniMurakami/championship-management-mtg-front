@@ -141,7 +141,7 @@ function YouTubeSection() {
                     href="https://www.youtube.com/@TiagoFuguete/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-[0.6rem] rounded-xl border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.1)] text-[#c795ff] font-semibold text-[0.9rem] transition-all hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.6)]"
+                    className="inline-flex items-center gap-2 px-5 py-[0.6rem] rounded-xl border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.1)] text-brand font-semibold text-[0.9rem] transition-all hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.6)]"
                 >
                     <svg width="16" height="16" viewBox="0 0 576 512" fill="currentColor" aria-hidden="true">
                         <path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z" />
@@ -293,7 +293,7 @@ export function LandingPage() {
                             href={post.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.3)] transition-all"
+                            className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-line-soft hover:border-[rgba(199,149,255,0.3)] transition-all"
                         >
                             <div className="overflow-hidden">
                                 <img
@@ -304,10 +304,10 @@ export function LandingPage() {
                                 />
                             </div>
                             <div className="p-4">
-                                <h3 className="font-semibold text-[#e8dfff] mb-2 line-clamp-2 group-hover:text-[#c795ff] transition-colors">
+                                <h3 className="font-semibold text-[#e8dfff] mb-2 line-clamp-2 group-hover:text-brand transition-colors">
                                     {post.title}
                                 </h3>
-                                <span className="text-[#c795ff] text-sm font-medium">Ler mais &gt;&gt;</span>
+                                <span className="text-brand text-sm font-medium">Ler mais &gt;&gt;</span>
                             </div>
                         </a>
                     ))}
@@ -315,11 +315,11 @@ export function LandingPage() {
             </section>
 
             {/* ─── Partners ─── */}
-            <section className="bg-[#080514] py-12 border-t border-[rgba(217,180,255,0.12)]">
+            <section className="bg-[#080514] py-12 border-t border-line-soft">
                 <div className="max-w-6xl mx-auto px-4">
                     <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">Parceiros do Canal</h2>
                     <p className="text-center mb-8">
-                        <a href="https://tiagofuguete.com.br/parceiros/" target="_blank" rel="noopener noreferrer" className="text-[#c795ff] hover:text-[#e8dfff] transition-colors">
+                        <a href="https://tiagofuguete.com.br/parceiros/" target="_blank" rel="noopener noreferrer" className="text-brand hover:text-[#e8dfff] transition-colors">
                             Saiba mais sobre nossos parceiros
                         </a>
                     </p>

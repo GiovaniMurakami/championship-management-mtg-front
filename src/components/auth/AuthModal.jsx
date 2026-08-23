@@ -26,13 +26,13 @@ export function AuthModal({
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
       <div className="mb-5 text-center">
-        <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+        <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
           Tiago Fuguete · Torneios MTG
         </p>
-        <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-[#f5edff]">
+        <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-text-main">
           {isLogin ? "Entrar na plataforma" : "Criar conta"}
         </h2>
-        <p className="mt-1 text-[0.88rem] text-[#9f91bd]">
+        <p className="mt-1 text-[0.88rem] text-text-subtle">
           {isLogin
             ? "Use seu e-mail e senha para acessar decks e torneios."
             : "Preencha os dados abaixo para participar dos eventos."}
@@ -155,7 +155,7 @@ export function AuthModal({
             {isLoading ? "Criando conta..." : "Criar conta"}
           </button>
           {!registerForm.aceiteTermos ? (
-            <p className="m-0 text-center text-[0.78rem] text-[#8f82ad]">
+            <p className="m-0 text-center text-[0.78rem] text-text-muted">
               Marque o aceite dos Termos de Uso e da Política de Privacidade para habilitar o cadastro.
             </p>
           ) : null}

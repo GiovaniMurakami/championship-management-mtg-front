@@ -44,8 +44,11 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
   const tokenRef = useRef(token);
-  tokenRef.current = token;
   const deckFromState = location.state?.deck;
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   const deckPageTitle = readOnly
     ? PAGE_TITLES.visualizarDeck
@@ -200,7 +203,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
               type="button"
               className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
                 analysisTab === key
-                  ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
+                  ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-brand"
                   : "border-line bg-transparent text-text-soft hover:border-[rgba(199,149,255,0.4)] hover:text-text-main"
               }`}
               onClick={() => setAnalysisTab(key)}

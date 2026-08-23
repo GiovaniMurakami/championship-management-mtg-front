@@ -40,10 +40,14 @@ export function SponsorSection() {
     buscarAnuncios()
       .then((data) => {
         if (!mounted) return;
+        setCurrent(0);
         setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
       })
       .catch(() => {
-        if (mounted) setAds(normalizeAds(DEFAULT_ADS));
+        if (mounted) {
+          setCurrent(0);
+          setAds(normalizeAds(DEFAULT_ADS));
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -51,10 +55,6 @@ export function SponsorSection() {
 
     return () => { mounted = false; };
   }, []);
-
-  useEffect(() => {
-    setCurrent(0);
-  }, [ads]);
 
   useEffect(() => {
     if (loading || activeAds.length <= 1) return undefined;
@@ -75,12 +75,12 @@ export function SponsorSection() {
   return (
     <section className="mb-10">
       <div className="flex items-center mb-3">
-        <span className="text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-[#beafd7] px-[0.7rem] py-[0.2rem] border border-[rgba(217,180,255,0.2)] rounded-full bg-white/[0.03]">
+        <span className="text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-text-soft px-[0.7rem] py-[0.2rem] border border-line rounded-full bg-white/[0.03]">
           {label}
         </span>
       </div>
 
-      <div className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.25rem] overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#2ccfb4,#7c3aed,#c795ff,#ec4899)]">
+      <div className="relative border border-line rounded-2xl overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#2ccfb4,#7c3aed,#c795ff,#ec4899)]">
         {slide.tipo === "banner" ? (
           <a
             href={slide.link || undefined}
@@ -104,22 +104,22 @@ export function SponsorSection() {
               {slide.imagemUrl ? (
                 <img src={slide.imagemUrl} alt={slide.titulo || "Patrocinador"} className="w-full h-full object-contain p-2" />
               ) : (
-                <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
+                <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-brand">
                   {slide.titulo || "Anúncio"}
                 </span>
               )}
             </div>
             <div className="flex-1 min-w-0">
               {slide.tag && (
-                <span className="inline-block text-[0.7rem] font-semibold tracking-[0.12em] uppercase text-[#c795ff] mb-2">
+                <span className="inline-block text-[0.7rem] font-semibold tracking-[0.12em] uppercase text-brand mb-2">
                   {slide.tag}
                 </span>
               )}
-              <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-[#f5edff] max-[600px]:text-[1.7rem]">
+              <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-text-main max-[600px]:text-[1.7rem]">
                 {slide.titulo}
               </h3>
               {slide.texto && (
-                <p className="m-0 mb-[1.1rem] text-[#beafd7] text-[0.9rem] leading-[1.55] max-w-[520px]">
+                <p className="m-0 mb-[1.1rem] text-text-soft text-[0.9rem] leading-[1.55] max-w-[520px]">
                   {slide.texto}
                 </p>
               )}
@@ -139,10 +139,10 @@ export function SponsorSection() {
         )}
 
         {activeAds.length > 1 && (
-          <div className="flex items-center justify-center gap-3 px-4 py-3 pb-4 border-t border-[rgba(217,180,255,0.2)]">
+          <div className="flex items-center justify-center gap-3 px-4 py-3 pb-4 border-t border-line">
             <button
               type="button"
-              className="bg-transparent border border-[rgba(217,180,255,0.2)] rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-[#beafd7] text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-[#c795ff] hover:bg-[rgba(199,149,255,0.08)]"
+              className="bg-transparent border border-line rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-text-soft text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-brand hover:bg-[rgba(199,149,255,0.08)]"
               onClick={prev}
               aria-label="Anterior"
             >
@@ -162,7 +162,7 @@ export function SponsorSection() {
             </div>
             <button
               type="button"
-              className="bg-transparent border border-[rgba(217,180,255,0.2)] rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-[#beafd7] text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-[#c795ff] hover:bg-[rgba(199,149,255,0.08)]"
+              className="bg-transparent border border-line rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-text-soft text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-brand hover:bg-[rgba(199,149,255,0.08)]"
               onClick={next}
               aria-label="Proximo"
             >

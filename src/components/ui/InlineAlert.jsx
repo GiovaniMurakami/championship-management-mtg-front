@@ -15,7 +15,7 @@ export function InlineAlert({
   return (
     <div
       role={type === "error" ? "alert" : "status"}
-      className={`flex items-start gap-3 px-4 py-3 rounded-[0.7rem] border text-[0.9rem] font-medium animate-[slide-up_300ms_ease-out] ${STYLES[type] ?? STYLES.error} ${className}`}
+      className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-[0.9rem] font-medium animate-[slide-up_300ms_ease-out] ${STYLES[type] ?? STYLES.error} ${className}`}
     >
       <div className="flex-1 min-w-0">
         {children}

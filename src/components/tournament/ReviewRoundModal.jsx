@@ -5,16 +5,16 @@ import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../uti
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
 
 const btnBase =
-  "inline-flex items-center justify-center px-4 py-[0.55rem] border border-transparent rounded-[0.7rem] text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center px-4 py-[0.55rem] border border-transparent rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed";
 
 const btnPrimary =
   "bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(167,79,255,0.4)] disabled:!transform-none";
 
 const btnGhost =
-  "bg-transparent border-[rgba(217,180,255,0.2)] text-[#beafd7] hover:bg-white/[0.06] hover:text-[#f5edff]";
+  "bg-transparent border-line text-text-soft hover:bg-white/[0.06] hover:text-text-main";
 
 const btnDisabled =
-  "bg-white/[0.05] border-[rgba(217,180,255,0.2)] text-[#beafd7] opacity-60 cursor-not-allowed";
+  "bg-white/[0.05] border-line text-text-soft opacity-60 cursor-not-allowed";
 
 const btnDanger =
   "border-[rgba(239,68,68,0.5)] text-[#fda4af] bg-[rgba(239,68,68,0.1)] hover:bg-[rgba(239,68,68,0.25)] hover:border-[rgba(239,68,68,0.8)]";
@@ -59,7 +59,7 @@ function MatchStatusRow({ partida }) {
         {isFinalizada && !isBye && (
           <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
         )}
-        <span className="text-[0.8rem] font-bold text-[#c795ff] flex-shrink-0 min-w-[44px] text-center">
+        <span className="text-[0.8rem] font-bold text-brand flex-shrink-0 min-w-[44px] text-center">
           {isFinalizada
             ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
             : "VS"}
@@ -182,14 +182,14 @@ export function ReviewRoundModal({
             </h2>
             <div className="flex items-center gap-[0.4rem] text-[0.78rem]">
               <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "mesas"
-                ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                ? "text-brand border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
                 : "text-[rgba(200,180,230,0.6)] border-transparent"
                 }`}>
                 1. Mesas
               </span>
               <span className="text-[rgba(200,180,230,0.3)] text-[0.75rem]">→</span>
               <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "jogadores"
-                ? "text-[#c795ff] border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                ? "text-brand border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
                 : "text-[rgba(200,180,230,0.45)] border-transparent"
                 }`}>
                 2. Jogadores
@@ -198,7 +198,7 @@ export function ReviewRoundModal({
           </div>
           <button
             type="button"
-            className="bg-transparent border-none text-[rgba(200,180,230,0.5)] text-base cursor-pointer px-2 py-1 rounded-[6px] transition-all duration-150 hover:text-[#e8d5ff] hover:bg-[rgba(145,71,255,0.15)]"
+            className="bg-transparent border-none text-[rgba(200,180,230,0.5)] text-base cursor-pointer px-2 py-1 rounded-md transition-all duration-150 hover:text-[#e8d5ff] hover:bg-[rgba(145,71,255,0.15)]"
             onClick={onClose}
             aria-label="Fechar"
           >
@@ -222,7 +222,7 @@ export function ReviewRoundModal({
               </div>
 
               {partidasRodada.length === 0 ? (
-                <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
+                <p className="text-text-soft text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
               ) : (
                 <div className="flex flex-col gap-[0.4rem]">
                   {partidasRodada.map((partida) => (
@@ -271,7 +271,7 @@ export function ReviewRoundModal({
 
               <div className="flex flex-col gap-[0.4rem]">
                 {jogadoresAtivos.length === 0 ? (
-                  <p className="text-[#beafd7] text-[0.9rem] m-0">Nenhum jogador ativo.</p>
+                  <p className="text-text-soft text-[0.9rem] m-0">Nenhum jogador ativo.</p>
                 ) : (
                   jogadoresAtivos.map((player) => {
                     const playerId =

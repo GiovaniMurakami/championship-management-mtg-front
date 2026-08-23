@@ -24,6 +24,29 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-refresh/only-export-components': ['error', {
+        allowConstantExport: true,
+        allowExportNames: [
+          'buildCopyTournamentInitialValues',
+          'formatarRecorde',
+          'isUsuarioExcluido',
+          'rotuloDeckRecente',
+          'useCookieConsent',
+          'winrateStyle',
+        ],
+      }],
+    },
+  },
+  {
+    files: ['src/test/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: globals.vitest,
+    },
+  },
+  {
+    files: ['vite.config.js'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ])

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
+import { FormFeedback } from "../components/ui/FormFeedback";
 import { useAuth } from "../context/AuthContext";
 import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
@@ -28,21 +29,21 @@ function prepareAds(anuncios) {
 function AdPreview({ ad }) {
   if (ad.tipo === "banner") {
     return (
-      <div className="overflow-hidden rounded-lg border border-[rgba(217,180,255,0.14)] bg-[#080514]">
+      <div className="overflow-hidden rounded-lg border border-line-soft bg-[#080514]">
         {ad.imagemUrl ? (
           <img src={ad.imagemUrl} alt={ad.titulo || "Banner"} className="h-32 w-full object-cover" />
         ) : (
-          <div className="flex h-32 items-center justify-center text-sm text-[#8f82ad]">Banner sem imagem</div>
+          <div className="flex h-32 items-center justify-center text-sm text-text-muted">Banner sem imagem</div>
         )}
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-[rgba(217,180,255,0.14)] bg-[#120b24] p-4">
+    <div className="rounded-lg border border-line-soft bg-[#120b24] p-4">
       {ad.imagemUrl && <img src={ad.imagemUrl} alt={ad.titulo || "Anúncio"} className="mb-3 h-20 w-full object-contain" />}
-      {ad.tag && <span className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#c795ff]">{ad.tag}</span>}
-      <h3 className="m-0 mt-1 text-lg font-bold text-[#f5edff]">{ad.titulo || "Novo anúncio"}</h3>
+      {ad.tag && <span className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-brand">{ad.tag}</span>}
+      <h3 className="m-0 mt-1 text-lg font-bold text-text-main">{ad.titulo || "Novo anúncio"}</h3>
       {ad.texto && <p className="mt-2 mb-0 text-sm leading-5 text-[#b9abd8]">{ad.texto}</p>}
       {ad.botaoTexto && (
         <span className="mt-3 inline-flex rounded-full border border-[rgba(44,207,180,0.4)] bg-[rgba(44,207,180,0.12)] px-3 py-1.5 text-xs font-bold text-[#2ccfb4]">
@@ -59,8 +60,8 @@ function DashboardAdsPreview({ ads }) {
 
   if (activeAds.length === 0) {
     return (
-      <section className="mb-5 rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#0b0717] p-4">
-        <div className="text-sm font-semibold text-[#8f82ad]">Nenhum anúncio ativo para preview.</div>
+      <section className="mb-5 rounded-lg border border-line-soft bg-[#0b0717] p-4">
+        <div className="text-sm font-semibold text-text-muted">Nenhum anúncio ativo para preview.</div>
       </section>
     );
   }
@@ -76,21 +77,21 @@ function DashboardAdsPreview({ ads }) {
     <section className="mb-5">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="m-0 text-lg font-bold text-[#f5edff]">Preview do carrossel</h2>
-          <p className="m-0 mt-1 text-sm text-[#8f82ad]">Visualização dos anúncios ativos na ordem atual.</p>
+          <h2 className="m-0 text-lg font-bold text-text-main">Preview do carrossel</h2>
+          <p className="m-0 mt-1 text-sm text-text-muted">Visualização dos anúncios ativos na ordem atual.</p>
         </div>
-        <span className="rounded-full border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
+        <span className="rounded-full border border-line bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-brand">
           {currentIndex + 1} de {activeAds.length}
         </span>
       </div>
 
       <div className="flex items-center mb-3">
-        <span className="text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-[#beafd7] px-[0.7rem] py-[0.2rem] border border-[rgba(217,180,255,0.2)] rounded-full bg-white/[0.03]">
+        <span className="text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-text-soft px-[0.7rem] py-[0.2rem] border border-line rounded-full bg-white/[0.03]">
           {label}
         </span>
       </div>
 
-      <div className="relative border border-[rgba(217,180,255,0.2)] rounded-[1.25rem] overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#2ccfb4,#7c3aed,#c795ff,#ec4899)]">
+      <div className="relative border border-line rounded-2xl overflow-hidden bg-[linear-gradient(135deg,rgba(28,14,58,0.97)_0%,rgba(16,8,36,0.97)_100%)] shadow-[0_8px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,#2ccfb4,#7c3aed,#c795ff,#ec4899)]">
         {slide.tipo === "banner" ? (
           <a
             href={slide.link || undefined}
@@ -105,7 +106,7 @@ function DashboardAdsPreview({ ads }) {
                 className="h-[180px] w-full object-cover max-[600px]:h-[130px]"
               />
             ) : (
-              <div className="flex h-[180px] w-full items-center justify-center text-sm font-semibold text-[#8f82ad] max-[600px]:h-[130px]">
+              <div className="flex h-[180px] w-full items-center justify-center text-sm font-semibold text-text-muted max-[600px]:h-[130px]">
                 Banner sem imagem
               </div>
             )}
@@ -116,22 +117,22 @@ function DashboardAdsPreview({ ads }) {
               {slide.imagemUrl ? (
                 <img src={slide.imagemUrl} alt={slide.titulo || "Patrocinador"} className="w-full h-full object-contain p-2" />
               ) : (
-                <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#c795ff]">
+                <span className="px-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-brand">
                   {slide.titulo || "Anúncio"}
                 </span>
               )}
             </div>
             <div className="flex-1 min-w-0">
               {slide.tag && (
-                <span className="inline-block text-[0.7rem] font-semibold tracking-[0.12em] uppercase text-[#c795ff] mb-2">
+                <span className="inline-block text-[0.7rem] font-semibold tracking-[0.12em] uppercase text-brand mb-2">
                   {slide.tag}
                 </span>
               )}
-              <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-[#f5edff] max-[600px]:text-[1.7rem]">
+              <h3 className="m-0 mb-[0.55rem] font-['Bebas_Neue',sans-serif] text-[clamp(1.8rem,3vw,2.4rem)] tracking-[0.04em] leading-none text-text-main max-[600px]:text-[1.7rem]">
                 {slide.titulo || "Novo anúncio"}
               </h3>
               {slide.texto && (
-                <p className="m-0 mb-[1.1rem] text-[#beafd7] text-[0.9rem] leading-[1.55] max-w-[520px]">
+                <p className="m-0 mb-[1.1rem] text-text-soft text-[0.9rem] leading-[1.55] max-w-[520px]">
                   {slide.texto}
                 </p>
               )}
@@ -149,10 +150,10 @@ function DashboardAdsPreview({ ads }) {
         )}
 
         {activeAds.length > 1 && (
-          <div className="flex items-center justify-center gap-3 px-4 py-3 pb-4 border-t border-[rgba(217,180,255,0.2)]">
+          <div className="flex items-center justify-center gap-3 px-4 py-3 pb-4 border-t border-line">
             <button
               type="button"
-              className="bg-transparent border border-[rgba(217,180,255,0.2)] rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-[#beafd7] text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-[#c795ff] hover:bg-[rgba(199,149,255,0.08)]"
+              className="bg-transparent border border-line rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-text-soft text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-brand hover:bg-[rgba(199,149,255,0.08)]"
               onClick={prev}
               aria-label="Anterior"
             >
@@ -171,7 +172,7 @@ function DashboardAdsPreview({ ads }) {
             </div>
             <button
               type="button"
-              className="bg-transparent border border-[rgba(217,180,255,0.2)] rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-[#beafd7] text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-[#c795ff] hover:bg-[rgba(199,149,255,0.08)]"
+              className="bg-transparent border border-line rounded-full w-[1.9rem] h-[1.9rem] flex items-center justify-center text-text-soft text-[1.1rem] cursor-pointer leading-none transition-all duration-[180ms] hover:border-[#c795ff] hover:text-brand hover:bg-[rgba(199,149,255,0.08)]"
               onClick={next}
               aria-label="Proximo"
             >
@@ -323,8 +324,8 @@ export function DashboardPage() {
     <PageShell>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="m-0 text-xs font-bold uppercase tracking-[0.12em] text-[#c795ff]">Admin</p>
-          <h1 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-4xl tracking-[0.04em] text-[#f5edff]">
+          <p className="m-0 text-xs font-bold uppercase tracking-[0.12em] text-brand">Admin</p>
+          <h1 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-4xl tracking-[0.04em] text-text-main">
             Dashboard
           </h1>
           <p className="m-0 mt-2 max-w-2xl text-sm leading-6 text-[#b9abd8]">
@@ -342,31 +343,27 @@ export function DashboardPage() {
       {activeTab === "anuncios" && !loading && (
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-4">
-            <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
-              <span className="text-xs font-bold tracking-[0.08em] text-[#8f82ad]">ANÚNCIOS</span>
-              <strong className="mt-1 block text-2xl text-[#f5edff]">{ads.length}</strong>
+            <div className="rounded-lg border border-line-soft bg-[#120b24] px-4 py-3">
+              <span className="text-xs font-bold tracking-[0.08em] text-text-muted">ANÚNCIOS</span>
+              <strong className="mt-1 block text-2xl text-text-main">{ads.length}</strong>
             </div>
-            <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#8f82ad]">Ativos</span>
-              <strong className="mt-1 block text-2xl text-[#f5edff]">{activeCount}</strong>
+            <div className="rounded-lg border border-line-soft bg-[#120b24] px-4 py-3">
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-text-muted">Ativos</span>
+              <strong className="mt-1 block text-2xl text-text-main">{activeCount}</strong>
             </div>
-            <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#8f82ad]">Cliques</span>
-              <strong className="mt-1 block text-2xl text-[#f5edff]">{totalClicks}</strong>
+            <div className="rounded-lg border border-line-soft bg-[#120b24] px-4 py-3">
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-text-muted">Cliques</span>
+              <strong className="mt-1 block text-2xl text-text-main">{totalClicks}</strong>
             </div>
-            <div className="rounded-lg border border-[rgba(217,180,255,0.12)] bg-[#120b24] px-4 py-3">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#8f82ad]">Status</span>
-              <strong className="mt-1 block text-sm text-[#f5edff]">Pronto</strong>
+            <div className="rounded-lg border border-line-soft bg-[#120b24] px-4 py-3">
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-text-muted">Status</span>
+              <strong className="mt-1 block text-sm text-text-main">Pronto</strong>
             </div>
           </div>
 
           <DashboardAdsPreview ads={ads} />
 
-          {message && (
-            <div className="mb-5 rounded-lg border border-[rgba(199,149,255,0.25)] bg-[rgba(167,79,255,0.1)] px-4 py-3 text-sm text-[#e8dfff]">
-              {message}
-            </div>
-          )}
+          {message ? <FormFeedback message={message} className="mb-5" /> : null}
 
           <div className="grid gap-4">
             {ads.map((ad, index) => {
@@ -381,7 +378,7 @@ export function DashboardPage() {
                   className={`relative grid gap-5 rounded-lg border bg-[#0b0717] p-4 transition-all duration-150 lg:grid-cols-[minmax(0,1fr)_280px] ${
                     isDropTarget
                       ? "border-[#c795ff] bg-[rgba(199,149,255,0.06)] shadow-[0_0_0_2px_rgba(199,149,255,0.18)]"
-                      : "border-[rgba(217,180,255,0.12)]"
+                      : "border-line-soft"
                   } ${isDragging ? "scale-[0.99] opacity-55 shadow-[0_12px_30px_rgba(0,0,0,0.28)]" : ""} ${
                     draggingAnotherAd && !isDropTarget ? "opacity-85" : ""
                   }`}
@@ -419,7 +416,7 @@ export function DashboardPage() {
                           className={`inline-flex h-12 min-w-28 cursor-grab items-center gap-3 rounded-lg border px-3 text-sm font-bold transition active:cursor-grabbing ${
                             isDragging
                               ? "border-[#c795ff] bg-[rgba(199,149,255,0.18)] text-white"
-                              : "border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] text-[#e8dfff] hover:border-[rgba(199,149,255,0.5)] hover:bg-[rgba(167,79,255,0.14)]"
+                              : "border-line bg-[rgba(255,255,255,0.04)] text-[#e8dfff] hover:border-line-strong hover:bg-[rgba(167,79,255,0.14)]"
                           }`}
                           type="button"
                           draggable
@@ -445,18 +442,18 @@ export function DashboardPage() {
                             <span className="h-1.5 w-1.5 rounded-full bg-current" />
                           </span>
                           <span className="leading-tight">
-                            <span className="block text-[0.65rem] uppercase tracking-[0.08em] text-[#9f91bd]">Ordem</span>
+                            <span className="block text-[0.65rem] uppercase tracking-[0.08em] text-text-subtle">Ordem</span>
                             <span className="block text-base">{index + 1}</span>
                           </span>
                         </button>
-                        <label className="group inline-flex h-10 w-32 cursor-pointer items-center rounded-lg border border-[rgba(217,180,255,0.18)] bg-[rgba(255,255,255,0.04)] p-1 transition-colors hover:border-[rgba(199,149,255,0.5)] hover:bg-[rgba(167,79,255,0.1)]">
+                        <label className="group inline-flex h-10 w-32 cursor-pointer items-center rounded-lg border border-line bg-[rgba(255,255,255,0.04)] p-1 transition-colors hover:border-line-strong hover:bg-[rgba(167,79,255,0.1)]">
                           <input
                             className="peer sr-only"
                             type="checkbox"
                             checked={ad.ativo}
                             onChange={(event) => updateAd(ad.id, { ativo: event.target.checked })}
                           />
-                          <span className={`flex h-8 w-full items-center justify-between rounded-md px-2 text-xs font-bold uppercase tracking-[0.08em] transition-colors ${ad.ativo ? "text-[#2ccfb4]" : "text-[#8f82ad]"}`}>
+                          <span className={`flex h-8 w-full items-center justify-between rounded-md px-2 text-xs font-bold uppercase tracking-[0.08em] transition-colors ${ad.ativo ? "text-[#2ccfb4]" : "text-text-muted"}`}>
                             <span>{ad.ativo ? "Ativo" : "Inativo"}</span>
                             <span className={`relative h-5 w-9 rounded-full transition-colors ${ad.ativo ? "bg-[rgba(44,207,180,0.32)]" : "bg-[rgba(143,130,173,0.3)]"}`}>
                               <span className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform ${ad.ativo ? "translate-x-4 bg-[#2ccfb4]" : "translate-x-0 bg-[#8f82ad]"}`} />
@@ -539,7 +536,7 @@ export function DashboardPage() {
                             }}
                           />
                         </div>
-                        {upload.loading && <span className="text-xs font-semibold text-[#c795ff]">Enviando imagem...</span>}
+                        {upload.loading && <span className="text-xs font-semibold text-brand">Enviando imagem...</span>}
                       </div>
                     </div>
                   </div>
@@ -551,7 +548,7 @@ export function DashboardPage() {
               );
             })}
 
-            <div className="flex flex-wrap justify-end gap-2 border-t border-[rgba(217,180,255,0.12)] pt-4">
+            <div className="flex flex-wrap justify-end gap-2 border-t border-line-soft pt-4">
               <button className={subtleButtonClass} type="button" onClick={addAd}>Adicionar anúncio</button>
               <button className={subtleButtonClass} type="button" onClick={resetDefaults}>Restaurar padrão</button>
               <button

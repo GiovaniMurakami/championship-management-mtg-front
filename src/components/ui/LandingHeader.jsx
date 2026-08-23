@@ -38,7 +38,7 @@ export function LandingHeader() {
             : pathname === href || pathname.startsWith(href + "/");
         return `no-underline font-semibold text-[0.9rem] cursor-pointer transition-colors duration-200 ${isActive
             ? "text-white [text-shadow:0_0_18px_rgba(167,79,255,0.6)]"
-            : "text-[#beafd7] hover:text-white"
+            : "text-text-soft hover:text-white"
             }`;
     };
 
@@ -46,16 +46,16 @@ export function LandingHeader() {
         const isActive = href === "/"
             ? pathname === href
             : pathname === href || pathname.startsWith(href + "/");
-        return `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-[0.65rem] no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
-            ? "bg-[rgba(167,79,255,0.18)] text-[#f5edff]"
-            : "text-[#beafd7] hover:bg-[rgba(167,79,255,0.1)] hover:text-[#f5edff]"
+        return `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-lg no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
+            ? "bg-[rgba(167,79,255,0.18)] text-text-main"
+            : "text-text-soft hover:bg-[rgba(167,79,255,0.1)] hover:text-text-main"
             }`;
     };
 
     return (
         <header
             ref={headerRef}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.75)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)]"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-line bg-[rgba(14,9,28,0.75)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)]"
             style={{ position: "fixed" }}
         >
             {/* Logo */}
@@ -92,7 +92,7 @@ export function LandingHeader() {
 
             {/* Hamburger */}
             <button
-                className="md:hidden relative inline-flex items-center justify-center w-[2.35rem] h-[2.35rem] border border-[rgba(217,180,255,0.2)] rounded-xl bg-[rgba(167,79,255,0.22)] cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.32)]"
+                className="md:hidden relative inline-flex items-center justify-center w-[2.35rem] h-[2.35rem] border border-line rounded-xl bg-[rgba(167,79,255,0.22)] cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.32)]"
                 type="button"
                 aria-expanded={menuOpen}
                 aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
@@ -106,7 +106,7 @@ export function LandingHeader() {
             {/* Mobile panel */}
             {menuOpen && (
                 <div
-                    className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-[rgba(217,180,255,0.2)] rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)]"
+                    className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-line rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)]"
                     role="dialog"
                     aria-label="Menu de navegação"
                 >
@@ -124,7 +124,7 @@ export function LandingHeader() {
                             </a>
                         ))}
                     </nav>
-                    <div className="mt-3 pt-3 border-t border-[rgba(217,180,255,0.12)]">
+                    <div className="mt-3 pt-3 border-t border-line-soft">
                         <a
                             href="https://apoia.se/tiagofuguete"
                             target="_blank"

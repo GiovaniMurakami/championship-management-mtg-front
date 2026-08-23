@@ -54,13 +54,13 @@ function CardPreviewTooltip({ imageUrl, x, y, visible, isLoading }) {
   return (
     <div className="fixed z-[9999] pointer-events-none" style={{ left: x, top: y }}>
       {isLoading || !imageUrl ? (
-        <div className="w-[180px] h-[252px] rounded-[10px] bg-[rgba(26,16,50,0.95)] border border-[rgba(199,149,255,0.3)] animate-pulse" />
+        <div className="w-[180px] h-[252px] rounded-lg bg-[rgba(26,16,50,0.95)] border border-[rgba(199,149,255,0.3)] animate-pulse" />
       ) : (
         <img
           src={imageUrl}
           alt="Card preview"
           width={180}
-          className="w-[180px] rounded-[10px] shadow-[0_16px_48px_rgba(0,0,0,0.9),0_0_0_1px_rgba(199,149,255,0.25)] block"
+          className="w-[180px] rounded-lg shadow-[0_16px_48px_rgba(0,0,0,0.9),0_0_0_1px_rgba(199,149,255,0.25)] block"
           loading="eager"
         />
       )}
@@ -84,8 +84,8 @@ function WinRateBar({ rate, className = "" }) {
 function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", className = "" }) {
   const sizes = {
     sm: "w-[38px] h-[53px] rounded-[5px]",
-    md: "w-[52px] h-[72px] rounded-[6px]",
-    lg: "w-full aspect-[5/7] rounded-[8px]",
+    md: "w-[52px] h-[72px] rounded-md",
+    lg: "w-full aspect-[5/7] rounded-md",
   };
 
   if (!cardName) return null;
@@ -160,7 +160,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
       {chips.map((chip) => (
         <div
           key={chip.label}
-          className="rounded-[0.85rem] border border-[rgba(217,180,255,0.12)] bg-white/[0.025] px-4 py-3"
+          className="rounded-lg border border-line-soft bg-white/[0.025] px-4 py-3"
         >
           <p
             className="m-0 text-[0.65rem] uppercase tracking-[0.08em] font-semibold mb-1"
@@ -168,7 +168,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
           >
             {chip.label}
           </p>
-          <p className="m-0 text-[0.92rem] font-semibold text-[#f5edff] truncate">{chip.value}</p>
+          <p className="m-0 text-[0.92rem] font-semibold text-text-main truncate">{chip.value}</p>
           <p className="m-0 mt-[0.25rem] text-[0.72rem] text-[rgba(190,175,215,0.45)]">{chip.detail}</p>
         </div>
       ))}
@@ -182,7 +182,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
 function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent, artwork = false }) {
   return (
     <div
-      className="relative rounded-[1rem] border overflow-hidden flex flex-col"
+      className="relative rounded-xl border overflow-hidden flex flex-col"
       style={{
         borderColor: `${accent}55`,
         background: `linear-gradient(155deg, ${accent}12 0%, rgba(16,10,32,0.95) 100%)`,
@@ -287,7 +287,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
           onFocus={(e) => onCardHover(nome, e)}
           onBlur={onCardLeave}
         >
-          <span className="font-semibold text-[0.92rem] text-[#f5edff] group-hover:text-[#c4b5fd] transition-colors duration-150 overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
+          <span className="font-semibold text-[0.92rem] text-text-main group-hover:text-[#c4b5fd] transition-colors duration-150 overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
             {nome}
           </span>
         </button>
@@ -301,7 +301,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
             Cópias
           </p>
-          <p className="m-0 text-[0.88rem] font-semibold text-[#c795ff]">{copias}</p>
+          <p className="m-0 text-[0.88rem] font-semibold text-brand">{copias}</p>
         </div>
         <div className="text-right">
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
@@ -362,7 +362,7 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
       {winRate !== null && (
         <div className="hidden min-[480px]:flex flex-col flex-shrink-0 w-[4.5rem] gap-[0.25rem]">
-          <span className="text-[0.75rem] font-semibold text-right text-[#beafd7]">
+          <span className="text-[0.75rem] font-semibold text-right text-text-soft">
             {winRate}%
           </span>
           <WinRateBar rate={winRate} />
@@ -401,13 +401,13 @@ function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, on
           onLeave={onCardLeave}
         />
       ) : (
-        <span className="flex-shrink-0 w-[38px] h-[53px] rounded-[5px] border border-[rgba(217,180,255,0.15)] bg-[rgba(26,16,50,0.5)] flex items-center justify-center text-[1.1rem] opacity-40">
+        <span className="flex-shrink-0 w-[38px] h-[53px] rounded-[5px] border border-line-soft bg-[rgba(26,16,50,0.5)] flex items-center justify-center text-[1.1rem] opacity-40">
           🃏
         </span>
       )}
 
       <div className="flex-1 min-w-0">
-        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#f5edff] block">
+        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-text-main block">
           {nome}
         </span>
         {cartaPrincipal && (
@@ -457,20 +457,20 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-4">
       {/* Tab bar skeleton */}
-      <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.1)] rounded-xl p-1 h-[46px] animate-pulse" />
+      <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-line-soft rounded-xl p-1 h-[46px] animate-pulse" />
 
       {/* Podium skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-[1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] h-[230px] animate-pulse"
+            className="rounded-xl border border-line-soft bg-white/[0.03] h-[230px] animate-pulse"
           />
         ))}
       </div>
 
       {/* List skeleton */}
-      <div className="rounded-[1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] overflow-hidden">
+      <div className="rounded-xl border border-line-soft bg-white/[0.03] overflow-hidden">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -486,9 +486,9 @@ function LoadingSkeleton() {
 
 function SectionInfo({ count, label, hint }) {
   return (
-    <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-[rgba(217,180,255,0.1)] bg-white/[0.015]">
-      <span className="text-[0.78rem] text-[#beafd7]">
-        <span className="font-semibold text-[#f5edff]">{count}</span> {label}
+    <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-line-soft bg-white/[0.015]">
+      <span className="text-[0.78rem] text-text-soft">
+        <span className="font-semibold text-text-main">{count}</span> {label}
       </span>
       {hint && (
         <span className="text-[0.72rem] text-[rgba(190,175,215,0.4)]">{hint}</span>
@@ -499,7 +499,7 @@ function SectionInfo({ count, label, hint }) {
 
 function TeamRankingTable({ rankingTimes, totalTimes }) {
   return (
-    <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden">
+    <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-line-soft overflow-hidden">
       <SectionInfo
         count={totalTimes}
         label={`time${totalTimes !== 1 ? "s" : ""}`}
@@ -537,7 +537,7 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
                   key={time.time?.id ?? time.id ?? idx}
                   className="border-t border-[rgba(217,180,255,0.07)] hover:bg-white/[0.02] transition-colors duration-150"
                 >
-                  <td className="px-5 py-4 text-[0.88rem] font-semibold text-[#f5edff]">{time.posicao ?? idx + 1}</td>
+                  <td className="px-5 py-4 text-[0.88rem] font-semibold text-text-main">{time.posicao ?? idx + 1}</td>
                   <td className="px-5 py-4 text-[0.9rem] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
                   <td className="px-5 py-4">
                     <RecordeVd
@@ -702,11 +702,11 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const meuRanking = userId ? jogadores.find((j) => j.jogador?.id === userId) : null;
 
   const cardClass =
-    "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden";
+    "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-line-soft overflow-hidden";
   const teamRankingSection = isTeamLeague ? (
     <section className="space-y-3" aria-label="Ranking coletivo">
       <div>
-        <h3 className="m-0 text-[1.05rem] font-semibold text-[#f5edff]">Ranking coletivo</h3>
+        <h3 className="m-0 text-[1.05rem] font-semibold text-text-main">Ranking coletivo</h3>
         <p className="m-0 mt-1 text-[0.82rem] text-[rgba(190,175,215,0.45)]">
           Classificação consolidada dos times da liga.
         </p>
@@ -725,13 +725,13 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
       {/* ── Sub-tabs ── */}
       {tabs.length > 1 && (
-        <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.1)] rounded-xl p-1 mb-5">
+        <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-line-soft rounded-xl p-1 mb-5">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setSubAba(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] rounded-[0.6rem] text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
+              className={`flex-1 flex items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] rounded-md text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
                   ? "bg-[rgba(79,70,229,0.35)] text-white border border-[rgba(99,102,241,0.45)] shadow-sm"
                   : "text-[#888] hover:text-[#c0bfff] border border-transparent"
                 }`}
@@ -740,7 +740,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               <span
                 className={`text-[0.68rem] px-[0.45rem] py-[0.1rem] rounded-full leading-[1.5] ${activeTab === tab.key
                     ? "bg-white/[0.18] text-white"
-                    : "bg-[rgba(217,180,255,0.1)] text-[#beafd7]"
+                    : "bg-[rgba(217,180,255,0.1)] text-text-soft"
                   }`}
               >
                 {tab.count}
@@ -789,21 +789,21 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                 ))}
               </ul>
               {jogadoresPages > 1 && (
-                <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
+                <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-line-soft">
                   <button
                     type="button"
-                    className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                    className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                     onClick={() => setJogadoresPage((p) => Math.max(1, p - 1))}
                     disabled={jogadoresClamped <= 1}
                   >
                     ←
                   </button>
-                  <span className="text-[0.8rem] text-[#beafd7]">
+                  <span className="text-[0.8rem] text-text-soft">
                     {jogadoresClamped} / {jogadoresPages}
                   </span>
                   <button
                     type="button"
-                    className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                    className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                     onClick={() => setJogadoresPage((p) => Math.min(jogadoresPages, p + 1))}
                     disabled={jogadoresClamped >= jogadoresPages}
                   >
@@ -815,7 +815,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
           )}
 
           {meuRanking && !jogadoresPagina.some((j) => j.jogador?.id === userId) && (
-            <div className="rounded-[0.85rem] border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
+            <div className="rounded-lg border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <MedalBadge pos={meuRanking.posicao} />
                 <div className="min-w-0">
@@ -899,21 +899,21 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
             ))}
           </ul>
           {decksPages > 1 && (
-            <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
+            <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-line-soft">
               <button
                 type="button"
-                className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                 onClick={() => setDecksPage((p) => Math.max(1, p - 1))}
                 disabled={decksClamped <= 1}
               >
                 ←
               </button>
-              <span className="text-[0.8rem] text-[#beafd7]">
+              <span className="text-[0.8rem] text-text-soft">
                 {decksClamped} / {decksPages}
               </span>
               <button
                 type="button"
-                className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                 onClick={() => setDecksPage((p) => Math.min(decksPages, p + 1))}
                 disabled={decksClamped >= decksPages}
               >

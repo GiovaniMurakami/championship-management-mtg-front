@@ -25,12 +25,12 @@ function BracketPlayer({ name, score, isWinner, isBye, excluido = false }) {
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
       isWinner
         ? "border-[rgba(250,204,21,0.48)] bg-[rgba(250,204,21,0.12)] text-[#fef3c7]"
-        : "border-[rgba(217,180,255,0.12)] bg-[rgba(255,255,255,0.04)] text-[#d8cfee]"
+        : "border-line-soft bg-[rgba(255,255,255,0.04)] text-[#d8cfee]"
     } ${isBye ? "opacity-55" : ""}`}>
       <span className="min-w-0 truncate text-sm font-semibold">
         {isBye ? name : <UsuarioNomeExibicao nome={name} excluido={excluido} />}
       </span>
-      <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-[#beafd7]"}`}>
+      <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-text-soft"}`}>
         {score}
       </span>
     </div>
@@ -46,9 +46,9 @@ function BracketMatch({ partida, matchIndex }) {
   const score2 = partida.status === "finalizada" ? Number(partida.vitoriasJogador2 ?? 0) : "-";
 
   return (
-    <article className="relative rounded-lg border border-[rgba(217,180,255,0.16)] bg-[#0b0717] p-3 shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
+    <article className="relative rounded-lg border border-line-soft bg-[#0b0717] p-3 shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-[#c795ff]">
+        <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-brand">
           Jogo {matchIndex + 1}
         </span>
         <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.06em] ${
@@ -113,7 +113,7 @@ export function EliminationBracket({ torneio, partidas }) {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3 max-md:flex-col max-md:items-stretch">
         <div>
           <p className="m-0 text-xs font-black uppercase tracking-[0.12em] text-[#facc15]">Corte Top {corteTop}</p>
-          <h2 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.05em] text-[#f5edff] max-md:text-[1.45rem]">
+          <h2 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.05em] text-text-main max-md:text-[1.45rem]">
             Chaveamento eliminatório
           </h2>
         </div>

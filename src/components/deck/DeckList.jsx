@@ -19,7 +19,7 @@ export function DeckList({
       {cards.map((card) => (
         <li
           key={card.nome}
-          className="flex items-center gap-2 px-[0.35rem] py-[0.22rem] rounded-[0.4rem] hover:bg-white/[0.04] group"
+          className="flex items-center gap-2 px-[0.35rem] py-[0.22rem] rounded-md hover:bg-white/[0.04] group"
           onMouseEnter={() => onCardMouseEnter?.(card)}
           onMouseLeave={onCardMouseLeave}
         >
@@ -46,7 +46,7 @@ export function DeckList({
             {!readOnly && (
               <button
                 type="button"
-                className="w-[1.4rem] h-[1.4rem] rounded-[4px] border border-[rgba(217,180,255,0.2)] bg-white/[0.04] text-[#beafd7] text-[0.9rem] leading-none cursor-pointer flex items-center justify-center hover:bg-[rgba(167,79,255,0.18)] hover:text-[#f5edff] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-[1.4rem] h-[1.4rem] rounded-[4px] border border-line bg-white/[0.04] text-text-soft text-[0.9rem] leading-none cursor-pointer flex items-center justify-center hover:bg-[rgba(167,79,255,0.18)] hover:text-text-main transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={() =>
                   onCardQuantityChange(
                     card.nome,
@@ -58,13 +58,13 @@ export function DeckList({
                 −
               </button>
             )}
-            <span className="min-w-[1.2rem] text-center text-[0.88rem] font-bold text-[#f5edff]">
+            <span className="min-w-[1.2rem] text-center text-[0.88rem] font-bold text-text-main">
               {card.quantidade}
             </span>
             {!readOnly && (
               <button
                 type="button"
-                className="w-[1.4rem] h-[1.4rem] rounded-[4px] border border-[rgba(217,180,255,0.2)] bg-white/[0.04] text-[#beafd7] text-[0.9rem] leading-none cursor-pointer flex items-center justify-center hover:bg-[rgba(167,79,255,0.18)] hover:text-[#f5edff] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-[1.4rem] h-[1.4rem] rounded-[4px] border border-line bg-white/[0.04] text-text-soft text-[0.9rem] leading-none cursor-pointer flex items-center justify-center hover:bg-[rgba(167,79,255,0.18)] hover:text-text-main transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={() =>
                   onCardQuantityChange(card.nome, String(card.quantidade + 1))
                 }

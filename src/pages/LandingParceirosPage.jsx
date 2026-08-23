@@ -39,9 +39,9 @@ export function LandingParceirosPage() {
             </section>
 
             {/* Coupon */}
-            <section className="bg-[#080514] py-8 border-y border-[rgba(217,180,255,0.12)]">
+            <section className="bg-[#080514] py-8 border-y border-line-soft">
                 <div className="max-w-3xl mx-auto px-4 text-center">
-                    <h2 className="text-xl md:text-2xl font-bold text-[#c795ff]">
+                    <h2 className="text-xl md:text-2xl font-bold text-brand">
                         Use o Cupom "FUGUETE05" para garantir 5% de desconto
                     </h2>
                 </div>
@@ -58,7 +58,7 @@ export function LandingParceirosPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label={p.name}
-                            className="group relative flex h-full w-full flex-col items-center justify-center p-4 rounded-xl bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.18)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_8px_28px_rgba(142,57,237,0.35)] active:scale-100"
+                            className="group relative flex h-full w-full flex-col items-center justify-center p-4 rounded-xl bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.18)] border border-line-soft hover:border-[rgba(199,149,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_8px_28px_rgba(142,57,237,0.35)] active:scale-100"
                         >
                             <img
                                 src={p.img}
@@ -66,7 +66,7 @@ export function LandingParceirosPage() {
                                 className="max-h-20 max-w-full object-contain opacity-75 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105"
                                 loading="lazy"
                             />
-                            <span className="absolute bottom-2 left-0 right-0 text-center text-[0.65rem] text-[#9b8dc0] group-hover:text-[#c795ff] transition-colors duration-200 px-1 truncate">
+                            <span className="absolute bottom-2 left-0 right-0 text-center text-[0.65rem] text-[#9b8dc0] group-hover:text-brand transition-colors duration-200 px-1 truncate">
                                 {p.name}
                             </span>
                         </a>
@@ -76,7 +76,7 @@ export function LandingParceirosPage() {
             </section>
 
             {/* CTA */}
-            <section className="bg-[#080514] py-12 border-t border-[rgba(217,180,255,0.12)]">
+            <section className="bg-[#080514] py-12 border-t border-line-soft">
                 <div className="max-w-3xl mx-auto px-4 text-center">
                     <h2 className="text-2xl md:text-3xl font-bold mb-4">Ainda não é parceiro?</h2>
                     <p className="text-[#9b8dc0] mb-4 max-w-2xl mx-auto">
@@ -84,7 +84,7 @@ export function LandingParceirosPage() {
                         competitivo de Magic, esse é o momento. Estou sempre em busca de parceiros que, assim
                         como eu, acreditam no potencial da comunidade e querem crescer junto. Entre em contato:
                     </p>
-                    <a href="mailto:contato@tiagofuguete.com.br" className="text-[#c795ff] hover:text-[#e8dfff] font-semibold text-lg transition-colors">
+                    <a href="mailto:contato@tiagofuguete.com.br" className="text-brand hover:text-[#e8dfff] font-semibold text-lg transition-colors">
                         contato@tiagofuguete.com.br
                     </a>
                 </div>

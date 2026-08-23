@@ -26,11 +26,11 @@ export function MetagameListaCard({
   const cores = coresDasCartas(maindeck.length ? maindeck : commander);
 
   return (
-    <article className="rounded-xl border border-[rgba(217,180,255,0.12)] bg-white/[0.02] overflow-hidden">
-      <header className="flex items-start gap-3 px-4 pt-4 pb-3 border-b border-[rgba(217,180,255,0.12)]">
+    <article className="rounded-xl border border-line-soft bg-white/[0.02] overflow-hidden">
+      <header className="flex items-start gap-3 px-4 pt-4 pb-3 border-b border-line-soft">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 min-w-0">
-            <span className="inline-flex max-w-full items-center rounded-full border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.18)] px-2.5 py-0.5 text-[0.78rem] font-semibold text-[#f5edff] truncate">
+            <span className="inline-flex max-w-full items-center rounded-full border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.18)] px-2.5 py-0.5 text-[0.78rem] font-semibold text-text-main truncate">
               <UsuarioNomeExibicao
                 nome={lista?.usuario?.nome}
                 excluido={lista?.usuario}
@@ -38,7 +38,7 @@ export function MetagameListaCard({
               />
             </span>
           </div>
-          <p className="m-0 text-[1.05rem] font-bold text-[#f5edff] leading-snug truncate">
+          <p className="m-0 text-[1.05rem] font-bold text-text-main leading-snug truncate">
             {lista?.nome || "Deck"}
           </p>
           <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-2">
@@ -51,7 +51,7 @@ export function MetagameListaCard({
               </Link>
             )}
             {cores.map((c) => (
-              <span key={c} className="inline-flex items-center gap-1 text-[0.68rem] text-[#beafd7]">
+              <span key={c} className="inline-flex items-center gap-1 text-[0.68rem] text-text-soft">
                 <span
                   className="inline-block w-3 h-3 rounded-full border border-black/30 shadow-sm flex-shrink-0"
                   style={{ background: MANA_COLOR_MAP[c] ?? "#64748b" }}
