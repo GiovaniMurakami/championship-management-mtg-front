@@ -72,3 +72,27 @@ export const unsubscribeFromTournament = (channel) => {
     attachedChannels = Math.max(0, attachedChannels - 1);
     closeAblyIfIdle();
 };
+
+export const subscribeToRankedPlayer = (jogadorId, callback) => {
+    const client = getAblyClient();
+    if (!client || !jogadorId) return null;
+    const channel = client.channels.get(`ranqueada-jogador-${jogadorId}`);
+    for (const eventName of ["fila_atualizada", "partida_encontrada", "resultado_reportado", "resultado_contestado", "resultado_confirmado", "punicao_atualizada"]) {
+        channel.subscribe(eventName, (message) => callback?.(message));
+    }
+    attachedChannels += 1;
+    return channel;
+};
+
+export const unsubscribeFromRankedPlayer = unsubscribeFromTournament;
+
+export const subscribeToRankedAdmin = (callback) => {
+    const client = getAblyClient();
+    if (!client) return null;
+    const channel = client.channels.get("ranqueada-admin");
+    channel.subscribe("contestacao_atualizada", (message) => callback?.(message));
+    attachedChannels += 1;
+    return channel;
+};
+
+export const unsubscribeFromRankedAdmin = unsubscribeFromTournament;

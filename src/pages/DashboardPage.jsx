@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { SkeletonDashboard } from "../components/ui/Skeleton";
-import { Tabs } from "../components/ui/Tabs";
 import { FormFeedback } from "../components/ui/FormFeedback";
 import { useAuth } from "../context/AuthContext";
 import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
@@ -190,7 +189,6 @@ export function DashboardPage() {
 
   usePageTitle(PAGE_TITLES.dashboard);
 
-  const [activeTab, setActiveTab] = useState("anuncios");
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -329,18 +327,14 @@ export function DashboardPage() {
             Dashboard
           </h1>
           <p className="m-0 mt-2 max-w-2xl text-sm leading-6 text-[#b9abd8]">
-            Edite os anúncios exibidos no carrossel de patrocinador.
+            Gerencie os anúncios exibidos na plataforma.
           </p>
         </div>
       </div>
 
-      <Tabs value={activeTab} onChange={setActiveTab} className="mb-5">
-        <Tabs.Item value="anuncios" label="Anúncios" count={loading ? undefined : ads.length} />
-      </Tabs>
+      {loading && <SkeletonDashboard />}
 
-      {activeTab === "anuncios" && loading && <SkeletonDashboard />}
-
-      {activeTab === "anuncios" && !loading && (
+      {!loading && (
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-line-soft bg-[#120b24] px-4 py-3">

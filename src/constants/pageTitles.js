@@ -10,6 +10,7 @@ export const PAGE_TITLES = {
   visualizarDeck: "Visualizar Deck",
   dashboard: "Dashboard",
   dashboardBloqueios: "Bloqueio de usuários",
+  dashboardContestacoes: "Contestações",
   times: "Times",
   criarTime: "Criar Time",
   editarTime: "Editar Time",

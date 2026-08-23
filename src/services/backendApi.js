@@ -495,3 +495,40 @@ export const uploadParaS3 = (uploadUrl, file, onProgress) =>
     xhr.onerror = () => reject(Object.assign(new Error("Erro de CORS ao enviar para o S3"), { code: "s3-upload-cors" }));
     xhr.send(file);
   });
+
+// Ranqueada
+export const entrarFilaRanqueada = (deckId, token) =>
+  httpClient.post("/ranqueada/fila", { deckId }, { headers: { Authorization: `Bearer ${token}` } });
+
+export const sairFilaRanqueada = (token) =>
+  httpClient.delete("/ranqueada/fila", { headers: { Authorization: `Bearer ${token}` } });
+
+export const abandonarCampanhaRanqueada = (formato, token) =>
+  httpClient.delete("/ranqueada/campanha", { params: { formato }, headers: { Authorization: `Bearer ${token}` } });
+
+export const buscarStatusRanqueada = (formato, token) =>
+  httpClient.get("/ranqueada/status", { params: { formato }, headers: { Authorization: `Bearer ${token}` } });
+
+export const buscarRankingRanqueada = (formato, token) =>
+  httpClient.get("/ranqueada/ranking", { params: { formato }, headers: { Authorization: `Bearer ${token}` } });
+
+export const buscarHistoricoRanqueada = (token) =>
+  httpClient.get("/ranqueada/historico", { headers: { Authorization: `Bearer ${token}` } });
+
+export const registrarResultadoRanqueada = (partidaId, vencedorId, token) =>
+  httpClient.post(`/ranqueada/partida/${partidaId}/resultado`, { vencedorId }, { headers: { Authorization: `Bearer ${token}` } });
+
+export const confirmarResultadoRanqueada = (partidaId, token) =>
+  httpClient.post(`/ranqueada/partida/${partidaId}/confirmar`, {}, { headers: { Authorization: `Bearer ${token}` } });
+
+export const contestarResultadoRanqueada = (partidaId, observacao, evidenciaUrl, tipoContestacao, token) =>
+  httpClient.post(`/ranqueada/partida/${partidaId}/contestar`, { observacao, evidenciaUrl, tipoContestacao }, { headers: { Authorization: `Bearer ${token}` } });
+
+export const ajustarResultadoRanqueada = (partidaId, vencedorId, token) =>
+  httpClient.put(`/ranqueada/partida/${partidaId}/ajustar`, { vencedorId }, { headers: { Authorization: `Bearer ${token}` } });
+
+export const listarContestacoesRanqueada = (token) =>
+  httpClient.get("/ranqueada/contestacoes", { headers: { Authorization: `Bearer ${token}` } });
+
+export const resolverContestacaoDeckRanqueada = (partidaId, procedente, token) =>
+  httpClient.put(`/ranqueada/partida/${partidaId}/resolver-deck`, { procedente }, { headers: { Authorization: `Bearer ${token}` } });

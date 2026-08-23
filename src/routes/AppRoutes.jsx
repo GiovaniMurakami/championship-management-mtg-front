@@ -24,6 +24,7 @@ const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").th
 const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
 const DashboardPage       = lazy(() => import("../pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const DashboardBloqueiosPage = lazy(() => import("../pages/DashboardBloqueiosPage").then(m => ({ default: m.DashboardBloqueiosPage })));
+const DashboardContestacoesPage = lazy(() => import("../pages/DashboardContestacoesPage").then(m => ({ default: m.DashboardContestacoesPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
 const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
@@ -32,6 +33,8 @@ const ContadorVidaPage    = lazy(() => import("../pages/ContadorVidaPage").then(
 const CalculadoraSwissPage = lazy(() => import("../pages/CalculadoraSwissPage").then(m => ({ default: m.CalculadoraSwissPage })));
 const MetagamePage = lazy(() => import("../pages/MetagamePage").then(m => ({ default: m.MetagamePage })));
 const MetagameArquetipoPage = lazy(() => import("../pages/MetagameArquetipoPage").then(m => ({ default: m.MetagameArquetipoPage })));
+const RanqueadaPage = lazy(() => import("../pages/RanqueadaPage").then(m => ({ default: m.RanqueadaPage })));
+const RanqueadaHistoricoPage = lazy(() => import("../pages/RanqueadaHistoricoPage").then(m => ({ default: m.RanqueadaHistoricoPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -43,6 +46,8 @@ export function AppRoutes() {
         <Route path="/torneio" element={<Navigate to="/" replace />} />
 
         <Route path="/decks" element={<MyDecksPage />} />
+        <Route path="/ranqueada" element={<ProtectedRoute><RanqueadaPage /></ProtectedRoute>} />
+        <Route path="/ranqueada/historico" element={<ProtectedRoute><RanqueadaHistoricoPage /></ProtectedRoute>} />
         <Route path="/decks/criar" element={
           <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
         } />
@@ -68,6 +73,9 @@ export function AppRoutes() {
         <Route path="/dashboard/anuncios" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard/bloqueios" element={
           <ProtectedRoute requireAdmin><DashboardBloqueiosPage /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/contestacoes" element={
+          <ProtectedRoute requireAdmin><DashboardContestacoesPage /></ProtectedRoute>
         } />
 
         <Route path="/times" element={<TimePage />} />
