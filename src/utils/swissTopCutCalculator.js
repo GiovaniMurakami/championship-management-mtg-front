@@ -168,7 +168,12 @@ export function integerizePlayerCounts(rows, totalPlayers) {
 
   return prepared
     .sort((a, b) => a.index - b.index)
-    .map(({ index, remainder, ...row }) => row);
+    .map((row) => {
+      const result = { ...row };
+      delete result.index;
+      delete result.remainder;
+      return result;
+    });
 }
 
 /**

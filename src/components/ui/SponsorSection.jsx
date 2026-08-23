@@ -40,10 +40,14 @@ export function SponsorSection() {
     buscarAnuncios()
       .then((data) => {
         if (!mounted) return;
+        setCurrent(0);
         setAds(normalizeAds(data?.anuncios ?? [], DEFAULT_ADS));
       })
       .catch(() => {
-        if (mounted) setAds(normalizeAds(DEFAULT_ADS));
+        if (mounted) {
+          setCurrent(0);
+          setAds(normalizeAds(DEFAULT_ADS));
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -51,10 +55,6 @@ export function SponsorSection() {
 
     return () => { mounted = false; };
   }, []);
-
-  useEffect(() => {
-    setCurrent(0);
-  }, [ads]);
 
   useEffect(() => {
     if (loading || activeAds.length <= 1) return undefined;

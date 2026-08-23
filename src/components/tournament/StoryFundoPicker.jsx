@@ -25,7 +25,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
   ref,
 ) {
   const [fundos, setFundos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(token));
   const [selectedId, setSelectedId] = useState(() => (valueUrl ? MODE_EXISTING : MODE_DEFAULT));
   const [novoNome, setNovoNome] = useState("");
   const [novoTextoRodape, setNovoTextoRodape] = useState("claro");
@@ -37,12 +37,13 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
 
   useEffect(() => {
     let cancelled = false;
-    if (!token) {
-      setLoading(false);
-      return undefined;
-    }
-    setLoading(true);
-    listarStoryFundos(token)
+    if (!token) return undefined;
+
+    Promise.resolve()
+      .then(() => {
+        if (!cancelled) setLoading(true);
+        return listarStoryFundos(token);
+      })
       .then((data) => {
         if (cancelled) return;
         const list = data?.fundos || data || [];
@@ -60,16 +61,20 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
   }, [token]);
 
   useEffect(() => {
-    if (!valueUrl) {
-      setSelectedId((prev) => (prev === MODE_EXISTING ? MODE_DEFAULT : prev));
-      return;
-    }
-    if (!fundos.length) {
-      setSelectedId(MODE_EXISTING);
-      return;
-    }
-    const match = fundos.find((f) => f.url === valueUrl);
-    setSelectedId(match ? match.id : MODE_EXISTING);
+    const timeoutId = setTimeout(() => {
+      if (!valueUrl) {
+        setSelectedId((prev) => (prev === MODE_EXISTING ? MODE_DEFAULT : prev));
+        return;
+      }
+      if (!fundos.length) {
+        setSelectedId(MODE_EXISTING);
+        return;
+      }
+      const match = fundos.find((f) => f.url === valueUrl);
+      setSelectedId(match ? match.id : MODE_EXISTING);
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [valueUrl, fundos]);
 
   const previewUrl =

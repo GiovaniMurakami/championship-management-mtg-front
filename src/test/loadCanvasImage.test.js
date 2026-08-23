@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { blobParecePaginaWeb, buildS3ImageProxyUrl, isS3HttpUrl } from "../utils/loadCanvasImage";
 
 describe("blobParecePaginaWeb", () => {

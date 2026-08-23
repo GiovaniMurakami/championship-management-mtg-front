@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { loadCardImagesForDeck, buildVisualCanvas } from "./deckImageCanvas";
 import { Tooltip } from "../ui/Tooltip";
@@ -7,16 +7,12 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   const [cardDataMap, setCardDataMap] = useState({});
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState("meta"); // "meta" | "imgs" | "done"
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [ratio, setRatio] = useState("16x9"); // "16x9" | "9x16"
 
-  useEffect(() => {
-    if (stage !== "done") {
-      setPreviewUrl(null);
-      return;
-    }
+  const previewUrl = useMemo(() => {
+    if (stage !== "done") return null;
     const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
-    setPreviewUrl(canvas.toDataURL("image/jpeg", 0.92));
+    return canvas.toDataURL("image/jpeg", 0.92);
   }, [stage, ratio, deck, cardDataMap, ownerName]);
 
   useEffect(() => {

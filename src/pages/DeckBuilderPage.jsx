@@ -44,8 +44,11 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
   const tokenRef = useRef(token);
-  tokenRef.current = token;
   const deckFromState = location.state?.deck;
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   const deckPageTitle = readOnly
     ? PAGE_TITLES.visualizarDeck

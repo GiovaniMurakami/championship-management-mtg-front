@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -54,11 +54,12 @@ export function CalculadoraSwissPage() {
   const byePlayersN = toInt(playersWithBye, 0);
   const byesEachN = toInt(byesPerPlayer, 0);
 
-  useEffect(() => {
+  const handlePlayersChange = (value) => {
+    setPlayers(value);
     if (roundsTouched) return;
-    const recommended = recommendedSwissRounds(playersN);
+    const recommended = recommendedSwissRounds(toInt(value, 0));
     if (recommended > 0) setRounds(String(recommended));
-  }, [playersN, roundsTouched]);
+  };
 
   const result = useMemo(() => {
     if (playersN < 2 || roundsN < 1 || topCutN < 1) return null;
@@ -95,7 +96,7 @@ export function CalculadoraSwissPage() {
             label="Quantidade de jogadores"
             value={players}
             min={2}
-            onChange={setPlayers}
+            onChange={handlePlayersChange}
           />
           <Field
             id="qtd-rodadas"
