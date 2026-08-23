@@ -1,10 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { buscarDeck, atualizarDeck } from "../../services/backendApi";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { Tooltip } from "../ui/Tooltip";
 import { DeckGroupedList, DeckTypeBadges } from "../deck/DeckGroupedList";
+import { DeckImageModal } from "../deck/DeckImageModal";
 import { groupCardsByType, MANA_COLOR_MAP, MANA_COLOR_LABELS } from "../../utils/deckTypeGroups";
 
 export const RANK_BADGE = {
@@ -25,12 +27,14 @@ const FORMAT_LABELS = {
 };
 
 function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }) {
+  const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [visible, setVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
@@ -160,6 +164,13 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
             </div>
             <p className="m-0 text-[1.05rem] font-bold text-[#f5edff] leading-snug truncate">{deckNome || deck?.nome || "Deck"}</p>
             <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-2">
+              {loading && (
+                <>
+                  <span className="h-5 w-16 rounded-md bg-[rgba(199,149,255,0.12)] animate-pulse" />
+                  <span className="h-3 w-3 rounded-full bg-[rgba(199,149,255,0.12)] animate-pulse" />
+                  <span className="h-3 w-14 rounded bg-[rgba(199,149,255,0.08)] animate-pulse" />
+                </>
+              )}
               {deck?.formato && (
                 <span className="text-[0.63rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[rgba(167,79,255,0.18)] border border-[rgba(199,149,255,0.35)] text-[#c795ff]">
                   {FORMAT_LABELS[deck.formato] || deck.formato}
@@ -250,34 +261,62 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
 
         {/* Footer */}
         {!loading && !error && deck && (
-          <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-[rgba(217,180,255,0.12)] flex-shrink-0 bg-[rgba(0,0,0,0.25)]">
-            <span className="text-[0.72rem] text-[#beafd7]">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-5 py-3 border-t border-[rgba(217,180,255,0.12)] flex-shrink-0 bg-[rgba(0,0,0,0.25)]">
+            <span className="min-w-0 text-[0.72rem] text-[#beafd7]">
               {totalMain} main{totalSide > 0 ? ` · ${totalSide} side` : ""}
             </span>
+            <div className="flex items-center justify-end gap-2">
+            <Tooltip content="Gerar imagem do deck" placement="top" focusable={false}>
+            <button
+              type="button"
+              onClick={() => setShowImageModal(true)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[rgba(255,215,0,0.35)] bg-[rgba(255,215,0,0.08)] text-[#fcd34d] transition-colors hover:bg-[rgba(255,215,0,0.16)]"
+              aria-label="Gerar imagem do deck"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+            </button>
+            </Tooltip>
+            <button
+              type="button"
+              onClick={() => navigate(`/editar-deck/${deckId}?modo=visualizar`)}
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-[rgba(199,149,255,0.48)] bg-[rgba(167,79,255,0.16)] px-3 text-[0.75rem] font-semibold text-[#ddd0ff] transition-colors hover:bg-[rgba(167,79,255,0.28)]"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M14 3h7v7" /><path d="M10 14 21 3" /><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" /></svg>
+              Ver lista
+            </button>
+            <Tooltip content={copied ? "Lista copiada" : "Copiar lista"} placement="top" focusable={false}>
             <button
               type="button"
               onClick={handleCopy}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 border rounded-full text-[0.75rem] font-semibold font-['inherit'] cursor-pointer transition-all duration-150 ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors ${
                 copied
                   ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.4)] text-[#86efac]"
                   : "border-[rgba(199,149,255,0.4)] bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)]"
               }`}
+              aria-label={copied ? "Lista copiada" : "Copiar lista"}
             >
               {copied ? (
                 <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
-                  Copiado!
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
                 </>
               ) : (
                 <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                  Copiar lista
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
                 </>
               )}
             </button>
+            </Tooltip>
+            </div>
           </div>
         )}
       </div>
+      {showImageModal && deck && (
+        <DeckImageModal
+          deck={{ ...deck, nome: deckNome || deck.nome }}
+          ownerName={playerName || deck.usuario?.nome || ""}
+          onClose={() => setShowImageModal(false)}
+        />
+      )}
     </div>,
     document.body
   );

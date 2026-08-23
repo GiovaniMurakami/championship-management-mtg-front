@@ -10,7 +10,7 @@ function formatarNomeCarta(nome) {
     .join(" ");
 }
 
-export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, onCardMouseEnter, onCardMouseLeave }) {
+export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, onCardMouseEnter, onCardMouseLeave }) {
   const { imagem } = useScryfallArt(arquetipo.cartaRepresentativa);
   const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}`;
   const cartasChave = (arquetipo.cartasChave || []).slice(0, 3);
@@ -38,7 +38,11 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, onCard
           {arquetipo.nome}
         </div>
         <div className="mt-1.5 min-h-[16px]">
-          <MetagameManaPips colors={colors} />
+          {colorsLoading ? (
+            <span className="inline-block h-4 w-20 rounded bg-white/10 animate-pulse" aria-label="Calculando cores do deck" />
+          ) : (
+            <MetagameManaPips colors={colors} />
+          )}
         </div>
         <ul className="m-0 mt-2 p-0 list-none text-[0.8rem] text-[#cfc3e6] leading-relaxed flex-1">
           {cartasChave.map((carta) => (

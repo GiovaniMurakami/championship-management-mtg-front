@@ -1061,8 +1061,8 @@ export function useTournamentDetail() {
         }
     };
 
-    const handleUndropPlayer = async (jogadorId) => {
-        if (!torneioId || !canManageTournament || !jogadorId) return;
+    const handleUndropPlayer = async (jogadorId, self = false) => {
+        if (!torneioId || (!self && !canManageTournament) || !jogadorId) return;
         setActionLoading(true);
         setAdminActionKey("undrop-player");
         setDroppingPlayerId(jogadorId);

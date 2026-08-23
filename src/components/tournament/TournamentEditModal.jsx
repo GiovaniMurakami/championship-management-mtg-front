@@ -332,6 +332,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                   ref={storyFundoPickerRef}
                   token={token}
                   valueUrl={torneio?.storyFundoUrl || ""}
+                  valueTextoRodape={torneio?.storyFundoTextoRodape || "claro"}
                   disabled={isDisabled}
                   onPreviewUrlChange={handleStoryPreviewUrlChange}
                   onTextoRodapeChange={setStoryPreviewTextoRodape}

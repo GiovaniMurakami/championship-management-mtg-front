@@ -17,6 +17,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
   {
     token,
     valueUrl = "",
+    valueTextoRodape = "claro",
     disabled = false,
     onPreviewUrlChange,
     onTextoRodapeChange,
@@ -85,7 +86,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
       ? "escuro"
       : selectedId === MODE_NEW
       ? novoTextoRodape
-      : selectedFundo?.textoRodape || "claro";
+      : selectedFundo?.textoRodape || valueTextoRodape;
 
   useEffect(() => {
     if (loading) return;
@@ -93,15 +94,17 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
     onTextoRodapeChange?.(previewTextoRodape);
   }, [previewUrl, previewTextoRodape, onPreviewUrlChange, onTextoRodapeChange, loading]);
 
-  stateRef.current = { selectedId, fundos, novoNome, novoTextoRodape, novoFile, valueUrl };
+  useEffect(() => {
+    stateRef.current = { selectedId, fundos, novoNome, novoTextoRodape, novoFile, valueUrl, valueTextoRodape };
+  }, [selectedId, fundos, novoNome, novoTextoRodape, novoFile, valueUrl, valueTextoRodape]);
 
   useImperativeHandle(ref, () => ({
     async resolveForSubmit(onProgress) {
-      const { selectedId: mode, fundos: list, novoNome: nomeRaw, novoTextoRodape: textoRodape, novoFile: file, valueUrl: fallback } =
+      const { selectedId: mode, fundos: list, novoNome: nomeRaw, novoTextoRodape: textoRodape, novoFile: file, valueUrl: fallback, valueTextoRodape: fallbackTexto } =
         stateRef.current;
 
       if (mode === MODE_DEFAULT) return { url: "", textoRodape: "escuro" };
-      if (mode === MODE_EXISTING) return { url: fallback || "", textoRodape: "claro" };
+      if (mode === MODE_EXISTING) return { url: fallback || "", textoRodape: fallbackTexto || "claro" };
 
       if (mode !== MODE_NEW) {
         const fundo = list.find((f) => f.id === mode);

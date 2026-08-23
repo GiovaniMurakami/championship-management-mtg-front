@@ -77,9 +77,11 @@ export function LigaPage() {
   return (
     <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6">
-        <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">
-          Ligas
-        </h1>
+        <div>
+          <p className="m-0 mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#8f82ad]">Temporadas e circuitos</p>
+          <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">Ligas</h1>
+          <p className="m-0 mt-1 text-[0.88rem] text-[#beafd7]">Acompanhe rankings, arquétipos e torneios de cada circuito.</p>
+        </div>
         {isAdmin && (
           <button
             className="px-4 py-[0.7rem] rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white"
@@ -112,15 +114,23 @@ export function LigaPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-5 max-[768px]:grid-cols-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {ligas.map((liga) => (
-            <div
+            <article
               key={liga.id}
-              className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1.1rem] shadow-[0_6px_28px_rgba(0,0,0,0.35)] border border-[rgba(217,180,255,0.2)] transition-all duration-[220ms] overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_14px_44px_rgba(0,0,0,0.45)] hover:border-[rgba(167,79,255,0.3)]"
+              className="group relative bg-[rgba(18,12,32,0.72)] rounded-xl border border-[rgba(217,180,255,0.14)] transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] hover:border-[rgba(199,149,255,0.5)]"
             >
-              <div className="px-5 pt-5 pb-4 flex-1">
+              <button type="button" aria-label={`Abrir liga ${liga.nome}`} className="absolute inset-0 z-0 cursor-pointer border-0 bg-transparent" onClick={() => navigate(`/ligas/${liga.id}`)} />
+              <div className="relative z-[1] pointer-events-none h-24 overflow-hidden border-b border-[rgba(217,180,255,0.1)] bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center" style={liga.bannerUrl ? { backgroundImage: `linear-gradient(to top, rgba(18,12,32,.9), rgba(18,12,32,.12)), url(${liga.bannerUrl})` } : undefined}>
+                <div className="absolute -right-4 -bottom-8 text-[6rem] font-bold leading-none text-white/[0.035]">L</div>
+                <div className="absolute left-4 bottom-3 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[#d9b4ff]">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a74fff] shadow-[0_0_10px_#a74fff]" />
+                  {liga.tipo === "times" ? "Liga por times" : "Liga individual"}
+                </div>
+              </div>
+              <div className="relative z-[1] pointer-events-none px-4 pt-4 pb-3 flex-1">
                 <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
-                  <h3 className="text-[#f5edff] m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.03em] leading-[1.1]">
+                  <h3 className="text-[#f5edff] m-0 text-[1.05rem] font-bold leading-tight group-hover:text-white">
                     {liga.nome}
                   </h3>
                   <div className="flex items-center gap-2 flex-shrink-0 mt-[0.25rem]">
@@ -143,7 +153,7 @@ export function LigaPage() {
                     {liga.descricao}
                   </p>
                 )}
-                <div className="flex items-center gap-3 flex-wrap text-[#beafd7] text-[0.8rem]">
+                <div className="mt-4 grid grid-cols-2 gap-2 text-[#beafd7] text-[0.76rem]">
                   <span className="flex items-center gap-[0.35rem]">
                     <svg
                       width="12"
@@ -161,19 +171,15 @@ export function LigaPage() {
                     </svg>
                     {liga.totalTorneios ?? liga.torneios?.length ?? 0} torneios
                   </span>
-                  {liga.formato && (
-                    <span className="px-[0.45rem] py-[0.12rem] rounded-[0.35rem] text-[0.7rem] font-semibold bg-[rgba(199,149,255,0.1)] text-[#c795ff] border border-[rgba(199,149,255,0.22)]">
-                      {liga.formato}
-                    </span>
-                  )}
+                  <span className="flex items-center gap-[0.35rem]">◎ {liga.tipo === "times" ? "Por times" : "Individual"}</span>
                 </div>
               </div>
-              <div className="px-5 py-3 border-t border-[rgba(217,180,255,0.15)] bg-white/[0.015] flex gap-2 flex-wrap">
+              <div className="relative z-[2] px-4 py-3 border-t border-[rgba(217,180,255,0.1)] bg-white/[0.015] flex gap-2 flex-wrap">
                 <button
-                  className="px-4 py-[0.45rem] border border-[#4f46e5] rounded-md text-[0.85rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(79,70,229,0.1)] text-[#4f46e5] transition-all duration-300 hover:bg-[#4f46e5] hover:text-white"
+                  className="mr-auto border-0 bg-transparent p-0 text-[0.8rem] font-semibold text-[#d9b4ff] cursor-pointer hover:text-white"
                   onClick={() => navigate(`/ligas/${liga.id}`)}
                 >
-                  Ver Liga
+                  Ver detalhes →
                 </button>
                 {isAdmin && (
                   <>
@@ -192,7 +198,7 @@ export function LigaPage() {
                   </>
                 )}
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

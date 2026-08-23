@@ -44,5 +44,6 @@ export function useMetagameDeckColors(arquetipos, formato) {
     };
   }, [chave, formato, lista]);
 
-  return resolvidas.chave === chave ? resolvidas.cores : iniciais;
+  const carregando = Boolean(chave) && resolvidas.chave !== chave;
+  return { cores: carregando ? iniciais : resolvidas.cores, carregando };
 }

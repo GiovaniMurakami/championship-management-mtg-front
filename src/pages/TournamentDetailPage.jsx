@@ -229,6 +229,7 @@ export function TournamentDetailPage() {
             onInscrever={handleInscrever}
             onInscreverTarde={handleInscreverTarde}
             onSelfDrop={handleSelfDrop}
+            onSelfUndrop={() => handleUndropPlayer(usuario?.id, true)}
             actionLoading={actionLoading}
             droppingPlayerId={droppingPlayerId}
             times={times}

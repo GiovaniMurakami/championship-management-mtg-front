@@ -132,6 +132,7 @@ const buildDeckListQuery = (params = {}) => {
   if (params.usuarioId) queryParams.usuarioId = params.usuarioId;
   if (params.formato) queryParams.formato = params.formato;
   if (params.nome) queryParams.nome = params.nome;
+  if (params.jogador) queryParams.jogador = params.jogador;
   if (params.criadoApos) queryParams.criadoApos = params.criadoApos;
   if (params.criadoAntes) queryParams.criadoAntes = params.criadoAntes;
   if (params.limite != null) queryParams.limite = clampLimite(params.limite);

@@ -73,7 +73,7 @@ export function MetagamePage() {
   const data = loading ? null : result.data;
   const erro = loading ? "" : result.erro;
   const recentes = data?.recentes ?? [];
-  const coresPorSlug = useMetagameDeckColors(data?.arquetipos, formato);
+  const { cores: coresPorSlug, carregando: carregandoCores } = useMetagameDeckColors(data?.arquetipos, formato);
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
 
   useEffect(() => () => closeCardPreview(), [closeCardPreview]);
@@ -138,6 +138,7 @@ export function MetagamePage() {
                     formato={formato}
                     dias={dias}
                     colors={coresPorSlug[arquetipo.slug]}
+                    colorsLoading={carregandoCores}
                     onCardMouseEnter={openCardPreview}
                     onCardMouseLeave={closeCardPreview}
                   />

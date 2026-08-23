@@ -78,6 +78,7 @@ export function PlayerProfile({
   onInscrever,
   onInscreverTarde,
   onSelfDrop,
+  onSelfUndrop,
   actionLoading,
   droppingPlayerId,
   times = [],
@@ -101,6 +102,7 @@ export function PlayerProfile({
     actionLoading &&
     Boolean(droppingPlayerId) &&
     String(droppingPlayerId) === String(usuario?.id);
+  const canSelfUndrop = dropped && isOngoing && Boolean(onSelfUndrop);
 
   const checkinRound = currentPlayer?.checkinRodada ?? currentPlayer?.checkInRodada ?? -1;
   const isCheckedIn = checkinRound >= 0;
@@ -383,7 +385,20 @@ export function PlayerProfile({
           )}
 
           {dropped && (
-            <Notice tone="danger">Você dropou deste torneio e não participa mais das rodadas.</Notice>
+            <details className="group rounded-[0.8rem] border border-[rgba(248,113,113,0.25)] bg-[rgba(239,68,68,0.06)]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[0.8rem] font-bold text-[#fca5a5]">
+                Gerenciar inscrição
+                <span className="text-[1rem] transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+              </summary>
+              <div className="grid gap-3 border-t border-[rgba(248,113,113,0.15)] p-3.5">
+                <Notice tone="danger">Você dropou deste torneio e não participa mais das rodadas.</Notice>
+                {canSelfUndrop && (
+                  <button type="button" className={`${buttonBase} w-full border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.14)] text-[#86efac] hover:not-disabled:bg-[rgba(34,197,94,0.24)]`} disabled={actionLoading} onClick={onSelfUndrop}>
+                    {isSelfDropping ? "Voltando..." : "Voltar ao torneio"}
+                  </button>
+                )}
+              </div>
+            </details>
           )}
         </div>
       )}

@@ -48,5 +48,6 @@ export function useResolvedMetagameListas(listas) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
 
-  return resolvidas.chave === chave ? resolvidas.listas : origem;
+  const carregando = resolvidas.chave !== chave;
+  return { listas: carregando ? origem : resolvidas.listas, carregando };
 }
