@@ -240,6 +240,16 @@ export const dropJogador = (torneioId, jogadorId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const dropJogadoresSemDeck = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/drop/sem-deck`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const dropJogadoresSemCheckin = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/drop/sem-checkin`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const undropJogador = (torneioId, jogadorId, token) =>
   httpClient.post(`/torneio/${torneioId}/undrop`, jogadorId ? { jogadorId } : {}, {
     headers: { Authorization: `Bearer ${token}` },

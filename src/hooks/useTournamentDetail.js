@@ -16,6 +16,8 @@ import {
     encerrarTorneio,
     refazerRodada,
     dropJogador,
+    dropJogadoresSemDeck,
+    dropJogadoresSemCheckin,
     undropJogador,
     atualizarTorneio,
     deletarTorneio,
@@ -1038,6 +1040,62 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleDropPlayersWithoutDeck = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("drop-missing-decks");
+        setDroppingPlayerId("__bulk__");
+        setError("");
+        try {
+            const resultado = await dropJogadoresSemDeck(torneioId, token);
+            const total = Number(resultado?.totalDropados) || 0;
+            setSuccessMsg(total > 0
+                ? `${total} jogador(es) sem deck removido(s) com sucesso!`
+                : "Nenhum jogador sem deck encontrado na atualização mais recente.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao dropar jogadores sem deck.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
+    const handleDropPlayersWithoutCheckin = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("drop-missing-checkin");
+        setDroppingPlayerId("__bulk__");
+        setError("");
+        try {
+            const resultado = await dropJogadoresSemCheckin(torneioId, token);
+            const total = Number(resultado?.totalDropados) || 0;
+            setSuccessMsg(total > 0
+                ? `${total} jogador(es) sem check-in dropado(s) com sucesso!`
+                : "Nenhum jogador sem check-in encontrado na atualização mais recente.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao dropar jogadores sem check-in.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
     const handleDropPlayer = async (jogadorId) => {
         if (!torneioId || !canManageTournament || !jogadorId) return;
         setActionLoading(true);
@@ -1206,6 +1264,8 @@ export function useTournamentDetail() {
         handleRefazerRodada: guard(handleRefazerRodada),
         handleEncerrarTorneio: guard(handleEncerrarTorneio),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
+        handleDropPlayersWithoutDeck: guard(handleDropPlayersWithoutDeck),
+        handleDropPlayersWithoutCheckin: guard(handleDropPlayersWithoutCheckin),
         handleDropPlayer: guard(handleDropPlayer),
         handleUndropPlayer: guard(handleUndropPlayer),
         handleSelfDrop: guard(handleSelfDrop),

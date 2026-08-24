@@ -417,7 +417,7 @@ export function OwnerControlPanel({
             <button
               type="button"
               className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fecaca] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.22)]"
-              onClick={() => onDropPlayersWithoutDeck(jogadoresSemDeck.map(getPlayerId))}
+              onClick={onDropPlayersWithoutDeck}
               disabled={actionLoading || jogadoresSemDeck.length === 0}
             >
               {isBulkDroppingDeck ? "Dropando..." : "Dropar sem deck"}
@@ -436,7 +436,7 @@ export function OwnerControlPanel({
             <button
               type="button"
               className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
-              onClick={() => onDropPlayersWithoutCheckin(jogadoresSemCheckin.map(getPlayerId))}
+              onClick={onDropPlayersWithoutCheckin}
               disabled={actionLoading || jogadoresSemCheckin.length === 0}
             >
               {isBulkDroppingCheckin ? "Dropando..." : "Dropar sem check-in"}
