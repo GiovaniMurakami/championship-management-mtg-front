@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { InlineAlert } from "../components/ui/InlineAlert";
@@ -69,6 +69,13 @@ export function DashboardBloqueiosPage() {
   }, [token, debouncedSearch, filtroBloqueados, pagina]);
 
   const totalPaginas = Math.max(1, Math.ceil(total / LIMITE));
+  const usuariosOrdenados = useMemo(
+    () => [...usuarios].sort((a, b) =>
+      String(a?.nome || "").localeCompare(String(b?.nome || ""), "pt-BR", { sensitivity: "base" })
+      || String(a?.email || "").localeCompare(String(b?.email || ""), "pt-BR", { sensitivity: "base" })
+    ),
+    [usuarios],
+  );
 
   const handleToggle = async (usuario) => {
     if (!token || mutatingId) return;
@@ -159,7 +166,7 @@ export function DashboardBloqueiosPage() {
           </p>
         ) : (
           <ul className="m-0 list-none divide-y divide-[rgba(217,180,255,0.1)] p-0">
-            {usuarios.map((usuario) => {
+            {usuariosOrdenados.map((usuario) => {
               const bloqueado = Boolean(usuario.bloqueadoTorneios);
               const busy = mutatingId === usuario.id;
               return (

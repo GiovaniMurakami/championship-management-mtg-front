@@ -6,14 +6,16 @@ const baseProps = {
     isOpen: true,
     onClose: vi.fn(),
     standings: [
-        { id: "1", nome: "Ana" },
-        { id: "2", nome: "Beto" },
+        { id: "1", nome: "Ana", deckNome: "Affinity" },
+        { id: "2", nome: "Beto", deckNome: "Burn" },
     ],
     partidas: [
         {
             id: "match-1",
             rodada: 2,
             status: "finalizada",
+            jogador1Id: "1",
+            jogador2Id: "2",
             jogador1Nome: "Ana",
             jogador2Nome: "Beto",
             vitoriasJogador1: 2,
@@ -32,6 +34,19 @@ function goToPlayersStep() {
 }
 
 describe("ReviewRoundModal", () => {
+    it("mostra os decks junto aos jogadores quando a partida está finalizada", () => {
+        render(
+            <ReviewRoundModal
+                {...baseProps}
+                torneio={{ status: "em_andamento", rodadaAtual: 2, totalRodadas: 5 }}
+                pendingCheckinPlayers={[]}
+            />,
+        );
+
+        expect(screen.getByText("Ana · Affinity")).toBeInTheDocument();
+        expect(screen.getByText("Beto · Burn")).toBeInTheDocument();
+    });
+
     it("exibe aviso informativo de presença pendente sem bloquear o botão", () => {
         render(
             <ReviewRoundModal

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
@@ -32,7 +32,7 @@ function sortByMesa(a, b) {
   return Number(a?.rodada ?? 0) - Number(b?.rodada ?? 0);
 }
 
-function MatchStatusRow({ partida }) {
+function MatchStatusRow({ partida, deckNomePorUsuarioId }) {
   const nome1 = partida.jogador1Nome || partida.jogador1?.nome || "Jogador 1";
   const nome2 = !partida.jogador2Id && !partida.jogador2
     ? "BYE"
@@ -43,6 +43,10 @@ function MatchStatusRow({ partida }) {
   const confirmation = getMatchConfirmationSummary(partida);
   const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
   const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
+  const jogador1Id = normalizeId(partida.jogador1Id || partida.jogador1?.id);
+  const jogador2Id = normalizeId(partida.jogador2Id || partida.jogador2?.id);
+  const deck1 = jogador1Id ? deckNomePorUsuarioId.get(jogador1Id) : null;
+  const deck2 = jogador2Id ? deckNomePorUsuarioId.get(jogador2Id) : null;
 
   return (
     <div className={`flex items-center gap-3 px-[0.85rem] py-[0.6rem] rounded-lg border text-[0.85rem] flex-wrap ${isFinalizada
@@ -54,7 +58,7 @@ function MatchStatusRow({ partida }) {
       </span>
       <div className="flex-1 flex items-center gap-2 min-w-0">
         <span className="flex-1 text-[#e8d5ff] font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-          {nome1}
+          {nome1}{isFinalizada && deck1 ? ` · ${deck1}` : ""}
         </span>
         {isFinalizada && !isBye && (
           <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
@@ -68,7 +72,7 @@ function MatchStatusRow({ partida }) {
           <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
         )}
         <span className="flex-1 text-[#e8d5ff] font-medium overflow-hidden text-ellipsis whitespace-nowrap text-right">
-          {nome2}
+          {nome2}{isFinalizada && deck2 ? ` · ${deck2}` : ""}
         </span>
       </div>
       {isFinalizada && !isBye && (
@@ -140,6 +144,15 @@ export function ReviewRoundModal({
   usuarioId,
 }) {
   const [step, setStep] = useState("mesas");
+  const deckNomePorUsuarioId = useMemo(() => {
+    const nomes = new Map();
+    for (const player of standings || []) {
+      const playerId = normalizeId(player?.usuarioId || player?.userId || player?.usuario?.id || player?.id);
+      const deckNome = player?.deckNome || player?.nomeConsolidado || player?.deck?.nome;
+      if (playerId && deckNome) nomes.set(playerId, deckNome);
+    }
+    return nomes;
+  }, [standings]);
 
   if (!isOpen) return null;
 
@@ -226,7 +239,11 @@ export function ReviewRoundModal({
               ) : (
                 <div className="flex flex-col gap-[0.4rem]">
                   {partidasRodada.map((partida) => (
-                    <MatchStatusRow key={partida.id} partida={partida} />
+                    <MatchStatusRow
+                      key={partida.id}
+                      partida={partida}
+                      deckNomePorUsuarioId={deckNomePorUsuarioId}
+                    />
                   ))}
                 </div>
               )}
