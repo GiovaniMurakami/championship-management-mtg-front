@@ -4,8 +4,8 @@ import { BaseModal } from "../ui/BaseModal";
 import { InlineAlert } from "../ui/InlineAlert";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
-import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
-import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
+import { hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
+import { ConfirmationIcon } from "./ConfirmationIcon";
 import {
   buildTournamentExternalUrl,
   buildTournamentJoinExternalUrl,
@@ -13,20 +13,22 @@ import {
 const hasConfirmedDeck = (player) => Boolean(player?.deckConfirmado || player?.deckNome || player?.deck?.nome || player?.deckId);
 const hasInitialCheckin = (player) => (player?.checkinRodada ?? -1) >= 0;
 
-function ScoreStepper({ value, onChange }) {
+function ScoreStepper({ value, onChange, max = 2 }) {
   return (
-    <div className="flex items-center gap-[0.3rem]">
+    <div className="flex items-center justify-center gap-2">
       <button
         type="button"
-        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-md bg-[rgba(255,255,255,0.05)] text-text-main text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
+        className="w-9 h-9 border border-line rounded-xl bg-surface text-text-main text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-surface-hover hover:border-line-strong active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
         onClick={() => onChange(Math.max(0, value - 1))}
+        disabled={value <= 0}
         aria-label="Diminuir"
       >−</button>
-      <span className="font-['Bebas_Neue',sans-serif] text-[1.8rem] text-white min-w-[1.6rem] text-center leading-none tabular-nums">{value}</span>
+      <span className="font-display text-[1.65rem] font-semibold text-text-main min-w-[1.8rem] text-center leading-none tabular-nums">{value}</span>
       <button
         type="button"
-        className="w-8 h-8 border border-[rgba(217,180,255,0.25)] rounded-md bg-[rgba(255,255,255,0.05)] text-text-main text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(199,149,255,0.55)] active:scale-95"
-        onClick={() => onChange(Math.min(2, value + 1))}
+        className="w-9 h-9 border border-line rounded-xl bg-surface text-text-main text-[1.15rem] leading-none cursor-pointer flex items-center justify-center transition-all duration-[180ms] hover:bg-surface-hover hover:border-line-strong active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+        onClick={() => onChange(Math.min(max, value + 1))}
+        disabled={value >= max}
         aria-label="Aumentar"
       >+</button>
     </div>
@@ -56,43 +58,45 @@ function MatchEditRow({ partida, onSave, saving }) {
   const mesa = partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? "—";
   const isBye = nome2 === "BYE";
   const isFinalizada = partida.status === "finalizada";
-  const confirmation = getMatchConfirmationSummary(partida);
   const player1Confirmed = hasPlayerConfirmedResult(partida, 1);
   const player2Confirmed = hasPlayerConfirmedResult(partida, 2);
 
   if (editing && !isBye) {
     return (
-      <div className="border border-[rgba(199,149,255,0.4)] bg-[rgba(167,79,255,0.06)] rounded-lg px-4 py-3 flex flex-col gap-3">
+      <div className="border border-line-strong bg-brand-soft rounded-2xl px-4 py-3 flex flex-col gap-3 max-[480px]:p-3">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[0.75rem] font-bold text-brand">Mesa {mesa}</span>
           <button
             type="button"
-            className="text-text-soft text-[1rem] leading-none cursor-pointer bg-transparent border-none hover:text-text-main transition-colors"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-soft text-[1rem] leading-none cursor-pointer bg-surface-soft border-none hover:text-text-main hover:bg-surface-hover transition-colors"
             onClick={() => { setV1(partida.vitoriasJogador1 ?? 0); setV2(partida.vitoriasJogador2 ?? 0); setEditing(false); }}
             aria-label="Cancelar edição"
           >✕</button>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 max-md:grid-cols-1 max-md:gap-2">
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-[0.72rem] font-semibold text-text-soft uppercase tracking-[0.04em] text-center truncate w-full">{nome1}</span>
-            <ScoreStepper value={v1} onChange={setV1} />
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 max-[640px]:grid-cols-1 max-[640px]:gap-2">
+          <div className="flex min-w-0 flex-col items-center gap-2 max-[640px]:rounded-xl max-[640px]:border max-[640px]:border-line-soft max-[640px]:bg-surface-soft max-[640px]:p-3">
+            <span className="hidden text-[0.68rem] font-semibold text-text-muted max-[640px]:block">Jogador 1</span>
+            <span className="w-full truncate text-center text-[0.82rem] font-semibold text-text-main" title={nome1}>{nome1}</span>
+            <ScoreStepper value={v1} max={Math.min(2, 3 - v2)} onChange={setV1} />
           </div>
-          <span className="text-text-soft font-bold text-[1.1rem] pb-1">–</span>
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-[0.72rem] font-semibold text-text-soft uppercase tracking-[0.04em] text-center truncate w-full">{nome2}</span>
-            <ScoreStepper value={v2} onChange={setV2} />
+          <span className="text-center text-[0.8rem] font-semibold text-text-muted">×</span>
+          <div className="flex min-w-0 flex-col items-center gap-2 max-[640px]:rounded-xl max-[640px]:border max-[640px]:border-line-soft max-[640px]:bg-surface-soft max-[640px]:p-3">
+            <span className="hidden text-[0.68rem] font-semibold text-text-muted max-[640px]:block">Jogador 2</span>
+            <span className="w-full truncate text-center text-[0.82rem] font-semibold text-text-main" title={nome2}>{nome2}</span>
+            <ScoreStepper value={v2} max={Math.min(2, 3 - v1)} onChange={setV2} />
           </div>
         </div>
 
         <button
           type="button"
-          className="inline-flex items-center justify-center w-full py-[0.45rem] text-[0.85rem] border border-[rgba(199,149,255,0.5)] rounded-lg font-semibold cursor-pointer transition-all duration-[220ms] text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.25)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:shadow-[0_6px_18px_rgba(167,79,255,0.4)]"
+          className="inline-flex min-h-11 items-center justify-center w-full py-2.5 text-[0.9rem] border border-transparent rounded-xl font-semibold cursor-pointer transition-all duration-[180ms] text-white bg-brand-strong disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-brand-deep active:scale-[0.99]"
           onClick={async () => {
+            if (v1 + v2 > 3) return;
             await onSave(partida.id, { vitoriasJogador1: v1, vitoriasJogador2: v2 });
             setEditing(false);
           }}
-          disabled={saving}
+          disabled={saving || v1 + v2 > 3}
         >
           {saving ? "Salvando..." : "Confirmar resultado"}
         </button>
@@ -101,32 +105,29 @@ function MatchEditRow({ partida, onSave, saving }) {
   }
 
   return (
-    <div className="flex items-center gap-[0.6rem] border rounded-lg px-[0.65rem] py-2 flex-wrap max-md:flex-col max-md:items-stretch min-w-0 max-w-full overflow-hidden border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
-      <span className="text-[0.75rem] font-bold text-brand whitespace-nowrap shrink-0">Mesa {mesa}</span>
+    <div className="grid grid-cols-[64px_minmax(0,1fr)_68px] items-center gap-3 border rounded-xl px-3 py-2.5 max-[720px]:grid-cols-[1fr_auto] max-[720px]:items-stretch min-w-0 max-w-full border-line-soft bg-surface-soft">
+      <span className="text-[0.75rem] font-bold text-brand whitespace-nowrap max-[720px]:col-span-2">Mesa {mesa}</span>
 
-      <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap max-md:w-full max-md:flex-col max-md:items-center max-md:gap-2">
-        <span className="text-[0.85rem] text-text-main min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome1}</span>
-        {isFinalizada && !isBye && (
-          <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />
-        )}
+      <div className="grid grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] items-center gap-3 min-w-0 max-[720px]:col-span-2">
+        <span className="flex min-w-0 items-center justify-end gap-1.5 overflow-hidden text-right text-[0.85rem] text-text-main max-[640px]:justify-center max-[640px]:text-center">
+          <span className="block min-w-0 truncate leading-tight" title={nome1}>{nome1}</span>
+          {isFinalizada && !isBye && <ConfirmationIcon confirmed={player1Confirmed} label={`${nome1}: ${player1Confirmed ? "confirmou" : "falta confirmar"}`} />}
+        </span>
         <span className={`inline-flex items-center justify-center min-w-[56px] px-[0.45rem] py-[0.12rem] rounded-full font-bold text-[0.78rem] tracking-[0.04em] ${isFinalizada ? "text-white border border-[rgba(199,149,255,0.5)] bg-[rgba(199,149,255,0.22)]" : "text-[#c4b5fd] border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.12)]"}`}>
           {isFinalizada
             ? `${partida.vitoriasJogador1 ?? 0} – ${partida.vitoriasJogador2 ?? 0}`
             : "VS"}
         </span>
-        <span className="text-[0.85rem] text-text-main min-w-0 max-w-[140px] truncate max-md:max-w-full max-md:w-full max-md:text-center max-md:whitespace-normal max-md:break-words">{nome2}</span>
-        {isFinalizada && !isBye && (
-          <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
-        )}
-        {isFinalizada && !isBye && (
-          <ConfirmationSummaryIcon confirmation={confirmation} />
-        )}
+        <span className="flex min-w-0 items-center gap-1.5 overflow-hidden text-[0.85rem] text-text-main max-[640px]:justify-center max-[640px]:text-center">
+          <span className="block min-w-0 truncate leading-tight" title={nome2}>{nome2}</span>
+          {isFinalizada && !isBye && <ConfirmationIcon confirmed={player2Confirmed} label={`${nome2}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />}
+        </span>
       </div>
 
       {!isBye && (
         <button
           type="button"
-          className="inline-flex items-center justify-center px-[0.65rem] py-[0.3rem] text-[0.78rem] border border-line rounded-lg font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-main bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] hover:border-line-strong ml-auto max-md:ml-0 max-md:w-full"
+          className="inline-flex min-h-9 items-center justify-center px-3 py-1.5 text-[0.78rem] border border-line rounded-lg font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-main bg-surface hover:bg-surface-hover hover:border-line-strong max-[720px]:col-span-2 max-[720px]:w-full"
           onClick={() => setEditing(true)}
         >
           Editar
@@ -282,7 +283,7 @@ export function OwnerControlPanel({
   };
 
   return (
-    <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-md:p-4 max-w-full min-w-0 overflow-x-clip">
+    <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-[640px]:p-3 max-w-full min-w-0 overflow-x-clip">
       <div className="flex items-start justify-between gap-4 mb-4 flex-wrap max-md:flex-col">
         <div className="min-w-0">
           <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main">Painel do Administrador</h2>
@@ -460,7 +461,7 @@ export function OwnerControlPanel({
         )}
       </div>
 
-      <div className="flex gap-[0.3rem] mb-[0.85rem] border-b border-line pb-0 flex-wrap min-w-0 max-w-full px-1">
+      <div className="flex gap-1 mb-[0.85rem] border-b border-line pb-0 min-w-0 max-w-full px-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {isOngoing && (
           <button
             type="button"
@@ -524,7 +525,7 @@ export function OwnerControlPanel({
           </button>
 
           {tablesListOpen && (
-            <div className="border-t border-[rgba(251,191,36,0.12)] p-3">
+            <div className="border-t border-[rgba(251,191,36,0.12)] p-3 max-[480px]:p-2">
               {partidasRodada.length === 0 ? (
                 <p className="text-text-soft text-[0.9rem] m-0">Nenhuma mesa na rodada atual.</p>
               ) : (
@@ -537,7 +538,16 @@ export function OwnerControlPanel({
                       {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <div className="grid gap-2 max-h-[480px] overflow-y-auto overflow-x-hidden">
+                  <div className="mb-2 grid grid-cols-[64px_minmax(0,1fr)_68px] gap-3 px-3 text-[0.68rem] font-semibold uppercase tracking-[0.04em] text-text-muted max-[720px]:hidden" aria-hidden="true">
+                    <span>Mesa</span>
+                    <span className="grid grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] gap-3">
+                      <span className="text-right">Jogador 1</span>
+                      <span className="text-center">Placar</span>
+                      <span>Jogador 2</span>
+                    </span>
+                    <span className="text-center">Ação</span>
+                  </div>
+                  <div className="grid gap-2 max-h-[60vh] overflow-y-auto overflow-x-hidden overscroll-contain pr-0.5">
                     {partidasRodada.map((partida) => (
                       <MatchEditRow
                         key={partida.id}
@@ -578,7 +588,7 @@ export function OwnerControlPanel({
           </button>
 
           {playersListOpen && (
-            <div className="grid gap-1.5 border-t border-[rgba(251,191,36,0.12)] p-3">
+            <div className="grid gap-2 border-t border-[rgba(251,191,36,0.12)] p-3 max-[480px]:p-2">
           {jogadoresDropadosMesmaRodada.length > 0 && (
             <div className="grid gap-1.5 rounded-lg border border-[rgba(34,197,94,0.22)] bg-[rgba(34,197,94,0.055)] p-2">
               <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.06em] text-[#86efac]">Dropados nesta rodada</p>
@@ -617,10 +627,10 @@ export function OwnerControlPanel({
               return (
                 <div
                   key={normalizedId || getPlayerName(player)}
-                  className="flex justify-between items-center gap-[0.65rem] border border-[rgba(251,191,36,0.16)] rounded-md px-[0.6rem] py-[0.38rem] bg-[rgba(251,191,36,0.035)]"
+                  className="flex justify-between items-center gap-3 border border-[rgba(251,191,36,0.16)] rounded-xl px-3 py-2.5 bg-[rgba(251,191,36,0.035)] max-[480px]:items-stretch max-[480px]:flex-col"
                 >
                   <div className="grid gap-[0.15rem] min-w-0">
-                    <span className="text-white text-[0.88rem] font-semibold overflow-hidden text-ellipsis whitespace-nowrap leading-tight">
+                    <span className="text-white text-[0.88rem] font-semibold break-words leading-tight">
                       {getPlayerName(player)}{isMe ? " (Você)" : ""}
                     </span>
                     {isRegistrationOpen ? (
@@ -649,7 +659,7 @@ export function OwnerControlPanel({
                   </div>
 
                   <button
-                    className="inline-flex items-center justify-center px-[0.55rem] py-[0.22rem] text-[0.74rem] border border-[rgba(239,68,68,0.45)] rounded-md font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.25)] hover:not-disabled:border-[rgba(239,68,68,0.8)]"
+                    className="inline-flex min-h-9 items-center justify-center px-3 py-1.5 text-[0.74rem] border border-[rgba(239,68,68,0.45)] rounded-lg font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.1)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.25)] hover:not-disabled:border-[rgba(239,68,68,0.8)] max-[480px]:w-full"
                     type="button"
                     onClick={() => onDropPlayer(playerId)}
                     disabled={actionLoading || !playerId}

@@ -328,7 +328,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
 
                 <div className="flex items-center justify-end gap-2 max-md:w-full max-md:flex-col max-md:items-stretch">
                     {showRoundPicker && (
-                        <div className="inline-flex h-9 items-center overflow-hidden rounded-md border border-[rgba(125,211,252,0.28)] bg-black/10 max-md:w-full" role="tablist" aria-label="Selecionar rodada">
+                        <div className="inline-flex h-9 items-center overflow-hidden rounded-xl border border-[rgba(125,211,252,0.28)] bg-black/10 max-md:w-full" role="tablist" aria-label="Selecionar rodada">
                             {roundNumbers.map((r) => (
                                 <button
                                     key={r}
@@ -347,7 +347,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                     {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
                         <button
                             type="button"
-                            className="inline-flex h-9 items-center justify-center gap-2 px-3 rounded-md border border-[rgba(125,211,252,0.42)] bg-[rgba(56,189,248,0.12)] text-[#bae6fd] text-[0.78rem] font-semibold cursor-pointer transition-colors duration-150 hover:bg-[rgba(56,189,248,0.22)] hover:text-white"
+                            className="inline-flex h-9 items-center justify-center gap-2 px-3 rounded-xl border border-[rgba(125,211,252,0.42)] bg-[rgba(56,189,248,0.12)] text-[#bae6fd] text-[0.78rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.22)] hover:text-white active:scale-[0.98]"
                             onClick={handleOpenPairingsEditor}
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
@@ -385,7 +385,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                             placeholder="Buscar jogador ou mesa…"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-md pl-3 pr-[1.8rem] py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
+                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-xl pl-3 pr-[1.8rem] py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
                         />
                         <svg className="absolute right-[0.6rem] top-1/2 -translate-y-1/2 text-[rgba(186,230,253,0.4)] pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                             <circle cx="11" cy="11" r="8" />
@@ -395,7 +395,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                     <button
                         type="button"
                         onClick={() => setShowPendingOnly(p => !p)}
-                        className={`inline-flex items-center justify-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-md text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 max-md:w-full ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-text-soft hover:bg-[rgba(255,255,255,0.08)] hover:text-text-main"}`}
+                        className={`inline-flex items-center justify-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-xl text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 max-md:w-full active:scale-[0.98] ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-text-soft hover:bg-[rgba(255,255,255,0.08)] hover:text-text-main"}`}
                     >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -406,7 +406,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                         <button
                             type="button"
                             onClick={() => setSearchQuery("")}
-                            className="inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border border-line rounded-md text-[0.8rem] text-text-soft cursor-pointer hover:text-text-main hover:bg-[rgba(255,255,255,0.05)] transition-all duration-150 flex-shrink-0"
+                            className="inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border border-line rounded-xl text-[0.8rem] text-text-soft cursor-pointer hover:text-text-main hover:bg-[rgba(255,255,255,0.05)] transition-all duration-150 flex-shrink-0 active:scale-[0.98]"
                         >
                             ✕ Limpar
                         </button>
