@@ -15,10 +15,10 @@ function TabItem({ value, label, count, currentValue, onChange }) {
       type="button"
       role="tab"
       aria-selected={isActive}
-      className={`flex flex-shrink-0 items-center gap-2 px-5 py-[0.65rem] bg-transparent border-none border-b-2 -mb-[2px] text-[0.95rem] font-medium cursor-pointer transition-colors duration-200 max-md:px-3 max-md:text-[0.85rem] ${
+      className={`flex flex-shrink-0 items-center gap-2 px-4 py-2 rounded-lg border-none text-[0.9rem] font-semibold cursor-pointer transition-all duration-150 max-md:px-3 max-md:text-[0.85rem] ${
         isActive
-          ? "text-white border-b-[#4f46e5]"
-          : "text-[#888] border-b-transparent hover:text-[#c0bfff]"
+          ? "bg-surface text-text-main shadow-sm"
+          : "bg-transparent text-text-muted hover:text-text-main"
       }`}
       onClick={() => {
         if (value === currentValue) return;
@@ -29,8 +29,8 @@ function TabItem({ value, label, count, currentValue, onChange }) {
       {count !== undefined && (
         <span className={`text-[0.75rem] font-semibold px-[0.45rem] py-[0.1rem] rounded-full leading-[1.4] ${
           isActive
-            ? "bg-[#4f46e5] text-white"
-            : "bg-white/[0.06] text-text-soft"
+            ? "bg-brand-soft text-brand"
+            : "bg-surface-soft text-text-soft"
         }`}>
           {count}
         </span>
@@ -45,7 +45,7 @@ export function Tabs({ value, onChange, children, className = "" }) {
   return (
     <div
       role="tablist"
-      className={`flex gap-1 border-b-2 border-[#2a2a3e] mb-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-1 ${className}`}
+      className={`flex w-fit max-w-full gap-1 rounded-xl bg-surface-soft p-1 mb-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}
     >
       {items.map((child) => {
         if (!child) return null;

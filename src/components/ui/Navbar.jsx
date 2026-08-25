@@ -102,8 +102,8 @@ const mobileLinkClass = ({ isActive }) =>
 
 const desktopLinkClass = ({ isActive }) =>
   `no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${isActive
-    ? "text-white [text-shadow:0_0_18px_rgba(167,79,255,0.6)]"
-    : "text-text-soft hover:text-white"
+    ? "text-text-main"
+    : "text-text-muted hover:text-text-main"
   }`;
 
 export function Navbar({
@@ -154,7 +154,7 @@ export function Navbar({
   return (
     <header
       ref={navRef}
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-line bg-[rgba(14,9,28,0.72)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)] max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:rounded-2xl max-nav:top-[0.7rem] max-nav:row-gap-[0.6rem]"
+      className="fixed top-3 left-1/2 -translate-x-1/2 z-40 flex w-[min(1120px,calc(100vw-1.5rem))] items-center justify-between gap-4 rounded-[1.35rem] border border-line-soft bg-[color-mix(in_srgb,var(--color-surface)_78%,transparent)] backdrop-blur-2xl px-4 py-[0.65rem] shadow-card max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:top-2 max-nav:row-gap-[0.6rem]"
     >
       {/* Brand */}
       <a

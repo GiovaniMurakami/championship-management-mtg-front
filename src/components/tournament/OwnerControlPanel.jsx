@@ -217,8 +217,28 @@ export function OwnerControlPanel({
 
   if (!canManage || (!isRegistrationOpen && !isOngoing)) return null;
 
-  const jogadoresAtivos = (standings || []).filter((p) => !p?.dropped);
-  const jogadoresDropadosMesmaRodada = (standings || []).filter((p) => p?.dropped && Number(p?.droppedRodada) === Number(torneio?.rodadaAtual));
+  const getPlayerName = (player) =>
+    player?.nomeExibicao ||
+    player?.nome ||
+    player?.usuario?.nomeExibicao ||
+    player?.usuario?.nome ||
+    player?.username ||
+    player?.userName ||
+    "Jogador";
+  const getPlayerId = (player) =>
+    player?.usuarioId || player?.userId || player?.usuario?.id || player?.id;
+  const sortByDisplayedName = (a, b) => getPlayerName(a).localeCompare(
+    getPlayerName(b),
+    "pt-BR",
+    { sensitivity: "base", numeric: true },
+  );
+
+  const jogadoresAtivos = (standings || [])
+    .filter((player) => !player?.dropped)
+    .sort(sortByDisplayedName);
+  const jogadoresDropadosMesmaRodada = (standings || [])
+    .filter((player) => player?.dropped && Number(player?.droppedRodada) === Number(torneio?.rodadaAtual))
+    .sort(sortByDisplayedName);
   const jogadoresSemDeck = jogadoresAtivos.filter((player) => !hasConfirmedDeck(player));
   const jogadoresSemCheckinInicial = jogadoresAtivos.filter((player) => !hasInitialCheckin(player));
   const pendentesCheckin = pendingCheckinPlayers || [];
@@ -226,11 +246,6 @@ export function OwnerControlPanel({
   const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
   const jogadoresSemCheckin = isRegistrationOpen ? jogadoresSemCheckinInicial : pendentesCheckin;
   const canDropByCheckin = isRegistrationOpen || requiresNextRoundCheckin;
-
-  const getPlayerName = (p) =>
-    p?.usuario?.nome || p?.nome || p?.username || p?.userName || "Jogador";
-  const getPlayerId = (p) =>
-    p?.usuarioId || p?.userId || p?.usuario?.id || p?.id;
 
   const rodadaAtual = Number(torneio?.rodadaAtual || 0);
   const partidasRodada = (partidas || []).filter(
@@ -417,7 +432,7 @@ export function OwnerControlPanel({
             <button
               type="button"
               className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fecaca] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.22)]"
-              onClick={onDropPlayersWithoutDeck}
+              onClick={() => onDropPlayersWithoutDeck?.(jogadoresSemDeck.map(getPlayerId).filter(Boolean))}
               disabled={actionLoading || jogadoresSemDeck.length === 0}
             >
               {isBulkDroppingDeck ? "Dropando..." : "Dropar sem deck"}
@@ -436,7 +451,7 @@ export function OwnerControlPanel({
             <button
               type="button"
               className="inline-flex min-h-11 items-center justify-center w-full px-4 py-[0.55rem] border border-[rgba(251,191,36,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fde68a] bg-[rgba(251,191,36,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.22)]"
-              onClick={onDropPlayersWithoutCheckin}
+              onClick={() => onDropPlayersWithoutCheckin?.(jogadoresSemCheckin.map(getPlayerId).filter(Boolean))}
               disabled={actionLoading || jogadoresSemCheckin.length === 0}
             >
               {isBulkDroppingCheckin ? "Dropando..." : "Dropar sem check-in"}

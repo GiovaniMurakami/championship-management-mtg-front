@@ -70,11 +70,11 @@ export function TournamentSection() {
   return (
     <section className="mb-10" id="torneios">
       <div className="flex items-center justify-between mt-[2.1rem] mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-7 rounded-full bg-[linear-gradient(180deg,#c795ff,#7c3aed)]" />
-          <h2 className="m-0 font-['Bebas_Neue',sans-serif] tracking-[0.06em] text-[2.1rem]">
+        <div>
+          <h2 className="m-0 font-display font-bold tracking-[-0.035em] text-[2rem] text-text-main">
             Torneios em destaque
           </h2>
+          <p className="m-0 mt-1 text-sm text-text-muted">Inscrições abertas e eventos em andamento.</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4 max-nav:grid-cols-1">
@@ -91,7 +91,7 @@ export function TournamentSection() {
             return (
               <article
                 key={item.id}
-                className="relative border border-line rounded-xl bg-[linear-gradient(160deg,rgba(22,12,46,0.98),rgba(14,8,30,0.98))] shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer card-hover-glow"
+                className="relative border border-line-soft rounded-2xl bg-surface shadow-card overflow-hidden cursor-pointer transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-overlay"
                 style={{ "--format-color": cor, "--glow-color": cor }}
                 onClick={() => navigate(`/torneios/${item.id}`)}
               >
@@ -105,7 +105,7 @@ export function TournamentSection() {
                       decoding="async"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(14,8,30,0.92)]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/45" />
                     {/* Accent bar over banner */}
                     <div
                       className="absolute top-0 left-0 right-0 h-[3px]"
@@ -145,7 +145,7 @@ export function TournamentSection() {
                     )}
                   </div>
 
-                  <h3 className="m-0 mb-3 font-['Bebas_Neue',sans-serif] text-[1.45rem] tracking-[0.04em] leading-[1.1] text-text-main">
+                  <h3 className="m-0 mb-3 font-display text-[1.3rem] font-semibold tracking-[-0.025em] leading-[1.2] text-text-main">
                     {item.nome}
                   </h3>
 
@@ -160,7 +160,7 @@ export function TournamentSection() {
                   </p>
 
                   {descricao && (
-                    <p className="m-0 mt-[0.6rem] pt-[0.65rem] border-t border-line text-[0.83rem] leading-[1.45] text-[#e9defb] line-clamp-3">
+                    <p className="m-0 mt-[0.6rem] pt-[0.65rem] border-t border-line text-[0.83rem] leading-[1.5] text-text-soft line-clamp-3">
                       {descricao}
                     </p>
                   )}

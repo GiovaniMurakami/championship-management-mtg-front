@@ -9,6 +9,7 @@ import { PageShell } from "../components/ui/PageShell";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tooltip } from "../components/ui/Tooltip";
 import { Button } from "../components/ui/Button";
+import { SkeletonTeamCollection } from "../components/ui/Skeleton";
 import { FormFeedback } from "../components/ui/FormFeedback";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { logError } from "../utils/logger";
@@ -186,7 +187,7 @@ export function TimePage() {
     <PageShell>
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-        <h1 className="m-0 text-white text-[2rem] font-['Bebas_Neue',sans-serif] tracking-[0.03em]">
+        <h1 className="m-0 font-display text-text-main text-[2.2rem] font-bold tracking-[-0.035em]">
           Times
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
@@ -246,11 +247,7 @@ export function TimePage() {
 
       {/* Lista */}
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-[140px] rounded-xl bg-white/[0.04] animate-pulse" />
-          ))}
-        </div>
+        <SkeletonTeamCollection />
       ) : times.length === 0 ? (
         <EmptyState
           title={busca ? "Nenhum time encontrado" : "Nenhum time cadastrado ainda"}
@@ -271,7 +268,7 @@ export function TimePage() {
             {times.map((time) => (
               <div
                 key={time.id}
-                className="min-h-[176px] h-full bg-[rgba(255,255,255,0.03)] border border-line-soft rounded-xl p-4 transition-all duration-200 hover:border-[rgba(167,79,255,0.35)] hover:bg-white/[0.055] hover:-translate-y-[2px] hover:shadow-[0_8px_28px_rgba(0,0,0,0.3)] cursor-pointer group flex flex-col"
+                className="min-h-[176px] h-full bg-surface/80 border border-line-soft rounded-2xl p-4 shadow-card transition-all duration-200 hover:border-line-strong hover:-translate-y-1 hover:shadow-overlay cursor-pointer group flex flex-col"
                 onClick={() => navigate(`/times/${time.id}`)}
               >
                 <div className="flex min-h-10 items-start justify-between gap-2 mb-2">

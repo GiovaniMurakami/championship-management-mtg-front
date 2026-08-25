@@ -7,14 +7,14 @@ describe("Button", () => {
     render(<Button>Criar torneio</Button>);
 
     const button = screen.getByRole("button", { name: "Criar torneio" });
-    expect(button).toHaveClass("from-brand-strong", "to-brand-deep");
+    expect(button).toHaveClass("bg-brand-strong", "text-white");
     expect(button).not.toBeDisabled();
   });
 
   it("padroniza ações secundárias", () => {
     render(<Button variant="secondary">Buscar</Button>);
 
-    expect(screen.getByRole("button", { name: "Buscar" })).toHaveClass("border-line", "text-text-soft");
+    expect(screen.getByRole("button", { name: "Buscar" })).toHaveClass("border-line", "bg-surface", "text-text-main");
   });
 
   it("desabilita e sinaliza o estado de carregamento", () => {

@@ -1,5 +1,4 @@
-const shimmer =
-  "bg-[linear-gradient(90deg,rgba(255,255,255,0.04)_25%,rgba(255,255,255,0.08)_50%,rgba(255,255,255,0.04)_75%)] bg-[length:200%_100%] animate-[skeleton-shimmer_1.5s_ease-in-out_infinite]";
+const shimmer = "skeleton-shimmer";
 
 export function Skeleton({ width, height, radius = "0.5rem", className = "" }) {
   return (
@@ -12,7 +11,7 @@ export function Skeleton({ width, height, radius = "0.5rem", className = "" }) {
 
 export function SkeletonCard() {
   return (
-    <div className="border border-line rounded-lg overflow-hidden bg-[rgba(15,10,29,0.84)]">
+    <div className="border border-line-soft rounded-2xl overflow-hidden bg-surface/70 shadow-card">
       <Skeleton width="100%" height="180px" radius="0" />
       <div className="p-6 flex flex-col gap-3">
         <Skeleton width="70%" height="1.2rem" />
@@ -33,7 +32,7 @@ export function SkeletonCard() {
 
 export function SkeletonTorneioCard() {
   return (
-    <div className="bg-gradient-to-br from-[#2a2a3e] to-[#1e1e2e] rounded-[0.95rem] p-4 border border-white/10 flex flex-col gap-[0.5rem]">
+    <div className="min-h-[330px] bg-surface/70 rounded-2xl p-4 border border-line-soft shadow-card flex flex-col gap-[0.65rem]">
       <Skeleton width="100%" height="140px" radius="0.6rem" />
       <Skeleton width="60%" height="1.1rem" />
       <Skeleton width="40%" height="0.8rem" />
@@ -59,6 +58,153 @@ export function SkeletonBannerCard() {
       <div className="pt-[0.65rem] border-t border-line mt-[0.1rem]">
         <Skeleton width="65%" height="0.85rem" radius="0.3rem" />
       </div>
+    </div>
+  );
+}
+
+export function SkeletonCollection({ variant = "card", count = 6, className = "" }) {
+  const Card = variant === "tournament" ? SkeletonTorneioCard : SkeletonCard;
+  return (
+    <div
+      className={`grid min-h-[650px] grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 content-start ${className}`}
+      aria-busy="true"
+      aria-label="Carregando conteúdo"
+      role="status"
+    >
+      <span className="sr-only">Carregando conteúdo...</span>
+      {Array.from({ length: count }).map((_, index) => <Card key={index} />)}
+    </div>
+  );
+}
+
+export function SkeletonTeamCollection({ count = 8 }) {
+  return (
+    <div
+      className="grid min-h-[560px] grid-cols-[repeat(auto-fill,minmax(280px,1fr))] content-start gap-4 max-[768px]:grid-cols-1"
+      aria-busy="true"
+      aria-label="Carregando times"
+      role="status"
+    >
+      <span className="sr-only">Carregando times...</span>
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="flex min-h-[176px] flex-col rounded-2xl border border-line-soft bg-surface/70 p-4 shadow-card" aria-hidden="true">
+          <div className="mb-4 flex items-start gap-3">
+            <Skeleton width="2.5rem" height="2.5rem" radius="0.75rem" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton width={`${52 + (index % 3) * 10}%`} height="1rem" />
+              <Skeleton width="34%" height="0.7rem" />
+            </div>
+          </div>
+          <Skeleton width="88%" height="0.8rem" className="mb-2" />
+          <Skeleton width="64%" height="0.8rem" />
+          <div className="mt-auto flex justify-between border-t border-line-soft pt-3">
+            <Skeleton width="5rem" height="0.75rem" />
+            <Skeleton width="4rem" height="0.75rem" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonMetagameArchetype() {
+  return (
+    <div className="min-h-[720px] pt-4" aria-busy="true" aria-label="Carregando arquétipo" role="status">
+      <span className="sr-only">Carregando arquétipo...</span>
+      <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <Skeleton width="96px" height="70px" radius="0.75rem" />
+          <div className="flex flex-col gap-3 pt-1">
+            <Skeleton width="min(50vw, 18rem)" height="2rem" radius="0.45rem" />
+            <Skeleton width="min(60vw, 25rem)" height="0.9rem" radius="0.3rem" />
+          </div>
+        </div>
+        <Skeleton width="8rem" height="2.6rem" radius="0.75rem" />
+      </div>
+      <div className="mb-7 rounded-2xl border border-line-soft bg-surface/70 p-5 shadow-card">
+        <Skeleton width="9rem" height="1.2rem" className="mb-5" />
+        <div className="grid gap-3 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="flex items-center justify-between rounded-xl border border-line-soft p-3">
+              <Skeleton width={`${44 + index * 5}%`} height="0.9rem" />
+              <Skeleton width="3.25rem" height="1rem" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <Skeleton width="5rem" height="1.25rem" className="mb-3" />
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="rounded-2xl border border-line-soft bg-surface/70 p-5 shadow-card">
+            <div className="mb-4 flex justify-between gap-4">
+              <Skeleton width={`${35 + index * 8}%`} height="1.1rem" />
+              <Skeleton width="5rem" height="1.5rem" radius="999px" />
+            </div>
+            <Skeleton width="100%" height="4rem" radius="0.65rem" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonMetagame() {
+  return (
+    <div
+      className="grid min-h-[660px] grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px] animate-[fade-in_200ms_ease-out]"
+      aria-busy="true"
+      aria-label="Carregando metagame"
+      role="status"
+    >
+      <span className="sr-only">Carregando metagame...</span>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 9 }).map((_, index) => (
+          <article
+            key={index}
+            className="flex min-h-[190px] flex-col rounded-2xl border border-line-soft bg-surface/70 p-4 shadow-card"
+            aria-hidden="true"
+          >
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <Skeleton width={`${58 + (index % 3) * 9}%`} height="1.25rem" radius="0.4rem" />
+              <Skeleton width="2.25rem" height="2.25rem" radius="999px" />
+            </div>
+            <Skeleton width="42%" height="0.75rem" radius="0.3rem" />
+            <div className="my-4 flex items-end gap-2">
+              <Skeleton width="3.5rem" height="2rem" radius="0.4rem" />
+              <Skeleton width="4.5rem" height="0.8rem" radius="0.3rem" />
+            </div>
+            <div className="mt-auto flex flex-col gap-2 border-t border-line-soft pt-3">
+              <Skeleton width="100%" height="0.55rem" radius="999px" />
+              <div className="flex justify-between gap-3">
+                <Skeleton width="38%" height="0.75rem" radius="0.3rem" />
+                <Skeleton width="28%" height="0.75rem" radius="0.3rem" />
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <aside className="flex flex-col gap-5 lg:sticky lg:top-24" aria-hidden="true">
+        <div className="flex flex-col gap-2">
+          <Skeleton width="7.5rem" height="0.75rem" radius="0.3rem" />
+          <Skeleton width="100%" height="2.6rem" radius="0.75rem" />
+        </div>
+        <div className="rounded-2xl border border-line-soft bg-surface/70 p-4 shadow-card">
+          <Skeleton width="8rem" height="1.1rem" radius="0.35rem" className="mb-5" />
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="mb-5 flex flex-col gap-2 last:mb-0">
+              <Skeleton width={`${64 + (index % 2) * 14}%`} height="0.72rem" radius="0.3rem" />
+              <div className="grid grid-cols-[2.4rem_minmax(0,1fr)] gap-2">
+                <Skeleton width="2rem" height="0.75rem" radius="0.25rem" />
+                <Skeleton width="82%" height="0.75rem" radius="0.25rem" />
+                <Skeleton width="2rem" height="0.75rem" radius="0.25rem" />
+                <Skeleton width="66%" height="0.75rem" radius="0.25rem" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
     </div>
   );
 }

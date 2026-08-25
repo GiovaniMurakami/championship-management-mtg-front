@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { buscarMetagame } from "../services/backendApi";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
-import { Spinner } from "../components/ui/Spinner";
+import { SkeletonMetagame } from "../components/ui/Skeleton";
 import { MetagameArchetypeCard, MetagameFormatNav, MetagamePeriodoSelect, MetagameRecentSidebar } from "../components/metagame";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { TOURNAMENT_FORMATS, getTournamentFormatLabel } from "../constants/tournament";
@@ -111,7 +111,7 @@ export function MetagamePage() {
         />
       </div>
 
-      {loading && <Spinner text="Carregando metagame..." />}
+      {loading && <SkeletonMetagame />}
       {!loading && erro && (
         <EmptyState title="Erro ao carregar" description={erro} />
       )}

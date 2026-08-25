@@ -192,4 +192,20 @@ describe("OwnerControlPanel", () => {
 
         expect(screen.getByText(/Observação: Placar digitado invertido/i)).toBeInTheDocument();
     });
+
+    it("ordena a lista pelo mesmo nome exibido ao jogador", () => {
+        const props = createBaseProps({
+            standings: [
+                { id: "1", nome: "ZuluNick", usuario: { nome: "Ana Real" }, deckConfirmado: true, checkinRodada: 0 },
+                { id: "2", nome: "AlphaNick", usuario: { nome: "Zeca Real" }, deckConfirmado: true, checkinRodada: 0 },
+            ],
+        });
+
+        render(<OwnerControlPanel {...props} />);
+        fireEvent.click(screen.getByRole("button", { name: /Lista de jogadores/i }));
+
+        const alpha = screen.getByText("AlphaNick");
+        const zulu = screen.getByText("ZuluNick");
+        expect(alpha.compareDocumentPosition(zulu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
 });

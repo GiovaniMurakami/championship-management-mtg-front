@@ -1,6 +1,6 @@
 export function EmptyState({ title, description, action, icon, className = "" }) {
   return (
-    <div className={`flex flex-col items-center justify-center text-center py-12 px-4 rounded-xl border border-line-soft bg-white/[0.025] ${className}`}>
+    <div className={`flex min-h-[280px] flex-col items-center justify-center text-center py-12 px-4 rounded-2xl border border-line-soft bg-surface/70 shadow-card ${className}`}>
       {icon && (
         <div className="text-[2.5rem] opacity-40 mb-2" aria-hidden="true">{icon}</div>
       )}
