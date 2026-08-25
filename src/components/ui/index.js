@@ -17,7 +17,7 @@ export { Navbar } from "./Navbar";
 export { ScrollToTop } from "./ScrollToTop";
 export { PageShell } from "./PageShell";
 export { SelectField } from "./SelectField";
-export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard } from "./Skeleton";
+export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonCollection, SkeletonTeamCollection, SkeletonMetagame, SkeletonMetagameArchetype, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard } from "./Skeleton";
 export { Spinner } from "./Spinner";
 export { SponsorSection } from "./SponsorSection";
 export { AdSenseUnit, AdSenseHorizontal, AdSenseInArticle, AdSensePageEnd } from "./AdSenseUnit";

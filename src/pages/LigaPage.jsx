@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageShell } from "../components/ui/PageShell";
-import { SkeletonCard } from "../components/ui/Skeleton";
+import { SkeletonCollection } from "../components/ui/Skeleton";
 import { Button } from "../components/ui/Button";
 import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 import { logError } from "../utils/logger";
@@ -91,11 +91,7 @@ export function LigaPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-5">
-          {[1, 2, 3].map((i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
+        <SkeletonCollection count={6} />
       ) : ligas.length === 0 ? (
         <EmptyState
           title="Nenhuma liga encontrada"
@@ -111,7 +107,7 @@ export function LigaPage() {
           {ligas.map((liga) => (
             <article
               key={liga.id}
-              className="group relative bg-[rgba(18,12,32,0.72)] rounded-xl border border-line-soft transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] hover:border-line-strong"
+              className="group relative bg-surface/80 rounded-2xl border border-line-soft shadow-card transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
             >
               <button type="button" aria-label={`Abrir liga ${liga.nome}`} className="absolute inset-0 z-0 cursor-pointer border-0 bg-transparent" onClick={() => navigate(`/ligas/${liga.id}`)} />
               <div className="relative z-[1] pointer-events-none h-24 overflow-hidden border-b border-line-soft bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center" style={liga.bannerUrl ? { backgroundImage: `linear-gradient(to top, rgba(18,12,32,.9), rgba(18,12,32,.12)), url(${liga.bannerUrl})` } : undefined}>

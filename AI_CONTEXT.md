@@ -98,6 +98,25 @@ src/
 - Tema dark roxo/violeta; fonte display `Bebas_Neue` para títulos
 - **Não** criar arquivos CSS por componente (exceto `index.css` global)
 
+### Diretrizes de design — abordagem Apple
+
+O produto segue os princípios de interface da Apple como referência de qualidade, sem copiar a aparência do iOS e sem abandonar a identidade dark roxa do projeto. Ao criar ou alterar telas:
+
+- **Clareza antes de decoração:** cada tela deve ter um objetivo e uma ação principal evidentes. Remover ruído visual, textos redundantes e controles sem função clara.
+- **Hierarquia forte:** organizar conteúdo por importância com título, resumo, conteúdo e ações. A ação primária deve se destacar; ações secundárias e destrutivas devem ter menor peso visual.
+- **Conteúdo em primeiro plano:** superfícies, bordas, sombras e efeitos existem para estruturar o conteúdo, nunca para competir com ele.
+- **Profundidade com propósito:** usar elevação, transparência e `backdrop-blur` apenas para comunicar camadas, contexto ou sobreposição. Evitar glassmorphism excessivo e efeitos puramente ornamentais.
+- **Consistência e familiaridade:** reutilizar componentes de `src/components/ui`, tokens semânticos de `src/index.css` e variantes de `src/styles/uiClasses.js`. Não inventar um padrão novo quando já existir equivalente.
+- **Feedback imediato:** toda interação deve comunicar hover/focus/pressed/loading/success/error. Ações assíncronas bloqueiam repetição, preservam contexto e informam claramente o resultado.
+- **Divulgação progressiva:** mostrar primeiro o essencial e revelar detalhes ou ações avançadas sob demanda. Evitar telas densas com todas as opções expostas simultaneamente.
+- **Movimento discreto e funcional:** transições devem explicar mudança de estado ou relação espacial, normalmente entre 150–300 ms. Respeitar `prefers-reduced-motion`; evitar animações longas, repetitivas ou que atrasem uma ação.
+- **Alvos confortáveis:** controles interativos devem ter área clicável mínima próxima de `44×44px`, inclusive no mobile, com espaçamento suficiente para evitar toques acidentais.
+- **Legibilidade e acessibilidade:** manter contraste adequado, foco visível, labels/nomes acessíveis e navegação por teclado. Não depender apenas de cor, ícone, tooltip ou animação para transmitir informação.
+- **Responsividade natural:** desenhar primeiro o fluxo e a prioridade do conteúdo. No mobile, empilhar e simplificar; não apenas reduzir tamanhos ou esconder ações essenciais.
+- **Texto direto:** labels e mensagens em português BR devem ser curtos, humanos e específicos. Botões descrevem a ação (`Criar time`, `Salvar alterações`) e confirmações destrutivas explicitam o impacto.
+
+Checklist para mudanças visuais: a hierarquia é óbvia, existe apenas uma ação primária por contexto, estados interativos estão cobertos, o conteúdo funciona em mobile/teclado e nenhum efeito visual foi adicionado sem função. A especificação de tokens continua em `src/styles/DESIGN_SYSTEM.md`.
+
 ### Imports
 - Preferir barrel exports quando existem (`from "../components"`, `from "../hooks"`)
 - `useAuth` é re-exportado de `hooks/useAuth.js` → implementação em `context/AuthContext.jsx`

@@ -8,7 +8,7 @@ import { useToast } from "../context/ToastContext";
 import { useRequestSequence } from "../hooks/useRequestSequence";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { earliestMsUntilAblyWindow, isTournamentAblyWindowOpen } from "../utils/ablyTournamentWindow";
-import { SkeletonTorneioCard } from "../components";
+import { SkeletonCollection } from "../components";
 import { EmptyState } from "../components/ui/EmptyState";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { PageShell } from "../components/ui/PageShell";
@@ -308,9 +308,7 @@ export function TournamentPage() {
       {/* List */}
       <section className="mt-6" aria-busy={loading} aria-live="polite">
         {loading ? (
-          <div className="grid grid-cols-1 min-[640px]:grid-cols-2 min-[1024px]:grid-cols-3 gap-4 mb-8">
-            {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
-          </div>
+          <SkeletonCollection variant="tournament" count={6} className="mb-8 min-[1024px]:grid-cols-3" />
         ) : torneiosExibidos.length === 0 ? (
           <EmptyState
             title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio encerrado encontrado"}
@@ -329,7 +327,7 @@ export function TournamentPage() {
               return (
                 <div
                   key={torneio.id}
-                  className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[0.95rem] shadow-[0_5px_22px_rgba(0,0,0,0.32)] border border-line transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(0,0,0,0.42)] hover:border-[rgba(167,79,255,0.3)]"
+                  className="rounded-2xl bg-surface/80 shadow-card border border-line-soft transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
                 >
                   {/* Banner image */}
                   {torneio.bannerUrl && (
@@ -347,7 +345,7 @@ export function TournamentPage() {
 
                   {/* Card header */}
                   <div className="flex items-center justify-between gap-2 px-3.5 py-[0.65rem] pb-2 border-b border-line bg-white/[0.02] max-md:flex-wrap">
-                    <span className="font-['Bebas_Neue',sans-serif] text-[0.95rem] tracking-[0.12em] text-brand">
+                    <span className="text-[0.78rem] font-semibold tracking-[0.04em] text-brand">
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
                     <div className="flex items-center gap-2">
@@ -371,7 +369,7 @@ export function TournamentPage() {
                     </div>
                   </div>
 
-                  <h3 className="text-text-main m-0 mb-2.5 font-['Bebas_Neue',sans-serif] text-[1.25rem] tracking-[0.03em] leading-[1.1] px-3.5 pt-3">
+                  <h3 className="text-text-main m-0 mb-2.5 font-display font-semibold text-[1.2rem] tracking-[-0.025em] leading-[1.2] px-3.5 pt-3">
                     {torneio.nome}
                   </h3>
 

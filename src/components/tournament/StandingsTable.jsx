@@ -11,7 +11,7 @@ function CollapseToggle({ collapsed, onToggle, label = "standings" }) {
       onClick={onToggle}
       aria-expanded={!collapsed}
       aria-controls="standings-panel"
-      className="inline-flex h-9 items-center gap-1.5 px-3 border border-[rgba(217,180,255,0.25)] rounded-md bg-white/[0.04] text-[#d7cce9] text-[0.75rem] font-semibold cursor-pointer transition-[color,border-color,background-color] duration-150 hover:text-white hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.08] shrink-0"
+      className="inline-flex h-9 items-center gap-1.5 px-3 border border-[rgba(217,180,255,0.25)] rounded-xl bg-white/[0.04] text-[#d7cce9] text-[0.75rem] font-semibold cursor-pointer transition-[color,border-color,background-color] duration-150 hover:text-white hover:border-[rgba(199,149,255,0.45)] hover:bg-white/[0.08] shrink-0 active:scale-[0.98]"
     >
       <svg
         width="12"
@@ -352,7 +352,7 @@ export function StandingsTable({
       <div className={`flex items-center justify-between gap-3 flex-wrap max-md:flex-col max-md:items-stretch ${collapsed ? "mb-0" : "mb-4"}`}>
         <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main max-md:text-[1.35rem]">{sectionTitle}</h2>
         <div className="flex items-center gap-[0.6rem] flex-wrap max-md:w-full">
-          <span className="inline-flex h-9 items-center text-[0.72rem] font-semibold text-[#c9bddc] bg-[rgba(167,79,255,0.08)] border border-line rounded-md px-3 flex-shrink-0">
+          <span className="inline-flex h-9 items-center text-[0.72rem] font-semibold text-[#c9bddc] bg-[rgba(167,79,255,0.08)] border border-line rounded-full px-3 flex-shrink-0">
             {totalInscritos ?? standings.length} inscritos
           </span>
           <CollapseToggle
@@ -363,7 +363,7 @@ export function StandingsTable({
           {!collapsed && standings.length > 5 && (
             <div className="relative flex h-9 items-center max-md:flex-1">
               <input
-                className="h-9 pl-3 pr-[1.8rem] border border-[rgba(199,149,255,0.3)] rounded-md bg-[rgba(255,255,255,0.035)] text-text-main text-[0.78rem] font-['inherit'] outline-none w-44 max-md:w-full transition-[border-color,background,width] duration-[250ms] placeholder:text-[#9f92b5] focus:border-[rgba(199,149,255,0.55)] focus:bg-[rgba(167,79,255,0.09)] focus:w-56 max-md:focus:w-full"
+                className="h-9 pl-3 pr-[1.8rem] border border-[rgba(199,149,255,0.3)] rounded-xl bg-[rgba(255,255,255,0.035)] text-text-main text-[0.78rem] font-['inherit'] outline-none w-44 max-md:w-full transition-[border-color,background,width] duration-[250ms] placeholder:text-[#9f92b5] focus:border-[rgba(199,149,255,0.55)] focus:bg-[rgba(167,79,255,0.09)] focus:w-56 max-md:focus:w-full"
                 type="text"
                 placeholder="Buscar jogador..."
                 value={search}

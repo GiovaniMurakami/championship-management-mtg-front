@@ -41,13 +41,13 @@ export function BaseModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] grid place-items-center bg-[rgba(5,3,9,0.72)] backdrop-blur-sm animate-[fade-in_250ms_ease-out]"
+      className="fixed inset-0 z-[60] grid place-items-center bg-black/55 backdrop-blur-md animate-[fade-in_200ms_ease-out]"
       role="presentation"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <section
         ref={dialogRef}
-        className="w-[min(460px,calc(100vw-1.4rem))] border border-line rounded-2xl bg-surface p-4 animate-[scale-focus_350ms_cubic-bezier(0.34,1.56,0.64,1)] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)]"
+        className="w-[min(460px,calc(100vw-1.4rem))] border border-line-soft rounded-2xl bg-surface/95 backdrop-blur-2xl p-4 shadow-overlay animate-[scale-focus_220ms_var(--ease-standard)] relative overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}

@@ -30,6 +30,11 @@ const AVATAR_PALETTES = [
 const getTotalMembros = (time) =>
   time?.totalMembros ?? time?.membroIds?.length ?? time?.membros?.length ?? 0;
 
+const formatWinRate = (value) => `${Number(value || 0).toLocaleString("pt-BR", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 1,
+})}%`;
+
 export function TimeDetailPage() {
   const { id: timeId } = useParams();
   const { token, usuario, isAdmin, requireAuth } = useAuth();
@@ -242,6 +247,12 @@ export function TimeDetailPage() {
             </svg>
             {totalMembros} membro{totalMembros !== 1 ? "s" : ""}
           </span>
+          <span
+            className="inline-flex items-center gap-1 text-[0.8rem] font-semibold text-[#86efac] bg-[rgba(34,197,94,0.08)] border border-[rgba(34,197,94,0.25)] rounded-full px-2.5 py-1"
+            title={`${time.estatisticas?.vitorias || 0}V / ${time.estatisticas?.derrotas || 0}D / ${time.estatisticas?.empates || 0}E`}
+          >
+            Win rate {formatWinRate(time.estatisticas?.winRate)} · {time.estatisticas?.vitorias || 0}-{time.estatisticas?.derrotas || 0}
+          </span>
         </div>
       </div>
 
@@ -402,6 +413,12 @@ export function TimeDetailPage() {
                   {!excluido && membro.nickMTGO && (
                     <span className="text-[0.72rem] text-brand font-mono flex-shrink-0">{membro.nickMTGO}</span>
                   )}
+                  <span
+                    className="text-[0.75rem] font-semibold text-[#86efac] bg-[rgba(34,197,94,0.07)] border border-[rgba(34,197,94,0.2)] rounded-full px-2 py-0.5 flex-shrink-0"
+                    title={`${membro.estatisticas?.vitorias || 0}V / ${membro.estatisticas?.derrotas || 0}D / ${membro.estatisticas?.empates || 0}E em ${membro.estatisticas?.partidas || 0} partidas`}
+                  >
+                    {formatWinRate(membro.estatisticas?.winRate)} WR · {membro.estatisticas?.vitorias || 0}-{membro.estatisticas?.derrotas || 0}
+                  </span>
                 </li>
               );
             })}

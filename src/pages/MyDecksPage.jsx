@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { listarDecks, deletarDeck } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
 import { useRequestSequence } from "../hooks/useRequestSequence";
-import { SkeletonCard } from "../components";
+import { SkeletonCollection } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -304,9 +304,7 @@ export function MyDecksPage() {
       {/* Conteúdo */}
       <div aria-busy={loading} aria-live="polite">
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
-          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
-        </div>
+        <SkeletonCollection count={6} className="mt-6" />
       ) : error ? (
         <InlineAlert
           type="error"
@@ -347,7 +345,7 @@ export function MyDecksPage() {
               return (
                 <div
                   key={deck.id}
-                  className="border border-line rounded-xl overflow-hidden bg-[rgba(14,9,28,0.9)] flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:border-[rgba(199,149,255,0.3)]"
+                  className="border border-line-soft rounded-2xl overflow-hidden bg-surface/80 shadow-card flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
                 >
                   <div
                     className="relative h-40 overflow-hidden bg-[radial-gradient(circle_at_70%_40%,rgba(87,20,166,0.5),transparent_60%),linear-gradient(135deg,#1a0d36,#0d071e)] bg-cover bg-[center_top]"

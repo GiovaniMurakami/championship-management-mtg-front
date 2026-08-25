@@ -23,15 +23,15 @@ export const FORM_COUNTER_CLASS = "text-right text-[0.78rem] text-text-muted";
 
 /** Primary action button (indigo gradient). */
 export const BTN_PRIMARY =
-  "cursor-pointer rounded-lg border border-line-strong bg-gradient-to-br from-brand-strong to-brand-deep px-4 py-2.5 font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_22px_rgba(142,57,237,0.38)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50";
+  "cursor-pointer rounded-xl border border-transparent bg-brand-strong px-4 py-2.5 font-semibold text-white shadow-sm transition-[background-color,transform,opacity] duration-150 hover:bg-brand-deep active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Secondary / outline button. */
 export const BTN_SECONDARY =
-  "cursor-pointer rounded-lg border border-line bg-surface-soft px-4 py-2.5 font-bold text-text-soft transition-all duration-200 hover:border-line-strong hover:bg-surface-hover hover:text-text-main disabled:cursor-not-allowed disabled:opacity-50";
+  "cursor-pointer rounded-xl border border-line bg-surface px-4 py-2.5 font-semibold text-text-main shadow-sm transition-[background-color,transform] duration-150 hover:bg-surface-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Destructive / danger button (red). */
 export const BTN_DANGER =
-  "cursor-pointer rounded-lg border border-danger/60 bg-gradient-to-br from-danger to-[#d1486a] px-4 py-2.5 font-bold text-white shadow-[0_4px_12px_rgba(252,88,119,0.22)] transition-all duration-200 enabled:hover:-translate-y-px enabled:hover:shadow-[0_8px_24px_rgba(252,88,119,0.35)] disabled:cursor-not-allowed disabled:opacity-50";
+  "cursor-pointer rounded-xl border border-transparent bg-danger px-4 py-2.5 font-semibold text-white transition-[filter,transform] duration-150 enabled:hover:brightness-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Ghost / text button (no background). */
 export const BTN_GHOST =
@@ -39,7 +39,7 @@ export const BTN_GHOST =
 
 /** Label above modal/auth form fields. */
 export const FORM_LABEL_CLASS =
-  "grid gap-1.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-text-subtle";
+  "grid gap-1.5 text-[0.82rem] font-semibold text-text-subtle";
 
 /** Hint below form fields. */
 export const FORM_HINT_CLASS = "text-[0.78rem] leading-snug text-text-muted";
@@ -60,34 +60,34 @@ export function authTabClass(isActive) {
 
 /** Centered narrow card for auth / password flows. */
 export const FORM_CARD_CLASS =
-  "relative w-[min(440px,100%)] overflow-hidden rounded-xl border border-line bg-surface p-6 shadow-card before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)] before:content-['']";
+  "relative w-[min(440px,100%)] overflow-hidden rounded-2xl border border-line-soft bg-surface p-6 shadow-overlay";
 
 /** Centered wide card (ingresso, fluxos multi-step). */
 export const FORM_WIDE_CARD_CLASS =
-  "relative w-full max-w-[480px] overflow-hidden rounded-xl border border-line bg-[linear-gradient(155deg,rgba(34,19,69,0.7),rgba(15,10,29,0.9))] p-8 shadow-overlay before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-[linear-gradient(90deg,transparent,#2ccfb4,#a855f7,#c795ff,transparent)] before:content-['']";
+  "relative w-full max-w-[480px] overflow-hidden rounded-2xl border border-line-soft bg-surface p-8 shadow-overlay";
 
 /** Wide form shell inside PageShell. */
 export const FORM_PAGE_SHELL_CLASS =
-  "mb-8 rounded-xl border border-line bg-[linear-gradient(155deg,rgba(34,19,69,0.85),rgba(15,10,29,0.95))] p-8 shadow-card max-[768px]:p-6";
+  "mb-8 rounded-2xl border border-line-soft bg-surface/90 p-8 shadow-card max-[768px]:p-6";
 
 /** Page form main title (Bebas). */
 export const FORM_PAGE_TITLE_CLASS =
-  "m-0 mb-2 text-center font-display text-[1.85rem] tracking-[0.04em] text-text-main";
+  "m-0 mb-2 text-center font-display text-[1.85rem] font-bold tracking-[-0.035em] text-text-main";
 
 /** Page form subtitle. */
 export const FORM_PAGE_SUBTITLE_CLASS = "m-0 mb-8 text-center text-[0.9rem] text-text-subtle";
 
 /** Card form section (grouped fields). */
 export const FORM_SECTION_CLASS =
-  "flex flex-col gap-4 rounded-lg border border-line bg-brand-soft/30 p-5 max-[480px]:p-4";
+  "flex flex-col gap-4 rounded-xl border border-line-soft bg-surface-soft p-5 max-[480px]:p-4";
 
 /** Section heading inside FORM_SECTION_CLASS. */
 export const FORM_SECTION_TITLE_CLASS =
-  "m-0 mb-1 border-b border-line pb-2 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-brand";
+  "m-0 mb-1 border-b border-line-soft pb-2 text-[0.82rem] font-semibold text-text-main";
 
 /** Back navigation button on form pages. */
 export const BTN_BACK =
-  "inline-flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface-soft px-4 py-2 text-[0.9rem] font-medium text-text-soft transition-all duration-200 hover:border-line-strong hover:bg-surface-hover hover:text-white";
+  "inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-[0.9rem] font-medium text-text-soft shadow-sm transition-all duration-150 hover:bg-surface-soft hover:text-text-main active:scale-[0.98]";
 
 /** Full-width primary submit on form pages. */
 export const BTN_SUBMIT =

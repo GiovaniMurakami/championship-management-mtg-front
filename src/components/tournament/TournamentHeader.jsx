@@ -30,7 +30,7 @@ const DEFAULT_STATUS = {
 
 function StatChip({ icon, label, value, accent }) {
   return (
-    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-[rgba(255,255,255,0.04)] border border-line-soft min-w-0 max-md:basis-[calc(50%-0.25rem)] max-md:flex-1">
+    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-surface-soft border border-line-soft min-w-0 max-md:basis-[calc(50%-0.25rem)] max-md:flex-1">
       <span style={accent ? { color: accent } : undefined} className={`flex-shrink-0 ${accent ? undefined : "text-[#8b7aab]"}`}>{icon}</span>
       <span className="text-[0.78rem] text-[#8b7aab] font-medium whitespace-nowrap">{label}</span>
       <span className="text-[0.85rem] font-semibold text-text-main break-words min-w-0">{value}</span>
@@ -74,7 +74,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
         </div>
       )}
 
-      <h1 className="font-['Bebas_Neue',sans-serif] text-[clamp(2rem,4vw,3rem)] tracking-[0.04em] m-0 mb-5 text-white [text-shadow:0_2px_16px_rgba(167,79,255,0.25)] leading-[1.0]">
+      <h1 className="font-display text-[clamp(2.25rem,5vw,4rem)] font-bold tracking-[-0.04em] m-0 mb-5 text-text-main leading-[1.05]">
         {torneio?.nome || torneio?.torneioNome || "Torneio"}
       </h1>
 

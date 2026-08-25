@@ -11,7 +11,7 @@ const SOCIALS = [
 
 export function Footer() {
     return (
-        <footer className="bg-[#0a061a] border-t border-line-soft py-12">
+        <footer className="bg-surface/55 backdrop-blur-xl border-t border-line-soft py-12">
             <div className="max-w-5xl mx-auto px-4 flex flex-col items-center gap-7">
                 <a href={MAIN_SITE_URL} target="_top" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
                     <img src={BRAND_LOGO_URL} alt="Tiago Fuguete" className="h-10 object-contain" />
@@ -24,7 +24,7 @@ export function Footer() {
                             href={s.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-10 h-10 rounded-xl border border-line bg-[rgba(167,79,255,0.1)] hover:bg-[rgba(167,79,255,0.25)] hover:border-[rgba(199,149,255,0.4)] flex items-center justify-center transition-all duration-200 hover:-translate-y-[2px]"
+                            className="w-10 h-10 rounded-full border border-line bg-surface-soft hover:bg-brand-soft hover:border-line-strong flex items-center justify-center transition-all duration-150 active:scale-95"
                             aria-label={s.label}
                         >
                             <svg className="w-4 h-4 fill-current text-brand" viewBox={s.vb} xmlns="http://www.w3.org/2000/svg">
@@ -34,7 +34,7 @@ export function Footer() {
                     ))}
                 </div>
 
-                <div className="w-full h-px bg-[rgba(217,180,255,0.08)]" />
+                <div className="w-full h-px bg-line-soft" />
 
                 <nav aria-label="Documentos legais" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                     <Link

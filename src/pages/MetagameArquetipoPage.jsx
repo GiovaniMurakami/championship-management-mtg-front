@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { atualizarDeck, buscarArquetipoMetagame } from "../services/backendApi";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
-import { Spinner } from "../components/ui/Spinner";
+import { SkeletonMetagameArchetype } from "../components/ui/Skeleton";
 import { BackButton } from "../components/ui/BackButton";
 import {
   MetagameFormatNav,
@@ -142,7 +142,7 @@ export function MetagameArquetipoPage() {
         ← Metagame
       </BackButton>
 
-      {loading && <Spinner text="Carregando arquétipo..." />}
+      {loading && <SkeletonMetagameArchetype />}
       {!loading && erro && <EmptyState title="Arquétipo" description={erro} />}
       {!loading && data && (
         <>
