@@ -142,7 +142,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
     topDeck && {
       label: "Arquétipo #1",
       value: topDeck.nome || "—",
-      detail: `${topDeck.totalUsos ?? 0} usos · ${topDeck.winrate ?? Math.round(((topDeck.vitorias ?? 0) / Math.max(topDeck.totalUsos ?? 1, 1)) * 100)}% win`,
+      detail: `${topDeck.totalDecks ?? 0} decks · ${topDeck.totalUsos ?? 0} usos · ${topDeck.winrate ?? Math.round(((topDeck.vitorias ?? 0) / Math.max(topDeck.totalUsos ?? 1, 1)) * 100)}% win`,
       accent: "#7dd3fc",
     },
     topCarta && {
@@ -383,6 +383,7 @@ function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, on
   const nome = deck.nome || "—";
   const cartaPrincipal = deck.cartaRepresentativa || deck.cartaPrincipal;
   const usos = deck.totalUsos ?? 0;
+  const totalDecks = deck.totalDecks ?? 0;
   const wins = deck.vitorias ?? 0;
   const losses = deck.derrotas ?? 0;
   const winRate = deck.winrate ?? (usos > 0 ? Math.round((wins / usos) * 1000) / 10 : null);
@@ -422,6 +423,12 @@ function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, on
 
       {/* Stats */}
       <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="text-right hidden min-[480px]:block">
+          <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
+            Decks
+          </p>
+          <p className="m-0 text-[0.88rem] font-semibold text-[#86efac]">{totalDecks}</p>
+        </div>
         <div className="text-right hidden min-[480px]:block">
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
             Usos
@@ -867,7 +874,9 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                     onLeave={handleCardLeave}
                     stats={
                       <div className="flex items-center justify-between w-full text-[0.72rem]">
-                        <span className="text-[#7dd3fc]">{deck.totalUsos ?? 0} usos</span>
+                        <span className="text-[#7dd3fc]">
+                          {deck.totalDecks ?? 0} decks · {deck.totalUsos ?? 0} usos
+                        </span>
                         <span className="font-semibold" style={{ color: winRateStyle(Math.round(wr)).color }}>
                           {wr % 1 === 0 ? wr : wr.toFixed(1)}% win
                         </span>

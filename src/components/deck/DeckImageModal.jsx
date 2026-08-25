@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
-import { loadCardImagesForDeck, buildVisualCanvas } from "./deckImageCanvas";
+import { loadCardImagesForDeck, buildVisualCanvas, loadImageFromUrl } from "./deckImageCanvas";
 import { Tooltip } from "../ui/Tooltip";
+import fuguetinhoUrl from "../../assets/favicon.ico";
 
 export function DeckImageModal({ deck, ownerName, onClose }) {
   const [cardDataMap, setCardDataMap] = useState({});
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState("meta"); // "meta" | "imgs" | "done"
   const [ratio, setRatio] = useState("16x9"); // "16x9" | "9x16"
+  const [brandImage, setBrandImage] = useState(null);
 
   const previewUrl = useMemo(() => {
     if (stage !== "done") return null;
-    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
+    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio, brandImage);
     return canvas.toDataURL("image/jpeg", 0.92);
-  }, [stage, ratio, deck, cardDataMap, ownerName]);
+  }, [stage, ratio, deck, cardDataMap, ownerName, brandImage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,6 +26,9 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
     async function run() {
       setStage("meta");
       setProgress(5);
+
+      const logoPromise = loadImageFromUrl(fuguetinhoUrl, { crossOrigin: null, retries: 0 })
+        .catch(() => null);
 
       const resolved = await buscarCartasPorNome(unique.map((c) => c.nome));
       if (cancelled) return;
@@ -87,6 +92,8 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
       }
 
       if (!cancelled) {
+        setBrandImage(await logoPromise);
+        if (cancelled) return;
         setCardDataMap({ ...map });
         setProgress(100);
         setStage("done");
@@ -101,7 +108,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   const loadingDone = stage === "done";
 
   const handleDownload = () => {
-    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
+    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio, brandImage);
     const safeName = (deck.nome || "deck")
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase();
     const a = document.createElement("a");

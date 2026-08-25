@@ -43,6 +43,9 @@ describe("OwnerControlPanel", () => {
 
         render(<OwnerControlPanel {...props} />);
 
+        expect(screen.getByRole("button", { name: "Dropar sem deck (1)" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Dropar sem check-in (1)" })).toBeInTheDocument();
+
         fireEvent.click(screen.getByRole("button", { name: /Iniciar Torneio/i }));
         fireEvent.click(screen.getByRole("button", { name: /Dropar sem deck/i }));
         fireEvent.click(screen.getByRole("button", { name: /Dropar sem check-in/i }));
@@ -70,6 +73,8 @@ describe("OwnerControlPanel", () => {
         });
 
         render(<OwnerControlPanel {...props} />);
+
+        expect(screen.getByRole("button", { name: "Dropar sem check-in (1)" })).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: /Dropar sem check-in/i }));
 

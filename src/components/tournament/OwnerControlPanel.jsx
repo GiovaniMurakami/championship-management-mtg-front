@@ -436,7 +436,7 @@ export function OwnerControlPanel({
               onClick={() => onDropPlayersWithoutDeck?.(jogadoresSemDeck.map(getPlayerId).filter(Boolean))}
               disabled={actionLoading || jogadoresSemDeck.length === 0}
             >
-              {isBulkDroppingDeck ? "Dropando..." : "Dropar sem deck"}
+              {isBulkDroppingDeck ? "Dropando..." : `Dropar sem deck (${jogadoresSemDeck.length})`}
             </button>
           </div>
         )}
@@ -455,7 +455,7 @@ export function OwnerControlPanel({
               onClick={() => onDropPlayersWithoutCheckin?.(jogadoresSemCheckin.map(getPlayerId).filter(Boolean))}
               disabled={actionLoading || jogadoresSemCheckin.length === 0}
             >
-              {isBulkDroppingCheckin ? "Dropando..." : "Dropar sem check-in"}
+              {isBulkDroppingCheckin ? "Dropando..." : `Dropar sem check-in (${jogadoresSemCheckin.length})`}
             </button>
           </div>
         )}
