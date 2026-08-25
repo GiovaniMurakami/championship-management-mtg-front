@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { buscarCartaPorId, buscarCartaPorNome } from "../services/scryfallApi";
 import { isScryfallId } from "../utils/scryfallId";
 
-export function useScryfallArt(nomeCarta) {
+export function useScryfallArt(nomeCarta, { enabled = true } = {}) {
   const [cache, setCache] = useState({ key: "", imagem: "", colors: [], nome: "", set: "" });
 
   useEffect(() => {
-    if (!nomeCarta) return undefined;
+    if (!nomeCarta || !enabled) return undefined;
     let cancelled = false;
     const carregar = isScryfallId(nomeCarta) ? buscarCartaPorId : buscarCartaPorNome;
     carregar(nomeCarta)
@@ -27,9 +27,9 @@ export function useScryfallArt(nomeCarta) {
     return () => {
       cancelled = true;
     };
-  }, [nomeCarta]);
+  }, [nomeCarta, enabled]);
 
-  if (!nomeCarta || cache.key !== nomeCarta) {
+  if (!nomeCarta || !enabled || cache.key !== nomeCarta) {
     return { imagem: "", colors: [], nome: "", set: "" };
   }
   return { imagem: cache.imagem, colors: cache.colors, nome: cache.nome, set: cache.set };

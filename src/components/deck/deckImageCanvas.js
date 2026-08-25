@@ -211,17 +211,29 @@ function drawFooter(ctx, canvasW, canvasH, footerH, brandImage, centered = false
   ctx.fillRect(0, fy, canvasW, 1.5);
 
   const brandText = "TIAGO FUGUETE";
+  const logoH = 28;
+  const logoW = brandImage
+    ? Math.round(logoH * (brandImage.naturalWidth || brandImage.width) / (brandImage.naturalHeight || brandImage.height))
+    : 0;
   ctx.font = "bold 24px Arial, sans-serif";
   ctx.textAlign = "left";
-  const iconSize = 30;
-  const iconGap = brandImage ? 9 : 0;
-  const signatureW = ctx.measureText(brandText).width + (brandImage ? iconSize + iconGap : 0);
+  const signatureW = brandImage ? logoW : ctx.measureText(brandText).width;
   const signatureX = centered ? (canvasW - signatureW) / 2 : 20;
   if (brandImage) {
-    ctx.drawImage(brandImage, signatureX, fy + (footerH - iconSize) / 2, iconSize, iconSize);
+    const logoY = fy + (footerH - logoH) / 2;
+    const logoCanvas = document.createElement("canvas");
+    logoCanvas.width = logoW;
+    logoCanvas.height = logoH;
+    const logoCtx = logoCanvas.getContext("2d");
+    logoCtx.drawImage(brandImage, 0, 0, logoW, logoH);
+    logoCtx.globalCompositeOperation = "source-in";
+    logoCtx.fillStyle = "#ffffff";
+    logoCtx.fillRect(0, 0, logoW, logoH);
+    ctx.drawImage(logoCanvas, signatureX, logoY);
+  } else {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(brandText, signatureX, fy + footerH / 2 + 8);
   }
-  ctx.fillStyle = "#ffffff";
-  ctx.fillText(brandText, signatureX + (brandImage ? iconSize + iconGap : 0), fy + footerH / 2 + 8);
 
   ctx.fillStyle = "#3d2470";
   ctx.font = "16px Arial, sans-serif";
