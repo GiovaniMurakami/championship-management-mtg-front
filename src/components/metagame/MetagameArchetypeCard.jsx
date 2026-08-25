@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useScryfallArt } from "../../hooks/useScryfallArt";
 import { MetagameManaPips } from "./MetagameManaPips";
@@ -11,13 +12,30 @@ function formatarNomeCarta(nome) {
 }
 
 export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, onCardMouseEnter, onCardMouseLeave }) {
-  const { imagem } = useScryfallArt(arquetipo.cartaRepresentativa);
+  const cardRef = useRef(null);
+  const [shouldLoadArt, setShouldLoadArt] = useState(false);
+  const { imagem } = useScryfallArt(arquetipo.cartaRepresentativa, { enabled: shouldLoadArt });
   const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}`;
   const cartasChave = (arquetipo.cartasChave || []).slice(0, 3);
 
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element || shouldLoadArt || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setShouldLoadArt(true);
+      observer.disconnect();
+    }, { rootMargin: "200px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [shouldLoadArt]);
+
   return (
     <Link
+      ref={cardRef}
       to={to}
+      onMouseEnter={() => setShouldLoadArt(true)}
+      onFocus={() => setShouldLoadArt(true)}
       className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-line-soft bg-[rgba(18,12,32,0.72)] hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
     >
       <div
@@ -28,7 +46,7 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
         onMouseLeave={onCardMouseLeave}
       >
         {imagem ? (
-          <img src={imagem} alt="" className="w-full h-full object-cover object-top" />
+          <img src={imagem} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover object-top" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#3b1d66] to-[#1a102c]" />
         )}

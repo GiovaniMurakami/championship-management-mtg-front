@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
 import { loadCardImagesForDeck, buildVisualCanvas, loadImageFromUrl } from "./deckImageCanvas";
 import { Tooltip } from "../ui/Tooltip";
-import fuguetinhoUrl from "../../assets/favicon.ico";
+
+const brandFooterUrl = "/images/top8/rodape.png.png";
 
 export function DeckImageModal({ deck, ownerName, onClose }) {
   const [cardDataMap, setCardDataMap] = useState({});
@@ -27,7 +28,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
       setStage("meta");
       setProgress(5);
 
-      const logoPromise = loadImageFromUrl(fuguetinhoUrl, { crossOrigin: null, retries: 0 })
+      const logoPromise = loadImageFromUrl(brandFooterUrl, { crossOrigin: null, retries: 0 })
         .catch(() => null);
 
       const resolved = await buscarCartasPorNome(unique.map((c) => c.nome));

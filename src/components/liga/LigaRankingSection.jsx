@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
 import { EmptyState } from "../ui/EmptyState";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
@@ -82,16 +82,55 @@ function WinRateBar({ rate, className = "" }) {
 }
 
 function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", className = "" }) {
+  const buttonRef = useRef(null);
+  const [lazyImage, setLazyImage] = useState(() => _imgCache.get(cardName) || null);
+  const displayImage = imageUrl || lazyImage;
   const sizes = {
     sm: "w-[38px] h-[53px] rounded-[5px]",
     md: "w-[52px] h-[72px] rounded-md",
     lg: "w-full aspect-[5/7] rounded-md",
   };
 
+  useEffect(() => {
+    if (!cardName || displayImage) return undefined;
+    const element = buttonRef.current;
+    if (!element) return undefined;
+    let cancelled = false;
+    const load = () => {
+      const cached = _imgCache.get(cardName);
+      if (cached) {
+        setLazyImage(cached);
+        return;
+      }
+      buscarCartaPorNome(cardName)
+        .then((card) => {
+          const url = card?.imagem || null;
+          _imgCache.set(cardName, url);
+          if (!cancelled) setLazyImage(url);
+        })
+        .catch(() => undefined);
+    };
+    if (typeof IntersectionObserver === "undefined") {
+      load();
+      return () => { cancelled = true; };
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      load();
+    }, { rootMargin: "160px" });
+    observer.observe(element);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
+  }, [cardName, displayImage]);
+
   if (!cardName) return null;
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       className={`flex-shrink-0 overflow-hidden border border-[rgba(199,149,255,0.25)] bg-[rgba(26,16,50,0.8)] shadow-[0_4px_12px_rgba(0,0,0,0.35)] cursor-default p-0 transition-transform duration-200 hover:scale-[1.04] hover:border-[rgba(199,149,255,0.45)] ${sizes[size]} ${className}`}
       onMouseEnter={(e) => onHover?.(cardName, e)}
@@ -100,9 +139,9 @@ function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", clas
       onBlur={onLeave}
       aria-label={cardName}
     >
-      {imageUrl ? (
+      {displayImage ? (
         <img
-          src={imageUrl}
+          src={displayImage}
           alt=""
           className="w-full h-full object-cover object-top block"
           loading="lazy"
@@ -618,10 +657,10 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
     const deckList = ranking.rankingDecks || ranking.decks || [];
     const cartaList = ranking.rankingCartas || ranking.cartas || ranking.cards || [];
-    const cardNames = [
-      ...deckList.map((deck) => deck.cartaRepresentativa || deck.cartaPrincipal),
-      ...cartaList.map((carta) => carta.nome || carta.name),
-    ].filter(Boolean);
+    const cardNames = [...new Set((subAba === "cartas"
+      ? cartaList.slice(0, 3).map((carta) => carta.nome || carta.name)
+      : deckList.slice(0, 3).map((deck) => deck.cartaRepresentativa || deck.cartaPrincipal)
+    ).filter(Boolean))];
 
     if (cardNames.length === 0) return;
 
@@ -644,9 +683,9 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
         if (arte) artImages[name] = arte;
         if (cards[index]?.nome) displayNames[name] = cards[index].nome;
       });
-      setCardImages(images);
-      setCardArtImages(artImages);
-      setCardDisplayNames(displayNames);
+      setCardImages((current) => ({ ...current, ...images }));
+      setCardArtImages((current) => ({ ...current, ...artImages }));
+      setCardDisplayNames((current) => ({ ...current, ...displayNames }));
     };
 
     loadImages();
@@ -654,7 +693,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     return () => {
       cancelled = true;
     };
-  }, [ranking]);
+  }, [ranking, subAba]);
 
   if (loading) return <LoadingSkeleton />;
 
