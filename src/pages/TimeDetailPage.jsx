@@ -397,7 +397,7 @@ export function TimeDetailPage() {
                   </span>
                   <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
                     <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
-                      <UsuarioNomeExibicao nome={nome} excluido={excluido} />
+                      <UsuarioNomeExibicao nome={nome} usuarioId={membro.id || membro.usuarioId || membro.usuario?.id} excluido={excluido} />
                     </span>
                     {isMe && (
                       <span className="inline-block text-[0.62rem] font-bold text-[#818cf8] bg-[rgba(79,70,229,0.2)] border border-[rgba(79,70,229,0.45)] rounded-full px-[0.4rem] py-[0.05rem] tracking-[0.07em] flex-shrink-0">

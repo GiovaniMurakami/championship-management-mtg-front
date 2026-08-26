@@ -3,12 +3,23 @@ import { createPortal } from "react-dom";
 
 const GAP = 8;
 
-function computePosition(triggerRect, tooltipRect, placement) {
+function computePosition(triggerRect, tooltipRect, placement, pointerY) {
   const viewportPadding = 8;
+  let resolvedPlacement = placement;
+  if (placement === "auto") {
+    const anchorY = Number.isFinite(pointerY)
+      ? pointerY
+      : triggerRect.top + triggerRect.height / 2;
+    const spaceAbove = anchorY - viewportPadding;
+    const spaceBelow = window.innerHeight - anchorY - viewportPadding;
+    resolvedPlacement = spaceBelow >= tooltipRect.height + GAP || spaceBelow >= spaceAbove
+      ? "bottom"
+      : "top";
+  }
   let top = 0;
   let left = 0;
 
-  switch (placement) {
+  switch (resolvedPlacement) {
     case "bottom":
       top = triggerRect.bottom + GAP;
       left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
@@ -33,7 +44,7 @@ function computePosition(triggerRect, tooltipRect, placement) {
   left = Math.min(Math.max(left, viewportPadding), Math.max(viewportPadding, maxLeft));
   top = Math.min(Math.max(top, viewportPadding), Math.max(viewportPadding, maxTop));
 
-  return { top, left };
+  return { top, left, placement: resolvedPlacement };
 }
 
 const ARROW_CLASSES = {
@@ -54,10 +65,13 @@ export function Tooltip({
   tooltipClassName = "",
   ariaLabel,
   focusable = true,
+  interactive = false,
 }) {
   const tooltipId = useId();
   const triggerRef = useRef(null);
   const bubbleRef = useRef(null);
+  const pointerYRef = useRef(null);
+  const hideTimerRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
@@ -69,7 +83,8 @@ export function Tooltip({
     const next = computePosition(
       trigger.getBoundingClientRect(),
       bubble.getBoundingClientRect(),
-      placement
+      placement,
+      pointerYRef.current
     );
     setCoords(next);
   }, [placement]);
@@ -91,8 +106,21 @@ export function Tooltip({
     };
   }, [open, updatePosition]);
 
-  const show = () => setOpen(true);
-  const hide = () => setOpen(false);
+  useEffect(() => () => {
+    if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
+  }, []);
+
+  const show = () => {
+    if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
+    setOpen(true);
+  };
+  const hide = () => {
+    if (!interactive) {
+      setOpen(false);
+      return;
+    }
+    hideTimerRef.current = window.setTimeout(() => setOpen(false), 120);
+  };
 
   const bubble = open && typeof document !== "undefined"
     ? createPortal(
@@ -102,13 +130,15 @@ export function Tooltip({
         role="tooltip"
         style={{ top: coords.top, left: coords.left }}
         className={[
-          "pointer-events-none fixed z-[9999] max-w-[min(16rem,calc(100vw-1rem))] whitespace-normal text-center rounded-lg border border-[rgba(251,191,36,0.25)] bg-[#120c1f] px-2.5 py-1.5 text-[0.68rem] font-semibold normal-case tracking-normal text-[#fef3c7] shadow-[0_10px_28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.04]",
+          `${interactive ? "pointer-events-auto" : "pointer-events-none"} fixed z-[9999] max-w-[min(16rem,calc(100vw-1rem))] whitespace-normal text-center rounded-lg border border-[rgba(251,191,36,0.25)] bg-[#120c1f] px-2.5 py-1.5 text-[0.68rem] font-semibold normal-case tracking-normal text-[#fef3c7] shadow-[0_10px_28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.04]`,
           tooltipClassName,
         ].join(" ")}
+        onMouseEnter={interactive ? show : undefined}
+        onMouseLeave={interactive ? hide : undefined}
       >
         {content}
         <span
-          className={`absolute h-2 w-2 rotate-45 border-[rgba(251,191,36,0.25)] bg-[#120c1f] ${ARROW_CLASSES[placement] || ARROW_CLASSES.top}`}
+          className={`absolute h-2 w-2 rotate-45 border-[rgba(251,191,36,0.25)] bg-[#120c1f] ${ARROW_CLASSES[coords.placement] || ARROW_CLASSES.top}`}
           aria-hidden="true"
         />
       </span>,
@@ -124,6 +154,10 @@ export function Tooltip({
       aria-label={focusable ? ariaLabel : undefined}
       aria-describedby={open ? tooltipId : undefined}
       onMouseEnter={show}
+      onMouseMove={(event) => {
+        pointerYRef.current = event.clientY;
+        if (open && placement === "auto") updatePosition();
+      }}
       onMouseLeave={hide}
       onFocus={show}
       onBlur={hide}

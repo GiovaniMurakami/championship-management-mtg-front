@@ -133,6 +133,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
               <span className="text-text-main">
                 <UsuarioNomeExibicao
                   nome={originalDeck.usuario.nome}
+                  usuarioId={originalDeck.usuario.id}
                   excluido={originalDeck.usuario.excluido}
                 />
               </span>

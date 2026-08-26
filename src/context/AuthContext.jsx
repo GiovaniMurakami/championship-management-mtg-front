@@ -6,6 +6,8 @@ import {
   atualizarUsuario,
   excluirConta,
   logoutUsuario,
+  obterPresignedUrl,
+  uploadParaS3,
 } from "../services/backendApi";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
 import {
@@ -40,6 +42,7 @@ export function AuthProvider({ children }) {
     telefone: "",
     nickMTGO: "",
     nickArena: "",
+    fotoUrl: "",
   });
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState("");
@@ -280,6 +283,7 @@ export function AuthProvider({ children }) {
         telefone: usuario.telefone || "",
         nickMTGO: usuario.nickMTGO || "",
         nickArena: usuario.nickArena || "",
+        fotoUrl: usuario.fotoUrl || "",
       });
     }
     setAuthMessage("");
@@ -288,7 +292,7 @@ export function AuthProvider({ children }) {
 
   const closeEditProfileModal = () => {
     setShowEditProfileModal(false);
-    setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "" });
+    setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "", fotoUrl: "" });
     setDeleteAccountError("");
   };
 
@@ -302,6 +306,7 @@ export function AuthProvider({ children }) {
       if (editProfileForm.telefone) payload.telefone = editProfileForm.telefone;
       if (editProfileForm.nickMTGO) payload.nickMTGO = editProfileForm.nickMTGO;
       if (editProfileForm.nickArena) payload.nickArena = editProfileForm.nickArena;
+      if (editProfileForm.fotoUrl) payload.fotoUrl = editProfileForm.fotoUrl;
 
       const updatedUsuario = await atualizarUsuario(payload, token);
       saveAuth({ token, usuario: updatedUsuario });
@@ -309,6 +314,24 @@ export function AuthProvider({ children }) {
       setShowEditProfileModal(false);
     } catch (error) {
       setAuthMessage(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleProfilePhoto = async (file) => {
+    if (!file) return;
+    setAuthLoading(true);
+    setAuthMessage("");
+    try {
+      const { uploadUrl, urlPublica } = await obterPresignedUrl({ contentType: file.type, tamanhoBytes: file.size }, token);
+      await uploadParaS3(uploadUrl, file);
+      const updatedUsuario = await atualizarUsuario({ fotoUrl: urlPublica }, token);
+      saveAuth({ token, usuario: updatedUsuario });
+      return updatedUsuario;
+    } catch (error) {
+      setAuthMessage(error.message || "Não foi possível enviar a foto.");
+      throw error;
     } finally {
       setAuthLoading(false);
     }
@@ -364,6 +387,7 @@ export function AuthProvider({ children }) {
     requireAuth,
     handleLogin,
     handleRegister,
+    handleProfilePhoto,
     setAuthTab,
     clearAuth,
     openEditProfileModal,

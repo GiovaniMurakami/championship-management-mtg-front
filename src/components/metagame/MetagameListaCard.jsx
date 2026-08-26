@@ -33,6 +33,7 @@ export function MetagameListaCard({
             <span className="inline-flex max-w-full items-center rounded-full border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.18)] px-2.5 py-0.5 text-[0.78rem] font-semibold text-text-main truncate">
               <UsuarioNomeExibicao
                 nome={lista?.usuario?.nome}
+                usuarioId={lista?.usuario?.id}
                 excluido={lista?.usuario}
                 nameClassName="truncate"
               />
