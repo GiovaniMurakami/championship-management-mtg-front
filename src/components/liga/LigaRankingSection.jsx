@@ -390,7 +390,7 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
       <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
         <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
-          <UsuarioNomeExibicao nome={nome} excluido={excluido} />
+          <UsuarioNomeExibicao nome={nome} usuarioId={jogador.jogador?.id} excluido={excluido} />
         </span>
         {isLogado && <VoceBadge />}
       </div>

@@ -41,9 +41,16 @@ function getMatchPlayerName(match, playerId) {
   return match?.jogador2Nome || match?.jogador2?.nome || "Jogador";
 }
 
-function buildPlayerHistory(player, partidas = []) {
+function buildPlayerHistory(player, partidas = [], standings = [], showOpponentDeck = false) {
   const playerId = getPlayerId(player);
   if (!playerId) return [];
+
+  const deckNameByPlayerId = new Map(
+    standings.map((standing) => [
+      getPlayerId(standing),
+      standing?.nomeConsolidado || standing?.deckNome || standing?.deck?.nome,
+    ])
+  );
 
   return (partidas || [])
     .filter((partida) =>
@@ -53,7 +60,6 @@ function buildPlayerHistory(player, partidas = []) {
       partida?.jogador2?.id === playerId
     )
     .sort((a, b) => Number(b?.rodada || 0) - Number(a?.rodada || 0))
-    .slice(0, 5)
     .map((partida) => {
       const isJ1 = (partida.jogador1Id || partida.jogador1?.id) === playerId;
       const opponentId = isJ1
@@ -78,6 +84,9 @@ function buildPlayerHistory(player, partidas = []) {
         id: partida.id,
         rodada: partida.rodada,
         opponentName,
+        opponentDeck: showOpponentDeck && opponentId
+          ? deckNameByPlayerId.get(opponentId)
+          : null,
         score: partida.status === "finalizada" ? `${ownWins}-${opponentWins}` : "VS",
         result,
       };
@@ -105,8 +114,11 @@ function getHistoryResultLabel(result) {
   return result;
 }
 
-function PlayerHistoryTooltip({ player, partidas, children }) {
-  const history = buildPlayerHistory(player, partidas);
+function PlayerHistoryTooltip({ player, partidas, standings, isFinished, children }) {
+  const [expanded, setExpanded] = useState(false);
+  const history = buildPlayerHistory(player, partidas, standings, isFinished);
+  const hasMore = history.length > 6;
+  const visibleHistory = hasMore && !expanded ? history.slice(0, 6) : history;
 
   if (history.length === 0) {
     return children;
@@ -114,16 +126,17 @@ function PlayerHistoryTooltip({ player, partidas, children }) {
 
   return (
     <Tooltip
-      placement="bottom"
+      placement="auto"
+      interactive
       ariaLabel={`Ultimas partidas de ${player?.usuario?.nome || player?.nome || "jogador"}`}
-      tooltipClassName="max-w-[22rem] min-w-[18rem] text-left px-3 py-2.5"
+      tooltipClassName="max-w-[22rem] min-w-[18rem] max-h-[calc(100vh-1rem)] overflow-y-auto text-left px-3 py-2.5"
       content={(
         <span className="block">
           <span className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
             Ultimas partidas deste torneio
           </span>
           <span className="grid gap-1.5">
-            {history.map((match) => (
+            {visibleHistory.map((match) => (
               <span
                 key={match.id}
                 className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-0.5 rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2 py-1.5 text-[0.72rem] text-text-main"
@@ -136,9 +149,23 @@ function PlayerHistoryTooltip({ player, partidas, children }) {
                     ({getHistoryResultLabel(match.result)})
                   </span>
                 </span>
+                {match.opponentDeck && (
+                  <span className="col-start-2 col-span-2 min-w-0 truncate text-[0.66rem] font-medium text-[#c4b5fd]">
+                    Deck: {match.opponentDeck}
+                  </span>
+                )}
               </span>
             ))}
           </span>
+          {hasMore && (
+            <button
+              type="button"
+              className="mt-2 w-full rounded-md border border-[rgba(196,181,253,0.22)] bg-[rgba(167,79,255,0.1)] px-2 py-1 text-[0.68rem] font-bold text-[#d8b4fe] cursor-pointer hover:bg-[rgba(167,79,255,0.2)]"
+              onClick={() => setExpanded((value) => !value)}
+            >
+              {expanded ? "Mostrar menos" : `Ver todas (${history.length})`}
+            </button>
+          )}
           <span className="mt-2 block text-[0.64rem] leading-snug text-text-muted">
             Placar exibido na perspectiva do jogador.
           </span>
@@ -321,10 +348,11 @@ export function StandingsTable({
                         </Tooltip>
                       )}
                       <span className="truncate">
-                        <PlayerHistoryTooltip player={player} partidas={partidas}>
+                        <PlayerHistoryTooltip player={player} partidas={partidas} standings={enrichedStandings} isFinished={isFinished}>
                           <span>
                             <UsuarioNomeExibicao
                               nome={getPlayerName(player)}
+                              usuarioId={getPlayerId(player)}
                               excluido={isPlayerExcluido(player)}
                             />
                           </span>
@@ -455,10 +483,11 @@ export function StandingsTable({
                               </Tooltip>
                             )}
                             <span className="truncate min-w-0">
-                              <PlayerHistoryTooltip player={player} partidas={partidas}>
+                              <PlayerHistoryTooltip player={player} partidas={partidas} standings={enrichedStandings} isFinished={isFinished}>
                                 <span>
                                   <UsuarioNomeExibicao
                                     nome={getPlayerName(player)}
+                                    usuarioId={getPlayerId(player)}
                                     excluido={isPlayerExcluido(player)}
                                   />
                                 </span>
@@ -565,10 +594,11 @@ export function StandingsTable({
                             </Tooltip>
                           )}
                           <span className="break-words">
-                            <PlayerHistoryTooltip player={player} partidas={partidas}>
+                            <PlayerHistoryTooltip player={player} partidas={partidas} standings={enrichedStandings} isFinished={isFinished}>
                               <span>
                                 <UsuarioNomeExibicao
                                   nome={getPlayerName(player)}
+                                  usuarioId={getPlayerId(player)}
                                   excluido={isPlayerExcluido(player)}
                                 />
                               </span>

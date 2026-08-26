@@ -32,6 +32,7 @@ const ContadorVidaPage    = lazy(() => import("../pages/ContadorVidaPage").then(
 const CalculadoraSwissPage = lazy(() => import("../pages/CalculadoraSwissPage").then(m => ({ default: m.CalculadoraSwissPage })));
 const MetagamePage = lazy(() => import("../pages/MetagamePage").then(m => ({ default: m.MetagamePage })));
 const MetagameArquetipoPage = lazy(() => import("../pages/MetagameArquetipoPage").then(m => ({ default: m.MetagameArquetipoPage })));
+const UserProfilePage = lazy(() => import("../pages/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 
@@ -43,6 +44,11 @@ export function AppRoutes() {
         <Route path="/torneio" element={<Navigate to="/" replace />} />
 
         <Route path="/decks" element={<MyDecksPage />} />
+        <Route path="/usuarios/:id" element={
+          <UuidParamGuard param="id">
+            <UserProfilePage />
+          </UuidParamGuard>
+        } />
         <Route path="/decks/criar" element={
           <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
         } />

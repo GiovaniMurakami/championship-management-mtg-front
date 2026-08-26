@@ -30,6 +30,32 @@ export function SkeletonCard() {
   );
 }
 
+export function SkeletonUserProfile() {
+  return (
+    <div className="pb-16" aria-busy="true" aria-label="Carregando perfil" role="status">
+      <span className="sr-only">Carregando perfil...</span>
+      <div className="mb-6 flex items-center gap-5 rounded-[1.75rem] border border-white/[0.09] bg-white/[0.04] px-7 py-8 max-sm:px-5 max-sm:py-6">
+        <Skeleton width="76px" height="76px" radius="999px" className="shrink-0 max-sm:!h-16 max-sm:!w-16" />
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <Skeleton width="min(70%, 19rem)" height="2rem" radius="0.5rem" />
+          <div className="flex flex-wrap gap-2"><Skeleton width="8rem" height="1.6rem" radius="999px" /><Skeleton width="10rem" height="1.6rem" radius="999px" /><Skeleton width="7rem" height="1.6rem" radius="999px" /></div>
+        </div>
+      </div>
+      <div className="mb-10 grid grid-cols-2 overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.035] sm:grid-cols-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, index) => <div key={index} className="flex min-h-[92px] flex-col items-center justify-center gap-2 px-4"><Skeleton width="3.5rem" height="1.7rem" /><Skeleton width={`${52 + (index % 3) * 8}%`} height="0.65rem" /></div>)}
+      </div>
+      <Skeleton width="12rem" height="1.55rem" className="mb-2" /><Skeleton width="15rem" height="0.85rem" className="mb-5" />
+      <div className="mb-12 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => <div key={index} className="rounded-[1.35rem] border border-white/[0.08] bg-white/[0.035] p-5"><div className="mb-3 flex items-start justify-between gap-4"><div className="flex flex-1 flex-col gap-3"><Skeleton width="35%" height="0.7rem" /><Skeleton width={`${68 + index * 7}%`} height="1rem" /></div><Skeleton width="3.5rem" height="1.5rem" /></div><Skeleton width="5rem" height="0.7rem" /><div className="mt-4 flex justify-between border-t border-white/[0.07] pt-3"><Skeleton width="6rem" height="0.7rem" /><Skeleton width="4.5rem" height="0.7rem" /></div></div>)}
+      </div>
+      <Skeleton width="10rem" height="1.55rem" className="mb-2" /><Skeleton width="8rem" height="0.85rem" className="mb-5" />
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => <div key={index} className="overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.035]"><Skeleton width="100%" height="192px" radius="0" /><div className="flex flex-col gap-3 p-5"><Skeleton width={`${62 + index * 8}%`} height="1.1rem" /><div className="flex justify-between"><Skeleton width="6rem" height="0.7rem" /><Skeleton width="5rem" height="0.7rem" /></div></div></div>)}
+      </div>
+    </div>
+  );
+}
+
 export function SkeletonTorneioCard() {
   return (
     <div className="min-h-[330px] bg-surface/70 rounded-2xl p-4 border border-line-soft shadow-card flex flex-col gap-[0.65rem]">

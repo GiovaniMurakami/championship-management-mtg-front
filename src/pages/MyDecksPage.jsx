@@ -359,14 +359,14 @@ export function MyDecksPage() {
                     <div className="absolute top-[0.7rem] left-[0.75rem] right-[0.75rem] flex items-start justify-between gap-2">
                       <FormatBadge formato={deck.formato} />
                       {deck.usuario?.nome && (
-                        <span className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-line backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap ${owner ? "text-brand" : "text-text-soft"}`}>
+                        <button type="button" className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-line backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer hover:border-line-strong hover:text-white ${owner ? "text-brand" : "text-text-soft"}`} onClick={() => navigate(`/usuarios/${deck.usuario.id}`)} aria-label={`Ver perfil de ${deck.usuario.nome}`}>
                           {owner ? "Meu deck" : (
                             <UsuarioNomeExibicao
                               nome={deck.usuario.nome}
                               excluido={deck.usuario.excluido}
                             />
                           )}
-                        </span>
+                        </button>
                       )}
                     </div>
                     <Tooltip

@@ -105,6 +105,9 @@ export const listarUsuarios = (token, params = {}) =>
     params,
   });
 
+export const buscarPerfilPublico = (usuarioId) =>
+  httpClient.get(`/usuario/${usuarioId}/perfil`);
+
 export const alterarBloqueioTorneios = (usuarioId, payload, token) =>
   httpClient.put(`/usuario/${usuarioId}/bloqueio-torneios`, payload, {
     headers: { Authorization: `Bearer ${token}` },

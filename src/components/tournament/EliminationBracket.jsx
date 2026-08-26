@@ -20,7 +20,7 @@ function getWinnerId(partida) {
   return null;
 }
 
-function BracketPlayer({ name, score, isWinner, isBye, excluido = false }) {
+function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = false }) {
   return (
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
       isWinner
@@ -28,7 +28,7 @@ function BracketPlayer({ name, score, isWinner, isBye, excluido = false }) {
         : "border-line-soft bg-[rgba(255,255,255,0.04)] text-[#d8cfee]"
     } ${isBye ? "opacity-55" : ""}`}>
       <span className="min-w-0 truncate text-sm font-semibold">
-        {isBye ? name : <UsuarioNomeExibicao nome={name} excluido={excluido} />}
+        {isBye ? name : <UsuarioNomeExibicao nome={name} usuarioId={usuarioId} excluido={excluido} />}
       </span>
       <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-text-soft"}`}>
         {score}
@@ -62,12 +62,14 @@ function BracketMatch({ partida, matchIndex }) {
       <div className="grid gap-2">
         <BracketPlayer
           name={getMatchPlayerName(partida, 1)}
+          usuarioId={jogador1Id}
           score={score1}
           isWinner={winnerId === jogador1Id}
           excluido={isMatchPlayerExcluido(partida, 1)}
         />
         <BracketPlayer
           name={isBye ? "BYE" : getMatchPlayerName(partida, 2)}
+          usuarioId={jogador2Id}
           score={score2}
           isWinner={winnerId === jogador2Id}
           isBye={isBye}
@@ -119,7 +121,9 @@ export function EliminationBracket({ torneio, partidas }) {
         </div>
         <div className="rounded-lg border border-[rgba(250,204,21,0.28)] bg-[rgba(250,204,21,0.1)] px-3 py-2 text-right max-md:text-left">
           <span className="block text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#fde68a]">Campeao</span>
-          <strong className="block max-w-[220px] truncate text-sm text-[#fff7cc] max-md:max-w-none">{championName || "A definir"}</strong>
+          <strong className="block max-w-[220px] truncate text-sm text-[#fff7cc] max-md:max-w-none">
+            {championName ? <UsuarioNomeExibicao nome={championName} usuarioId={championId} /> : "A definir"}
+          </strong>
         </div>
       </div>
 

@@ -73,7 +73,7 @@ function MatchCard({ partida, index, usuarioId }) {
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem] max-md:grid-cols-1 max-md:gap-2">
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start max-md:items-center max-md:text-center ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
                     <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>
-                        <UsuarioNomeExibicao nome={p1.name} excluido={p1.excluido} />
+                        <UsuarioNomeExibicao nome={p1.name} usuarioId={partida.jogador1Id || partida.jogador1?.id} excluido={p1.excluido} />
                     </span>
                     {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em]">VOCÊ</span>}
                     {isFinalizada && !isBye && (
@@ -88,7 +88,7 @@ function MatchCard({ partida, index, usuarioId }) {
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right max-md:items-center max-md:text-center ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
                     {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em]">VOCÊ</span>}
                     <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>
-                        {isBye ? p2.name : <UsuarioNomeExibicao nome={p2.name} excluido={p2.excluido} />}
+                        {isBye ? p2.name : <UsuarioNomeExibicao nome={p2.name} usuarioId={partida.jogador2Id || partida.jogador2?.id} excluido={p2.excluido} />}
                     </span>
                     {isFinalizada && !isBye && (
                         <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.name}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />

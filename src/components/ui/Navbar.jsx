@@ -3,14 +3,14 @@ import { NavLink } from "react-router-dom";
 import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 import { Tooltip } from "./Tooltip";
 
-function NavAvatar({ nome }) {
+function NavAvatar({ nome, fotoUrl }) {
   const initial = (nome?.[0] ?? "?").toUpperCase();
   return (
     <span
       className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[rgba(167,79,255,0.35)] border border-[rgba(199,149,255,0.4)] text-[0.78rem] font-bold text-text-main shrink-0 select-none"
       aria-hidden="true"
     >
-      {initial}
+      {fotoUrl ? <img src={fotoUrl} alt="" className="h-full w-full rounded-full object-cover" /> : initial}
     </span>
   );
 }
@@ -195,20 +195,12 @@ export function Navbar({
           Metagame
         </NavLink>
 
-        <NavLink to="/ligas" className={desktopLinkClass} onClick={close}>
-          Ligas
-        </NavLink>
-
-        <NavLink to="/times" className={desktopLinkClass} onClick={close}>
-          Times
-        </NavLink>
-
+        <NavLink to="/ligas" className={desktopLinkClass} onClick={close}>Ligas</NavLink>
+        <NavLink to="/times" className={desktopLinkClass} onClick={close}>Times</NavLink>
         <div className="relative" ref={toolsRef}>
           <button
             type="button"
-            className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
-              toolsOpen ? "text-white" : "text-text-soft hover:text-white"
-            }`}
+            className={`inline-flex items-center gap-1 border-none bg-transparent p-0 text-[0.9rem] font-semibold cursor-pointer transition-colors duration-200 ${toolsOpen ? "text-white" : "text-text-soft hover:text-white"}`}
             aria-expanded={toolsOpen}
             aria-haspopup="menu"
             onClick={() => setToolsOpen((open) => !open)}
@@ -219,100 +211,56 @@ export function Navbar({
             </svg>
           </button>
           {toolsOpen && (
-            <div
-              role="menu"
-              className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50"
-            >
-              <NavLink
-                role="menuitem"
-                to="/ferramentas/contador-vida"
-                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
-                onClick={close}
-              >
-                Contador de vida
-              </NavLink>
-              <NavLink
-                role="menuitem"
-                to="/ferramentas/calculadora-swiss"
-                className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
-                onClick={close}
-              >
-                Calculadora Swiss / Top 8
-              </NavLink>
+            <div role="menu" className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50">
+              <NavLink role="menuitem" to="/ferramentas/contador-vida" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Contador de vida</NavLink>
+              <NavLink role="menuitem" to="/ferramentas/calculadora-swiss" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Calculadora Swiss / Top 8</NavLink>
             </div>
           )}
         </div>
 
-        {isAuthenticated && isAdmin && (
-          <div className="relative" ref={dashboardRef}>
-            <button
-              type="button"
-              className={`inline-flex items-center gap-1 no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${
-                dashboardOpen ? "text-white" : "text-text-soft hover:text-white"
-              }`}
-              aria-expanded={dashboardOpen}
-              aria-haspopup="menu"
-              onClick={() => setDashboardOpen((open) => !open)}
-            >
-              Dashboard
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            {dashboardOpen && (
-              <div
-                role="menu"
-                className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50"
-              >
-                <NavLink
-                  role="menuitem"
-                  to="/dashboard"
-                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
-                  onClick={close}
-                >
-                  Anúncios
-                </NavLink>
-                <NavLink
-                  role="menuitem"
-                  to="/dashboard/bloqueios"
-                  className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
-                  onClick={close}
-                >
-                  Bloqueio de usuários
-                </NavLink>
-              </div>
-            )}
-          </div>
-        )}
       </nav>
 
       {/* Desktop auth */}
       <div className="flex items-center gap-[0.6rem] max-nav:hidden">
         {usuario ? (
-          <>
-            <Tooltip content="Editar perfil" placement="bottom" focusable={false}>
+          <div className="relative" ref={dashboardRef}>
+            <Tooltip content="Menu do usuário" placement="bottom" focusable={false}>
               <button
                 className="inline-flex items-center gap-2 border border-line rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.8rem] py-[0.45rem] text-[0.85rem] text-text-main cursor-pointer"
                 type="button"
-                onClick={() => { onOpenEditProfile(); close(); }}
-                aria-label="Editar perfil"
+                onClick={() => setDashboardOpen((open) => !open)}
+                aria-label="Abrir menu do usuário"
+                aria-expanded={dashboardOpen}
+                aria-haspopup="menu"
               >
-                <NavAvatar nome={usuario.nome} />
+                <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
                 <span className="text-[0.84rem] font-semibold text-text-main">{usuario.nome}</span>
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </Tooltip>
-            <Tooltip content="Sair" placement="bottom" focusable={false}>
-              <button
-                className="inline-flex items-center gap-[0.35rem] px-[0.75rem] py-[0.45rem] border border-line rounded-xl bg-[rgba(255,255,255,0.04)] text-text-soft text-[0.84rem] font-semibold cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(252,88,119,0.12)] hover:border-[rgba(252,88,119,0.35)] hover:text-[#ffa8b8]"
-                type="button"
-                onClick={() => { onLogout(); close(); }}
-                aria-label="Sair"
-              >
-                <IconLogout />
-                <span>Sair</span>
-              </button>
-            </Tooltip>
-          </>
+            {dashboardOpen && (
+              <div role="menu" className="absolute right-0 top-[calc(100%+0.7rem)] z-50 min-w-[230px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] p-1.5 shadow-[0_12px_28px_rgba(3,2,8,0.55)]">
+                <NavLink role="menuitem" to={`/usuarios/${usuario.id}`} className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Meu perfil</NavLink>
+                <button type="button" role="menuitem" className="flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={() => { onOpenEditProfile(); close(); }}>
+                  <IconEdit />
+                  Editar perfil
+                </button>
+                {isAdmin && (
+                  <>
+                    <p className="mx-3 mb-1 mt-2 border-t border-line pt-2 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle">Administração</p>
+                    <NavLink role="menuitem" to="/dashboard" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Anúncios</NavLink>
+                    <NavLink role="menuitem" to="/dashboard/bloqueios" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Bloqueio de usuários</NavLink>
+                  </>
+                )}
+                <button type="button" role="menuitem" className="mt-1 flex w-full items-center gap-2 border-x-0 border-b-0 border-t border-line bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-danger/10 hover:text-red-300" onClick={() => { onLogout(); close(); }}>
+                  <IconLogout />
+                  Sair
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <>
             <button
@@ -379,33 +327,30 @@ export function Navbar({
                 <span>Metagame</span>
               </NavLink>
 
-              <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
-                <IconLiga />
-                <span>Ligas</span>
-              </NavLink>
-
-              <NavLink to="/times" className={mobileLinkClass} onClick={close}>
-                <IconTime />
-                <span>Times</span>
-              </NavLink>
-
               <div className="mt-1 mb-1">
-                <p className="m-0 px-[0.75rem] py-1 text-[0.72rem] uppercase tracking-[0.08em] text-[#8f7fb0] font-semibold">
-                  Ferramentas
-                </p>
+                <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
+                  <IconLiga />
+                  <span>Ligas</span>
+                </NavLink>
+                <NavLink to="/times" className={mobileLinkClass} onClick={close}>
+                  <IconTime />
+                  <span>Times</span>
+                </NavLink>
                 <NavLink to="/ferramentas/contador-vida" className={mobileLinkClass} onClick={close}>
+                  <IconTools />
                   <span>Contador de vida</span>
                 </NavLink>
                 <NavLink to="/ferramentas/calculadora-swiss" className={mobileLinkClass} onClick={close}>
+                  <IconTools />
                   <span>Calculadora Swiss / Top 8</span>
                 </NavLink>
               </div>
 
               {isAuthenticated && isAdmin && (
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-0.5 rounded-xl border border-line bg-white/[0.02] p-1.5">
                   <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-text-subtle">
                     <IconDashboard />
-                    <span>Dashboard</span>
+                    <span>Administração</span>
                   </p>
                   <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
                     <span className="pl-[1.4rem]">Anúncios</span>
@@ -427,7 +372,7 @@ export function Navbar({
                     type="button"
                     onClick={() => { onOpenEditProfile(); close(); }}
                   >
-                    <NavAvatar nome={usuario.nome} />
+                    <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
                     <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
                       <span className="text-[0.9rem] font-semibold text-text-main whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
                       <span className="text-[0.74rem] text-text-soft">Editar perfil</span>

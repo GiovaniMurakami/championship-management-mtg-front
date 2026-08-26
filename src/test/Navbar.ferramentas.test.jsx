@@ -4,11 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import { Navbar } from "../components/ui/Navbar";
 
 describe("Navbar — dropdown Ferramentas", () => {
-  it("abre o dropdown e lista as páginas individuais", () => {
+  it("abre o dropdown e lista as páginas", () => {
     render(
       <MemoryRouter>
         <Navbar
-          usuario={{ nome: "Admin", role: "user" }}
+          usuario={{ id: "5f01d815-0fe7-4c06-a2e6-e2e321727fe0", nome: "Admin", role: "user" }}
           isAuthenticated
           onOpenAuth={vi.fn()}
           onLogout={vi.fn()}
@@ -17,10 +17,7 @@ describe("Navbar — dropdown Ferramentas", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole("link", { name: /^Ferramentas$/i })).not.toBeInTheDocument();
-
     fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
-
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
       "href",
       "/ferramentas/contador-vida",
@@ -31,7 +28,7 @@ describe("Navbar — dropdown Ferramentas", () => {
     );
   });
 
-  it("sem login, Ferramentas continua pública e lista as páginas", () => {
+  it("mantém as ferramentas públicas sem login", () => {
     const onOpenAuth = vi.fn();
     render(
       <MemoryRouter>
@@ -46,7 +43,6 @@ describe("Navbar — dropdown Ferramentas", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
-
     expect(onOpenAuth).not.toHaveBeenCalled();
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
       "href",

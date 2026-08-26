@@ -56,6 +56,7 @@ export function MetagameResultadosSection({ resultados = [] }) {
                       <p className="m-0 text-[0.92rem] font-semibold text-text-main truncate">
                         <UsuarioNomeExibicao
                           nome={r.usuario?.nome}
+                          usuarioId={r.usuario?.id}
                           excluido={r.usuario}
                           nameClassName="truncate"
                         />
