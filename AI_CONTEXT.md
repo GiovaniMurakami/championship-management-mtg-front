@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.39** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.41** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
