@@ -142,6 +142,16 @@ body {
   }
 }
 
+@keyframes carousel-enter-right {
+  from { opacity: 0.35; transform: translateX(9%) scale(0.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes carousel-enter-left {
+  from { opacity: 0.35; transform: translateX(-9%) scale(0.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
 @keyframes scale-focus {
   from {
     transform: scale(0.98);

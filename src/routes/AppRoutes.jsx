@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { ProtectedRoute } from "../components";
 import { UuidParamGuard } from "../components/ui/UuidParamGuard";
 import { Spinner } from "../components/ui/Spinner";
@@ -33,8 +33,14 @@ const CalculadoraSwissPage = lazy(() => import("../pages/CalculadoraSwissPage").
 const MetagamePage = lazy(() => import("../pages/MetagamePage").then(m => ({ default: m.MetagamePage })));
 const MetagameArquetipoPage = lazy(() => import("../pages/MetagameArquetipoPage").then(m => ({ default: m.MetagameArquetipoPage })));
 const UserProfilePage = lazy(() => import("../pages/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
+const PostsPage = lazy(() => import("../pages/PostsPage").then(m => ({ default: m.PostsPage })));
+const PostDetailPage = lazy(() => import("../pages/PostDetailPage").then(m => ({ default: m.PostDetailPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
+const LegacyPostRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/comunidade/${id}`} replace />;
+};
 
 export function AppRoutes() {
   return (
@@ -44,6 +50,10 @@ export function AppRoutes() {
         <Route path="/torneio" element={<Navigate to="/" replace />} />
 
         <Route path="/decks" element={<MyDecksPage />} />
+        <Route path="/comunidade" element={<PostsPage />} />
+        <Route path="/comunidade/:id" element={<UuidParamGuard param="id"><PostDetailPage /></UuidParamGuard>} />
+        <Route path="/posts" element={<Navigate to="/comunidade" replace />} />
+        <Route path="/posts/:id" element={<LegacyPostRedirect />} />
         <Route path="/usuarios/:id" element={
           <UuidParamGuard param="id">
             <UserProfilePage />

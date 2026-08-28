@@ -191,6 +191,8 @@ export function Navbar({
           Decks
         </NavLink>
 
+        <NavLink to="/comunidade" className={desktopLinkClass} onClick={close}>Comunidade</NavLink>
+
         <NavLink to="/metagame" className={desktopLinkClass} onClick={close}>
           Metagame
         </NavLink>
@@ -320,6 +322,11 @@ export function Navbar({
               <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
                 <IconDeck />
                 <span>Decks</span>
+              </NavLink>
+
+              <NavLink to="/comunidade" className={mobileLinkClass} onClick={close}>
+                <span className="inline-flex w-5 justify-center" aria-hidden="true">&#9673;</span>
+                <span>Comunidade</span>
               </NavLink>
 
               <NavLink to="/metagame" className={mobileLinkClass} onClick={close}>

@@ -451,6 +451,16 @@ export const salvarAnuncios = (anuncios, token) =>
 export const registrarCliqueAnuncio = (anuncioId) =>
   httpClient.post(`/site/anuncios/${encodeURIComponent(anuncioId)}/clique`, {});
 
+// Posts
+export const listarPosts = (token, params = {}) => httpClient.get("/post", { ...optionalAuthConfig(token), params });
+export const buscarPost = (postId, token) => httpClient.get(`/post/${encodeURIComponent(postId)}`, optionalAuthConfig(token));
+export const criarPost = (payload, token) => httpClient.post("/post", payload, { headers: { Authorization: `Bearer ${token}` } });
+export const editarPost = (postId, payload, token) => httpClient.put(`/post/${encodeURIComponent(postId)}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+export const comentarPost = (postId, texto, token) => httpClient.post(`/post/${encodeURIComponent(postId)}/comentario`, { texto }, { headers: { Authorization: `Bearer ${token}` } });
+export const curtirPost = (postId, token) => httpClient.post(`/post/${encodeURIComponent(postId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
+export const descurtirPost = (postId, token) => httpClient.delete(`/post/${encodeURIComponent(postId)}/curtida`, { headers: { Authorization: `Bearer ${token}` } });
+export const excluirPost = (postId, token) => httpClient.delete(`/post/${encodeURIComponent(postId)}`, { headers: { Authorization: `Bearer ${token}` } });
+
 // Story fundos (admin)
 export const listarStoryFundos = (token) =>
   httpClient.get("/story-fundo", {

@@ -133,6 +133,54 @@ export function SkeletonTeamCollection({ count = 8 }) {
   );
 }
 
+export function SkeletonPostFeed({ count = 3 }) {
+  return (
+    <div className="grid gap-7" aria-busy="true" aria-label="Carregando publicações" role="status">
+      <span className="sr-only">Carregando publicações...</span>
+      {Array.from({ length: count }).map((_, index) => (
+        <article key={index} className="overflow-hidden rounded-2xl border border-line-soft bg-surface/70 shadow-card" aria-hidden="true">
+          <div className="flex items-center gap-3 p-4">
+            <Skeleton width="2.5rem" height="2.5rem" radius="999px" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton width={`${30 + index * 7}%`} height="0.9rem" />
+              <Skeleton width="8rem" height="0.65rem" />
+            </div>
+          </div>
+          <Skeleton width="100%" height={index % 2 === 0 ? "420px" : "340px"} radius="0" />
+          <div className="flex flex-col gap-3 p-4">
+            <Skeleton width="7.5rem" height="2.75rem" radius="0.75rem" />
+            <Skeleton width="88%" height="0.85rem" />
+            <Skeleton width="62%" height="0.85rem" />
+            <div className="mt-1 flex items-center gap-2 border-t border-line-soft pt-3">
+              <Skeleton width="100%" height="2.75rem" radius="0.75rem" />
+              <Skeleton width="5rem" height="2.75rem" radius="0.75rem" />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonPostDetail() {
+  return (
+    <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-8" aria-busy="true" aria-label="Carregando publicação" role="status">
+      <span className="sr-only">Carregando publicação...</span>
+      <div className="mb-6 flex justify-between"><Skeleton width="7rem" height="2.75rem" radius="0.75rem" /><Skeleton width="9rem" height="2.75rem" radius="0.75rem" /></div>
+      <article className="rounded-2xl border border-line-soft bg-surface/70 p-5 shadow-card" aria-hidden="true">
+        <Skeleton width="12rem" height="1.6rem" className="mb-2" />
+        <Skeleton width="5rem" height="0.75rem" className="mb-6" />
+        <Skeleton width="82%" height="0.9rem" className="mb-3" />
+        <Skeleton width="55%" height="0.9rem" className="mb-6" />
+        <div className="grid grid-cols-2 items-start gap-3 max-sm:grid-cols-1">
+          <Skeleton width="100%" height="360px" radius="0.75rem" />
+          <Skeleton width="100%" height="280px" radius="0.75rem" />
+        </div>
+      </article>
+    </div>
+  );
+}
+
 export function SkeletonMetagameArchetype() {
   return (
     <div className="min-h-[720px] pt-4" aria-busy="true" aria-label="Carregando arquétipo" role="status">
