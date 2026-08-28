@@ -2,6 +2,7 @@ export const SITE_TITLE = "Tiago Fuguete";
 
 export const PAGE_TITLES = {
   torneios: "Torneios",
+  posts: "Posts",
   criarTorneio: "Criar Torneio",
   ingressarTorneio: "Ingressar no Torneio",
   meusDecks: "Meus Decks",
