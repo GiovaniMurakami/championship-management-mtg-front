@@ -79,7 +79,7 @@ export function MetagameArquetipoPage() {
 
   const recarregar = useCallback(async () => {
     try {
-      const res = await buscarArquetipoMetagame(formato, slug, { dias });
+      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10 });
       setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       return true;
     } catch (err) {
@@ -110,7 +110,7 @@ export function MetagameArquetipoPage() {
 
   useEffect(() => {
     let cancelled = false;
-    buscarArquetipoMetagame(formato, slug, { dias })
+    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10 })
       .then((res) => {
         if (!cancelled) setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       })
@@ -187,7 +187,7 @@ export function MetagameArquetipoPage() {
                 salvando={salvandoArquivo}
                 dica="Altera o nome consolidado de todas as listas deste grupo. O deck passa a aparecer neste (ou em outro) arquétipo em todo o site."
                 onSalvar={async (nomeConsolidado) => {
-                  const ids = (data.listas || []).map((l) => l.deckId);
+                  const ids = data.deckIds || (data.listas || []).map((l) => l.deckId);
                   setSalvandoArquivo(true);
                   try {
                     await salvarNome(ids, nomeConsolidado);
@@ -208,7 +208,7 @@ export function MetagameArquetipoPage() {
                 onCardMouseLeave={closeCardPreview}
                 onPreviewDismiss={closeCardPreview}
                 onSalvar={async (cartaRepresentativa) => {
-                  const ids = (data.listas || []).map((l) => l.deckId);
+                  const ids = data.deckIds || (data.listas || []).map((l) => l.deckId);
                   setSalvandoCarta(true);
                   try {
                     await salvarCarta(ids, cartaRepresentativa);
