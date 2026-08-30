@@ -1,64 +1,34 @@
-/**
- * Tabs — componente genérico de abas com underline ativo.
- *
- * @example
- * <Tabs value={abaAtiva} onChange={setAbaAtiva}>
- *   <Tabs.Item value="torneios" label="Torneios" count={torneios.length} />
- *   <Tabs.Item value="ranking" label="Ranking" />
- * </Tabs>
- */
+import { Children } from "react";
+import * as RadixTabs from "@radix-ui/react-tabs";
 
-function TabItem({ value, label, count, currentValue, onChange }) {
-  const isActive = value === currentValue;
+function TabItem({ value, label, count }) {
   return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={isActive}
-      className={`flex flex-shrink-0 items-center gap-2 px-4 py-2 rounded-lg border-none text-[0.9rem] font-semibold cursor-pointer transition-all duration-150 max-md:px-3 max-md:text-[0.85rem] ${
-        isActive
-          ? "bg-surface text-text-main shadow-sm"
-          : "bg-transparent text-text-muted hover:text-text-main"
-      }`}
-      onClick={() => {
-        if (value === currentValue) return;
-        onChange(value);
-      }}
+    <RadixTabs.Trigger
+      value={value}
+      className="group flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border-none bg-transparent px-4 py-2 text-[0.9rem] font-semibold text-text-muted transition-all duration-150 hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/70 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-soft data-[state=active]:bg-surface data-[state=active]:text-text-main data-[state=active]:shadow-sm max-md:px-3 max-md:text-[0.85rem]"
     >
       {label}
       {count !== undefined && (
-        <span className={`text-[0.75rem] font-semibold px-[0.45rem] py-[0.1rem] rounded-full leading-[1.4] ${
-          isActive
-            ? "bg-brand-soft text-brand"
-            : "bg-surface-soft text-text-soft"
-        }`}>
+        <span className="rounded-full bg-surface-soft px-[0.45rem] py-[0.1rem] text-[0.75rem] font-semibold leading-[1.4] text-text-soft group-data-[state=active]:bg-brand-soft group-data-[state=active]:text-brand">
           {count}
         </span>
       )}
-    </button>
+    </RadixTabs.Trigger>
   );
 }
 
 export function Tabs({ value, onChange, children, className = "" }) {
-  // Injeta currentValue + onChange em cada TabItem filho
-  const items = Array.isArray(children) ? children : [children];
   return (
-    <div
-      role="tablist"
-      className={`flex w-fit max-w-full gap-1 rounded-xl bg-surface-soft p-1 mb-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}
-    >
-      {items.map((child) => {
-        if (!child) return null;
-        return (
-          <TabItem
-            key={child.props.value}
-            currentValue={value}
-            onChange={onChange}
-            {...child.props}
-          />
-        );
-      })}
-    </div>
+    <RadixTabs.Root value={value} onValueChange={onChange}>
+      <RadixTabs.List
+        className={`mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-soft p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}
+      >
+        {Children.map(children, (child) => {
+          if (!child) return null;
+          return <TabItem {...child.props} />;
+        })}
+      </RadixTabs.List>
+    </RadixTabs.Root>
   );
 }
 

@@ -1,6 +1,7 @@
 export { BackButton } from "./BackButton";
 export { BaseModal } from "./BaseModal";
 export { Button } from "./Button";
+export { Checkbox } from "./Checkbox";
 export { DeleteConfirmModal } from "./DeleteConfirmModal";
 export { EmptyState } from "./EmptyState";
 export { FormFeedback } from "./FormFeedback";
@@ -19,6 +20,7 @@ export { PageShell } from "./PageShell";
 export { SelectField } from "./SelectField";
 export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonCollection, SkeletonTeamCollection, SkeletonMetagame, SkeletonMetagameArchetype, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard, SkeletonUserProfile } from "./Skeleton";
 export { Spinner } from "./Spinner";
+export { Switch } from "./Switch";
 export { SponsorSection } from "./SponsorSection";
 export { AdSenseUnit, AdSenseHorizontal, AdSenseInArticle, AdSensePageEnd } from "./AdSenseUnit";
 export { AdSenseLayout } from "./AdSenseLayout";

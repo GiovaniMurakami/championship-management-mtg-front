@@ -4,7 +4,7 @@ import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../service
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
-import { BackButton, Button, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
+import { BackButton, Button, Checkbox, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
 import {
   BTN_PRIMARY,
   BTN_SECONDARY,
@@ -409,12 +409,11 @@ export function LigaCreatePage({ editMode = false }) {
                             : "border-line-soft bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                         }`}
                       >
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 accent-[#8e39ed] cursor-pointer"
+                        <Checkbox
                           checked={selected}
-                          onChange={() => toggleTorneio(torneio.id)}
+                          onCheckedChange={() => toggleTorneio(torneio.id)}
                           disabled={loading || loadingTorneios}
+                          aria-label={`Selecionar torneio ${torneio.nome}`}
                         />
                         <div className="flex-1 min-w-0">
                           <span className="flex items-center gap-2 text-text-main text-[0.88rem] font-medium min-w-0">

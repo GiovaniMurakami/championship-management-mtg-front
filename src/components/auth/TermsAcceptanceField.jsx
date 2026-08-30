@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { termsAcceptanceCardClass } from "../../styles/uiClasses";
+import { Checkbox } from "../ui/Checkbox";
 
 export function TermsAcceptanceField({
   checked,
@@ -14,13 +15,13 @@ export function TermsAcceptanceField({
   return (
     <div className={termsAcceptanceCardClass(checked)}>
       <div className="flex items-start gap-3">
-        <input
+        <Checkbox
           id={id}
-          type="checkbox"
           checked={checked}
-          onChange={(event) => onChange(event.target.checked)}
+          onCheckedChange={(nextChecked) => onChange(nextChecked === true)}
           required
-          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[#8e39ed] border-0 bg-transparent p-0 shadow-none"
+          size="sm"
+          className="mt-0.5"
         />
         <p className="m-0 text-[0.84rem] leading-relaxed text-[#d8cff0]">
           <label htmlFor={id} className="cursor-pointer">

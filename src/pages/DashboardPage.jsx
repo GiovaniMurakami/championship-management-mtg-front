@@ -3,6 +3,7 @@ import { PageShell } from "../components/ui/PageShell";
 import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
 import { FormFeedback } from "../components/ui/FormFeedback";
+import { Switch } from "../components/ui/Switch";
 import { useAuth } from "../context/AuthContext";
 import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
@@ -446,20 +447,12 @@ export function DashboardPage() {
                             <span className="block text-base">{index + 1}</span>
                           </span>
                         </button>
-                        <label className="group inline-flex h-10 w-32 cursor-pointer items-center rounded-lg border border-line bg-[rgba(255,255,255,0.04)] p-1 transition-colors hover:border-line-strong hover:bg-[rgba(167,79,255,0.1)]">
-                          <input
-                            className="peer sr-only"
-                            type="checkbox"
-                            checked={ad.ativo}
-                            onChange={(event) => updateAd(ad.id, { ativo: event.target.checked })}
-                          />
-                          <span className={`flex h-8 w-full items-center justify-between rounded-md px-2 text-xs font-bold uppercase tracking-[0.08em] transition-colors ${ad.ativo ? "text-[#2ccfb4]" : "text-text-muted"}`}>
-                            <span>{ad.ativo ? "Ativo" : "Inativo"}</span>
-                            <span className={`relative h-5 w-9 rounded-full transition-colors ${ad.ativo ? "bg-[rgba(44,207,180,0.32)]" : "bg-[rgba(143,130,173,0.3)]"}`}>
-                              <span className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform ${ad.ativo ? "translate-x-4 bg-[#2ccfb4]" : "translate-x-0 bg-[#8f82ad]"}`} />
-                            </span>
-                          </span>
-                        </label>
+                        <Switch
+                          checked={ad.ativo}
+                          onCheckedChange={(ativo) => updateAd(ad.id, { ativo })}
+                          label={ad.ativo ? "Ativo" : "Inativo"}
+                          aria-label={`${ad.titulo || "Anuncio"}: ${ad.ativo ? "ativo" : "inativo"}`}
+                        />
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <span className="inline-flex items-center rounded-lg border border-[rgba(44,207,180,0.22)] bg-[rgba(44,207,180,0.08)] px-3 py-2 text-sm font-bold text-[#2ccfb4]">

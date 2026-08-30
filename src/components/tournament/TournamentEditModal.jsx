@@ -5,7 +5,7 @@ import { sanitizeText } from "../../utils/sanitize";
 import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { BTN_GHOST, BTN_PRIMARY, FORM_COUNTER_CLASS, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
-import { FormFeedback, FormSection, SelectField } from "../ui";
+import { Checkbox, FormFeedback, FormSection, SelectField } from "../ui";
 import { RoundSoundPicker } from "./RoundSoundPicker";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
@@ -199,7 +199,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
           <FormSection title="Informações Básicas">
             <input name="nome" type="text" value={form.nome} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
             <div className="flex items-center gap-3 py-1">
-              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded accent-[#8e39ed] cursor-pointer" />
+              <Checkbox id="secreto" name="secreto" checked={form.secreto} onChange={handleChange} disabled={isDisabled} />
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>

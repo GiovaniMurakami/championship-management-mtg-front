@@ -6,7 +6,7 @@ describe("Tooltip", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("renderiza o conteudo no document.body para nao ser cortado por overflow", async () => {
-    render(
+    const { container } = render(
       <div style={{ overflow: "hidden", width: 40, height: 40 }}>
         <Tooltip content="Confirmar resultado">
           <span>!</span>
@@ -19,8 +19,8 @@ describe("Tooltip", () => {
     fireEvent.mouseEnter(screen.getByText("!").parentElement);
     const tip = await screen.findByRole("tooltip");
     expect(tip).toHaveTextContent("Confirmar resultado");
-    expect(tip.parentElement).toBe(document.body);
-    expect(tip.className).toContain("fixed");
+    expect(container).not.toContainElement(tip);
+    expect(document.body).toContainElement(tip);
   });
 
   it("usa o espaco acima quando o mouse esta proximo ao fim da tela", async () => {
@@ -42,6 +42,6 @@ describe("Tooltip", () => {
     fireEvent.mouseEnter(trigger);
 
     const tip = await screen.findByRole("tooltip");
-    expect(tip.lastElementChild.className).toContain("top-full");
+    expect(tip).toHaveAttribute("data-side", "top");
   });
 });
