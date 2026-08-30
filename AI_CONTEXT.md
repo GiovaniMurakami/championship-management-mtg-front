@@ -32,6 +32,8 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 | React Router 7 | Rotas (lazy-loaded) |
 | TanStack React Query 5 | Cache de dados servidor |
 | Tailwind CSS 4 | Estilos (`@tailwindcss/vite`) |
+| Radix UI Primitives | Comportamento acessível de Dialog, Tabs, Tooltip, Checkbox e Switch |
+| Lucide React | Ícones de comandos e estados da interface |
 | Axios | HTTP (`httpClient.js`) |
 | Ably | Realtime de torneios |
 | Scryfall API | Dados de cartas MTG |
@@ -97,6 +99,15 @@ src/
 - Tailwind inline nas JSX; classes repetidas em `src/styles/uiClasses.js`
 - Tema dark roxo/violeta; fonte display `Bebas_Neue` para títulos
 - **Não** criar arquivos CSS por componente (exceto `index.css` global)
+
+### Componentes de UI e primitives
+- `src/components/ui` é a camada pública de UI da aplicação; prefira seus exports a usar primitives diretamente nas features.
+- Radix UI fornece comportamento e acessibilidade, enquanto Tailwind e os tokens do projeto definem a aparência.
+- Wrappers atuais: `BaseModal` (Dialog), `Tabs`, `Tooltip`, `Checkbox` e `Switch`.
+- Preserve a API das wrappers ao evoluí-las, pois elas são usadas transversalmente por páginas e componentes de domínio.
+- Use Lucide React para ícones comuns. Não desenhe SVG manual nem use caracteres de texto quando existir um ícone equivalente.
+- Controles devem manter foco visível, suporte a teclado, estados disabled/loading e nomes acessíveis.
+- `SelectField` continua nativo; não troque por um select customizado sem validar formulários, teclado mobile e compatibilidade com `onChange`.
 
 ### Diretrizes de design — abordagem Apple
 
@@ -212,6 +223,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | HTTP/errors | `services/httpClient.js` |
 | Todos endpoints REST | `services/backendApi.js` |
 | Classes UI compartilhadas | `styles/uiClasses.js` |
+| Primitives e wrappers UI | `components/ui/BaseModal.jsx`, `Tabs.jsx`, `Tooltip.jsx`, `Checkbox.jsx`, `Switch.jsx` |
 | Formatos/status torneio | `constants/tournament.js` |
 
 ---
