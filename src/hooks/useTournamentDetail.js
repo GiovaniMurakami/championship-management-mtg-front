@@ -50,7 +50,7 @@ import { formatIsoDatesInMessage } from "../utils/brasiliaTime";
 export function useTournamentDetail() {
     const { token, usuario, isAdmin, requireAuth } = useAuth();
     const { addToast } = useToast();
-    const { id: torneioId } = useParams();
+    const { id: torneioRouteId } = useParams();
 
     const [torneio, setTorneio] = useState(null);
     const somRodadaRef = useRef(null);
@@ -103,7 +103,8 @@ export function useTournamentDetail() {
         standingsQuery,
         matchesQuery,
         teamsQuery,
-    } = useTournamentQueries({ torneioId, token });
+    } = useTournamentQueries({ torneioId: torneioRouteId, token });
+    const torneioId = tournamentQuery.data?.id ?? torneioRouteId;
     const guard = useActionGuard(800);
     const isCheckedForNextRound = (player, rodadaAtual) =>
         Number(player?.checkinRodada) >= Number(rodadaAtual);

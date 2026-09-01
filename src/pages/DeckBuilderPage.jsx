@@ -114,7 +114,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (isEditMode && id) {
-      handleCreateDeck(event, token, id, originalDeck);
+      handleCreateDeck(event, token, originalDeck?.id || id, originalDeck);
     } else {
       handleCreateDeck(event, token);
     }

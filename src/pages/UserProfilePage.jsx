@@ -6,13 +6,9 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { buscarPerfilPublico } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
 import { useAuth } from "../context/AuthContext";
-
-const Stat = ({ label, value, tone = "text-text-main" }) => (
-  <div className="relative flex min-h-[92px] flex-col justify-center px-5 py-4 text-center after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-px after:bg-white/[0.08] last:after:hidden max-sm:after:hidden">
-    <strong className={`block text-[1.65rem] font-semibold leading-none tracking-[-0.03em] ${tone}`}>{value}</strong>
-    <span className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.09em] text-text-subtle">{label}</span>
-  </div>
-);
+import { CompetitiveStats } from "../components/ui/CompetitiveStats";
+import { tournamentPath } from "../utils/tournamentUrl";
+import { deckPath } from "../utils/deckUrl";
 
 export function UserProfilePage() {
   const { id } = useParams();
@@ -98,19 +94,12 @@ export function UserProfilePage() {
             {usuario.nickArena && <span className="rounded-full bg-white/[0.07] px-2.5 py-1">Arena · {usuario.nickArena}</span>}
             <span className="rounded-full bg-white/[0.07] px-2.5 py-1">Desde {new Date(usuario.criadoEm).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}</span>
           </div>
-          {isOwnProfile && <p className={`mb-0 mt-2 text-xs ${photoMessage === "Foto atualizada" ? "text-emerald-300" : "text-text-subtle"}`}>{photoMessage || "Clique na foto para alterar"}</p>}
+          {isOwnProfile && <p className={`mb-0 mt-2 text-xs ${photoMessage === "Foto atualizada" ? "text-emerald-300" : "text-text-subtle"}`}>{photoMessage || "Clique na foto para alterar · recomendado: 512 × 512 px"}</p>}
         </div>
         </div>
       </section>
 
-      <section aria-label="Estatísticas" className="mb-10 grid grid-cols-2 overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.045] shadow-[0_14px_45px_rgba(3,2,8,0.18)] backdrop-blur-xl sm:grid-cols-3 xl:grid-cols-6">
-        <Stat label="Winrate" value={`${estatisticas.winrate}%`} tone="text-brand" />
-        <Stat label="Partidas" value={estatisticas.totalPartidas} />
-        <Stat label="Vitórias" value={estatisticas.vitorias} tone="text-emerald-300" />
-        <Stat label="Derrotas" value={estatisticas.derrotas} tone="text-red-300" />
-        <Stat label="Empates" value={estatisticas.empates} />
-        <Stat label="Resultados expressivos" value={usuario.resultadosExpressivos ?? 0} tone="text-amber-300" />
-      </section>
+      <CompetitiveStats stats={estatisticas} expressiveResults={usuario.resultadosExpressivos ?? 0} className="mb-10" />
 
       <section className="mb-12">
         <div className="mb-5">
@@ -122,7 +111,7 @@ export function UserProfilePage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {ultimosTorneios.map((torneio) => (
-              <Link key={torneio.id} to={`/torneios/${torneio.id}`} className="group rounded-[1.35rem] border border-white/[0.09] bg-white/[0.045] p-5 no-underline shadow-[0_14px_40px_rgba(3,2,8,0.16)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-white/[0.16] hover:bg-white/[0.065] hover:shadow-[0_20px_50px_rgba(3,2,8,0.28)]">
+              <Link key={torneio.id} to={tournamentPath(torneio)} className="group rounded-[1.35rem] border border-white/[0.09] bg-white/[0.045] p-5 no-underline shadow-[0_14px_40px_rgba(3,2,8,0.16)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-white/[0.16] hover:bg-white/[0.065] hover:shadow-[0_20px_50px_rgba(3,2,8,0.28)]">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0"><span className="text-[0.68rem] font-bold uppercase tracking-[0.1em] text-brand">{torneio.formato}</span><h3 className="mb-1 mt-2 line-clamp-2 min-h-[2.5rem] text-[1rem] font-semibold leading-tight text-text-main transition-colors group-hover:text-white">{torneio.nome}</h3></div>
                   <strong className="shrink-0 text-[1.35rem] font-semibold tracking-[-0.03em] text-brand">{torneio.winrate}%</strong>
@@ -143,7 +132,7 @@ export function UserProfilePage() {
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {decks.map((deck) => (
-            <Link key={deck.id} to={`/editar-deck/${deck.id}`} state={{ readOnly: true }} className="group overflow-hidden rounded-[1.5rem] border border-white/[0.09] bg-white/[0.04] no-underline shadow-[0_16px_45px_rgba(3,2,8,0.2)] transition duration-300 hover:-translate-y-1.5 hover:border-white/[0.16] hover:shadow-[0_22px_55px_rgba(3,2,8,0.34)]">
+            <Link key={deck.id} to={deckPath(deck, { view: true })} state={{ readOnly: true }} className="group overflow-hidden rounded-[1.5rem] border border-white/[0.09] bg-white/[0.04] no-underline shadow-[0_16px_45px_rgba(3,2,8,0.2)] transition duration-300 hover:-translate-y-1.5 hover:border-white/[0.16] hover:shadow-[0_22px_55px_rgba(3,2,8,0.34)]">
               <div className="relative h-48 bg-[radial-gradient(circle_at_70%_40%,rgba(87,20,166,0.5),transparent_60%),linear-gradient(135deg,#1a0d36,#0d071e)] bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.025]" style={deckImages[deck.id] ? { backgroundImage: `url(${deckImages[deck.id]})` } : undefined}>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-[rgba(8,6,15,0.88)]" />
                 <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-white backdrop-blur-xl">{deck.formato}</span>

@@ -22,6 +22,7 @@ import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
 import { useSiteEstatisticas, formatSiteStatValue } from "../hooks/useSiteEstatisticas";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { tournamentPath } from "../utils/tournamentUrl";
 
 const LIMITE = 12;
 
@@ -136,6 +137,18 @@ export function TournamentPage() {
   }, [loadTorneios]);
 
   useEffect(() => {
+    let active = true;
+    Promise.all([
+      listarTorneios(token, { status: "inscricoes_abertas", limite: 1, offset: 0 }),
+      listarTorneios(token, { status: "em_andamento", limite: 1, offset: 0 }),
+      listarTorneios(token, { status: "finalizado", limite: 1, offset: 0 }),
+    ]).then(([inscricoes, andamento, encerrados]) => {
+      if (active) setTabTotals({ disponiveis: inscricoes.total + andamento.total, encerrados: encerrados.total });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [token]);
+
+  useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
     if (abaAtiva === "encerrados") nextParams.set("aba", "encerrados");
     else nextParams.delete("aba");
@@ -241,7 +254,7 @@ export function TournamentPage() {
     }
   });
 
-  const handleViewTournament = (torneioId) => navigate(`/torneios/${torneioId}`);
+  const handleViewTournament = (torneio) => navigate(tournamentPath(torneio));
 
   const formatDate = (dateString) => formatBrasiliaDateTime(dateString);
 
@@ -421,7 +434,7 @@ export function TournamentPage() {
                   <div className="mt-auto px-3.5 py-[0.7rem] pb-[0.85rem] border-t border-line bg-white/[0.015] flex gap-2 flex-wrap max-md:flex-col">
                     <button
                       className="px-3 py-1.5 border border-[#4f46e5] rounded-md text-[0.78rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(79,70,229,0.1)] text-[#4f46e5] transition-all duration-300 hover:bg-[#4f46e5] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full"
-                      onClick={() => handleViewTournament(torneio.id)}
+                        onClick={() => handleViewTournament(torneio)}
                     >
                       Ver Torneio
                     </button>

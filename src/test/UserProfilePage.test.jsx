@@ -29,8 +29,8 @@ describe("UserProfilePage", () => {
     resolveRequest(perfil);
     expect(await screen.findByRole("heading", { name: "Giovani" })).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Pauper 300/i })).toHaveAttribute("href", `/torneios/${perfil.ultimosTorneios[0].id}`);
-    expect(screen.getByRole("link", { name: /Burn/i })).toHaveAttribute("href", `/editar-deck/${perfil.decks[0].id}`);
+    expect(screen.getByRole("link", { name: /Pauper 300/i })).toHaveAttribute("href", "/torneios/22222-pauper-300");
+    expect(screen.getByRole("link", { name: /Burn/i })).toHaveAttribute("href", "/editar-deck/33333-burn?modo=visualizar");
   });
 
   it("permite trocar a foto no próprio perfil", async () => {

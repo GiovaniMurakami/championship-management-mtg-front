@@ -180,6 +180,7 @@ export function TimeCreatePage({ editMode = false }) {
                   onChange={handleImageChange}
                   className="hidden"
                 />
+                <p className="m-0 text-xs text-text-muted">Recomendado: imagem quadrada, 512 × 512 px.</p>
                 {loading && imagemFile && uploadProgress > 0 && (
                   <div className="h-1 w-full bg-white/[0.06] rounded-full overflow-hidden">
                     <div

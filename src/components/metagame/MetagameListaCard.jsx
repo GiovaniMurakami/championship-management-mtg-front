@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { DeckGroupedList, DeckTypeBadges } from "../deck/DeckGroupedList";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 import { MetagameNomeConsolidadoEditor } from "./MetagameNomeConsolidadoEditor";
+import { deckPath } from "../../utils/deckUrl";
 import {
   MANA_COLOR_LABELS,
   MANA_COLOR_MAP,
@@ -88,7 +89,7 @@ export function MetagameListaCard({
           {lista?.deckId ? (
             <Link
               className="text-[0.75rem] text-[#d9b4ff] hover:text-white"
-              to={`/editar-deck/${lista.deckId}?modo=visualizar`}
+              to={deckPath({ id: lista.deckId, nome: lista.nome }, { view: true })}
             >
               Ver lista
             </Link>

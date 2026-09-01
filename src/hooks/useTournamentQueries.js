@@ -50,17 +50,18 @@ export function useTournamentQueries({ torneioId, token, enabled = true }) {
     queryFn: () => buscarTorneio(torneioId, token),
     enabled: canFetch,
   });
+  const resolvedId = tournamentQuery.data?.id;
 
   const standingsQuery = useQuery({
-    queryKey: [...tournamentQueryKeys.standings(torneioId), Boolean(token)],
-    queryFn: () => getStandings(torneioId, token),
-    enabled: canFetch,
+    queryKey: [...tournamentQueryKeys.standings(resolvedId), Boolean(token)],
+    queryFn: () => getStandings(resolvedId, token),
+    enabled: Boolean(canFetch && resolvedId),
   });
 
   const matchesQuery = useQuery({
-    queryKey: [...tournamentQueryKeys.matches(torneioId), Boolean(token)],
-    queryFn: () => listarPartidasTorneio(torneioId, token),
-    enabled: canFetch,
+    queryKey: [...tournamentQueryKeys.matches(resolvedId), Boolean(token)],
+    queryFn: () => listarPartidasTorneio(resolvedId, token),
+    enabled: Boolean(canFetch && resolvedId),
   });
 
   const teamsQuery = useQuery({

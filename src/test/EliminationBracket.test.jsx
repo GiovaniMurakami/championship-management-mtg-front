@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { EliminationBracket } from "../components/tournament/EliminationBracket";
 
 const swissMatches = Array.from({ length: 72 }, (_, i) => ({
@@ -15,19 +16,19 @@ const swissMatches = Array.from({ length: 72 }, (_, i) => ({
 
 describe("EliminationBracket", () => {
   it("nao mostra chave de top 8 durante o Swiss", () => {
-    render(
+    render(<MemoryRouter>
       <EliminationBracket
         torneio={{ corteTop: 8, emCorte: false, rodadaAtual: 6, totalRodadas: 8 }}
         partidas={swissMatches}
-      />,
-    );
+      />
+    </MemoryRouter>);
 
     expect(screen.queryByText(/Chaveamento eliminatório/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Corte Top 8/i)).not.toBeInTheDocument();
   });
 
   it("mostra a chave depois que o corte começa", () => {
-    render(
+    render(<MemoryRouter>
       <EliminationBracket
         torneio={{ corteTop: 8, emCorte: true, rodadaAtual: 9, totalRodadas: 11 }}
         partidas={[
@@ -42,8 +43,8 @@ describe("EliminationBracket", () => {
             jogador2: { nome: "Bob" },
           },
         ]}
-      />,
-    );
+      />
+    </MemoryRouter>);
 
     expect(screen.getByText(/Chaveamento eliminatório/i)).toBeInTheDocument();
     expect(screen.getByText("Alice")).toBeInTheDocument();

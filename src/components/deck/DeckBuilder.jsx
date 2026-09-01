@@ -423,6 +423,13 @@ export function DeckBuilder({
           </label>
         </div>
 
+        {!readOnly && (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/[0.025] p-3 text-sm text-text-soft">
+            <input type="checkbox" checked={Boolean(deckForm.oculto)} onChange={(event) => onDeckFormChange((current) => ({ ...current, oculto: event.target.checked }))} className="mt-0.5 h-4 w-4 accent-violet-500" />
+            <span><strong className="block text-text-main">Deck secreto</strong>Não será exibido nas listagens públicas. Você ainda poderá acessá-lo em “Meus decks”.</span>
+          </label>
+        )}
+
         {isCommander500 && (
           <label
             className={`

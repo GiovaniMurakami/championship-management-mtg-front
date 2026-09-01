@@ -13,6 +13,7 @@ import { buildTeamInviteExternalUrl } from "../utils/externalNavigation";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { CompetitiveStats } from "../components/ui/CompetitiveStats";
 
 function getInitials(nome) {
   if (!nome) return "?";
@@ -255,6 +256,8 @@ export function TimeDetailPage() {
           </span>
         </div>
       </div>
+
+      <CompetitiveStats stats={time.estatisticas} className="mb-6" />
 
       {error && (
         <InlineAlert type="error" className="mb-4" onDismiss={() => setError("")}>

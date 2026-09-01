@@ -246,8 +246,11 @@ export function buildWordpressEmbedUrlForPath(path) {
   return buildWordpressEmbedUrl({ appPath: `${target.pathname}${target.search}` });
 }
 
-export function buildTournamentExternalUrl(torneioId) {
-  return `${APP_PUBLIC_URL}/torneios/${torneioId}`;
+export function buildTournamentExternalUrl(torneio) {
+  if (typeof torneio !== "object") return `${APP_PUBLIC_URL}/torneios/${torneio}`;
+  const id = String(torneio?.id || "");
+  const slug = String(torneio?.nome || "torneio").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ç/gi, "c").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `${APP_PUBLIC_URL}/torneios/${id.slice(0, 5)}-${slug}`;
 }
 
 export function buildTournamentJoinExternalUrl(token) {
@@ -258,6 +261,10 @@ export function buildTeamInviteExternalUrl(conviteToken) {
   return `${APP_PUBLIC_URL}/times?convite=${encodeURIComponent(conviteToken)}`;
 }
 
-export function buildDeckExternalUrl(deckId) {
-  return `${APP_PUBLIC_URL}/editar-deck/${deckId}?modo=visualizar`;
+export function buildDeckExternalUrl(deck) {
+  if (typeof deck !== "object") return `${APP_PUBLIC_URL}/editar-deck/${deck}?modo=visualizar`;
+  const id = typeof deck === "object" ? deck?.id : deck;
+  const name = typeof deck === "object" ? deck?.nome : "";
+  const slug = String(name || "deck").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ç/gi, "c").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `${APP_PUBLIC_URL}/editar-deck/${String(id || "").slice(0, 5)}-${slug}?modo=visualizar`;
 }

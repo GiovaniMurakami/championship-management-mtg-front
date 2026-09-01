@@ -9,6 +9,7 @@ import { InlineAlert } from "../ui/InlineAlert";
 import { DeckGroupedList, DeckTypeBadges } from "../deck/DeckGroupedList";
 import { DeckImageModal } from "../deck/DeckImageModal";
 import { groupCardsByType, MANA_COLOR_MAP, MANA_COLOR_LABELS } from "../../utils/deckTypeGroups";
+import { deckPath } from "../../utils/deckUrl";
 
 export const RANK_BADGE = {
   1: "bg-[linear-gradient(135deg,#ffd700,#b8860b)] text-[#3d2800] shadow-[0_0_8px_rgba(255,215,0,0.45)]",
@@ -279,7 +280,7 @@ function DeckDrawer({ deckId, deckNome, playerName, playerRank, token, onClose }
             </Tooltip>
             <button
               type="button"
-              onClick={() => navigate(`/editar-deck/${deckId}?modo=visualizar`)}
+              onClick={() => navigate(deckPath({ id: deckId, nome: deck?.nome || deckNome }, { view: true }))}
               className="inline-flex h-9 items-center gap-2 rounded-md border border-[rgba(199,149,255,0.48)] bg-[rgba(167,79,255,0.16)] px-3 text-[0.75rem] font-semibold text-[#ddd0ff] transition-colors hover:bg-[rgba(167,79,255,0.28)]"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M14 3h7v7" /><path d="M10 14 21 3" /><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" /></svg>

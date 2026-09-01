@@ -1,0 +1,12 @@
+[
+  {
+    "source": "/torneios/<*>",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/torneio/share/<*>",
+    "status": "200"
+  },
+  {
+    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>",
+    "target": "/index.html",
+    "status": "200"
+  }
+]

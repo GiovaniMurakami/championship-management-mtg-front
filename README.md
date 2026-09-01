@@ -119,6 +119,10 @@ Consulte [DOCUMENTATION.md](./DOCUMENTATION.md), [AI_CONTEXT.md](./AI_CONTEXT.md
 
 O build gera `dist/` e o deploy está configurado para AWS Amplify em `amplify.yml`. As rotas da SPA precisam redirecionar para `index.html` no ambiente de hospedagem.
 
+### Open Graph dos torneios
+
+Para que `/torneios/:slug` entregue o banner no WhatsApp, configure no Amplify Hosting, em **Rewrites and redirects**, as regras de `amplify-rewrites.example.json`, mantendo `/torneios/<*>` antes do fallback da SPA. O rewrite `200` funciona como proxy reverso: a URL continua no domínio do app, enquanto a Lambda de homologação injeta as metatags no `index.html` e o React inicia normalmente.
+
 ## Licença
 
 Projeto privado.

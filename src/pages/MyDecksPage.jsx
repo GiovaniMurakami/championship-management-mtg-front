@@ -16,6 +16,7 @@ import { Button } from "../components/ui/Button";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
+import { deckPath } from "../utils/deckUrl";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
 
@@ -137,6 +138,20 @@ export function MyDecksPage() {
     loadDecks();
   }, [loadDecks]);
 
+  useEffect(() => {
+    let active = true;
+    const common = {};
+    if (busca.trim()) common.nome = busca.trim();
+    if (jogador.trim()) common.jogador = jogador.trim();
+    Promise.all([
+      listarDecks(tokenRef.current, { ...common, limite: 1, offset: 0 }),
+      usuario?.id ? listarDecks(tokenRef.current, { ...common, usuarioId: usuario.id, limite: 1, offset: 0 }) : Promise.resolve({ total: 0 }),
+    ]).then(([todos, meus]) => {
+      if (active) setTabTotals({ todos: todos.total, meus: meus.total });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [busca, jogador, usuario?.id, token]);
+
   // Carrega imagem da primeira carta de cada deck
   useEffect(() => {
     if (decks.length === 0) return;
@@ -205,7 +220,7 @@ export function MyDecksPage() {
   };
 
   const handleShareDeck = async (deck) => {
-    const url = buildDeckExternalUrl(deck.id);
+    const url = buildDeckExternalUrl(deck);
 
     try {
       if (navigator.share) {
@@ -451,7 +466,7 @@ export function MyDecksPage() {
                           <button
                             className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(199,149,255,0.6)] rounded-xl cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
                             type="button"
-                            onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
+                            onClick={() => navigate(deckPath(deck), { state: { deck } })}
                           >
                             Editar
                           </button>
@@ -467,7 +482,7 @@ export function MyDecksPage() {
                         <button
                           className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(199,149,255,0.6)] rounded-xl cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
                           type="button"
-                          onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck, readOnly: true } })}
+                          onClick={() => navigate(deckPath(deck, { view: true }), { state: { deck, readOnly: true } })}
                         >
                           Visualizar
                         </button>

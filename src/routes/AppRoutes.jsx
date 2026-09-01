@@ -63,7 +63,7 @@ export function AppRoutes() {
           <ProtectedRoute><DeckBuilderPage isEditMode={false} /></ProtectedRoute>
         } />
         <Route path="/editar-deck/:id" element={
-          <UuidParamGuard param="id">
+          <UuidParamGuard param="id" allowSlug>
             <DeckBuilderPage isEditMode={true} />
           </UuidParamGuard>
         } />
@@ -73,7 +73,7 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><TournamentCreatePage /></ProtectedRoute>
         } />
         <Route path="/torneios/:id" element={
-          <UuidParamGuard param="id">
+          <UuidParamGuard param="id" allowTournamentSlug>
             <TournamentDetailPage />
           </UuidParamGuard>
         } />

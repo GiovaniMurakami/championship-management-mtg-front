@@ -186,7 +186,7 @@ export function OwnerControlPanel({
   }, []);
 
   const handleCopyTournamentLink = () => {
-    const url = buildTournamentExternalUrl(torneio?.id);
+    const url = buildTournamentExternalUrl(torneio);
     navigator.clipboard.writeText(url).then(() => {
       setLinkCopied(true);
       clearTimeout(linkCopiedTimeoutRef.current);

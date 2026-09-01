@@ -11,7 +11,7 @@ import {
 } from "../constants/auth";
 
 export function useDeckBuilder() {
-  const [deckForm, setDeckForm] = useState({ nome: "", formato: "", linkLigaMagic: "" });
+  const [deckForm, setDeckForm] = useState({ nome: "", formato: "", linkLigaMagic: "", oculto: false });
   const [mainDeck, setMainDeck] = useState([]);
   const [sideboard, setSideboard] = useState([]);
   const [commander, setCommander] = useState([]);
@@ -181,6 +181,7 @@ export function useDeckBuilder() {
       const formatoIgual = deckForm.formato === originalDeck.formato;
       const linkLigaMagicIgual =
         (deckForm.linkLigaMagic || "") === (originalDeck.linkLigaMagic || "");
+      const ocultoIgual = Boolean(deckForm.oculto) === Boolean(originalDeck.oculto);
       const maindeckIgual = compareDeckCards(
         mainDeck,
         originalDeck.maindeck || [],
@@ -202,6 +203,7 @@ export function useDeckBuilder() {
         nomeIgual
         && formatoIgual
         && linkLigaMagicIgual
+        && ocultoIgual
         && maindeckIgual
         && sideboardIgual
         && commanderIgual
@@ -271,6 +273,7 @@ export function useDeckBuilder() {
         maindeck: toDeckPayload(mainDeck),
         sideboard: toDeckPayload(sideboard),
         commander: toDeckPayload(commander),
+        oculto: Boolean(deckForm.oculto),
       };
 
       if (deckIdParam) {
@@ -279,7 +282,7 @@ export function useDeckBuilder() {
       } else {
         await cadastrarDeck(payload, token);
         setDeckMessage("Deck cadastrado com sucesso.");
-        setDeckForm({ nome: "", formato: "", linkLigaMagic: "" });
+        setDeckForm({ nome: "", formato: "", linkLigaMagic: "", oculto: false });
         setMainDeck([]);
         setSideboard([]);
         setCommander([]);

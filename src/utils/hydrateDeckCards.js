@@ -48,6 +48,7 @@ export async function hydrateDeckCards(deck, { setOriginalDeck, setDeckForm, set
     nome: deck.nome,
     formato: deck.formato,
     linkLigaMagic: deck.linkLigaMagic || "",
+    oculto: Boolean(deck.oculto),
   });
 
   const mainEntries = groupByName(deck.maindeck || []);

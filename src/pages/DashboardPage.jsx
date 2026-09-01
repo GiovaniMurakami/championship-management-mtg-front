@@ -529,6 +529,7 @@ export function DashboardPage() {
                             }}
                           />
                         </div>
+                        <span className="text-xs text-text-muted">Recomendado: 1200 × 480 px (proporção 5:2).</span>
                         {upload.loading && <span className="text-xs font-semibold text-brand">Enviando imagem...</span>}
                       </div>
                     </div>

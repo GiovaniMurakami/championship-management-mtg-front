@@ -275,6 +275,7 @@ export function LigaCreatePage({ editMode = false }) {
                   <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={loading} className={`${BTN_SECONDARY} justify-self-start`}>Selecionar banner</button>
                 )}
                 <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleBannerChange} className="hidden" />
+                <p className="m-0 text-xs text-text-muted">Recomendado: 1200 × 480 px (proporção 5:2).</p>
                 {loading && bannerFile && uploadProgress > 0 && (
                   <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full bg-gradient-to-r from-[#8e39ed] to-[#5f23b3]" style={{ width: `${uploadProgress}%` }} /></div>
                 )}

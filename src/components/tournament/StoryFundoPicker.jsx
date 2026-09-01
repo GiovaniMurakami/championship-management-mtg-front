@@ -282,6 +282,9 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
             disabled={disabled}
           />
           <p className="m-0 text-[0.75rem] text-text-muted">
+            Recomendado: 1080 × 1920 px (proporção 9:16).{
+              " "
+            }
             O nome fica salvo no catálogo para reutilizar em outros torneios.
           </p>
         </div>

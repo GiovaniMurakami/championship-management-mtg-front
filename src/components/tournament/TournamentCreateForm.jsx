@@ -318,6 +318,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               )}
 
               <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={handleBannerFileChange} disabled={isSubmitting} />
+              <p className="m-0 text-[0.75rem] text-text-muted">Recomendado: 1200 × 480 px (proporção 5:2).</p>
 
               {bannerError ? <FormFeedback message={bannerError} variant="error" /> : null}
 
