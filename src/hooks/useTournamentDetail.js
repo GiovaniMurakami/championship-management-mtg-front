@@ -635,7 +635,18 @@ export function useTournamentDetail() {
         setActionLoading(true);
         setError("");
         try {
-            await checkinTorneio(torneioId, token);
+            const resultado = await checkinTorneio(torneioId, token);
+            const usuarioId = resultado?.usuario?.id || usuario?.id;
+            const checkinRodada = resultado?.checkinRodada ?? resultado?.checkInRodada;
+            if (usuarioId && checkinRodada != null) {
+                setStandings((prev) =>
+                    prev.map((p) =>
+                        p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
+                            ? { ...p, checkinRodada }
+                            : p
+                    )
+                );
+            }
             setSuccessMsg("Check-in realizado!");
             await loadStandings();
             clearMessages();
@@ -1282,4 +1293,3 @@ export function useTournamentDetail() {
         token,
     };
 }
-
