@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
+import { buscarCartaPorId, buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
+import { isScryfallId } from "../../utils/scryfallId";
 import { EmptyState } from "../ui/EmptyState";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 
@@ -452,7 +453,7 @@ function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, on
         </span>
         {cartaPrincipal && (
           <p className="m-0 mt-[0.15rem] text-[0.72rem] text-[rgba(190,175,215,0.45)] truncate">
-            {cardDisplayName || cartaPrincipal}
+            {cardDisplayName || (isScryfallId(cartaPrincipal) ? "" : cartaPrincipal)}
           </p>
         )}
         <div className="mt-[0.35rem] max-w-[180px] hidden min-[560px]:block">
@@ -637,7 +638,9 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     }
     setCardPreview({ visible: true, imageUrl: null, x, y, isLoading: true });
     try {
-      const card = await buscarCartaPorNome(cardName);
+      const card = isScryfallId(cardName)
+        ? await buscarCartaPorId(cardName)
+        : await buscarCartaPorNome(cardName);
       const url = card?.imagem || null;
       _imgCache.set(cardName, url);
       setCardPreview((prev) =>
@@ -904,7 +907,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                     key={deck.nome}
                     pos={deck.posicao}
                     title={deck.nome}
-                    subtitle={cardDisplayNames[cartaRepresentativa] || cartaRepresentativa}
+                    subtitle={cardDisplayNames[cartaRepresentativa] || (isScryfallId(cartaRepresentativa) ? "" : cartaRepresentativa)}
                     cardName={cartaRepresentativa}
                     imageUrl={cartaRepresentativa ? (cardArtImages[cartaRepresentativa] || cardImages[cartaRepresentativa]) : null}
                     artwork
@@ -1025,4 +1028,3 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     </div>
   );
 }
-

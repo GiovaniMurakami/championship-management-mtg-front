@@ -12,13 +12,14 @@ export function useCardPreview() {
   }, []);
 
   const openCardPreview = useCallback((card) => {
-    if (card?.imagem) {
+    const nome = typeof card === "string" ? card : card?.nome;
+
+    if (card?.imagem && !isScryfallId(nome)) {
       seqRef.current += 1;
       setPreviewCard(card);
       return;
     }
 
-    const nome = typeof card === "string" ? card : card?.nome;
     if (!nome) {
       seqRef.current += 1;
       setPreviewCard(null);
@@ -27,11 +28,13 @@ export function useCardPreview() {
 
     const seq = ++seqRef.current;
     const carregar = isScryfallId(nome) ? buscarCartaPorId : buscarCartaPorNome;
+    if (card?.imagem) setPreviewCard({ imagem: card.imagem, nome: "" });
     carregar(nome)
       .then((carta) => {
         if (seq !== seqRef.current) return;
-        if (carta?.imagem) {
-          setPreviewCard({ nome: carta.nome, imagem: carta.imagem });
+        const imagem = carta?.imagem || card?.imagem;
+        if (imagem) {
+          setPreviewCard({ nome: carta?.nome || "", imagem });
         }
       })
       .catch(() => {

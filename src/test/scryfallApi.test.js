@@ -122,6 +122,31 @@ describe("buscarCartasPorNome", () => {
     expect(String(globalThis.fetch.mock.calls[0][0])).toBe("https://api.scryfall.com/cards/collection");
   });
 
+  it("resolve UUID do Scryfall em lote e devolve o nome da carta", async () => {
+    const id = "1c487f1a-a51d-449c-827d-c7b9381acb34";
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          id,
+          name: "Spellstutter Sprite",
+          set_name: "Wilds of Eldraine",
+          image_uris: { normal: "https://cards.example/spellstutter.jpg" },
+          type_line: "Creature — Faerie Wizard",
+          legalities: { pauper: "legal" },
+          colors: ["U"],
+        }],
+      }),
+    });
+
+    const cards = await buscarCartasPorNome([id]);
+
+    expect(JSON.parse(globalThis.fetch.mock.calls[0][1].body)).toEqual({
+      identifiers: [{ id }],
+    });
+    expect(cards[0]).toMatchObject({ id, nome: "Spellstutter Sprite" });
+  });
+
   it("usa fuzzy como fallback quando exact nao encontra a carta", async () => {
     globalThis.fetch = vi
       .fn()

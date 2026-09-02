@@ -368,7 +368,9 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              identifiers: batch.map((name) => ({ name })),
+              identifiers: batch.map((name) => (
+                isScryfallId(name) ? { id: name } : { name }
+              )),
             }),
             signal: options.signal,
           });
@@ -390,10 +392,14 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
         const normalizedKey = normalizeNameKey(card.nome);
         const cacheKey = `named:${normalizedKey}`;
         setCache(cacheKey, card);
+        if (card.id) setCache(`id:${card.id.toLowerCase()}`, card);
         resultsByName.set(normalizedKey, card);
 
         for (const requestedName of batch) {
-          if (cardMatchesName(card, requestedName)) {
+          if (
+            (isScryfallId(requestedName) && card.id?.toLowerCase() === requestedName.toLowerCase())
+            || cardMatchesName(card, requestedName)
+          ) {
             resultsByName.set(normalizeNameKey(requestedName), card);
             setCache(`named:${normalizeNameKey(requestedName)}`, card);
           }
@@ -406,7 +412,9 @@ export async function buscarCartasPorNome(nomes = [], options = {}) {
     const unresolvedNames = normalizedNames.filter((name) => !resultsByName.has(normalizeNameKey(name)));
 
     for (const name of unresolvedNames) {
-      const card = await buscarCartaPorNome(name, options);
+      const card = isScryfallId(name)
+        ? await buscarCartaPorId(name, options)
+        : await buscarCartaPorNome(name, options);
       resultsByName.set(normalizeNameKey(name), card);
     }
   }
