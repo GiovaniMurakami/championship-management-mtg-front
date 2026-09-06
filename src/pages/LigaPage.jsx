@@ -113,10 +113,6 @@ export function LigaPage() {
               <div className="relative z-[1] pointer-events-none min-h-24 overflow-hidden border-b border-line-soft bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center">
                 {liga.bannerUrl && <img src={liga.bannerUrl} alt={`Banner da liga ${liga.nome}`} className="block h-auto w-full" />}
                 <div className="absolute -right-4 -bottom-8 text-[6rem] font-bold leading-none text-white/[0.035]">L</div>
-                <div className="relative px-4 py-3 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[#d9b4ff]">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a74fff] shadow-[0_0_10px_#a74fff]" />
-                  {liga.tipo === "times" ? "Liga por times" : "Liga individual"}
-                </div>
               </div>
               <div className="relative z-[1] pointer-events-none px-4 pt-4 pb-3 flex-1">
                 <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
