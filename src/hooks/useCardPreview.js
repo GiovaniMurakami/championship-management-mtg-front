@@ -26,6 +26,7 @@ export function useCardPreview() {
       return;
     }
 
+    setPreviewCard(null);
     const seq = ++seqRef.current;
     const carregar = isScryfallId(nome) ? buscarCartaPorId : buscarCartaPorNome;
     if (card?.imagem) setPreviewCard({ imagem: card.imagem, nome: "" });

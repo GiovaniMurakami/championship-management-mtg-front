@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { InlineAlert } from "../components/ui/InlineAlert";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { usePageTitle } from "../hooks/usePageTitle";

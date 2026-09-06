@@ -1,20 +1,14 @@
+import { formatCardName } from "../../utils/cardName";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useScryfallArt } from "../../hooks/useScryfallArt";
 import { MetagameManaPips } from "./MetagameManaPips";
 
-function formatarNomeCarta(nome) {
-  if (!nome) return "";
-  return nome
-    .split(" ")
-    .map((parte) => (parte ? parte.charAt(0).toUpperCase() + parte.slice(1) : parte))
-    .join(" ");
-}
 
 export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, onCardMouseEnter, onCardMouseLeave }) {
   const cardRef = useRef(null);
-  const [shouldLoadArt, setShouldLoadArt] = useState(false);
-  const { imagem } = useScryfallArt(arquetipo.cartaRepresentativa, { enabled: shouldLoadArt });
+  const [shouldLoadArt, setShouldLoadArt] = useState(() => typeof IntersectionObserver === "undefined");
+  const { imagem, retry } = useScryfallArt(arquetipo.cartaRepresentativa, { enabled: shouldLoadArt });
   const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}`;
   const cartasChave = (arquetipo.cartasChave || []).slice(0, 3);
 
@@ -34,19 +28,19 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
     <Link
       ref={cardRef}
       to={to}
-      onMouseEnter={() => setShouldLoadArt(true)}
+      onMouseEnter={() => { setShouldLoadArt(true); if (!imagem) retry(); }}
       onFocus={() => setShouldLoadArt(true)}
       className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-line-soft bg-[rgba(18,12,32,0.72)] hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
     >
       <div
         className="aspect-[16/9] overflow-hidden bg-[rgba(20,12,36,0.9)]"
         onMouseEnter={() => {
-          if (arquetipo.cartaRepresentativa) onCardMouseEnter?.({ nome: arquetipo.cartaRepresentativa, imagem });
+          if (arquetipo.cartaRepresentativa) onCardMouseEnter?.({ nome: arquetipo.cartaRepresentativa });
         }}
         onMouseLeave={onCardMouseLeave}
       >
         {imagem ? (
-          <img src={imagem} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover object-top" />
+          <img src={imagem} alt="" loading="lazy" decoding="async" onError={retry} className="w-full h-full object-cover object-top" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#3b1d66] to-[#1a102c]" />
         )}
@@ -66,14 +60,17 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
           {cartasChave.map((carta) => (
             <li
               key={carta}
+              tabIndex={0}
               className="truncate cursor-default hover:text-text-main"
+              onFocus={() => onCardMouseEnter?.({ nome: carta })}
+              onBlur={onCardMouseLeave}
               onMouseEnter={(event) => {
                 event.preventDefault();
                 onCardMouseEnter?.({ nome: carta });
               }}
               onMouseLeave={onCardMouseLeave}
             >
-              {formatarNomeCarta(carta)}
+              {formatCardName(carta)}
             </li>
           ))}
         </ul>

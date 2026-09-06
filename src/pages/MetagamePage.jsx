@@ -8,7 +8,7 @@ import { MetagameArchetypeCard, MetagameFormatNav, MetagamePeriodoSelect, Metaga
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { TOURNAMENT_FORMATS, getTournamentFormatLabel } from "../constants/tournament";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { useMetagameDeckColors } from "../hooks/useMetagameDeckColors";
+import { coresDoDeck, nomesCartasParaCores } from "../utils/deckColors";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { logError } from "../utils/logger";
@@ -73,7 +73,7 @@ export function MetagamePage() {
   const data = loading ? null : result.data;
   const erro = loading ? "" : result.erro;
   const recentes = data?.recentes ?? [];
-  const { cores: coresPorSlug, carregando: carregandoCores } = useMetagameDeckColors(data?.arquetipos, formato);
+
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
 
   useEffect(() => () => closeCardPreview(), [closeCardPreview]);
@@ -137,8 +137,7 @@ export function MetagamePage() {
                     arquetipo={arquetipo}
                     formato={formato}
                     dias={dias}
-                    colors={coresPorSlug[arquetipo.slug]}
-                    colorsLoading={carregandoCores}
+                    colors={arquetipo.cores || coresDoDeck(nomesCartasParaCores(arquetipo, formato))}
                     onCardMouseEnter={openCardPreview}
                     onCardMouseLeave={closeCardPreview}
                   />

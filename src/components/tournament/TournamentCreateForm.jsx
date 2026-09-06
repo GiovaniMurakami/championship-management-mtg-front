@@ -27,6 +27,7 @@ const INITIAL_FORM = {
   corteTop: "",
   linkBanner: "",
   somRodada: "",
+  playerPoints: "", tix: "",
   linkLive: "",
   secreto: false,
   exibirNomeJogador: "nome",
@@ -143,7 +144,8 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         regras: optionalTrimmed(sanitizeText(createForm.regras)),
         linkBanner: optionalTrimmed(createForm.linkBanner),
         somRodada: optionalTrimmed(createForm.somRodada),
-        linkLive: optionalTrimmed(createForm.linkLive),
+        premio: { playerPoints: Number(createForm.playerPoints || 0), tix: Number(createForm.tix || 0) },
+      linkLive: optionalTrimmed(createForm.linkLive),
         ...(bannerUrl ? { bannerUrl } : {}),
         ...(storyFundoUrl ? { storyFundoUrl } : {}),
         storyFundoTextoRodape,
@@ -306,7 +308,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
 
               {bannerPreview ? (
                 <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
-                  <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[180px] object-cover" />
+                  <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[180px] object-contain" />
                   <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-md py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isSubmitting} aria-label="Remover banner">
                     X Remover
                   </button>
@@ -389,6 +391,8 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               />
             </div>
 
+            <label className="flex flex-col gap-2 text-text-main">Prêmio · Player Points<input name="playerPoints" type="number" min="0" step="1" value={createForm.playerPoints} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} /></label>
+            <label className="flex flex-col gap-2 text-text-main">Prêmio · Tix<input name="tix" type="number" min="0" step="any" value={createForm.tix} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} /></label>
             <div className="flex flex-col gap-2">
               <label htmlFor="linkLive" className="text-[#e0e0e0] font-medium text-[0.95rem]">Live no YouTube <span className="text-text-soft text-[0.82rem]">(opcional)</span></label>
               <input id="linkLive" name="linkLive" type="url" placeholder="https://youtube.com/watch?v=..." value={createForm.linkLive} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} />

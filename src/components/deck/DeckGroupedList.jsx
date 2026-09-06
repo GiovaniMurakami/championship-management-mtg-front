@@ -1,3 +1,4 @@
+import { formatCardName } from "../../utils/cardName";
 import {
   DECK_TYPE_LABELS,
   MANA_COLOR_MAP,
@@ -29,7 +30,7 @@ function CardRow({ card, muted = false, onCardMouseEnter, onCardMouseLeave }) {
           muted ? "text-text-soft group-hover:text-[#e8d5ff]" : "text-[#e8d5ff]"
         }`}
       >
-        {card.nome}
+        {formatCardName(card.nome)}
       </span>
       <span
         className={`text-[0.8rem] font-bold flex-shrink-0 tabular-nums ${

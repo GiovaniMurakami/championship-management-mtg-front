@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildVisualCanvas,
   fetchCardImg,
   loadCardImagesForDeck,
   mapWithConcurrency,
@@ -94,5 +95,22 @@ describe("deckImageCanvas image loading", () => {
     expect(images).toHaveLength(2);
     expect(images.every(Boolean)).toBe(true);
     expect(progress.at(-1)).toEqual([2, 2]);
+  });
+});
+
+describe("deckImageCanvas sideboard", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it.each(["16x9", "9x16"])("desenha todas as cópias sem o selo de quantidade em %s", (ratio) => {
+    const gradient = { addColorStop: vi.fn() };
+    const ctx = new Proxy({
+      measureText: vi.fn(() => ({ width: 40 })),
+      createLinearGradient: vi.fn(() => gradient),
+      createRadialGradient: vi.fn(() => gradient),
+    }, { get(target, key) { return target[key] ?? (target[key] = vi.fn()); } });
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx);
+    const img = { width: 488, height: 680 };
+    buildVisualCanvas({ nome: "Deck", formato: "pauper", maindeck: [], sideboard: [{ nome: "Negate", quantidade: 4 }] }, { Negate: { img } }, "Jogador", ratio);
+    expect(ctx.drawImage.mock.calls.filter(([image]) => image === img)).toHaveLength(4);
+    expect(ctx.fillText.mock.calls.some(([text]) => /[×x]\s*4|4\s*[×x]/.test(String(text)))).toBe(false);
   });
 });

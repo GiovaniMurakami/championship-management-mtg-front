@@ -84,7 +84,7 @@ export function LigaCreatePage({ editMode = false }) {
         const liga = ligaData.liga || ligaData;
         setForm({ nome: liga.nome || "", descricao: liga.descricao || "", tipo: liga.tipo || "individual" });
         setBannerPreview(liga.bannerUrl || null);
-        const ids = (liga.torneios || []).map((t) => t.id ?? t);
+        const ids = (liga.torneioIds || liga.torneios || []).map((t) => t.id ?? t);
         setTorneiosSelecionados(ids.map(String));
       }
     } catch (err) {
@@ -265,7 +265,7 @@ export function LigaCreatePage({ editMode = false }) {
                 <span className={FORM_LABEL_CLASS}>Banner da liga <span className="normal-case tracking-normal font-normal text-text-muted">(opcional)</span></span>
                 {bannerPreview ? (
                   <div className="grid gap-3">
-                    <img src={bannerPreview} alt="Preview do banner da liga" className="h-36 w-full rounded-xl border border-[rgba(199,149,255,0.3)] object-cover" />
+                    <img src={bannerPreview} alt="Preview do banner da liga" className="h-36 w-full rounded-xl border border-[rgba(199,149,255,0.3)] object-contain" />
                     <div className="flex gap-2">
                       <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={loading} className={BTN_SECONDARY}>Trocar imagem</button>
                       <button type="button" onClick={handleRemoveBanner} disabled={loading} className="px-4 py-2 rounded-lg border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.07)] text-[#fca5a5] font-semibold hover:bg-[rgba(239,68,68,0.16)] disabled:opacity-50">Remover</button>

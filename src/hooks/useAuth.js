@@ -1,2 +1,6 @@
-// Re-exporta useAuth a partir do AuthContext  inst�ncia �nica compartilhada via Context.
-export { useAuth } from "../context/AuthContext";
+import { useContext } from "react";
+import { AuthContext } from "../context/authContextStore";
+
+export function useAuth() {
+  return useContext(AuthContext);
+}

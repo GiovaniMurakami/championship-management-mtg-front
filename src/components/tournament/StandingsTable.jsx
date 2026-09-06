@@ -1,6 +1,7 @@
 import { Fragment, useState } from "react";
 import { Top8StoryModal } from "./Top8StoryModal";
-import { DeckViewButton, RANK_BADGE } from "./DeckDrawer";
+import { DeckViewButton } from "./DeckDrawer";
+import { RANK_BADGE } from "../../constants/rankBadge";
 import { Tooltip } from "../ui/Tooltip";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 

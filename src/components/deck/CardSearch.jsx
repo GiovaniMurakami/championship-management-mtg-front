@@ -1,3 +1,4 @@
+import { formatCardName } from "../../utils/cardName";
 import { useEffect } from "react";
 
 export function CardSearch({
@@ -69,12 +70,12 @@ export function CardSearch({
                 {card.imagem ? (
                   <img
                     src={card.imagem}
-                    alt={card.nome}
+                    alt={formatCardName(card.nome)}
                     className="w-9 h-12 object-cover rounded flex-shrink-0"
                   />
                 ) : null}
                 <span className="flex flex-col min-w-0">
-                  <strong className="truncate">{card.nome}</strong>
+                  <strong className="truncate">{formatCardName(card.nome)}</strong>
                   <small className="text-[rgba(217,180,255,0.6)] truncate">{card.set}</small>
                 </span>
               </button>

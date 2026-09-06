@@ -170,9 +170,9 @@ export function ReviewRoundModal({
   const canAdvance = true;
   const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
 
-  const handleNextRound = async () => {
-    await onNextRound();
-    onClose();
+  const handleNextRound = async (rodadaExtra = false) => {
+    const ok = await onNextRound(rodadaExtra);
+    if (ok !== false) onClose();
   };
 
   return (
@@ -334,10 +334,16 @@ export function ReviewRoundModal({
               <button type="button" className={`${btnBase} ${btnGhost}`} onClick={() => setStep("mesas")}>
                 ← Voltar
               </button>
+              {nextRoundLabels.action === "finish-tournament" && Number(torneio?.totalRodadas) < 30 && (
+                <button type="button" className={`${btnBase} ${btnPrimary}`} disabled={actionLoading || !allDone}
+                  onClick={() => handleNextRound(true)} title={!allDone ? "Finalize todas as partidas da rodada atual" : undefined}>
+                  Jogar mais uma rodada
+                </button>
+              )}
               <button
                 type="button"
                 className={`${btnBase} ${canAdvance ? btnPrimary : btnDisabled}`}
-                onClick={handleNextRound}
+                onClick={() => handleNextRound()}
                 disabled={actionLoading || !canAdvance}
               >
                 {actionLoading

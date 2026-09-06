@@ -120,7 +120,7 @@ function normalizeCard(card) {
 async function fetchJson(url, options = {}) {
   const { signal, headers, ...rest } = options;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let timeoutId;
 
   const forwardAbort = () => controller.abort();
   if (signal) {
@@ -133,14 +133,17 @@ async function fetchJson(url, options = {}) {
   }
 
   try {
-    const response = await enqueueScryfallRequest(() => fetch(url, {
-      ...rest,
-      headers: {
-        Accept: "application/json",
-        ...headers,
-      },
-      signal: controller.signal,
-    }));
+    const response = await enqueueScryfallRequest(() => {
+      timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      return fetch(url, {
+        ...rest,
+        headers: {
+          Accept: "application/json",
+          ...headers,
+        },
+        signal: controller.signal,
+      });
+    });
 
     if (!response.ok) {
       return null;

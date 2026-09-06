@@ -110,9 +110,10 @@ export function LigaPage() {
               className="group relative bg-surface/80 rounded-2xl border border-line-soft shadow-card transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
             >
               <button type="button" aria-label={`Abrir liga ${liga.nome}`} className="absolute inset-0 z-0 cursor-pointer border-0 bg-transparent" onClick={() => navigate(`/ligas/${liga.id}`)} />
-              <div className="relative z-[1] pointer-events-none h-24 overflow-hidden border-b border-line-soft bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center" style={liga.bannerUrl ? { backgroundImage: `linear-gradient(to top, rgba(18,12,32,.9), rgba(18,12,32,.12)), url(${liga.bannerUrl})` } : undefined}>
+              <div className="relative z-[1] pointer-events-none min-h-24 overflow-hidden border-b border-line-soft bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center">
+                {liga.bannerUrl && <img src={liga.bannerUrl} alt={`Banner da liga ${liga.nome}`} className="block h-auto w-full" />}
                 <div className="absolute -right-4 -bottom-8 text-[6rem] font-bold leading-none text-white/[0.035]">L</div>
-                <div className="absolute left-4 bottom-3 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[#d9b4ff]">
+                <div className="relative px-4 py-3 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[#d9b4ff]">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a74fff] shadow-[0_0_10px_#a74fff]" />
                   {liga.tipo === "times" ? "Liga por times" : "Liga individual"}
                 </div>

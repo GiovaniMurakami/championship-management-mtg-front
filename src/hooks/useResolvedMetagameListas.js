@@ -16,11 +16,10 @@ export function useResolvedMetagameListas(listas) {
   const origem = Array.isArray(listas) ? listas : [];
   const nomes = nomesDasListas(origem);
   const chave = `${origem.map((lista) => `${lista.deckId}:${lista.torneioId}`).join(",")}:${nomes.join("|")}`;
-  const [resolvidas, setResolvidas] = useState({ chave: "", listas: origem });
+  const [resolvidas, setResolvidas] = useState({ chave: "", porNome: new Map() });
 
   useEffect(() => {
     if (nomes.length === 0) {
-      setResolvidas({ chave, listas: origem });
       return undefined;
     }
 
@@ -34,11 +33,11 @@ export function useResolvedMetagameListas(listas) {
         });
         setResolvidas({
           chave,
-          listas: origem.map((lista) => enriquecerLista(lista, porNome)),
+          porNome,
         });
       })
       .catch(() => {
-        if (!cancelled) setResolvidas({ chave, listas: origem });
+        if (!cancelled) setResolvidas({ chave, porNome: new Map() });
       });
 
     return () => {
@@ -48,6 +47,6 @@ export function useResolvedMetagameListas(listas) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
 
-  const carregando = resolvidas.chave !== chave;
-  return { listas: carregando ? origem : resolvidas.listas, carregando };
+  const carregando = nomes.length > 0 && resolvidas.chave !== chave;
+  return { listas: carregando ? origem : origem.map(lista => enriquecerLista(lista, resolvidas.porNome)), carregando };
 }

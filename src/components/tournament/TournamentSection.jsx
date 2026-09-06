@@ -84,7 +84,7 @@ export function TournamentSection() {
             const formato = item.formato || "—";
             const cor = getFormatColor(formato);
             const data = item.horario ? formatDate(item.horario) : "—";
-            const descricao = item.descricao || item.premio || null;
+            const descricao = item.descricao || (typeof item.premio === "string" ? item.premio : "") || null;
             const status = item.status;
             const banner = item.bannerUrl || null;
 
@@ -103,7 +103,7 @@ export function TournamentSection() {
                       alt={`Banner de ${item.nome}`}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/45" />
                     {/* Accent bar over banner */}

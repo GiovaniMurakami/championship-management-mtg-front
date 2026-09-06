@@ -105,8 +105,8 @@ export const listarUsuarios = (token, params = {}) =>
     params,
   });
 
-export const buscarPerfilPublico = (usuarioId) =>
-  httpClient.get(`/usuario/${usuarioId}/perfil`);
+export const buscarPerfilPublico = (usuarioId, paginaPartidasExternas = 1) =>
+  httpClient.get(`/usuario/${usuarioId}/perfil`, { params: { paginaPartidasExternas } });
 
 export const alterarBloqueioTorneios = (usuarioId, payload, token) =>
   httpClient.put(`/usuario/${usuarioId}/bloqueio-torneios`, payload, {
@@ -518,3 +518,6 @@ export const uploadParaS3 = (uploadUrl, file, onProgress) =>
     xhr.onerror = () => reject(Object.assign(new Error("Erro de CORS ao enviar para o S3"), { code: "s3-upload-cors" }));
     xhr.send(file);
   });
+
+export const registrarPartidaExterna = (payload, token) =>
+  httpClient.post("/usuario/partidas-externas", payload, { headers: { Authorization: `Bearer ${token}` } });

@@ -93,7 +93,7 @@ export function SponsorSection() {
             <img
               src={slide.imagemUrl}
               alt={slide.titulo || "Anúncio"}
-              className="h-[180px] w-full object-cover max-[600px]:h-[130px]"
+              className="h-[180px] w-full object-contain max-[600px]:h-[130px]"
             />
           </a>
         ) : (

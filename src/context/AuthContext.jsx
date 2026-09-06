@@ -1,5 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   loginUsuario,
   cadastrarUsuario,
@@ -15,7 +14,7 @@ import {
   isAccessTokenExpiredOrExpiring,
 } from "../services/httpClient";
 
-export const AuthContext = createContext(null);
+import { AuthContext } from "./authContextStore";
 
 export function AuthProvider({ children }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -400,8 +399,3 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
-

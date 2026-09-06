@@ -13,6 +13,7 @@ import {
     ajustarResultado,
     gerarLinkIngresso,
     proximaRodada,
+    ajustarTotalRodadas,
     encerrarTorneio,
     refazerRodada,
     dropJogador,
@@ -479,6 +480,11 @@ export function useTournamentDetail() {
                     : `${usuarioNome || "Jogador"} entrou no torneio.`;
                 showToast(toastMsg, "success");
             },
+            onTorneioAtualizado: () => {
+                loadTournament();
+                loadStandings();
+                loadPartidas();
+            },
             onTotalRodadasAlterado: (msg) => {
                 const data = msg?.data || {};
                 setTorneio((prev) => prev ? { ...prev, totalRodadas: data.totalRodadas } : prev);
@@ -852,7 +858,7 @@ export function useTournamentDetail() {
 
     const enforceNextRoundCheckin = false;
 
-    const handleNextRound = async () => {
+    const handleNextRound = async (rodadaExtra = false) => {
         if (!torneioId || !canManageTournament) return;
         if (enforceNextRoundCheckin && requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
             const total = pendingCheckinPlayers.length;
@@ -866,6 +872,16 @@ export function useTournamentDetail() {
         setAdminActionKey("next-round");
         setError("");
         try {
+            if (rodadaExtra === true) {
+                if (nextRoundAction !== "finish-tournament" || torneio.emCorte) return false;
+                const atual = Number(torneio.rodadaAtual);
+                const mesas = partidas.filter((p) => Number(p.rodada) === atual);
+                if (!mesas.length || mesas.some((p) => p.status !== "finalizada")) {
+                    throw new Error("Finalize todas as partidas antes de jogar mais uma rodada.");
+                }
+                const atualizado = await ajustarTotalRodadas(torneioId, atual + 1, token);
+                setTorneio((prev) => ({ ...prev, totalRodadas: atualizado.totalRodadas }));
+            }
             const actionBeforeRequest = nextRoundAction;
             const data = await proximaRodada(torneioId, token);
             if (data?.finalizado) {
@@ -892,9 +908,11 @@ export function useTournamentDetail() {
             await loadStandings();
             await loadPartidas();
             clearMessages();
+            return true;
         } catch (err) {
             setError(err.message || "Erro ao avançar para a próxima rodada.");
             clearMessages();
+            return false;
         } finally {
             setActionLoading(false);
             setAdminActionKey("");
@@ -1191,9 +1209,11 @@ export function useTournamentDetail() {
             setSuccessMsg("Torneio atualizado com sucesso!");
             await loadTournament();
             clearMessages();
+            return true;
         } catch (err) {
             setError(err.message || "Erro ao atualizar torneio.");
             clearMessages();
+            return false;
         } finally {
             setActionLoading(false);
         }

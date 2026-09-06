@@ -1,3 +1,4 @@
+import mukaLogo from "../../assets/muka.png";
 import { Skeleton } from "../ui/Skeleton";
 import { getTournamentFormatLabel } from "../../constants/tournament";
 import { ExpandableText } from "./ExpandableText";
@@ -62,6 +63,7 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
   }
 
   const statusCfg = STATUS_CONFIG[torneio?.status] || DEFAULT_STATUS;
+  const temPremio = Number(torneio?.premio?.playerPoints) > 0 || Number(torneio?.premio?.tix) > 0;
 
   return (
     <div className={`mb-8 max-[480px]:mb-5 ${className}`}>
@@ -109,6 +111,35 @@ export function TournamentHeader({ torneio, loading, className = "" }) {
             labelClassName="text-[0.72rem] uppercase tracking-[0.08em] font-semibold"
             toggleTextClassName="text-[#7dd3fc]"
           />
+        </div>
+      )}
+
+      {torneio && (
+        <div className={`mb-4 grid grid-cols-1 items-stretch gap-3 ${temPremio ? "max-w-[640px] sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]" : "max-w-[380px]"}`}>
+          {temPremio && <section aria-label="Premiação" className="flex min-h-[104px] min-w-0 flex-col justify-center gap-3 rounded-xl border border-amber-300/20 bg-gradient-to-br from-amber-300/[0.07] to-surface px-4 py-3">
+            <h2 className="m-0 text-[0.65rem] font-semibold uppercase tracking-widest text-amber-200/80">Premiação</h2>
+            <dl className="m-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              {[
+                { label: "Player Points", shortLabel: "PP", value: torneio.premio.playerPoints },
+                { label: "Tix", shortLabel: "Tix", value: torneio.premio.tix },
+              ].filter(({ value }) => Number(value) > 0).map(({ label, shortLabel, value }, index) => (
+                <div key={label} className="flex min-w-0 items-baseline gap-1.5">
+                  {index > 0 && <span aria-hidden="true" className="mr-1 text-amber-200/40">·</span>}
+                  <dt className="sr-only">{label}</dt>
+                  <dd className="m-0 break-words text-xl font-semibold tracking-tight text-amber-100 tabular-nums">
+                    {Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 8 })}
+                    <span aria-hidden="true" className="ml-1.5 text-sm font-medium text-amber-200/75">{shortLabel}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>}
+          <section aria-label="Apoio" className="flex min-h-[104px] min-w-0 flex-col rounded-xl border border-purple-300/30 bg-gradient-to-br from-[#30203f] to-[#191022] px-4 py-2.5 shadow-[0_4px_18px_rgba(167,79,255,0.12)]">
+            <h2 className="m-0 text-[0.6rem] font-semibold uppercase tracking-widest text-purple-200/80">Apoio</h2>
+            <a href="https://www.mukatraders.com.br/" target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center rounded transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-brand">
+              <img src={mukaLogo} alt="Muka Traders" className="h-16 w-56 max-w-full object-contain" loading="lazy" />
+            </a>
+          </section>
         </div>
       )}
 

@@ -97,8 +97,9 @@ export function MetagameListaCard({
         </div>
       </header>
 
-      {expandida ? (
+      {expandida || (isAdmin && onSalvarNome) ? (
         <div className="px-4 py-4 flex flex-col gap-4">
+          {expandida && <>
           <DeckTypeBadges grouped={grouped} />
           <DeckGroupedList
             maindeck={maindeck}
@@ -107,6 +108,7 @@ export function MetagameListaCard({
             onCardMouseEnter={onCardMouseEnter}
             onCardMouseLeave={onCardMouseLeave}
           />
+          </>}
           {isAdmin && onSalvarNome && (
             <MetagameNomeConsolidadoEditor
               key={`${lista.deckId}-${lista.nomeConsolidado || ""}`}

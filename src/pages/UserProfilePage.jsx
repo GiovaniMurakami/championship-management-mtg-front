@@ -1,34 +1,42 @@
+import { FormFeedback } from "../components/ui/FormFeedback";
+import { ExternalMatchModal } from "../components/ui/ExternalMatchModal";
+import { BTN_PRIMARY } from "../styles/uiClasses";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { EmptyState, PageShell, SkeletonUserProfile } from "../components";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { buscarPerfilPublico } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { CompetitiveStats } from "../components/ui/CompetitiveStats";
 import { tournamentPath } from "../utils/tournamentUrl";
 import { deckPath } from "../utils/deckUrl";
 
 export function UserProfilePage() {
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedPage = Number(searchParams.get("partidasPagina") || 1);
+  const paginaPartidas = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const [showExternalMatch, setShowExternalMatch] = useState(false);
+  const [matchMessage, setMatchMessage] = useState("");
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deckImages, setDeckImages] = useState({});
   const [photoLoading, setPhotoLoading] = useState(false);
   const [photoMessage, setPhotoMessage] = useState("");
-  const { usuario: usuarioLogado, handleProfilePhoto } = useAuth();
+  const { usuario: usuarioLogado, handleProfilePhoto, token } = useAuth();
   usePageTitle(perfil?.usuario?.nome || PAGE_TITLES.perfilUsuario);
 
   useEffect(() => {
     let active = true;
-    buscarPerfilPublico(id)
+    buscarPerfilPublico(id, paginaPartidas)
       .then((data) => active && setPerfil(data))
       .catch((err) => active && setError(err.message || "Não foi possível carregar o perfil."))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
-  }, [id]);
+  }, [id, paginaPartidas]);
 
   useEffect(() => {
     const decks = perfil?.decks || [];
@@ -37,7 +45,7 @@ export function UserProfilePage() {
     let active = true;
     buscarCartasPorNome(withCard.map((deck) => deck.cartaFundo)).then((cards) => {
       if (!active) return;
-      setDeckImages(Object.fromEntries(cards.map((card, index) => card?.imagem ? [withCard[index].id, card.artCrop || card.imagem] : null).filter(Boolean)));
+      setDeckImages(Object.fromEntries(cards.map((card, index) => card?.artCrop ? [withCard[index].id, card.artCrop] : null).filter(Boolean)));
     });
     return () => { active = false; };
   }, [perfil]);
@@ -53,7 +61,7 @@ export function UserProfilePage() {
     </PageShell>
   );
 
-  const { usuario, estatisticas, decks, ultimosTorneios = [] } = perfil;
+  const { usuario, estatisticas, decks, paginacaoPartidasExternas, partidasExternas = [], ultimosTorneios = [] } = perfil;
   const isOwnProfile = String(usuarioLogado?.id || "") === String(usuario.id);
   const uploadPhoto = async (event) => {
     const file = event.target.files?.[0];
@@ -94,12 +102,54 @@ export function UserProfilePage() {
             {usuario.nickArena && <span className="rounded-full bg-white/[0.07] px-2.5 py-1">Arena · {usuario.nickArena}</span>}
             <span className="rounded-full bg-white/[0.07] px-2.5 py-1">Desde {new Date(usuario.criadoEm).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}</span>
           </div>
-          {isOwnProfile && <p className={`mb-0 mt-2 text-xs ${photoMessage === "Foto atualizada" ? "text-emerald-300" : "text-text-subtle"}`}>{photoMessage || "Clique na foto para alterar · recomendado: 512 × 512 px"}</p>}
+          {isOwnProfile && <><FormFeedback message={photoMessage} /><p className="mb-0 mt-2 text-xs text-text-subtle">Clique na foto para alterar · recomendado: 512 × 512 px</p></>}
         </div>
         </div>
       </section>
 
+      {isOwnProfile && <div className="mb-4 flex flex-wrap items-center gap-3">
+        <button type="button" className={BTN_PRIMARY} onClick={() => { setMatchMessage(""); setShowExternalMatch(true); }}>Adicionar partida externa</button>
+        <FormFeedback message={matchMessage} variant="info" />
+      </div>}
+      {isOwnProfile && showExternalMatch && <ExternalMatchModal token={token} onClose={() => setShowExternalMatch(false)} onSaved={async () => {
+        setShowExternalMatch(false);
+        setMatchMessage("Partida adicionada.");
+        try {
+          setPerfil(await buscarPerfilPublico(id, 1));
+          setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete("partidasPagina"); return next; }, { replace: true });
+        }
+        catch { setMatchMessage("Partida salva. Atualize a página para ver as estatísticas."); }
+      }} />}
       <CompetitiveStats stats={estatisticas} expressiveResults={usuario.resultadosExpressivos ?? 0} className="mb-10" />
+
+      <section className="mb-12" aria-labelledby="external-matches-title">
+        <h2 id="external-matches-title" className="m-0 text-[1.55rem] font-semibold text-text-main">Partidas externas</h2>
+        <p className="mb-5 mt-1 text-sm text-text-subtle">Resultados informados pelo jogador. Contam apenas nas estatísticas deste perfil.</p>
+        {partidasExternas.length === 0 ? (
+          <p className="rounded-2xl border border-line-soft bg-surface/60 p-5 text-sm text-text-soft">Nenhuma partida externa registrada.</p>
+        ) : (
+          <ul className="m-0 list-none divide-y divide-line-soft rounded-2xl border border-line-soft bg-surface/60 p-0">
+            {partidasExternas.map((partida) => (
+              <li key={partida.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="m-0 break-words text-sm text-text-main">{partida.oponente ? `Contra ${partida.oponente}` : "Oponente não informado"}</p>
+                  <p className="m-0 mt-1 text-xs text-text-soft">{partida.deckNome || "Deck não informado"} × {partida.deckAdversarioNome || "Deck adversário não informado"}</p>
+                  {partida.campeonato && <p className="m-0 mt-1 break-words text-xs text-text-soft">Campeonato: {partida.campeonato}</p>}
+                  <time dateTime={partida.data} className="text-xs text-text-subtle">{partida.data.split("-").reverse().join("/")}</time>
+                </div>
+                <span className={`text-sm font-semibold ${partida.resultado === "vitoria" ? "text-emerald-300" : partida.resultado === "derrota" ? "text-red-300" : "text-text-soft"}`}>
+                  {{ vitoria: "Vitória", derrota: "Derrota", empate: "Empate" }[partida.resultado]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {paginacaoPartidasExternas?.totalPaginas > 1 && <nav aria-label="Paginação das partidas externas" className="mt-4 flex items-center justify-between gap-3 text-sm text-text-soft">
+          <button type="button" className="rounded-lg border border-line px-3 py-2 disabled:opacity-40" disabled={paginacaoPartidasExternas.pagina <= 1} onClick={() => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set("partidasPagina", String(paginacaoPartidasExternas.pagina - 1)); return next; })}>Anterior</button>
+          <span>Página {paginacaoPartidasExternas.pagina} de {paginacaoPartidasExternas.totalPaginas} · {paginacaoPartidasExternas.total} partidas</span>
+          <button type="button" className="rounded-lg border border-line px-3 py-2 disabled:opacity-40" disabled={paginacaoPartidasExternas.pagina >= paginacaoPartidasExternas.totalPaginas} onClick={() => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set("partidasPagina", String(paginacaoPartidasExternas.pagina + 1)); return next; })}>Próxima</button>
+        </nav>}
+      </section>
 
       <section className="mb-12">
         <div className="mb-5">

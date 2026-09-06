@@ -70,8 +70,6 @@ export function TournamentDetailPage() {
     selectedTimeId,
     setSelectedTimeId,
     loadPartidas,
-    realtimeToast,
-    dismissRealtimeToast,
     corteInfo,
     dismissCorteInfo,
     usuario,
@@ -81,7 +79,7 @@ export function TournamentDetailPage() {
   const isFinished = torneio?.status === "finalizado";
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
-  const canManage = canManageTournament && isRegistrationOpen;
+  const canManage = canManageTournament && (isRegistrationOpen || torneio?.status === "em_andamento");
 
   const torneioNome = torneio?.nome || torneio?.torneioNome;
   usePageTitle(torneioNome, {
@@ -97,8 +95,8 @@ export function TournamentDetailPage() {
   };
 
   const handleEditSubmit = async (payload) => {
-    await handleEditTorneio(payload);
-    setShowEditModal(false);
+    const ok = await handleEditTorneio(payload);
+    if (ok) setShowEditModal(false);
   };
 
   const handleDeleteConfirmed = async (_confirmName, closeModal) => {
@@ -134,12 +132,12 @@ export function TournamentDetailPage() {
             >
               Editar torneio
             </button>
-            <button
+            {isRegistrationOpen && <button
               className="px-4 py-2 border border-[rgba(239,68,68,0.5)] rounded-lg bg-[rgba(239,68,68,0.08)] text-[#fca5a5] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(239,68,68,0.25)] hover:text-white max-md:flex-1"
               onClick={() => setShowDeleteConfirm(true)}
             >
               Excluir torneio
-            </button>
+            </button>}
           </div>
         )}
       </div>
@@ -335,28 +333,6 @@ export function TournamentDetailPage() {
               Entendido!
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Realtime toast */}
-      {realtimeToast && (
-        <div
-          className={`fixed bottom-6 right-6 z-[200] max-w-[340px] flex items-start gap-3 px-4 py-3 rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.5)] border animate-[slide-up_300ms_ease-out] max-md:left-4 max-md:right-4 max-md:bottom-4 max-md:max-w-none ${realtimeToast.type === "error"
-            ? "bg-[rgba(239,68,68,0.16)] border-[rgba(248,113,113,0.5)] text-[#fca5a5]"
-            : realtimeToast.type === "success"
-            ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.45)] text-[#86efac]"
-            : realtimeToast.type === "warning"
-              ? "bg-[rgba(251,191,36,0.13)] border-[rgba(251,191,36,0.45)] text-[#fde68a]"
-              : "bg-[rgba(56,189,248,0.12)] border-[rgba(56,189,248,0.4)] text-[#7dd3fc]"
-            }`}
-        >
-          <span className="text-[0.88rem] font-semibold leading-snug flex-1">{realtimeToast.msg}</span>
-          <button
-            type="button"
-            className="text-inherit opacity-60 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-[1rem] leading-none flex-shrink-0"
-            onClick={dismissRealtimeToast}
-            aria-label="Fechar"
-          >✕</button>
         </div>
       )}
 

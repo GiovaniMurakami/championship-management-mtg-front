@@ -48,6 +48,8 @@ export function useTournamentQueries({ torneioId, token, enabled = true }) {
   const tournamentQuery = useQuery({
     queryKey: [...tournamentQueryKeys.detail(torneioId), Boolean(token)],
     queryFn: () => buscarTorneio(torneioId, token),
+    // Permissões e estado podem mudar enquanto o usuário está em outra página.
+    refetchOnMount: "always",
     enabled: canFetch,
   });
   const resolvedId = tournamentQuery.data?.id;
@@ -55,12 +57,14 @@ export function useTournamentQueries({ torneioId, token, enabled = true }) {
   const standingsQuery = useQuery({
     queryKey: [...tournamentQueryKeys.standings(resolvedId), Boolean(token)],
     queryFn: () => getStandings(resolvedId, token),
+    refetchOnMount: "always",
     enabled: Boolean(canFetch && resolvedId),
   });
 
   const matchesQuery = useQuery({
     queryKey: [...tournamentQueryKeys.matches(resolvedId), Boolean(token)],
     queryFn: () => listarPartidasTorneio(resolvedId, token),
+    refetchOnMount: "always",
     enabled: Boolean(canFetch && resolvedId),
   });
 

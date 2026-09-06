@@ -1,6 +1,9 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { ToastProvider } from "../context/ToastContext";
+import { fireEvent, render as testingRender, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { OwnerControlPanel } from "../components/tournament/OwnerControlPanel";
+
+const render = (ui) => testingRender(<ToastProvider>{ui}</ToastProvider>);
 
 function createBaseProps(overrides = {}) {
     return {

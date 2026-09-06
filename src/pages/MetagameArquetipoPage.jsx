@@ -1,3 +1,4 @@
+import { useResolvedMetagameListas } from "../hooks/useResolvedMetagameListas";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { atualizarDeck, buscarArquetipoMetagame } from "../services/backendApi";
@@ -16,8 +17,7 @@ import {
   MetagameResultadosSection,
 } from "../components/metagame";
 import { useScryfallArt } from "../hooks/useScryfallArt";
-import { useMetagameDeckColors } from "../hooks/useMetagameDeckColors";
-import { useResolvedMetagameListas } from "../hooks/useResolvedMetagameListas";
+import { coresDoDeck, nomesCartasParaCores } from "../utils/deckColors";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { useAuth } from "../hooks/useAuth";
@@ -44,10 +44,10 @@ export function MetagameArquetipoPage() {
   const dias = parseDias(searchParams.get("dias"));
   const requestKey = `${formato}:${slug}:${dias}`;
   const [result, setResult] = useState({ key: "", data: null, erro: "" });
+  const [listasAbertas, setListasAbertas] = useState({ key: "", valores: {} });
   const [salvandoDeckId, setSalvandoDeckId] = useState("");
   const [salvandoArquivo, setSalvandoArquivo] = useState(false);
   const [salvandoCarta, setSalvandoCarta] = useState(false);
-  const [listaAberta, setListaAberta] = useState("");
 
   const data = result.key === requestKey ? result.data : null;
   const loading = result.key !== requestKey;
@@ -55,31 +55,19 @@ export function MetagameArquetipoPage() {
   const listUrl = `/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}`;
 
   usePageTitle(data?.nome ? `${data.nome} | Metagame` : "Metagame");
-  const { imagem } = useScryfallArt(data?.cartaRepresentativa);
-  const arquetiposCores = useMemo(() => (data ? [data] : []), [data]);
-  const { cores: coresPorSlug, carregando: carregandoCores } = useMetagameDeckColors(arquetiposCores, formato);
+  const { imagem, retry } = useScryfallArt(data?.cartaRepresentativa);
+  const cores = data?.cores || coresDoDeck(nomesCartasParaCores(data, formato));
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
-  const { listas: listasResolvidas, carregando: carregandoListas } = useResolvedMetagameListas(data?.listas);
+  const { listas: listasComCartas } = useResolvedMetagameListas(data?.listas);
   const listasOrdenadas = useMemo(
-    () => ordenarListasPorRecencia(listasResolvidas, data?.resultados),
-    [listasResolvidas, data?.resultados],
+    () => ordenarListasPorRecencia(listasComCartas, data?.resultados),
+    [listasComCartas, data?.resultados],
   );
-  const chaveListaPadrao = listasOrdenadas[0] ? chaveMetagameLista(listasOrdenadas[0]) : "";
-
   useEffect(() => () => closeCardPreview(), [closeCardPreview]);
-
-  useEffect(() => {
-    setListaAberta((atual) => {
-      if (atual && listasOrdenadas.some((lista) => chaveMetagameLista(lista) === atual)) {
-        return atual;
-      }
-      return chaveListaPadrao;
-    });
-  }, [chaveListaPadrao, listasOrdenadas]);
 
   const recarregar = useCallback(async () => {
     try {
-      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10 });
+      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false });
       setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       return true;
     } catch (err) {
@@ -110,7 +98,7 @@ export function MetagameArquetipoPage() {
 
   useEffect(() => {
     let cancelled = false;
-    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10 })
+    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false })
       .then((res) => {
         if (!cancelled) setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       })
@@ -152,19 +140,18 @@ export function MetagameArquetipoPage() {
               <img
                 src={imagem}
                 alt=""
+                loading="lazy"
+                decoding="async"
+                onError={retry}
                 className="w-[96px] h-[70px] object-cover object-top rounded-xl border border-line cursor-default"
-                onMouseEnter={() => openCardPreview({ nome: data.cartaRepresentativa, imagem })}
+                onMouseEnter={() => openCardPreview({ nome: data.cartaRepresentativa })}
                 onMouseLeave={closeCardPreview}
               />
             )}
             <div>
               <h1 className="m-0 text-white text-[2rem] font-bold flex items-center gap-2 flex-wrap">
                 {data.nome}
-                {carregandoCores ? (
-                  <span className="inline-block h-4 w-20 rounded bg-white/10 animate-pulse" aria-label="Calculando cores do deck" />
-                ) : (
-                  <MetagameManaPips colors={coresPorSlug[data.slug]} />
-                )}
+                <MetagameManaPips colors={cores} />
               </h1>
               <p className="m-0 mt-1 text-text-soft">
                 {getTournamentFormatLabel(formato)} · meta {data.metaPct}% ({data.copias}) · winrate {data.winrate}%
@@ -230,15 +217,17 @@ export function MetagameArquetipoPage() {
             {listasOrdenadas.length === 0 ? (
               <p className="text-text-soft">Nenhuma lista neste período.</p>
             ) : (
-              listasOrdenadas.map((lista) => {
+              listasOrdenadas.map((lista, index) => {
                 const chave = chaveMetagameLista(lista);
-                return carregandoListas ? (
-                    <div key={chave} className="h-64 rounded-xl border border-white/10 bg-white/[0.03] animate-pulse" aria-label="Carregando dados das cartas do deck" />
-                  ) : <MetagameListaCard
+                const expandida = listasAbertas.key === requestKey ? (listasAbertas.valores[chave] ?? index === 0) : index === 0;
+                return <MetagameListaCard
                     key={chave}
                     lista={lista}
-                    expandida={chave === listaAberta}
-                    onToggle={() => setListaAberta((atual) => (atual === chave ? "" : chave))}
+                    expandida={expandida}
+                    onToggle={() => setListasAbertas(prev => ({
+                      key: requestKey,
+                      valores: { ...(prev.key === requestKey ? prev.valores : {}), [chave]: !expandida },
+                    }))}
                     onCardMouseEnter={openCardPreview}
                     onCardMouseLeave={closeCardPreview}
                     isAdmin={Boolean(isAdmin && token)}

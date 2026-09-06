@@ -4,7 +4,7 @@ import { SkeletonDashboard } from "../components/ui/Skeleton";
 import { Tabs } from "../components/ui/Tabs";
 import { FormFeedback } from "../components/ui/FormFeedback";
 import { Switch } from "../components/ui/Switch";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { buscarAnunciosAdmin, salvarAnuncios } from "../services/backendApi";
 import { createEmptyAd, DEFAULT_ADS, normalizeAds } from "../constants/ads";
 import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
@@ -32,7 +32,7 @@ function AdPreview({ ad }) {
     return (
       <div className="overflow-hidden rounded-lg border border-line-soft bg-[#080514]">
         {ad.imagemUrl ? (
-          <img src={ad.imagemUrl} alt={ad.titulo || "Banner"} className="h-32 w-full object-cover" />
+          <img src={ad.imagemUrl} alt={ad.titulo || "Banner"} className="h-32 w-full object-contain" />
         ) : (
           <div className="flex h-32 items-center justify-center text-sm text-text-muted">Banner sem imagem</div>
         )}
@@ -104,7 +104,7 @@ function DashboardAdsPreview({ ads }) {
               <img
                 src={slide.imagemUrl}
                 alt={slide.titulo || "Anúncio"}
-                className="h-[180px] w-full object-cover max-[600px]:h-[130px]"
+                className="h-[180px] w-full object-contain max-[600px]:h-[130px]"
               />
             ) : (
               <div className="flex h-[180px] w-full items-center justify-center text-sm font-semibold text-text-muted max-[600px]:h-[130px]">

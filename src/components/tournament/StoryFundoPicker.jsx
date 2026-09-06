@@ -249,7 +249,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
           </fieldset>
           {novoPreview ? (
             <div className="relative max-w-[220px] overflow-hidden rounded-lg border border-[rgba(79,70,229,0.3)]">
-              <img src={novoPreview} alt="Novo fundo" className="block w-full max-h-[160px] object-cover" />
+              <img src={novoPreview} alt="Novo fundo" className="block w-full max-h-[160px] object-contain" />
               <button
                 type="button"
                 className="absolute top-2 right-2 rounded-md border border-[rgba(239,68,68,0.4)] bg-[rgba(0,0,0,0.65)] px-[10px] py-[3px] text-[0.75rem] font-semibold text-[#fca5a5]"

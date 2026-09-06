@@ -1,3 +1,4 @@
+import { FormFeedback } from "../ui/FormFeedback";
 import { useState, useRef, useEffect } from "react";
 import { CardSearch } from "./CardSearch";
 import { DeckList } from "./DeckList";
@@ -709,29 +710,21 @@ export function DeckBuilder({
 
         {/* feedback messages */}
         {importMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
-            {importMessage}
-          </p>
+          <FormFeedback message={importMessage} />
         ) : null}
 
         {deckMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(167,79,255,0.15)] text-[#d7b8ff] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
-            {deckMessage}
-          </p>
+          <FormFeedback message={deckMessage} />
         ) : null}
 
         {/* feedback limit-warning */}
         {cardLimitMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] text-[0.9rem] animate-[fade-in_300ms_ease-out]">
-            {cardLimitMessage}
-          </p>
+          <FormFeedback message={cardLimitMessage} variant="error" />
         ) : null}
 
         {/* feedback illegal-warning */}
         {illegalCardMessage ? (
-          <p className="mt-[0.7rem] mb-0 px-3 py-3 rounded-md bg-[rgba(255,107,107,0.18)] text-[#ffb3b3] text-[0.9rem] border-l-[3px] border-l-[#ff6b6b] animate-[fade-in_300ms_ease-out]">
-            {illegalCardMessage}
-          </p>
+          <FormFeedback message={illegalCardMessage} variant="error" />
         ) : null}
       </form>
     </section>

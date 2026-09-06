@@ -573,13 +573,7 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9", 
         const cy = originY + row * (sPileH + sGapY);
         for (let s = 0; s < pile.length; s++)
           drawCardOnCanvas(ctx, pile[s].img, cx, cy + s * SVS, SCW, SCH, "rgba(167,79,255,0.35)");
-        if (pile.length > 1) {
-          const bdx = cx + SCW - 10, bdy = cy + SCH + (pile.length - 1) * SVS - 10;
-          ctx.fillStyle = "rgba(0,0,0,0.88)";
-          ctx.beginPath(); ctx.arc(bdx + 8, bdy + 8, 8, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 9px Arial, sans-serif";
-          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + 8, bdy + 11); ctx.textAlign = "left";
-        }
+
       }
     } else if (!is169) {
       const sideY = CANVAS_H - FOOTER_H - SIDE916_H + 14;
@@ -600,14 +594,7 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9", 
         const pileX = sideStartX + pi * (SC9W + SC9GAP);
         for (let s = 0; s < pile.length; s++)
           drawCardOnCanvas(ctx, pile[s].img, pileX, pilesY + s * SC9VS, SC9W, SC9H, "rgba(167,79,255,0.35)");
-        if (pile.length > 1) {
-          const br = 8;
-          const bdx = pileX + SC9W - br - 2, bdy = pilesY + SC9H + (pile.length - 1) * SC9VS - br - 2;
-          ctx.fillStyle = "rgba(0,0,0,0.88)";
-          ctx.beginPath(); ctx.arc(bdx + br, bdy + br, br, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 8px Arial, sans-serif";
-          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + br, bdy + br + 3); ctx.textAlign = "left";
-        }
+
       }
     }
   }

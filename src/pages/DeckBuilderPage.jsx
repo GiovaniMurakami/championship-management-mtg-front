@@ -5,7 +5,7 @@ import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";

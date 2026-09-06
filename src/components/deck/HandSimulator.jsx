@@ -1,3 +1,4 @@
+import { formatCardName } from "../../utils/cardName";
 import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -79,7 +80,7 @@ export function HandSimulator({ mainDeck }) {
             <div className="flex justify-center items-end w-fit mx-auto">
               {hand.map((card, index) => (
                 /* hs-card: relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-md overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease shrink-0 hover:-translate-y-3 */
-                <Tooltip key={`${card.nome}-${index}`} content={card.nome} focusable={false}>
+                <Tooltip key={`${card.nome}-${index}`} content={formatCardName(card.nome)} focusable={false}>
                   <div
                     className="relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-md overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease-[ease] shrink-0 hover:!-translate-y-3"
                     style={{
@@ -90,10 +91,10 @@ export function HandSimulator({ mainDeck }) {
                   >
                     {card.imagem ? (
                       /* hs-card-img: w-full h-full object-cover */
-                      <img src={card.imagem} alt={card.nome} className="w-full h-full object-cover" />
+                      <img src={card.imagem} alt={formatCardName(card.nome)} className="w-full h-full object-cover" />
                     ) : (
                       /* hs-card-name: flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words */
-                      <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{card.nome}</div>
+                      <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{formatCardName(card.nome)}</div>
                     )}
                   </div>
                 </Tooltip>

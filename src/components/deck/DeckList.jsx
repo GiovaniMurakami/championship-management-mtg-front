@@ -1,3 +1,4 @@
+import { formatCardName } from "../../utils/cardName";
 const COLOR_MAP = {
   W: "#f0c040",
   U: "#2563eb",
@@ -37,7 +38,7 @@ export function DeckList({
               </div>
             )}
             <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[0.85rem] text-[#e8d5ff]">
-              {card.nome}
+              {formatCardName(card.nome)}
             </span>
           </div>
 

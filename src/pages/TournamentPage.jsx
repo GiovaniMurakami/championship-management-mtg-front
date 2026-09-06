@@ -350,7 +350,7 @@ export function TournamentPage() {
                         alt={`Banner de ${torneio.nome}`}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(16,10,32,0.9)]" />
                     </div>

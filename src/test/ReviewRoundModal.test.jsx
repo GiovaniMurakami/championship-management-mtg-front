@@ -34,6 +34,15 @@ function goToPlayersStep() {
 }
 
 describe("ReviewRoundModal", () => {
+    it("oferece finalizar ou jogar mais uma rodada ao terminar o suíço", () => {
+        const onNextRound = vi.fn();
+        render(<ReviewRoundModal {...baseProps} onNextRound={onNextRound} torneio={{ status: "em_andamento", rodadaAtual: 2, totalRodadas: 2 }} />);
+        goToPlayersStep();
+        expect(screen.getByRole("button", { name: "Finalizar Torneio" })).toBeEnabled();
+        fireEvent.click(screen.getByRole("button", { name: "Jogar mais uma rodada" }));
+        expect(onNextRound).toHaveBeenCalledWith(true);
+    });
+
     it("mostra os decks junto aos jogadores quando a partida está finalizada", () => {
         render(
             <ReviewRoundModal

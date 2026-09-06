@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { Spinner } from "../ui/Spinner";
 
 const PUBLIC_AUTH_PATHS = ["/esqueci-senha", "/reset-senha"];

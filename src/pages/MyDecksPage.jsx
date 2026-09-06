@@ -164,7 +164,7 @@ export function MyDecksPage() {
       if (!request.isCurrent()) return;
 
       const entries = cards.map((carta, index) =>
-        carta?.imagem ? [decksWithCards[index].id, carta.imagem] : null,
+        carta?.artCrop ? [decksWithCards[index].id, carta.artCrop] : null,
       );
       setDeckImages(Object.fromEntries(entries.filter(Boolean)));
     };

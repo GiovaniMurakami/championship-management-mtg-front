@@ -111,7 +111,8 @@ export function LigaDetailPage() {
         </div>
       ) : liga ? (
         <>
-          <section className="relative mb-5 overflow-hidden rounded-2xl border border-line-soft bg-[radial-gradient(circle_at_85%_10%,rgba(167,79,255,0.24),transparent_34%),linear-gradient(145deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] bg-cover bg-center px-6 py-7 max-sm:px-4" style={liga.bannerUrl ? { backgroundImage: `linear-gradient(90deg, rgba(11,8,22,.97) 0%, rgba(11,8,22,.82) 48%, rgba(11,8,22,.34) 100%), url(${liga.bannerUrl})` } : undefined}>
+          <section className="relative mb-5 overflow-hidden rounded-2xl border border-line-soft bg-[radial-gradient(circle_at_85%_10%,rgba(167,79,255,0.24),transparent_34%),linear-gradient(145deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] bg-cover bg-center px-6 py-7 max-sm:px-4">
+            {liga.bannerUrl && <img src={liga.bannerUrl} alt={`Banner da liga ${liga.nome}`} className="mb-6 block h-auto w-full rounded-xl" />}
             <div className="absolute -right-8 -bottom-16 select-none text-[12rem] font-black leading-none text-white/[0.025]" aria-hidden="true">L</div>
             <p className="m-0 mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-[#a99cbe]">Liga competitiva</p>
             <div className="relative flex items-center gap-3 mb-2 flex-wrap">
