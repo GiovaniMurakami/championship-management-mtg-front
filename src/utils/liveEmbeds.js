@@ -16,12 +16,19 @@ export function parseTwitchChannel(url) {
   return channel;
 }
 
-export function getLiveEmbeds(linkLive, { twitchParent = "localhost" } = {}) {
+export function getLiveEmbeds(linkLive, {
+  twitchParent = "localhost",
+  youtubeOrigin,
+} = {}) {
   const youtubeVideoId = parseYouTubeVideoId(linkLive);
   const twitchFromLink = parseTwitchChannel(linkLive);
 
   const youtubeSrc = youtubeVideoId
-    ? `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1`
+    ? (() => {
+        const params = new URLSearchParams({ autoplay: "1", mute: "1" });
+        if (youtubeOrigin) params.set("origin", youtubeOrigin);
+        return `https://www.youtube.com/embed/${youtubeVideoId}?${params.toString()}`;
+      })()
     : null;
 
   const twitchChannel = twitchFromLink || DEFAULT_TWITCH_CHANNEL;

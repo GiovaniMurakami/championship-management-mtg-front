@@ -6,8 +6,9 @@ const FRAME_WRAP = "aspect-video min-h-[180px]";
 export function TournamentLiveEmbeds({
   linkLive,
   twitchParent = typeof window !== "undefined" ? window.location.hostname : "localhost",
+  youtubeOrigin = typeof window !== "undefined" ? window.location.origin : undefined,
 }) {
-  const { youtubeSrc, twitchSrc } = getLiveEmbeds(linkLive, { twitchParent });
+  const { youtubeSrc, twitchSrc } = getLiveEmbeds(linkLive, { twitchParent, youtubeOrigin });
   if (!youtubeSrc && !twitchSrc) return null;
 
   const both = Boolean(youtubeSrc && twitchSrc);
@@ -25,6 +26,7 @@ export function TournamentLiveEmbeds({
             title="Live YouTube"
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
             className={IFRAME_CLASS}
           />
         </div>
