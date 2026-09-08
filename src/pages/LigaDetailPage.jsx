@@ -106,8 +106,8 @@ export function LigaDetailPage() {
 
       {loading ? (
         <div className="animate-pulse">
-          <div className="h-9 w-64 bg-white/[0.06] rounded-lg mb-3" />
-          <div className="h-4 w-96 bg-white/[0.04] rounded mb-6" />
+          <div className="h-9 w-64 max-w-full bg-white/[0.06] rounded-lg mb-3" />
+          <div className="h-4 w-96 max-w-full bg-white/[0.04] rounded mb-6" />
         </div>
       ) : liga ? (
         <>
@@ -116,7 +116,7 @@ export function LigaDetailPage() {
             <div className="absolute -right-8 -bottom-16 select-none text-[12rem] font-black leading-none text-white/[0.025]" aria-hidden="true">L</div>
             <p className="m-0 mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-[#a99cbe]">Liga competitiva</p>
             <div className="relative flex items-center gap-3 mb-2 flex-wrap">
-              <h1 className="m-0 text-white text-[2.2rem] font-bold tracking-[-0.02em] max-[768px]:text-[1.7rem]">
+              <h1 className="min-w-0 [overflow-wrap:anywhere] m-0 text-white text-[2.2rem] font-bold tracking-[-0.02em] max-[768px]:text-[1.7rem]">
                 {liga.nome}
               </h1>
               {liga.status && (
@@ -126,7 +126,7 @@ export function LigaDetailPage() {
               )}
             </div>
             {liga.descricao && (
-              <p className="relative m-0 text-text-soft text-[0.92rem] leading-relaxed max-w-[680px] mb-5">{liga.descricao}</p>
+              <p className="relative m-0 text-text-soft text-[0.92rem] leading-relaxed [overflow-wrap:anywhere] max-w-[680px] mb-5">{liga.descricao}</p>
             )}
             <div className="relative grid max-w-[390px] grid-cols-2 gap-2">
               <span className="inline-flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.035] px-3 py-2 text-[0.78rem] text-[#d8c7ff]">
@@ -167,7 +167,7 @@ export function LigaDetailPage() {
                     return (
                       <div
                         key={torneio.id}
-                        className="bg-[rgba(18,12,32,0.72)] border border-line-soft rounded-xl p-4 transition-all duration-200 hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] cursor-pointer group"
+                        className="min-w-0 bg-[rgba(18,12,32,0.72)] border border-line-soft rounded-xl p-4 transition-all duration-200 hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] cursor-pointer group"
                         onClick={() => navigate(`/torneios/${torneio.id}`)}
                       >
                         <div className="flex items-start justify-end gap-3 mb-2">
@@ -178,10 +178,10 @@ export function LigaDetailPage() {
                             {label}
                           </span>
                         </div>
-                        <h4 className="m-0 mb-3 text-text-main font-semibold text-[0.95rem] leading-snug group-hover:text-white transition-colors">
+                        <h4 className="[overflow-wrap:anywhere] m-0 mb-3 text-text-main font-semibold text-[0.95rem] leading-snug group-hover:text-white transition-colors">
                           {torneio.nome}
                         </h4>
-                        <div className="flex items-center gap-2 text-[0.78rem] text-[rgba(190,175,215,0.6)]">
+                        <div className="flex flex-wrap items-center gap-2 text-[0.78rem] text-[rgba(190,175,215,0.6)]">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                             <rect x="3" y="4" width="18" height="18" rx="2" />
                             <line x1="16" y1="2" x2="16" y2="6" />

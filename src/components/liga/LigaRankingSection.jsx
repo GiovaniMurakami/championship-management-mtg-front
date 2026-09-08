@@ -200,7 +200,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
       {chips.map((chip) => (
         <div
           key={chip.label}
-          className="rounded-lg border border-line-soft bg-white/[0.025] px-4 py-3"
+          className="min-w-0 rounded-lg border border-line-soft bg-white/[0.025] px-4 py-3"
         >
           <p
             className="m-0 text-[0.65rem] uppercase tracking-[0.08em] font-semibold mb-1"
@@ -222,7 +222,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
 function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent, artwork = false }) {
   return (
     <div
-      className="relative rounded-xl border overflow-hidden flex flex-col"
+      className="relative min-w-0 rounded-xl border overflow-hidden flex flex-col"
       style={{
         borderColor: `${accent}55`,
         background: `linear-gradient(155deg, ${accent}12 0%, rgba(16,10,32,0.95) 100%)`,
@@ -307,7 +307,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
   return (
     <li
       key={carta.id ?? carta.nome ?? idx}
-      className={`flex items-center gap-3 px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}
+      className={`flex items-center gap-2 px-3 sm:gap-3 sm:px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}
     >
       <MedalBadge pos={pos} />
 
@@ -327,7 +327,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
           onFocus={(e) => onCardHover(nome, e)}
           onBlur={onCardLeave}
         >
-          <span className="font-semibold text-[0.92rem] text-text-main group-hover:text-[#c4b5fd] transition-colors duration-150 overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
+          <span className="font-semibold text-[0.92rem] text-text-main group-hover:text-[#c4b5fd] transition-colors duration-150 [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap max-w-full block">
             {nome}
           </span>
         </button>
@@ -376,7 +376,7 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
   return (
     <li
-      className={`flex items-center gap-3 px-5 py-[0.85rem] transition-colors duration-150 hover:bg-white/[0.025] ${isLogado
+      className={`flex items-center gap-2 px-3 sm:gap-3 sm:px-5 py-[0.85rem] transition-colors duration-150 hover:bg-white/[0.025] ${isLogado
           ? "bg-[rgba(79,70,229,0.07)] border-l-[3px] border-l-[rgba(99,102,241,0.55)]"
           : ""
         }`}
@@ -389,8 +389,8 @@ function PlayerRow({ jogador, idx, isLogado }) {
         {getInitials(excluido ? "UE" : nome)}
       </span>
 
-      <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
-        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
+      <div className="flex-1 min-w-0 flex flex-col items-start sm:flex-row sm:items-center gap-[0.45rem]">
+        <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
           <UsuarioNomeExibicao nome={nome} usuarioId={jogador.jogador?.id} excluido={excluido} />
         </span>
         {isLogado && <VoceBadge />}
@@ -431,7 +431,7 @@ function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, on
   const isTop3 = pos <= 3;
 
   return (
-    <li className={`flex items-center gap-3 px-5 py-[0.9rem] hover:bg-white/[0.02] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}>
+    <li className={`flex items-center gap-2 px-3 sm:gap-3 sm:px-5 py-[0.9rem] hover:bg-white/[0.02] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}>
       <MedalBadge pos={pos} />
 
       {cartaPrincipal ? (
@@ -448,7 +448,7 @@ function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, on
       )}
 
       <div className="flex-1 min-w-0">
-        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-text-main block">
+        <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-text-main block">
           {nome}
         </span>
         {cartaPrincipal && (
@@ -533,7 +533,7 @@ function LoadingSkeleton() {
 
 function SectionInfo({ count, label, hint }) {
   return (
-    <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-line-soft bg-white/[0.015]">
+    <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between px-3 sm:px-5 py-[0.6rem] border-b border-line-soft bg-white/[0.015]">
       <span className="text-[0.78rem] text-text-soft">
         <span className="font-semibold text-text-main">{count}</span> {label}
       </span>
@@ -564,14 +564,14 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[640px]">
+          <table className="w-full table-fixed sm:table-auto border-collapse">
             <thead>
               <tr className="bg-white/[0.03] text-left">
                 {["Posição", "Time", "V/D", "Pontos"].map((column) => (
                   <th
                     key={column}
                     scope="col"
-                    className="px-5 py-3 text-[0.72rem] uppercase tracking-[0.08em] text-[rgba(190,175,215,0.5)] font-semibold"
+                    className="px-2 sm:px-5 py-3 text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.08em] text-[rgba(190,175,215,0.5)] font-semibold"
                   >
                     {column}
                   </th>
@@ -584,16 +584,16 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
                   key={time.time?.id ?? time.id ?? idx}
                   className="border-t border-[rgba(217,180,255,0.07)] hover:bg-white/[0.02] transition-colors duration-150"
                 >
-                  <td className="px-5 py-4 text-[0.88rem] font-semibold text-text-main">{time.posicao ?? idx + 1}</td>
-                  <td className="px-5 py-4 text-[0.9rem] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
-                  <td className="px-5 py-4">
+                  <td className="px-2 sm:px-5 py-4 text-[0.88rem] font-semibold text-text-main">{time.posicao ?? idx + 1}</td>
+                  <td className="px-2 sm:px-5 py-4 text-[0.9rem] [overflow-wrap:anywhere] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
+                  <td className="px-2 sm:px-5 py-4">
                     <RecordeVd
                       vitorias={time.vitorias ?? 0}
                       derrotas={time.derrotas ?? 0}
                       empates={time.empates ?? 0}
                     />
                   </td>
-                  <td className="px-5 py-4 font-['Bebas_Neue',sans-serif] text-[1.2rem] tracking-[0.04em] text-[rgba(240,180,41,0.8)]">
+                  <td className="px-2 sm:px-5 py-4 font-['Bebas_Neue',sans-serif] text-[1.2rem] tracking-[0.04em] text-[rgba(240,180,41,0.8)]">
                     {time.pontos ?? 0}
                   </td>
                 </tr>
@@ -629,7 +629,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     if (!cardName || cardName === "—") return;
     const rect = e.currentTarget.getBoundingClientRect();
     const spaceRight = window.innerWidth - rect.right;
-    const x = spaceRight > 210 ? rect.right + 12 : rect.left - 198;
+    const x = Math.max(8, Math.min(spaceRight > 210 ? rect.right + 12 : rect.left - 198, window.innerWidth - 188));
     const y = Math.max(8, Math.min(rect.top - 20, window.innerHeight - 280));
 
     if (_imgCache.has(cardName)) {
@@ -780,7 +780,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               key={tab.key}
               type="button"
               onClick={() => setSubAba(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] rounded-md text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
+              className={`min-w-0 flex-1 flex flex-col sm:flex-row items-center justify-center gap-[0.4rem] px-1 sm:px-4 py-[0.5rem] rounded-md text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
                   ? "bg-[rgba(79,70,229,0.35)] text-white border border-[rgba(99,102,241,0.45)] shadow-sm"
                   : "text-[#888] hover:text-[#c0bfff] border border-transparent"
                 }`}
@@ -803,7 +803,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {activeTab === "jogadores" && (
         <div className="space-y-4">
           {topJogadores.length > 0 && (
-            <div className={`grid gap-3 ${topJogadores.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topJogadores.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+            <div className={`grid gap-3 ${topJogadores.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topJogadores.length === 2 ? "grid-cols-1 min-[480px]:grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
               {topJogadores.map((jogador) => (
                 <SpotlightCard
                   key={jogador.jogador?.id || jogador.posicao}
@@ -898,7 +898,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {activeTab === "decks" && (
         <div className="space-y-4">
           {topDecks.length > 0 && (
-            <div className={`grid gap-3 ${topDecks.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topDecks.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+            <div className={`grid gap-3 ${topDecks.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topDecks.length === 2 ? "grid-cols-1 min-[480px]:grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
               {topDecks.map((deck) => {
                 const wr = deck.winrate ?? (deck.totalUsos > 0 ? Math.round((deck.vitorias / deck.totalUsos) * 1000) / 10 : 0);
                 const cartaRepresentativa = deck.cartaRepresentativa || deck.cartaPrincipal;
@@ -915,7 +915,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                     onHover={handleCardHover}
                     onLeave={handleCardLeave}
                     stats={
-                      <div className="flex items-center justify-between w-full text-[0.72rem]">
+                      <div className="flex flex-wrap gap-2 items-center justify-between w-full text-[0.72rem]">
                         <span className="text-[#7dd3fc]">
                           {deck.totalDecks ?? 0} decks · {deck.totalUsos ?? 0} usos
                         </span>
@@ -980,7 +980,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {activeTab === "cartas" && (
         <div className="space-y-4">
           {topCartas.length > 0 && (
-            <div className={`grid gap-3 ${topCartas.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topCartas.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+            <div className={`grid gap-3 ${topCartas.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topCartas.length === 2 ? "grid-cols-1 min-[480px]:grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
               {topCartas.map((carta) => {
                 const nome = carta.nome || carta.name;
                 return (

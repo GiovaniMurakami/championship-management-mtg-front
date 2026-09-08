@@ -77,14 +77,14 @@ export function LigaPage() {
 
   return (
     <PageShell>
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
+      <div className="flex flex-col items-stretch justify-between gap-4 mb-6 sm:flex-row sm:items-center">
+        <div className="min-w-0">
           <p className="m-0 mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-text-muted">Temporadas e circuitos</p>
           <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">Ligas</h1>
           <p className="m-0 mt-1 text-[0.88rem] text-text-soft">Acompanhe rankings, arquétipos e torneios de cada circuito.</p>
         </div>
         {isAdmin && (
-          <Button onClick={() => navigate("/ligas/criar")}>
+          <Button className="w-full shrink-0 sm:w-auto" onClick={() => navigate("/ligas/criar")}>
             + Criar Liga
           </Button>
         )}
@@ -97,7 +97,7 @@ export function LigaPage() {
           title="Nenhuma liga encontrada"
           description="As ligas criadas ficarão disponíveis nesta tela."
           action={isAdmin && (
-            <Button onClick={() => navigate("/ligas/criar")}>
+            <Button className="w-full shrink-0 sm:w-auto" onClick={() => navigate("/ligas/criar")}>
               Criar liga
             </Button>
           )}
@@ -107,7 +107,7 @@ export function LigaPage() {
           {ligas.map((liga) => (
             <article
               key={liga.id}
-              className="group relative bg-surface/80 rounded-2xl border border-line-soft shadow-card transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
+              className="group relative min-w-0 bg-surface/80 rounded-2xl border border-line-soft shadow-card transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
             >
               <button type="button" aria-label={`Abrir liga ${liga.nome}`} className="absolute inset-0 z-0 cursor-pointer border-0 bg-transparent" onClick={() => navigate(`/ligas/${liga.id}`)} />
               <div className="relative z-[1] pointer-events-none min-h-24 overflow-hidden border-b border-line-soft bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center">
@@ -116,10 +116,10 @@ export function LigaPage() {
               </div>
               <div className="relative z-[1] pointer-events-none px-4 pt-4 pb-3 flex-1">
                 <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
-                  <h3 className="text-text-main m-0 text-[1.05rem] font-bold leading-tight group-hover:text-white">
+                  <h3 className="min-w-0 [overflow-wrap:anywhere] text-text-main m-0 text-[1.05rem] font-bold leading-tight group-hover:text-white">
                     {liga.nome}
                   </h3>
-                  <div className="flex items-center gap-2 flex-shrink-0 mt-[0.25rem]">
+                  <div className="flex flex-wrap items-center gap-2 mt-[0.25rem]">
                     {liga.tipo && (
                       <span className="inline-block px-[0.5rem] py-[0.15rem] rounded-full text-[0.67rem] font-semibold uppercase tracking-[0.04em] bg-[rgba(167,79,255,0.12)] text-brand border border-[rgba(167,79,255,0.25)]">
                         {liga.tipo}
@@ -135,7 +135,7 @@ export function LigaPage() {
                   </div>
                 </div>
                 {liga.descricao && (
-                  <p className="text-text-soft text-[0.875rem] m-0 mb-3 leading-relaxed line-clamp-2">
+                  <p className="text-text-soft text-[0.875rem] m-0 mb-3 leading-relaxed line-clamp-2 [overflow-wrap:anywhere]">
                     {liga.descricao}
                   </p>
                 )}
@@ -162,7 +162,7 @@ export function LigaPage() {
               </div>
               <div className="relative z-[2] px-4 py-3 border-t border-line-soft bg-white/[0.015] flex gap-2 flex-wrap">
                 <button
-                  className="mr-auto border-0 bg-transparent p-0 text-[0.8rem] font-semibold text-[#d9b4ff] cursor-pointer hover:text-white"
+                  className="min-h-11 w-full text-left sm:w-auto mr-auto border-0 bg-transparent p-0 text-[0.8rem] font-semibold text-[#d9b4ff] cursor-pointer hover:text-white"
                   onClick={() => navigate(`/ligas/${liga.id}`)}
                 >
                   Ver detalhes →
@@ -170,13 +170,13 @@ export function LigaPage() {
                 {isAdmin && (
                   <>
                     <button
-                      className="px-4 py-[0.45rem] border border-[rgba(217,180,255,0.25)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-transparent text-text-soft transition-all duration-300 hover:border-line-strong hover:text-white"
+                      className="min-h-11 flex-1 sm:flex-none px-4 py-[0.45rem] border border-[rgba(217,180,255,0.25)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-transparent text-text-soft transition-all duration-300 hover:border-line-strong hover:text-white"
                       onClick={() => navigate(`/ligas/${liga.id}/editar`)}
                     >
                       Editar
                     </button>
                     <button
-                      className="px-4 py-[0.45rem] border border-[rgba(239,68,68,0.4)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-[rgba(239,68,68,0.07)] text-[#fca5a5] transition-all duration-300 hover:bg-[rgba(239,68,68,0.2)] hover:text-white"
+                      className="min-h-11 flex-1 sm:flex-none px-4 py-[0.45rem] border border-[rgba(239,68,68,0.4)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-[rgba(239,68,68,0.07)] text-[#fca5a5] transition-all duration-300 hover:bg-[rgba(239,68,68,0.2)] hover:text-white"
                       onClick={() => setConfirmDeleteId(liga.id)}
                     >
                       Excluir
@@ -223,16 +223,16 @@ export function LigaPage() {
             if (e.target === e.currentTarget) setConfirmDeleteId(null);
           }}
         >
-          <div className="bg-[#110a22] border border-[rgba(239,68,68,0.3)] rounded-2xl w-full max-w-[420px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out]">
+          <div className="bg-[#110a22] border border-[rgba(239,68,68,0.3)] rounded-2xl w-full max-w-[420px] max-h-[calc(100dvh-2rem)] overflow-y-auto p-4 sm:p-6 shadow-[0_24px_64px_rgba(0,0,0,0.6)] animate-[slide-up_220ms_ease-out]">
             <h3 className="text-white font-semibold text-[1.1rem] m-0 mb-3">Excluir liga</h3>
             <p className="text-text-soft text-[0.9rem] m-0 mb-6">
               Tem certeza que deseja excluir{" "}
-              <strong className="text-white">
+              <strong className="text-white [overflow-wrap:anywhere]">
                 {ligas.find((l) => l.id === confirmDeleteId)?.nome}
               </strong>
               ? Esta ação não pode ser desfeita.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 className="px-5 py-2.5 border border-line rounded-lg text-text-soft bg-transparent cursor-pointer font-medium text-[0.9rem] transition-all duration-200 hover:text-white hover:bg-white/[0.05] disabled:opacity-50"
                 onClick={() => setConfirmDeleteId(null)}

@@ -266,7 +266,7 @@ export function LigaCreatePage({ editMode = false }) {
                 {bannerPreview ? (
                   <div className="grid gap-3">
                     <img src={bannerPreview} alt="Preview do banner da liga" className="h-36 w-full rounded-xl border border-[rgba(199,149,255,0.3)] object-contain" />
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={loading} className={BTN_SECONDARY}>Trocar imagem</button>
                       <button type="button" onClick={handleRemoveBanner} disabled={loading} className="px-4 py-2 rounded-lg border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.07)] text-[#fca5a5] font-semibold hover:bg-[rgba(239,68,68,0.16)] disabled:opacity-50">Remover</button>
                     </div>
@@ -294,7 +294,7 @@ export function LigaCreatePage({ editMode = false }) {
               />
               <div className="grid gap-2">
                 <span className={FORM_LABEL_CLASS}>Tipo de Liga</span>
-                <div className="flex gap-3">
+                <div className="flex flex-col min-[400px]:flex-row gap-3">
                   {[
                     { value: "individual", label: "Individual" },
                     { value: "times", label: "Times" },
@@ -417,8 +417,8 @@ export function LigaCreatePage({ editMode = false }) {
                           aria-label={`Selecionar torneio ${torneio.nome}`}
                         />
                         <div className="flex-1 min-w-0">
-                          <span className="flex items-center gap-2 text-text-main text-[0.88rem] font-medium min-w-0">
-                            <span className="truncate">{torneio.nome}</span>
+                          <span className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2 text-text-main text-[0.88rem] font-medium min-w-0">
+                            <span className="max-w-full [overflow-wrap:anywhere]">{torneio.nome}</span>
                             {torneio.horario && (
                               <span className="shrink-0 text-[0.74rem] font-normal text-[#a99cbe]">· {formatBrasiliaDate(torneio.horario)}</span>
                             )}
