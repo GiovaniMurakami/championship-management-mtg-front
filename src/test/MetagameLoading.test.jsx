@@ -32,6 +32,7 @@ describe("carregamento sob demanda no metagame", () => {
     await screen.findByText("Burn");
     expect(buscarCartaPorNome).not.toHaveBeenCalled();
     expect(buscarCartasPorNome).not.toHaveBeenCalled();
+    await waitFor(() => expect(enterViewport).toBeTypeOf("function"));
     act(() => enterViewport([{ isIntersecting: true }]));
     await waitFor(() => expect(buscarCartaPorNome).toHaveBeenCalledWith("Lightning Bolt"));
     expect(buscarCartaPorNome).toHaveBeenCalledTimes(1);

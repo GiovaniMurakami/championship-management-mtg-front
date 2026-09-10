@@ -105,8 +105,8 @@ export const listarUsuarios = (token, params = {}) =>
     params,
   });
 
-export const buscarPerfilPublico = (usuarioId, paginaPartidasExternas = 1) =>
-  httpClient.get(`/usuario/${usuarioId}/perfil`, { params: { paginaPartidasExternas } });
+export const buscarPerfilPublico = (usuarioId, paginaPartidasExternas = 1, periodo = {}) =>
+  httpClient.get(`/usuario/${usuarioId}/perfil`, { params: { paginaPartidasExternas, ...periodo } });
 
 export const alterarBloqueioTorneios = (usuarioId, payload, token) =>
   httpClient.put(`/usuario/${usuarioId}/bloqueio-torneios`, payload, {

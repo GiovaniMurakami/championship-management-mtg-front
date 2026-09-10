@@ -1,3 +1,4 @@
+import { useDateRangeParams } from "../../hooks/useDateRangeParams";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { RecordeTexto, WinrateMeter } from "./MetagameStats";
@@ -60,6 +61,7 @@ function SortHeader({ label, column, sort, onSort, align = "left" }) {
 }
 
 export function MetagameMatchupsSection({ matchups = [], formato, dias }) {
+  const { dateQuery } = useDateRangeParams();
   const [sort, setSort] = useState({ key: "partidas", dir: "desc" });
   const ordenados = useMemo(() => ordenarMatchups(matchups, sort), [matchups, sort]);
 
@@ -102,7 +104,7 @@ export function MetagameMatchupsSection({ matchups = [], formato, dias }) {
                   <td className="px-3 py-3">
                     <Link
                       className="text-[#d9b4ff] font-semibold no-underline hover:underline"
-                      to={`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(m.slug)}?dias=${dias}`}
+                      to={`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(m.slug)}?dias=${dias}${dateQuery}`}
                     >
                       {m.nome}
                     </Link>
