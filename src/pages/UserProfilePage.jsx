@@ -1,3 +1,5 @@
+import { DateRangeFilter } from "../components/ui/DateRangeFilter";
+import { useDateRangeParams } from "../hooks/useDateRangeParams";
 import { FormFeedback } from "../components/ui/FormFeedback";
 import { ExternalMatchModal } from "../components/ui/ExternalMatchModal";
 import { BTN_PRIMARY } from "../styles/uiClasses";
@@ -14,6 +16,7 @@ import { tournamentPath } from "../utils/tournamentUrl";
 import { deckPath } from "../utils/deckUrl";
 
 export function UserProfilePage() {
+  const { dataInicio, dataFim, applyDates } = useDateRangeParams();
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedPage = Number(searchParams.get("partidasPagina") || 1);
@@ -21,7 +24,9 @@ export function UserProfilePage() {
   const [showExternalMatch, setShowExternalMatch] = useState(false);
   const [matchMessage, setMatchMessage] = useState("");
   const [perfil, setPerfil] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const requestKey = `${id}:${paginaPartidas}:${dataInicio}:${dataFim}`;
+  const [loadedKey, setLoadedKey] = useState("");
+  const loading = loadedKey !== requestKey;
   const [error, setError] = useState("");
   const [deckImages, setDeckImages] = useState({});
   const [photoLoading, setPhotoLoading] = useState(false);
@@ -31,12 +36,12 @@ export function UserProfilePage() {
 
   useEffect(() => {
     let active = true;
-    buscarPerfilPublico(id, paginaPartidas)
-      .then((data) => active && setPerfil(data))
+    buscarPerfilPublico(id, paginaPartidas, dataInicio || dataFim ? { dataInicio, dataFim } : {})
+      .then((data) => { if (active) { setPerfil(data); setError(""); } })
       .catch((err) => active && setError(err.message || "Não foi possível carregar o perfil."))
-      .finally(() => active && setLoading(false));
+      .finally(() => active && setLoadedKey(requestKey));
     return () => { active = false; };
-  }, [id, paginaPartidas]);
+  }, [id, paginaPartidas, dataInicio, dataFim, requestKey]);
 
   useEffect(() => {
     const decks = perfil?.decks || [];
@@ -50,9 +55,10 @@ export function UserProfilePage() {
     return () => { active = false; };
   }, [perfil]);
 
-  if (loading) return <PageShell><SkeletonUserProfile /></PageShell>;
+  if (loading) return <PageShell><DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} /><SkeletonUserProfile /></PageShell>;
   if (error || !perfil) return (
     <PageShell>
+      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
       <EmptyState
         icon="👤"
         title={error === "Usuário não encontrado" ? "Perfil não encontrado" : "Não foi possível carregar o perfil"}
@@ -115,11 +121,13 @@ export function UserProfilePage() {
         setShowExternalMatch(false);
         setMatchMessage("Partida adicionada.");
         try {
-          setPerfil(await buscarPerfilPublico(id, 1));
+          setPerfil(await buscarPerfilPublico(id, 1, dataInicio || dataFim ? { dataInicio, dataFim } : {}));
           setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete("partidasPagina"); return next; }, { replace: true });
         }
         catch { setMatchMessage("Partida salva. Atualize a página para ver as estatísticas."); }
       }} />}
+      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
+      <p className="text-sm text-text-soft">{dataInicio && dataFim ? "Estatísticas e resultados no intervalo selecionado (horário de Brasília)." : "Estatísticas e resultados de todo o período."}</p>
       <CompetitiveStats stats={estatisticas} expressiveResults={usuario.resultadosExpressivos ?? 0} className="mb-10" />
 
       <section className="mb-12" aria-labelledby="external-matches-title">

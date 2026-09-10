@@ -24,6 +24,21 @@ const renderPage = () => render(<MemoryRouter initialEntries={[`/usuarios/${perf
 describe("UserProfilePage", () => {
   beforeEach(() => { vi.clearAllMocks(); buscarPerfilPublico.mockResolvedValue(perfil); });
 
+  it("aplica e limpa o intervalo no perfil", async () => {
+    renderPage();
+    await screen.findByRole("heading", { name: "Giovani" });
+    fireEvent.click(screen.getByRole("button", { name: "Filtrar por período" }));
+    fireEvent.change(screen.getByLabelText("De"), { target: { value: "2026-08-01" } });
+    fireEvent.change(screen.getByLabelText("Até"), { target: { value: "2026-08-31" } });
+    expect(buscarPerfilPublico).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar datas" }));
+    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, { dataInicio: "2026-08-01", dataFim: "2026-08-31" }));
+    await screen.findByRole("heading", { name: "Giovani" });
+    fireEvent.click(screen.getByRole("button", { name: /01\/08\/2026.*31\/08\/2026/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Limpar datas" }));
+    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, {}));
+  });
+
   it("mostra data, oponente e resultado das partidas externas", async () => {
     buscarPerfilPublico.mockResolvedValue({ ...perfil, partidasExternas: [
       { id: "1", data: "2026-02-01", resultado: "vitoria", oponente: "Ana" },
@@ -95,7 +110,7 @@ describe("UserProfilePage", () => {
     expect(screen.getByRole("button", { name: "Anterior" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Próxima" }));
     expect(await screen.findByText("Meu Control × Affinity")).toBeInTheDocument();
-    expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 2);
+    expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 2, {});
     expect(screen.getByRole("button", { name: "Próxima" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
     expect(await screen.findByText("Meu Burn × Affinity")).toBeInTheDocument();

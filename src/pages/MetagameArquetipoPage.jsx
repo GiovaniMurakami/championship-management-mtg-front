@@ -1,3 +1,5 @@
+import { DateRangeFilter } from "../components/ui/DateRangeFilter";
+import { useDateRangeParams } from "../hooks/useDateRangeParams";
 import { useResolvedMetagameListas } from "../hooks/useResolvedMetagameListas";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -36,13 +38,14 @@ function parseDias(valor) {
 }
 
 export function MetagameArquetipoPage() {
+  const { dataInicio, dataFim, dateQuery, applyDates } = useDateRangeParams();
   const { formato, slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   const dias = parseDias(searchParams.get("dias"));
-  const requestKey = `${formato}:${slug}:${dias}`;
+  const requestKey = `${formato}:${slug}:${dias}:${dateQuery}`;
   const [result, setResult] = useState({ key: "", data: null, erro: "" });
   const [listasAbertas, setListasAbertas] = useState({ key: "", valores: {} });
   const [salvandoDeckId, setSalvandoDeckId] = useState("");
@@ -52,7 +55,7 @@ export function MetagameArquetipoPage() {
   const data = result.key === requestKey ? result.data : null;
   const loading = result.key !== requestKey;
   const erro = loading ? "" : result.erro;
-  const listUrl = `/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}`;
+  const listUrl = `/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}${dateQuery}`;
 
   usePageTitle(data?.nome ? `${data.nome} | Metagame` : "Metagame");
   const { imagem, retry } = useScryfallArt(data?.cartaRepresentativa);
@@ -67,7 +70,7 @@ export function MetagameArquetipoPage() {
 
   const recarregar = useCallback(async () => {
     try {
-      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false });
+      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) });
       setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       return true;
     } catch (err) {
@@ -78,7 +81,7 @@ export function MetagameArquetipoPage() {
       }
       throw err;
     }
-  }, [dias, formato, listUrl, navigate, requestKey, slug]);
+  }, [dias, formato, listUrl, navigate, requestKey, slug, dateQuery, dataInicio, dataFim]);
 
   const salvarNome = useCallback(async (deckIds, nomeConsolidado) => {
     const ids = [...new Set(deckIds.filter(Boolean))];
@@ -98,7 +101,7 @@ export function MetagameArquetipoPage() {
 
   useEffect(() => {
     let cancelled = false;
-    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false })
+    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) })
       .then((res) => {
         if (!cancelled) setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       })
@@ -116,17 +119,18 @@ export function MetagameArquetipoPage() {
         }
       });
     return () => { cancelled = true; };
-  }, [formato, slug, dias, requestKey]);
+  }, [formato, slug, dias, requestKey, dateQuery, dataInicio, dataFim]);
 
   return (
     <PageShell>
       <MetagameFormatNav
         formato={formato}
         formatos={TOURNAMENT_FORMATS}
-        onFormato={(value) => navigate(`/metagame?formato=${encodeURIComponent(value)}&dias=${dias}`)}
+        onFormato={(value) => navigate(`/metagame?formato=${encodeURIComponent(value)}&dias=${dias}${dateQuery}`)}
       />
 
-      <BackButton onClick={() => navigate(`/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}`)}>
+      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
+      <BackButton onClick={() => navigate(`/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}${dateQuery}`)}>
         ← Metagame
       </BackButton>
 

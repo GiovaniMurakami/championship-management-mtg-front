@@ -1,3 +1,4 @@
+import { useDateRangeParams } from "../../hooks/useDateRangeParams";
 import { formatCardName } from "../../utils/cardName";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -6,10 +7,11 @@ import { MetagameManaPips } from "./MetagameManaPips";
 
 
 export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, onCardMouseEnter, onCardMouseLeave }) {
+  const { dateQuery } = useDateRangeParams();
   const cardRef = useRef(null);
   const [shouldLoadArt, setShouldLoadArt] = useState(() => typeof IntersectionObserver === "undefined");
   const { imagem, retry } = useScryfallArt(arquetipo.cartaRepresentativa, { enabled: shouldLoadArt });
-  const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}`;
+  const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}${dateQuery}`;
   const cartasChave = (arquetipo.cartasChave || []).slice(0, 3);
 
   useEffect(() => {

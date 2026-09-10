@@ -1,3 +1,4 @@
+import { useDateRangeParams } from "../../hooks/useDateRangeParams";
 import { Link } from "react-router-dom";
 import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 import { isUsuarioExcluido } from "../ui/UsuarioExcluidoTag";
@@ -28,6 +29,7 @@ export function MetagameRecentSidebar({
   formato,
   dias,
 }) {
+  const { dateQuery } = useDateRangeParams();
   return (
     <aside className="flex flex-col gap-5 lg:sticky lg:top-24">
       <div>
@@ -70,7 +72,7 @@ export function MetagameRecentSidebar({
                       </span>
                       <Link
                         className="text-[#d9b4ff] font-semibold no-underline truncate hover:underline"
-                        to={`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(deck.slug)}?dias=${dias}`}
+                        to={`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(deck.slug)}?dias=${dias}${dateQuery}`}
                         title={rotuloDeckRecente(deck)}
                       >
                         {rotuloDeckRecente(deck)}
