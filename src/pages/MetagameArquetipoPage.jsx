@@ -24,6 +24,7 @@ import { useCardPreview } from "../hooks/useCardPreview";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
+import { Button } from "../components/ui/Button";
 import { TOURNAMENT_FORMATS, getTournamentFormatLabel } from "../constants/tournament";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { logError } from "../utils/logger";
@@ -31,10 +32,16 @@ import { chaveMetagameLista, ordenarListasPorRecencia } from "../utils/metagameL
 
 const DIAS_OPCOES = [7, 14, 30, 90];
 const DIAS_PADRAO = 30;
+const LIMITE_LISTAS = 10;
 
 function parseDias(valor) {
   const n = Number(valor);
   return DIAS_OPCOES.includes(n) ? n : DIAS_PADRAO;
+}
+
+function parsePagina(valor) {
+  const n = Number(valor);
+  return Number.isInteger(n) && n > 0 ? n : 1;
 }
 
 export function MetagameArquetipoPage() {
@@ -45,7 +52,9 @@ export function MetagameArquetipoPage() {
   const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   const dias = parseDias(searchParams.get("dias"));
-  const requestKey = `${formato}:${slug}:${dias}:${dateQuery}`;
+  const paginaListas = parsePagina(searchParams.get("paginaListas"));
+  const offsetListas = (paginaListas - 1) * LIMITE_LISTAS;
+  const requestKey = `${formato}:${slug}:${dias}:${dateQuery}:${paginaListas}`;
   const [result, setResult] = useState({ key: "", data: null, erro: "" });
   const [listasAbertas, setListasAbertas] = useState({ key: "", valores: {} });
   const [salvandoDeckId, setSalvandoDeckId] = useState("");
@@ -66,11 +75,22 @@ export function MetagameArquetipoPage() {
     () => ordenarListasPorRecencia(listasComCartas, data?.resultados),
     [listasComCartas, data?.resultados],
   );
+  const paginacaoListas = data?.paginacaoListas;
+  const totalPaginasListas = paginacaoListas?.totalPaginas ?? 1;
+  const podeVoltarListas = paginaListas > 1;
+  const podeAvancarListas = paginaListas < totalPaginasListas;
+  const atualizarPaginaListas = useCallback((pagina) => {
+    const next = new URLSearchParams(searchParams);
+    if (dias !== DIAS_PADRAO || next.has("dias")) next.set("dias", String(dias));
+    if (pagina > 1) next.set("paginaListas", String(pagina));
+    else next.delete("paginaListas");
+    setSearchParams(next, { replace: true });
+  }, [dias, searchParams, setSearchParams]);
   useEffect(() => () => closeCardPreview(), [closeCardPreview]);
 
   const recarregar = useCallback(async () => {
     try {
-      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) });
+      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: LIMITE_LISTAS, offsetListas, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) });
       setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       return true;
     } catch (err) {
@@ -81,7 +101,7 @@ export function MetagameArquetipoPage() {
       }
       throw err;
     }
-  }, [dias, formato, listUrl, navigate, requestKey, slug, dateQuery, dataInicio, dataFim]);
+  }, [dias, formato, listUrl, navigate, requestKey, slug, dateQuery, dataInicio, dataFim, offsetListas]);
 
   const salvarNome = useCallback(async (deckIds, nomeConsolidado) => {
     const ids = [...new Set(deckIds.filter(Boolean))];
@@ -101,7 +121,7 @@ export function MetagameArquetipoPage() {
 
   useEffect(() => {
     let cancelled = false;
-    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: 10, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) })
+    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: LIMITE_LISTAS, offsetListas, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) })
       .then((res) => {
         if (!cancelled) setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       })
@@ -119,7 +139,7 @@ export function MetagameArquetipoPage() {
         }
       });
     return () => { cancelled = true; };
-  }, [formato, slug, dias, requestKey, dateQuery, dataInicio, dataFim]);
+  }, [formato, slug, dias, requestKey, dateQuery, dataInicio, dataFim, offsetListas]);
 
   return (
     <PageShell>
@@ -166,7 +186,12 @@ export function MetagameArquetipoPage() {
             <MetagamePeriodoSelect
               dias={dias}
               diasOpcoes={DIAS_OPCOES}
-              onDias={(value) => setSearchParams({ dias: String(value) }, { replace: true })}
+              onDias={(value) => {
+                const next = new URLSearchParams(searchParams);
+                next.set("dias", String(value));
+                next.delete("paginaListas");
+                setSearchParams(next, { replace: true });
+              }}
             />
           </div>
 
@@ -216,7 +241,32 @@ export function MetagameArquetipoPage() {
 
           <MetagameMatchupsSection matchups={data.matchups} formato={formato} dias={dias} />
 
-          <h2 className="m-0 mb-3 text-text-main text-[1.25rem]">Listas</h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="m-0 text-text-main text-[1.25rem]">Listas</h2>
+            {paginacaoListas && paginacaoListas.total > LIMITE_LISTAS && (
+              <div className="flex items-center gap-2 text-[0.85rem] text-text-soft">
+                <span>
+                  Página {paginacaoListas.pagina} de {paginacaoListas.totalPaginas} · {paginacaoListas.total} listas
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!podeVoltarListas || loading}
+                  onClick={() => atualizarPaginaListas(paginaListas - 1)}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!podeAvancarListas || loading}
+                  onClick={() => atualizarPaginaListas(paginaListas + 1)}
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
+          </div>
           <div className="flex flex-col gap-3 mb-8">
             {listasOrdenadas.length === 0 ? (
               <p className="text-text-soft">Nenhuma lista neste período.</p>
