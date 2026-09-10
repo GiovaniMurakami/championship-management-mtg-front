@@ -55,7 +55,7 @@ describe("carregamento sob demanda no metagame", () => {
     buscarArquetipoMetagame.mockResolvedValue({ ...archetype, listas: [{ deckId: "11111111-1111-4111-8111-111111111111", nome: "Burn de Ana", usuario: { nome: "Ana" }, maindeck: [{ nome: "Lava Spike", quantidade: 4 }] }], resultados: [], matchups: [] });
     render(<MemoryRouter initialEntries={["/metagame/pauper/burn"]}><Routes><Route path="/metagame/:formato/:slug" element={<MetagameArquetipoPage />} /></Routes></MemoryRouter>);
     await screen.findByText("Burn de Ana");
-    expect(buscarArquetipoMetagame).toHaveBeenCalledWith("pauper", "burn", { dias: 30, limiteListas: 10, resumo: false });
+    expect(buscarArquetipoMetagame).toHaveBeenCalledWith("pauper", "burn", { dias: 30, limiteListas: 10, offsetListas: 0, resumo: false });
     await waitFor(() => expect(buscarCartasPorNome).toHaveBeenCalledWith(["Lava Spike"], { fallbackIndividual: false }));
     expect(await screen.findByText("Vermelho")).toBeInTheDocument();
     expect(screen.getByText("Lava Spike")).toBeInTheDocument();
