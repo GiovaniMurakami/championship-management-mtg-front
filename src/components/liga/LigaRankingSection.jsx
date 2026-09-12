@@ -31,6 +31,25 @@ function avatarGradient(idx) {
   return AVATAR_PALETTES[idx % AVATAR_PALETTES.length];
 }
 
+function PlayerAvatar({ jogador, idx = 0, large = false }) {
+  const [failedUrl, setFailedUrl] = useState(null);
+  const fotoUrl = jogador?.excluido ? null : jogador?.fotoUrl;
+
+  return (
+    <span className={`${large ? "w-16 h-16 text-lg" : "w-9 h-9 text-[0.72rem]"} overflow-hidden rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center font-bold text-white flex-shrink-0 select-none`}>
+      {fotoUrl && fotoUrl !== failedUrl ? (
+        <img
+          src={fotoUrl}
+          alt=""
+          loading="lazy"
+          className="w-full h-full object-cover"
+          onError={() => setFailedUrl(fotoUrl)}
+        />
+      ) : getInitials(jogador?.excluido ? "UE" : jogador?.nome)}
+    </span>
+  );
+}
+
 function calcWinRate(vitorias, derrotas, empates) {
   const total = vitorias + derrotas + empates;
   return total > 0 ? Math.round((vitorias / total) * 100) : null;
@@ -219,7 +238,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
   );
 }
 
-function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent, artwork = false }) {
+function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent, artwork = false, jogador }) {
   return (
     <div
       className="relative min-w-0 rounded-xl border overflow-hidden flex flex-col"
@@ -238,6 +257,7 @@ function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHove
         <MedalBadge pos={pos} />
       </div>
       <div className={`relative z-[1] p-4 flex flex-col items-center gap-3 flex-1 ${artwork && cardName ? "pt-36" : "pt-12"}`}>
+        {jogador && <PlayerAvatar jogador={jogador} idx={(pos ?? 1) - 1} large />}
         {cardName && !artwork && (
           <div className="w-[88px]">
             <CardThumbnail
@@ -383,11 +403,7 @@ function PlayerRow({ jogador, idx, isLogado }) {
     >
       <MedalBadge pos={pos} />
 
-      <span
-        className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center text-[0.72rem] font-bold text-white flex-shrink-0 select-none`}
-      >
-        {getInitials(excluido ? "UE" : nome)}
-      </span>
+      <PlayerAvatar jogador={jogador.jogador} idx={idx} />
 
       <div className="flex-1 min-w-0 flex flex-col items-start sm:flex-row sm:items-center gap-[0.45rem]">
         <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
@@ -808,6 +824,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                 <SpotlightCard
                   key={jogador.jogador?.id || jogador.posicao}
                   pos={jogador.posicao}
+                  jogador={jogador.jogador}
                   title={jogador.jogador?.nome || "Jogador"}
                   subtitle={`${jogador.pontos ?? 0} pts`}
                   accent="#fbbf24"
@@ -867,6 +884,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
             <div className="rounded-lg border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <MedalBadge pos={meuRanking.posicao} />
+                <PlayerAvatar jogador={meuRanking.jogador} idx={(meuRanking.posicao ?? 1) - 1} />
                 <div className="min-w-0">
                   <p className="m-0 text-[0.78rem] text-[rgba(190,175,215,0.5)]">Sua posição</p>
                   <p className="m-0 font-semibold text-[#c4b5fd] truncate">{meuRanking.jogador?.nome}</p>

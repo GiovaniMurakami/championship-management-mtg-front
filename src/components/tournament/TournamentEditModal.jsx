@@ -6,7 +6,6 @@ import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { BTN_GHOST, BTN_PRIMARY, FORM_COUNTER_CLASS, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 import { Checkbox, FormFeedback, FormSection, SelectField } from "../ui";
-import { RoundSoundPicker } from "./RoundSoundPicker";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
 
@@ -33,7 +32,6 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     maxRodadas: "",
     corteTop: "",
     linkBanner: "",
-    somRodada: "",
     playerPoints: "", tix: "",
   linkLive: "",
     secreto: false,
@@ -81,7 +79,6 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       maxRodadas: torneio.maxRodadas ?? "",
       corteTop: torneio.corteTop ?? "",
       linkBanner: torneio.linkBanner || "",
-      somRodada: torneio.somRodada || "",
       playerPoints: torneio.premio?.playerPoints ?? "", tix: torneio.premio?.tix ?? "",
       linkLive: torneio.linkLive || "",
       secreto: torneio.secreto ?? false,
@@ -171,7 +168,6 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       descricao: optionalTrimmed(sanitizeText(form.descricao)),
       regras: optionalTrimmed(sanitizeText(form.regras)),
       linkBanner: optionalTrimmed(form.linkBanner),
-      somRodada: optionalTrimmed(form.somRodada),
       premio: { playerPoints: Number(form.playerPoints || 0), tix: Number(form.tix || 0) },
       linkLive: form.linkLive.trim(),
       maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
@@ -329,15 +325,6 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             )}
 
             <input name="linkBanner" type="url" placeholder="Link do banner" value={form.linkBanner} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-            <div className="flex flex-col gap-2">
-              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Som de nova rodada</label>
-              <RoundSoundPicker
-                idPrefix="edit-som-rodada"
-                value={form.somRodada}
-                onChange={(somRodada) => setForm((prev) => ({ ...prev, somRodada }))}
-                disabled={isDisabled}
-              />
-            </div>
             <label className="flex flex-col gap-2 text-text-main">Prêmio · Player Points<input name="playerPoints" type="number" min="0" step="1" value={form.playerPoints} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} /></label>
             <label className="flex flex-col gap-2 text-text-main">Prêmio · Tix<input name="tix" type="number" min="0" step="any" value={form.tix} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} /></label>
             <input name="linkLive" type="url" placeholder="Live no YouTube" value={form.linkLive} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />

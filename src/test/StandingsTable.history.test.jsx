@@ -28,16 +28,24 @@ function renderTable(isFinished, matches = partidas) {
   );
 }
 
+function openPlayerHistory(name = "Ana") {
+  const trigger = screen.getAllByText(name)[0].closest("[tabindex]");
+  fireEvent.focus(trigger);
+  fireEvent.pointerEnter(trigger);
+  fireEvent.mouseEnter(trigger);
+  return trigger;
+}
+
 describe("historico de partidas no standings", () => {
   it("mostra o deck do oponente depois que o torneio termina", async () => {
     renderTable(true);
-    fireEvent.mouseEnter(screen.getAllByText("Ana")[0].closest("[tabindex]"));
+    openPlayerHistory();
     expect(await screen.findByText("Deck: Burn")).toBeInTheDocument();
   });
 
   it("mantem o deck do oponente oculto durante o torneio", async () => {
     renderTable(false);
-    fireEvent.mouseEnter(screen.getAllByText("Ana")[0].closest("[tabindex]"));
+    openPlayerHistory();
     await screen.findByText("vs Beto");
     expect(screen.queryByText("Deck: Burn")).toBeNull();
   });
@@ -49,12 +57,12 @@ describe("historico de partidas no standings", () => {
       rodada: index + 1,
     }));
     renderTable(true, longHistory);
-    fireEvent.mouseEnter(screen.getAllByText("Ana")[0].closest("[tabindex]"));
+    openPlayerHistory();
 
-    const expand = await screen.findByRole("button", { name: "Ver todas (8)" });
-    expect(screen.queryByText("R1")).toBeNull();
-    fireEvent.click(expand);
-    expect(screen.getByText("R1")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Mostrar menos" })).toBeInTheDocument();
-  });
+        const expand = await screen.findByRole("button", { name: "Ver todas (8)" });
+        expect(screen.queryByText("R1")).toBeNull();
+        fireEvent.click(expand);
+        expect(screen.getByText("R1")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Mostrar menos" })).toBeInTheDocument();
+    });
 });

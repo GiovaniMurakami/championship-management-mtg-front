@@ -57,15 +57,14 @@ describe("permissões ao abrir o torneio sem F5", () => {
     expect(buscarTorneio).toHaveBeenCalledTimes(2);
   });
 
-  it("documenta partidas antigas mantidas quando uma consulta retorna lista vazia", async () => {
+  it("aplica lista vazia quando a consulta de partidas volta sem mesas", async () => {
     const partida = { id: "p1", rodada: 1, status: "pendente" };
     listarPartidasTorneio.mockResolvedValue({ partidas: [partida] });
     const { result } = mount();
     await waitFor(() => expect(result.current.partidas).toEqual([partida]));
     listarPartidasTorneio.mockResolvedValue({ partidas: [] });
     await act(async () => result.current.loadPartidas());
-    // Diagnóstico de falha existente: vazio deveria remover a partida antiga.
-    expect(result.current.partidas).toEqual([partida]);
+    expect(result.current.partidas).toEqual([]);
   });
 
   it("remove os controles quando o anfitrião em cache perdeu o acesso", async () => {

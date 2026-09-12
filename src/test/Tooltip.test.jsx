@@ -2,6 +2,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { Tooltip } from "../components/ui/Tooltip";
 
+function openTrigger(element) {
+  fireEvent.focus(element);
+  fireEvent.pointerEnter(element);
+  fireEvent.mouseEnter(element);
+}
+
 describe("Tooltip", () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -16,11 +22,12 @@ describe("Tooltip", () => {
 
     expect(screen.queryByRole("tooltip")).toBeNull();
 
-    fireEvent.mouseEnter(screen.getByText("!").parentElement);
+    openTrigger(screen.getByText("!").parentElement);
     const tip = await screen.findByRole("tooltip");
     expect(tip).toHaveTextContent("Confirmar resultado");
     expect(container).not.toContainElement(tip);
     expect(document.body).toContainElement(tip);
+    expect(tip).toHaveStyle({ position: "fixed" });
   });
 
   it("usa o espaco acima quando o mouse esta proximo ao fim da tela", async () => {
@@ -39,7 +46,7 @@ describe("Tooltip", () => {
 
     const trigger = screen.getByText("Jogador").parentElement;
     fireEvent.mouseMove(trigger, { clientY: 750 });
-    fireEvent.mouseEnter(trigger);
+    openTrigger(trigger);
 
     const tip = await screen.findByRole("tooltip");
     expect(tip).toHaveAttribute("data-side", "top");

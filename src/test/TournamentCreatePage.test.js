@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildCopyTournamentInitialValues } from "../pages/TournamentCreatePage";
 
 describe("buildCopyTournamentInitialValues", () => {
-  it("repassa banner, story, link, som, secreto e exibirNome separados", () => {
+  it("repassa banner, story, link, secreto e exibirNome separados", () => {
     const values = buildCopyTournamentInitialValues({
       nome: "FNM",
       horario: "2026-08-10T22:00:00.000Z",
@@ -14,7 +14,6 @@ describe("buildCopyTournamentInitialValues", () => {
       corteTop: 8,
       bannerUrl: "https://bucket.s3.us-east-1.amazonaws.com/banner.jpg",
       linkBanner: "https://parceiro.example",
-      somRodada: "https://cdn.example/som.mp3",
       linkLive: "https://youtube.com/watch?v=abc",
       storyFundoUrl: "https://bucket.s3.us-east-1.amazonaws.com/story.jpg",
       secreto: true,
@@ -24,14 +23,22 @@ describe("buildCopyTournamentInitialValues", () => {
     expect(values.bannerUrl).toBe("https://bucket.s3.us-east-1.amazonaws.com/banner.jpg");
     expect(values.linkBanner).toBe("https://parceiro.example");
     expect(values.storyFundoUrl).toBe("https://bucket.s3.us-east-1.amazonaws.com/story.jpg");
-    expect(values.somRodada).toBe("https://cdn.example/som.mp3");
     expect(values.linkLive).toBe("https://youtube.com/watch?v=abc");
     expect(values.secreto).toBe(true);
     expect(values.exibirNomeJogador).toBe("nickMOL");
+    expect(values.ligaIds).toEqual([]);
     expect(values.regras).toBe("Regras");
     expect(values.maxJogadores).toBe("32");
     expect(values.corteTop).toBe("8");
     expect(values.horario).toMatch(/T/);
+  });
+
+  it("copia a primeira liga do torneio original", () => {
+    const values = buildCopyTournamentInitialValues({
+      nome: "FNM",
+      ligaIds: ["liga-1", "liga-2"],
+    });
+    expect(values.ligaIds).toEqual(["liga-1"]);
   });
 
   it("nao coloca bannerUrl no campo linkBanner", () => {

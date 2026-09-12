@@ -28,12 +28,12 @@ export function buildCopyTournamentInitialValues(copyFrom) {
     corteTop: copyFrom.corteTop ? String(copyFrom.corteTop) : "",
     bannerUrl: copyFrom.bannerUrl || "",
     linkBanner: copyFrom.linkBanner || "",
-    somRodada: copyFrom.somRodada || "",
     playerPoints: copyFrom.premio?.playerPoints ?? "", tix: copyFrom.premio?.tix ?? "",
     linkLive: copyFrom.linkLive || "",
     storyFundoUrl: copyFrom.storyFundoUrl || "",
     secreto: Boolean(copyFrom.secreto),
     exibirNomeJogador: copyFrom.exibirNomeJogador || "nome",
+    ligaIds: Array.isArray(copyFrom.ligaIds) && copyFrom.ligaIds[0] ? [copyFrom.ligaIds[0]] : [],
   };
 }
 

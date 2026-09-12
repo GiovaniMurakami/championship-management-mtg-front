@@ -145,6 +145,7 @@ export function OwnerControlPanel({
   canManage,
   onStartTournament,
   onNextRound,
+  onPublishRound,
   onRefazerRodada,
   onEncerrarTorneio,
   onDropPlayersWithoutDeck,
@@ -318,7 +319,10 @@ export function OwnerControlPanel({
             <button
               className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
               type="button"
-              onClick={onStartTournament}
+              onClick={async () => {
+                const ok = await onStartTournament?.();
+                if (ok === true) setReviewModalOpen(true);
+              }}
               disabled={actionLoading}
             >
               {isStartingTournament ? "Iniciando..." : "Iniciar Torneio"}
@@ -714,6 +718,7 @@ export function OwnerControlPanel({
         pendingCheckinPlayers={pendingCheckinPlayers}
         onDropPlayer={onDropPlayer}
         onNextRound={onNextRound}
+        onPublishRound={onPublishRound}
         actionLoading={actionLoading}
         droppingPlayerId={droppingPlayerId}
         usuarioId={usuarioId}
