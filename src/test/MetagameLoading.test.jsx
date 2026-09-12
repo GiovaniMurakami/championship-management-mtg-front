@@ -12,7 +12,7 @@ vi.mock("../services/scryfallApi", () => ({ buscarCartaPorNome: vi.fn(), buscarC
 vi.mock("../hooks/useAuth", () => ({ useAuth: () => ({ isAdmin: false }) }));
 vi.mock("../context/ToastContext", () => ({ useToast: () => ({ addToast: vi.fn() }) }));
 vi.mock("../hooks/usePageTitle", () => ({ usePageTitle: vi.fn() }));
-const archetype = { nome: "Burn", slug: "burn", cartaRepresentativa: "Lightning Bolt", cartasChave: ["Lava Spike"], cartasCores: ["Mountain", "Lava Spike"], metaPct: 20, copias: 1, winrate: 50 };
+const archetype = { nome: "Burn", slug: "burn", cartaRepresentativa: "Lightning Bolt", cartasChave: ["Lava Spike"], cartasCores: ["Mountain", "Lava Spike"], cores: ["R"], metaPct: 20, copias: 1, winrate: 50 };
 let enterViewport;
 beforeEach(() => {
   vi.clearAllMocks();

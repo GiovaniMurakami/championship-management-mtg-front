@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
 import { buscarCartasPorEntradas } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
+import { coresDasCartasDoBuilder } from "../utils/deckColors";
 import { parseDeckTxt } from "../utils/parseDeckTxt";
 import {
   MAX_DECK_SIZE,
@@ -58,6 +59,7 @@ export function useDeckBuilder() {
             isBasicLand,
             legalities: card.legalities || {},
             colors: card.colors || card.colorIdentity || [],
+            colorIdentity: card.colorIdentity?.length ? card.colorIdentity : (card.colors || []),
             cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
             manaCost: card.manaCost || "",
             typeLine: card.typeLine || "",
@@ -95,6 +97,7 @@ export function useDeckBuilder() {
           isBasicLand,
           legalities: card.legalities || {},
           colors: card.colors || card.colorIdentity || [],
+          colorIdentity: card.colorIdentity?.length ? card.colorIdentity : (card.colors || []),
           cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
           manaCost: card.manaCost || "",
           typeLine: card.typeLine || "",
@@ -266,6 +269,7 @@ export function useDeckBuilder() {
     setDeckLoading(true);
 
     try {
+      const ehCommander = deckForm.formato === "commander" || deckForm.formato === "commander500";
       const payload = {
         nome: deckForm.nome,
         formato: deckForm.formato,
@@ -273,6 +277,7 @@ export function useDeckBuilder() {
         maindeck: toDeckPayload(mainDeck),
         sideboard: toDeckPayload(sideboard),
         commander: toDeckPayload(commander),
+        cores: coresDasCartasDoBuilder(ehCommander ? commander : mainDeck),
         oculto: Boolean(deckForm.oculto),
       };
 
@@ -312,6 +317,7 @@ export function useDeckBuilder() {
           isBasicLand: card.isBasicLand,
           legalities: card.legalities || {},
           colors: card.colors || card.colorIdentity || [],
+          colorIdentity: card.colorIdentity?.length ? card.colorIdentity : (card.colors || []),
           cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
           manaCost: card.manaCost || "",
           typeLine: card.typeLine || "",

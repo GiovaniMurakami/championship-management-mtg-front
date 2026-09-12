@@ -19,7 +19,7 @@ import {
   MetagameResultadosSection,
 } from "../components/metagame";
 import { useScryfallArt } from "../hooks/useScryfallArt";
-import { coresDoDeck, nomesCartasParaCores } from "../utils/deckColors";
+import { useMetagameDeckColors } from "../hooks/useMetagameDeckColors";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { useAuth } from "../hooks/useAuth";
@@ -68,7 +68,8 @@ export function MetagameArquetipoPage() {
 
   usePageTitle(data?.nome ? `${data.nome} | Metagame` : "Metagame");
   const { imagem, retry } = useScryfallArt(data?.cartaRepresentativa);
-  const cores = data?.cores || coresDoDeck(nomesCartasParaCores(data, formato));
+  const { cores: coresPorSlug } = useMetagameDeckColors(data ? [data] : [], formato);
+  const cores = coresPorSlug[data?.slug] || data?.cores || [];
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
   const { listas: listasComCartas } = useResolvedMetagameListas(data?.listas);
   const listasOrdenadas = useMemo(
