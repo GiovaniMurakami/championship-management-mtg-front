@@ -1,10 +1,9 @@
-import { useCallback, useRef, useState } from "react";
-import { criarTorneio } from "../../services/backendApi";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { criarTorneio, listarLigas } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { Button, Checkbox, SelectField, FormFeedback, FormSection } from "../ui";
-import { RoundSoundPicker } from "./RoundSoundPicker";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
 import {
@@ -26,11 +25,11 @@ const INITIAL_FORM = {
   maxRodadas: "",
   corteTop: "",
   linkBanner: "",
-  somRodada: "",
   playerPoints: "", tix: "",
   linkLive: "",
   secreto: false,
   exibirNomeJogador: "nome",
+  ligaIds: [],
 };
 
 const TEXTAREA_CLASS = `${FORM_TEXTAREA_CLASS} min-h-[120px]`;
@@ -71,10 +70,32 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
   const [storyError, setStoryError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ligas, setLigas] = useState([]);
   const bannerInputRef = useRef(null);
   const storyFundoPickerRef = useRef(null);
 
   const isSubmitting = loading || uploadingBanner || uploadingStory;
+
+  useEffect(() => {
+    let ativo = true;
+    listarLigas(token, { limite: 100 })
+      .then((data) => {
+        if (!ativo) return;
+        const lista = Array.isArray(data?.ligas) ? data.ligas : Array.isArray(data) ? data : [];
+        setLigas(lista);
+      })
+      .catch(() => {
+        if (ativo) setLigas([]);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [token]);
+
+  const handleLigaChange = (event) => {
+    const value = event.target.value;
+    setCreateForm((prev) => ({ ...prev, ligaIds: value ? [value] : [] }));
+  };
 
   const handleStoryPreviewUrlChange = useCallback((url) => {
     setStoryPreview(url || "");
@@ -143,7 +164,6 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         descricao: optionalTrimmed(sanitizeText(createForm.descricao)),
         regras: optionalTrimmed(sanitizeText(createForm.regras)),
         linkBanner: optionalTrimmed(createForm.linkBanner),
-        somRodada: optionalTrimmed(createForm.somRodada),
         premio: { playerPoints: Number(createForm.playerPoints || 0), tix: Number(createForm.tix || 0) },
       linkLive: optionalTrimmed(createForm.linkLive),
         ...(bannerUrl ? { bannerUrl } : {}),
@@ -152,6 +172,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
         maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
         corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
+        ligaIds: Array.isArray(createForm.ligaIds) && createForm.ligaIds.length > 0 ? createForm.ligaIds : undefined,
       };
 
       await criarTorneio(payload, token);
@@ -195,6 +216,24 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
               </label>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="ligaId">Liga <span className="font-normal normal-case tracking-normal text-text-muted">(opcional)</span></FieldLabel>
+              <SelectField
+                id="ligaId"
+                name="ligaId"
+                value={createForm.ligaIds?.[0] || ""}
+                onChange={handleLigaChange}
+                disabled={isSubmitting}
+                className={TOURNAMENT_SELECT_CLASS}
+                iconClassName="text-brand"
+                placeholder="Nenhuma"
+                options={ligas.map((liga) => ({
+                  value: liga.id,
+                  label: liga.nome,
+                }))}
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -378,18 +417,6 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
           </FormSection>
 
           <FormSection title="Midia">
-
-            <div className="flex flex-col gap-2">
-              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">
-                Som de Nova Rodada <span className="text-text-soft text-[0.82rem]">(opcional)</span>
-              </label>
-              <RoundSoundPicker
-                idPrefix="create-som-rodada"
-                value={createForm.somRodada}
-                onChange={(somRodada) => setCreateForm((prev) => ({ ...prev, somRodada }))}
-                disabled={isSubmitting}
-              />
-            </div>
 
             <label className="flex flex-col gap-2 text-text-main">Prêmio · Player Points<input name="playerPoints" type="number" min="0" step="1" value={createForm.playerPoints} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} /></label>
             <label className="flex flex-col gap-2 text-text-main">Prêmio · Tix<input name="tix" type="number" min="0" step="any" value={createForm.tix} onChange={handleChange} disabled={isSubmitting} className={TOURNAMENT_INPUT_CLASS} /></label>

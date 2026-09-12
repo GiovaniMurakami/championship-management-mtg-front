@@ -4,13 +4,14 @@ import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
+import { CompetitiveStats } from "../components/ui/CompetitiveStats";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { useAuth } from "../hooks/useAuth";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarDeck } from "../services/backendApi";
-import { deckHasCardLists, hydrateDeckCards } from "../utils/hydrateDeckCards";
+import { hydrateDeckCards } from "../utils/hydrateDeckCards";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -86,12 +87,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
     const loadDeckCards = async () => {
       try {
-        // Em modo visualizar, sempre busca na API para trazer estatísticas (win rate).
-        if (!modoVisualizar && deckHasCardLists(deckFromState, id)) {
-          await applyDeck(deckFromState);
-          return;
-        }
-
+        // Busca também ao editar para carregar os resultados do original e das cópias.
         const fullDeck = await buscarDeck(id, tokenRef.current);
         if (cancelled) return;
         await applyDeck(fullDeck);
@@ -139,13 +135,6 @@ export function DeckBuilderPage({ isEditMode = false }) {
               </span>
             </div>
           )}
-          {readOnly && originalDeck.estatisticas && (
-            <div className="text-[0.9rem] text-[#86efac]" title="Win rate em torneios (cópias travadas)">
-              {originalDeck.estatisticas.totalPartidas > 0
-                ? `${originalDeck.estatisticas.winrate}% (${originalDeck.estatisticas.vitorias}–${originalDeck.estatisticas.derrotas}–${originalDeck.estatisticas.empates})`
-                : "Sem partidas registradas"}
-            </div>
-          )}
           <button
             type="button"
             onClick={() => setShowImageModal(true)}
@@ -154,6 +143,19 @@ export function DeckBuilderPage({ isEditMode = false }) {
             Gerar imagem
           </button>
         </div>
+      )}
+
+      {originalDeck?.estatisticas && (
+        <section aria-labelledby="deck-match-stats-title" className="mb-6">
+          <h2 id="deck-match-stats-title" className="m-0 text-lg font-semibold text-text-main">Estatísticas de partidas</h2>
+          <p className="mt-1 mb-3 text-sm text-text-soft">
+            Resultados somados do deck original e das cópias travadas em torneios. Apenas partidas finalizadas, sem BYEs.
+          </p>
+          <CompetitiveStats stats={originalDeck.estatisticas} />
+          {originalDeck.estatisticas.totalPartidas === 0 && (
+            <p className="mt-3 text-sm text-text-soft">Sem partidas registradas.</p>
+          )}
+        </section>
       )}
 
       <DeckBuilder

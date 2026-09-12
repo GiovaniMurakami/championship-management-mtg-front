@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
@@ -139,11 +139,27 @@ export function ReviewRoundModal({
   pendingCheckinPlayers,
   onDropPlayer,
   onNextRound,
+  onPublishRound,
   actionLoading,
   droppingPlayerId,
   usuarioId,
 }) {
   const [step, setStep] = useState("mesas");
+  const [publishStep, setPublishStep] = useState(false);
+  const [hideAfterPublish, setHideAfterPublish] = useState(false);
+  const waitingPublish = torneio?.status === "em_andamento" && torneio?.rodadaPublicada === false;
+  const showingPublish = waitingPublish || publishStep;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setStep("mesas");
+      setPublishStep(false);
+      setHideAfterPublish(false);
+      return;
+    }
+    if (waitingPublish) setPublishStep(true);
+  }, [isOpen, waitingPublish]);
+
   const deckNomePorUsuarioId = useMemo(() => {
     const nomes = new Map();
     for (const player of standings || []) {
@@ -154,7 +170,7 @@ export function ReviewRoundModal({
     return nomes;
   }, [standings]);
 
-  if (!isOpen) return null;
+  if (!isOpen || hideAfterPublish) return null;
 
   const rodadaAtual = Number(torneio?.rodadaAtual || 0);
   const partidasRodada = (partidas || []).filter(
@@ -170,9 +186,23 @@ export function ReviewRoundModal({
   const canAdvance = true;
   const nextRoundLabels = getNextRoundActionLabels(torneio, pendentesCheckin.length);
 
-  const handleNextRound = async (rodadaExtra = false) => {
-    const ok = await onNextRound(rodadaExtra);
-    if (ok !== false) onClose();
+  const handlePrimaryAction = async (rodadaExtra = false) => {
+    if (showingPublish) {
+      const ok = await onPublishRound?.();
+      if (ok === true) {
+        setHideAfterPublish(true);
+        onClose();
+      }
+      return;
+    }
+    const result = await onNextRound(rodadaExtra);
+    if (result === false) return;
+    if (result === "finalizado") {
+      onClose();
+      return;
+    }
+    setPublishStep(true);
+    setStep("mesas");
   };
 
   return (
@@ -191,23 +221,27 @@ export function ReviewRoundModal({
         <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-[rgba(145,71,255,0.2)] flex-shrink-0">
           <div className="flex flex-col gap-2">
             <h2 className="text-[1.15rem] font-bold text-[#e8d5ff] m-0">
-              {step === "mesas" ? `Revisar Rodada ${torneio?.rodadaAtual ?? ""}` : "Revisar Jogadores"}
+              {showingPublish
+                ? `Revisar Mesas · Rodada ${torneio?.rodadaAtual ?? ""}`
+                : step === "mesas" ? `Revisar Rodada ${torneio?.rodadaAtual ?? ""}` : "Revisar Jogadores"}
             </h2>
-            <div className="flex items-center gap-[0.4rem] text-[0.78rem]">
-              <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "mesas"
-                ? "text-brand border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
-                : "text-[rgba(200,180,230,0.6)] border-transparent"
-                }`}>
-                1. Mesas
-              </span>
-              <span className="text-[rgba(200,180,230,0.3)] text-[0.75rem]">→</span>
-              <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "jogadores"
-                ? "text-brand border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
-                : "text-[rgba(200,180,230,0.45)] border-transparent"
-                }`}>
-                2. Jogadores
-              </span>
-            </div>
+            {!showingPublish && (
+              <div className="flex items-center gap-[0.4rem] text-[0.78rem]">
+                <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "mesas"
+                  ? "text-brand border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                  : "text-[rgba(200,180,230,0.6)] border-transparent"
+                  }`}>
+                  1. Mesas
+                </span>
+                <span className="text-[rgba(200,180,230,0.3)] text-[0.75rem]">→</span>
+                <span className={`px-2 py-[2px] rounded-full border transition-all duration-200 ${step === "jogadores"
+                  ? "text-brand border-[rgba(145,71,255,0.5)] bg-[rgba(145,71,255,0.12)]"
+                  : "text-[rgba(200,180,230,0.45)] border-transparent"
+                  }`}>
+                  2. Jogadores
+                </span>
+              </div>
+            )}
           </div>
           <button
             type="button"
@@ -225,6 +259,16 @@ export function ReviewRoundModal({
           {/* Step 1: Mesas */}
           {step === "mesas" && (
             <div className="flex flex-col gap-3">
+              {showingPublish && nextRoundLabels.status && (
+                <p className="flex items-center gap-2 text-[0.82rem] text-[#7dd3fc] bg-[rgba(56,189,248,0.08)] border border-[rgba(56,189,248,0.2)] rounded-lg px-3 py-2 m-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 7v5" />
+                    <path d="M12 16h.01" />
+                  </svg>
+                  {nextRoundLabels.status}
+                </p>
+              )}
               <div className="flex gap-2 flex-wrap">
                 <span className="text-[0.78rem] font-semibold px-[10px] py-[3px] rounded-full bg-[rgba(34,197,94,0.12)] text-[#4ade80] border border-[rgba(34,197,94,0.3)]">
                   {finalizadas.length} finalizada{finalizadas.length !== 1 ? "s" : ""}
@@ -248,7 +292,7 @@ export function ReviewRoundModal({
                 </div>
               )}
 
-              {!allDone && (
+              {!showingPublish && !allDone && (
                 <p className="flex items-center gap-2 text-[0.82rem] text-[#fbbf24] bg-[rgba(251,191,36,0.08)] border border-[rgba(251,191,36,0.2)] rounded-lg px-3 py-2 m-0">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                     <circle cx="12" cy="12" r="10" />
@@ -314,36 +358,45 @@ export function ReviewRoundModal({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(145,71,255,0.2)] flex-shrink-0 max-[480px]:flex-col-reverse max-[480px]:items-stretch">
-          {step === "mesas" && (
+          {showingPublish || step === "mesas" ? (
             <>
               <button type="button" className={`${btnBase} ${btnGhost}`} onClick={onClose}>
                 Fechar
               </button>
-              <button
-                type="button"
-                className={`${btnBase} ${btnPrimary}`}
-                onClick={() => setStep("jogadores")}
-              >
-                Revisar Jogadores →
-              </button>
+              {showingPublish ? (
+                <button
+                  type="button"
+                  className={`${btnBase} ${btnPrimary}`}
+                  onClick={() => handlePrimaryAction()}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? "Publicando..." : "Publicar mesas"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={`${btnBase} ${btnPrimary}`}
+                  onClick={() => setStep("jogadores")}
+                >
+                  Revisar Jogadores →
+                </button>
+              )}
             </>
-          )}
-
-          {step === "jogadores" && (
+          ) : (
             <>
               <button type="button" className={`${btnBase} ${btnGhost}`} onClick={() => setStep("mesas")}>
                 ← Voltar
               </button>
               {nextRoundLabels.action === "finish-tournament" && Number(torneio?.totalRodadas) < 30 && (
                 <button type="button" className={`${btnBase} ${btnPrimary}`} disabled={actionLoading || !allDone}
-                  onClick={() => handleNextRound(true)} title={!allDone ? "Finalize todas as partidas da rodada atual" : undefined}>
+                  onClick={() => handlePrimaryAction(true)} title={!allDone ? "Finalize todas as partidas da rodada atual" : undefined}>
                   Jogar mais uma rodada
                 </button>
               )}
               <button
                 type="button"
                 className={`${btnBase} ${canAdvance ? btnPrimary : btnDisabled}`}
-                onClick={() => handleNextRound()}
+                onClick={() => handlePrimaryAction()}
                 disabled={actionLoading || !canAdvance}
               >
                 {actionLoading

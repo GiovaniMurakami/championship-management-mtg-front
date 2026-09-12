@@ -74,7 +74,6 @@ export function TournamentPage() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [enrollingId, setEnrollingId] = useState(null);
-  const [inscricoesLocais, setInscricoesLocais] = useState({});
   const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
   const [abaAtiva, setAbaAtiva] = useState(() => resolveAba(searchParams));
@@ -170,12 +169,31 @@ export function TournamentPage() {
   }, [loadTorneios]);
 
   const handleParticipanteInscrito = useCallback((_torneioId, data) => {
-    const inscritoId = normalizeId(data?.usuarioId || data?.userId || data?.usuario?.id || data?.id);
+    const inscritoId = normalizeId(data?.jogadorId || data?.usuarioId || data?.userId || data?.usuario?.id || data?.id);
     if (inscritoId && inscritoId === normalizeId(usuario?.id)) {
-      setInscricoesLocais((prev) => ({ ...prev, [_torneioId]: true }));
+      setTorneios((prev) => prev.map((t) => t.id === _torneioId ? { ...t, inscrito: true } : t));
     }
     loadTorneios();
   }, [loadTorneios, usuario?.id]);
+
+  const handleJogadorDropou = useCallback((torneioId, data) => {
+    if (normalizeId(data?.jogadorId) === normalizeId(usuario?.id)) {
+      setTorneios((prev) => prev.map((t) => t.id === torneioId ? { ...t, inscrito: false } : t));
+    }
+    loadTorneios();
+  }, [loadTorneios, usuario?.id]);
+
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "visible") loadTorneios();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [loadTorneios]);
 
   const handleCheckinRealizado = useCallback(() => {
     loadTorneios();
@@ -208,6 +226,9 @@ export function TournamentPage() {
           onResultadoRegistrado: (message) => handleResultadoRegistrado(torneio.id, message.data),
           onTorneioFinalizado: (message) => handleTorneioFinalizado(torneio.id, message.data),
           onParticipanteInscrito: (message) => handleParticipanteInscrito(torneio.id, message.data),
+          onJogadorDropou: (message) => handleJogadorDropou(torneio.id, message.data),
+          onJogadorVoltou: (message) => handleParticipanteInscrito(torneio.id, message.data),
+          onJogadorIngressou: (message) => handleParticipanteInscrito(torneio.id, message.data),
           onCheckinRealizado: (message) => handleCheckinRealizado(torneio.id, message.data),
         });
         channelsRef.current[torneio.id] = channel;
@@ -221,7 +242,7 @@ export function TournamentPage() {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [token, torneios, ablyWindowTick, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
+  }, [token, torneios, ablyWindowTick, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleJogadorDropou, handleCheckinRealizado]);
 
   useEffect(() => () => {
     Object.values(channelsRef.current).forEach((channel) => {
@@ -244,7 +265,7 @@ export function TournamentPage() {
     setEnrollingId(torneioId);
     try {
       await inscreverTorneio(torneioId, authToken);
-      setInscricoesLocais((prev) => ({ ...prev, [torneioId]: true }));
+      setTorneios((prev) => prev.map((t) => t.id === torneioId ? { ...t, inscrito: true } : t));
       addToast("Inscrição realizada com sucesso!", { type: "success" });
       loadTorneios();
     } catch {
@@ -260,7 +281,7 @@ export function TournamentPage() {
 
   const isInscrito = (torneio) => {
     if (!usuario?.id) return false;
-    return !!(inscricoesLocais[torneio.id] || torneio?.inscrito);
+    return Boolean(torneio?.inscrito);
   };
 
   const torneiosExibidos = torneios;

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ReviewRoundModal } from "../components/tournament/ReviewRoundModal";
 
@@ -106,5 +106,49 @@ describe("ReviewRoundModal", () => {
         expect(button).toBeEnabled();
         fireEvent.click(button);
         expect(onNextRound).toHaveBeenCalledTimes(1);
+    });
+
+    it("depois de gerar a proxima rodada permanece aberta para publicar as mesas", async () => {
+        const onNextRound = vi.fn().mockResolvedValue(true);
+        const onPublishRound = vi.fn().mockResolvedValue(true);
+        const onClose = vi.fn();
+        const { rerender } = render(
+            <ReviewRoundModal
+                {...baseProps}
+                onClose={onClose}
+                onNextRound={onNextRound}
+                onPublishRound={onPublishRound}
+                torneio={{ status: "em_andamento", rodadaAtual: 2, totalRodadas: 5 }}
+            />,
+        );
+
+        goToPlayersStep();
+        fireEvent.click(screen.getByRole("button", { name: /Iniciar Próxima Rodada/i }));
+        await waitFor(() => expect(onNextRound).toHaveBeenCalledTimes(1));
+        expect(onClose).not.toHaveBeenCalled();
+
+        rerender(
+            <ReviewRoundModal
+                {...baseProps}
+                onClose={onClose}
+                onNextRound={onNextRound}
+                onPublishRound={onPublishRound}
+                torneio={{ status: "em_andamento", rodadaAtual: 3, totalRodadas: 5, rodadaPublicada: false }}
+                partidas={[{
+                    id: "match-2",
+                    rodada: 3,
+                    status: "pendente",
+                    jogador1Nome: "Ana",
+                    jogador2Nome: "Beto",
+                }]}
+            />,
+        );
+
+        expect(screen.getByRole("button", { name: /Publicar mesas/i })).toBeEnabled();
+        fireEvent.click(screen.getByRole("button", { name: /Publicar mesas/i }));
+        await waitFor(() => expect(onPublishRound).toHaveBeenCalledTimes(1));
+        await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /Revisar Jogadores/i })).not.toBeInTheDocument();
     });
 });

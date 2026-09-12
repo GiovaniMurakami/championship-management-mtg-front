@@ -84,7 +84,29 @@ describe("OwnerControlPanel", () => {
         expect(screen.queryByRole("button", { name: /Iniciar Torneio/i })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: /Dropar sem deck/i })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: /Revisar Rodada/i })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /Publicar mesas/i })).not.toBeInTheDocument();
         expect(props.onDropPlayersWithoutCheckin).toHaveBeenCalledWith(["2"]);
+    });
+
+    it("publica as mesas na mesma modal de revisar rodada", () => {
+        const onPublishRound = vi.fn().mockResolvedValue(true);
+        const props = createBaseProps({
+            onPublishRound,
+            torneio: {
+                id: "t-1",
+                status: "em_andamento",
+                rodadaAtual: 1,
+                totalRodadas: 4,
+                donoId: "owner-1",
+                rodadaPublicada: false,
+            },
+        });
+
+        render(<OwnerControlPanel {...props} />);
+
+        expect(screen.queryByRole("button", { name: /Publicar mesas/i })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: /Revisar Rodada/i }));
+        expect(screen.getByRole("button", { name: /Publicar mesas/i })).toBeEnabled();
     });
 
     it("refaz a rodada após confirmação na modal", () => {

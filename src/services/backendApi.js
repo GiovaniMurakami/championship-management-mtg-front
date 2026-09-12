@@ -187,7 +187,7 @@ export const checkinTorneio = (torneioId, token) =>
   });
 
 export const iniciarTorneio = (torneioId, token) =>
-  httpClient.post(`/torneio/${torneioId}/iniciar`, {}, {
+  httpClient.post(`/torneio/${torneioId}/iniciar`, { publicar: false }, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -219,7 +219,12 @@ export const ingressarComToken = (tokenIngresso, authToken, deckId) =>
   });
 
 export const proximaRodada = (torneioId, token) =>
-  httpClient.post(`/torneio/${torneioId}/proxima-rodada`, {}, {
+  httpClient.post(`/torneio/${torneioId}/proxima-rodada`, { publicar: false }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const publicarRodada = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/publicar-rodada`, {}, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
