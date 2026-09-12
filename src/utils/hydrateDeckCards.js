@@ -21,6 +21,7 @@ function toCardEntry(entry, card) {
     isBasicLand: card?.isBasicLand || false,
     legalities: card?.legalities || {},
     colors: card?.colors || card?.colorIdentity || [],
+    colorIdentity: card?.colorIdentity?.length ? card.colorIdentity : (card?.colors || []),
     cmc: Number.isFinite(card?.cmc) ? card.cmc : Number(card?.cmc) || 0,
     manaCost: card?.manaCost || "",
     typeLine: card?.typeLine || "",

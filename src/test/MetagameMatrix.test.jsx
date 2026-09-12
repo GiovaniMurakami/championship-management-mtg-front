@@ -43,7 +43,10 @@ describe("matriz de confrontos", () => {
     expect(await screen.findByRole("cell", { name: "Terror contra Burn: 25% de vitórias em 4 partidas" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Burn contra Burn: sem partidas" })).toHaveTextContent("—");
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Burn" } });
-    expect(screen.queryByRole("columnheader", { name: "Terror" })).not.toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Terror" })).toBeInTheDocument();
+    expect(screen.queryByRole("rowheader", { name: /Terror/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Burn contra Terror: 50% de vitórias em 4 partidas" })).toBeInTheDocument();
+    expect(screen.queryByRole("cell", { name: "Terror contra Burn: 25% de vitórias em 4 partidas" })).not.toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Burn, geral: 50% de vitórias em 4 partidas" })).toBeInTheDocument();
   });
 

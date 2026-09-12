@@ -28,14 +28,17 @@ export function MetagameMatrix({ arquetipos, formato, dias }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("partidas");
   const [minimum, setMinimum] = useState("0");
-  const visible = useMemo(() => arquetipos
-    .filter(a => a.nome.toLocaleLowerCase("pt-BR").includes(search.trim().toLocaleLowerCase("pt-BR")) && Number(a.metaPct) >= Number(minimum))
-    .sort((a, b) => {
-      if (sort === "nome") return a.nome.localeCompare(b.nome, "pt-BR");
-      const value = item => sort === "winrate" ? Number(item.winrate) || 0
-        : (Number(item.vitorias) || 0) + (Number(item.derrotas) || 0) + (Number(item.empates) || 0);
-      return value(b) - value(a) || a.nome.localeCompare(b.nome, "pt-BR");
-    }), [arquetipos, search, sort, minimum]);
+  const columns = useMemo(() => [...arquetipos].sort((a, b) => {
+    if (sort === "nome") return a.nome.localeCompare(b.nome, "pt-BR");
+    const value = item => sort === "winrate" ? Number(item.winrate) || 0
+      : (Number(item.vitorias) || 0) + (Number(item.derrotas) || 0) + (Number(item.empates) || 0);
+    return value(b) - value(a) || a.nome.localeCompare(b.nome, "pt-BR");
+  }), [arquetipos, sort]);
+  const rows = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("pt-BR");
+    const metaMinima = Number(minimum);
+    return columns.filter(a => a.nome.toLocaleLowerCase("pt-BR").includes(query) && Number(a.metaPct) >= metaMinima);
+  }, [columns, search, minimum]);
   const missingMatchups = arquetipos.some(a => !Array.isArray(a.matchups));
   const to = slug => `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(slug)}?dias=${dias}${dateQuery}`;
 
@@ -62,10 +65,10 @@ export function MetagameMatrix({ arquetipos, formato, dias }) {
         <span className="rounded-md bg-danger/20 px-2 py-1">Abaixo de 50%</span>
         <span className="rounded-md bg-surface-raised px-2 py-1">50%</span>
         <span className="rounded-md bg-success/20 px-2 py-1">Acima de 50%</span>
-        <span className="py-1">— Sem partidas · {visible.length} arquétipos</span>
+        <span className="py-1">— Sem partidas · {rows.length} arquétipos</span>
       </div>
       {missingMatchups && <p role="alert" className="mb-3 text-sm text-text-soft">Os dados de confrontos estão indisponíveis no momento.</p>}
-      {visible.length === 0 ? <p className="text-text-soft">Nenhum arquétipo encontrado com esses filtros.</p> : (
+      {rows.length === 0 ? <p className="text-text-soft">Nenhum arquétipo encontrado com esses filtros.</p> : (
         <div role="region" aria-label="Tabela de confrontos, role para ver todos os arquétipos" tabIndex={0}
           className="max-h-[70vh] overflow-auto rounded-xl border border-line-soft focus-visible:outline-2 focus-visible:outline-brand">
           <table className="w-full border-separate border-spacing-0 text-sm">
@@ -74,13 +77,13 @@ export function MetagameMatrix({ arquetipos, formato, dias }) {
               <tr>
                 <th scope="col" className="sticky left-0 z-30 min-w-40 border border-line-soft bg-surface p-3 text-left text-text-main">Arquétipo</th>
                 <th scope="col" className="min-w-24 border border-line-soft bg-surface p-3 text-text-main">Geral</th>
-                {visible.map(a => <th key={a.slug} scope="col" className="min-w-28 max-w-40 border border-line-soft bg-surface p-3 font-medium">
+                {columns.map(a => <th key={a.slug} scope="col" className="min-w-28 max-w-40 border border-line-soft bg-surface p-3 font-medium">
                   <Link to={to(a.slug)} className="text-brand hover:underline">{a.nome}</Link>
                 </th>)}
               </tr>
             </thead>
             <tbody>
-              {visible.map(a => {
+              {rows.map(a => {
                 const matchups = new Map((a.matchups ?? []).map(m => [m.slug, m]));
                 const total = (Number(a.vitorias) || 0) + (Number(a.derrotas) || 0) + (Number(a.empates) || 0);
                 return <tr key={a.slug}>
@@ -89,7 +92,7 @@ export function MetagameMatrix({ arquetipos, formato, dias }) {
                     <span className="mt-1 block text-xs font-normal text-text-muted">{a.metaPct}% do meta · {a.copias} decks</span>
                   </th>
                   <RateCell stats={{ ...a, partidas: total }} label={`${a.nome}, geral`} />
-                  {visible.map(b => Array.isArray(a.matchups)
+                  {columns.map(b => Array.isArray(a.matchups)
                     ? <RateCell key={b.slug} stats={matchups.get(b.slug)} label={`${a.nome} contra ${b.nome}`} />
                     : <td key={b.slug} className="border border-line-soft p-3 text-center text-xs text-text-muted">Indisponível</td>)}
                 </tr>;

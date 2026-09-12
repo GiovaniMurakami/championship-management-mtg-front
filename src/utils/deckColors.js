@@ -2,6 +2,8 @@ import { isScryfallId } from "./scryfallId";
 
 export const MANA_COLOR_ORDER = ["W", "U", "B", "R", "G"];
 
+const STORAGE_KEY = "fuguete.colorIdentity.v1";
+
 const BASIC_LAND_COLOR = {
   plains: "W",
   island: "U",
@@ -38,7 +40,37 @@ export function nomesCartasParaCores(arquetipo, formato) {
     .filter((nome) => nome && !isScryfallId(nome));
 }
 
-export function coresDoDeck(nomesCartas, cartasScryfall = []) {
+export function lerIdentidadesPersistidas() {
+  try {
+    const bruto = localStorage.getItem(STORAGE_KEY);
+    if (!bruto) return {};
+    const parsed = JSON.parse(bruto);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function gravarIdentidadesPersistidas(identidades) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(identidades));
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+export function identidadesDasCartas(cartas = []) {
+  const identidades = {};
+  for (const carta of cartas) {
+    if (!carta) continue;
+    const chave = chaveNome(carta.nomePedido || carta.nome);
+    const identidade = carta.colorIdentity?.length ? carta.colorIdentity : (carta.colors || []);
+    if (chave && identidade.length) identidades[chave] = identidade;
+  }
+  return identidades;
+}
+
+export function coresDoDeck(nomesCartas, cartasScryfall = [], identidadesExtra = {}) {
   const porNome = new Map();
   for (const carta of cartasScryfall) {
     if (!carta) continue;
@@ -61,11 +93,23 @@ export function coresDoDeck(nomesCartas, cartasScryfall = []) {
     const carta = porNome.get(chave);
     const identidade = carta?.colorIdentity?.length
       ? carta.colorIdentity
-      : (carta?.colors || []);
+      : (carta?.colors?.length ? carta.colors : identidadesExtra[chave] || []);
     for (const cor of identidade) {
       if (MANA_COLOR_ORDER.includes(cor)) cores.add(cor);
     }
   }
 
   return MANA_COLOR_ORDER.filter((cor) => cores.has(cor));
+}
+
+export function coresDasCartasDoBuilder(cartas = []) {
+  return coresDoDeck(
+    cartas.map((carta) => carta.nome).filter(Boolean),
+    cartas,
+  );
+}
+
+export function nomesSemIdentidade(nomesCartas, identidades = {}) {
+  return [...new Set((nomesCartas || []).map(chaveNome).filter(Boolean))]
+    .filter((nome) => !BASIC_LAND_COLOR[nome] && !identidades[nome]?.length);
 }

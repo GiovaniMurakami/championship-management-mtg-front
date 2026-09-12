@@ -24,6 +24,10 @@ describe("coresDoDeck", () => {
     )).toEqual(["U", "B", "R"]);
   });
 
+  it("usa identidades persistidas sem nova consulta ao Scryfall", () => {
+    expect(coresDoDeck(["darkslick shores"], [], { "darkslick shores": ["U", "B"] })).toEqual(["U", "B"]);
+  });
+
   it("nao usa so a cor da carta representativa", () => {
     expect(coresDoDeck(["utopia sprawl"], [
       { nome: "Utopia Sprawl", colorIdentity: ["G"], colors: ["G"] },
