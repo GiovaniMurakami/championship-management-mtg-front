@@ -45,25 +45,20 @@ export function normalizeMatchesPayload(data) {
 
 export function useTournamentQueries({ torneioId, token, enabled = true }) {
   const canFetch = Boolean(enabled && torneioId);
-  const livePolling = (status) =>
-    status === "em_andamento" || status === "inscricoes_abertas" ? 8000 : false;
 
   const tournamentQuery = useQuery({
     queryKey: [...tournamentQueryKeys.detail(torneioId), Boolean(token)],
     queryFn: () => buscarTorneio(torneioId, token),
     // Permissões e estado podem mudar enquanto o usuário está em outra página.
     refetchOnMount: "always",
-    refetchInterval: (query) => livePolling(query.state.data?.status),
     enabled: canFetch,
   });
   const resolvedId = tournamentQuery.data?.id;
-  const liveInterval = livePolling(tournamentQuery.data?.status);
 
   const standingsQuery = useQuery({
     queryKey: [...tournamentQueryKeys.standings(resolvedId), Boolean(token)],
     queryFn: () => getStandings(resolvedId, token),
     refetchOnMount: "always",
-    refetchInterval: liveInterval,
     enabled: Boolean(canFetch && resolvedId),
   });
 
@@ -71,7 +66,6 @@ export function useTournamentQueries({ torneioId, token, enabled = true }) {
     queryKey: [...tournamentQueryKeys.matches(resolvedId), Boolean(token)],
     queryFn: () => listarPartidasTorneio(resolvedId, token),
     refetchOnMount: "always",
-    refetchInterval: liveInterval,
     enabled: Boolean(canFetch && resolvedId),
   });
 
