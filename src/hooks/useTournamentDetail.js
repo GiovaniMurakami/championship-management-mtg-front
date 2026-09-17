@@ -632,6 +632,7 @@ export function useTournamentDetail() {
     const handleCheckin = async () => {
         if (!torneioId) return;
         setActionLoading(true);
+        setAdminActionKey("checkin");
         setError("");
         try {
             const resultado = await checkinTorneio(torneioId, token);
@@ -654,6 +655,7 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+            setAdminActionKey("");
         }
     };
 

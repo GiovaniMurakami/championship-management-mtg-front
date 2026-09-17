@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { isEliminationPhase, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
 import { getDisplaySides, getMatchScore } from "../../utils/matchDisplay";
 import { InlineAlert } from "../ui/InlineAlert";
 
-export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, torneio, isOwner, currentPlayer, onCheckin }) {
+export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, onConfirmResult, actionLoading, isCheckingIn = false, torneio, isOwner, currentPlayer, onCheckin }) {
     const [winsPlayer1, setWinsPlayer1] = useState(0);
     const [winsPlayer2, setWinsPlayer2] = useState(0);
     const [showContestForm, setShowContestForm] = useState(false);
@@ -33,16 +34,30 @@ export function MatchPanel({ myMatch, usuario, onReportResult, onContestResult, 
             <section className="border border-line rounded-2xl p-5 bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-[linear-gradient(90deg,#2ccfb4,#8e39ed,#c795ff,#8e39ed,#2ccfb4)] before:bg-[length:200%_100%] before:animate-[shimmer-bar_3s_linear_infinite] max-md:p-4">
                 <h2 className="m-0 mb-4 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main">Partida Atual</h2>
                 <div className="flex flex-col items-center gap-4 py-2">
-                    <p className="text-text-soft text-[0.9rem] m-0 text-center">
-                        Confirme sua presença para visualizar a partida desta rodada.
-                    </p>
-                    <button
-                        className="inline-flex items-center justify-center w-full max-w-[320px] px-6 py-[0.65rem] border rounded-lg text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
-                        disabled={actionLoading}
-                        onClick={onCheckin}
-                    >
-                        {actionLoading ? "Aguarde..." : "Confirmar presença"}
-                    </button>
+                    {isCheckingIn ? (
+                        <>
+                            <Loader2 className="size-9 shrink-0 animate-spin text-[#c795ff]" aria-hidden="true" />
+                            <p className="text-text-main text-[0.95rem] font-semibold m-0 text-center">
+                                Confirmando sua presença...
+                            </p>
+                            <p className="text-text-muted text-[0.82rem] m-0 text-center">
+                                Aguarde, isso pode levar alguns segundos.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-text-soft text-[0.9rem] m-0 text-center">
+                                Confirme sua presença para visualizar a partida desta rodada.
+                            </p>
+                            <button
+                                className="inline-flex items-center justify-center gap-2 w-full max-w-[320px] px-6 py-[0.65rem] border rounded-lg text-[0.95rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] border-[rgba(199,149,255,0.5)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_6px_20px_rgba(167,79,255,0.4)]"
+                                disabled={actionLoading}
+                                onClick={onCheckin}
+                            >
+                                Confirmar presença
+                            </button>
+                        </>
+                    )}
                 </div>
             </section>
         );

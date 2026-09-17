@@ -190,6 +190,7 @@ export function TournamentDetailPage() {
           droppingPlayerId,
         };
 
+        const isCheckingIn = actionLoading && adminActionKey === "checkin";
         const shouldShowMatchPanel = Boolean(currentPlayer) && !currentPlayer?.dropped;
         const matchPanelKey = `${myMatch?.id || "none"}:${myMatch?.rodada || ""}:${torneio?.rodadaAtual || ""}`;
         const matchPanel = shouldShowMatchPanel ? (
@@ -201,6 +202,7 @@ export function TournamentDetailPage() {
             onContestResult={handleContestResult}
             onConfirmResult={handleConfirmResult}
             actionLoading={actionLoading}
+            isCheckingIn={isCheckingIn}
             torneio={torneio}
             isOwner={canManageTournament}
             currentPlayer={currentPlayer}
@@ -224,6 +226,7 @@ export function TournamentDetailPage() {
             onSelfDrop={handleSelfDrop}
             onSelfUndrop={() => handleUndropPlayer(usuario?.id, true)}
             actionLoading={actionLoading}
+            isCheckingIn={isCheckingIn}
             droppingPlayerId={droppingPlayerId}
             times={times}
             selectedTimeId={selectedTimeId}

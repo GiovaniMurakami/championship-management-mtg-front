@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { buscarDeck } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { Tooltip } from "../ui/Tooltip";
@@ -80,6 +81,7 @@ export function PlayerProfile({
   onSelfDrop,
   onSelfUndrop,
   actionLoading,
+  isCheckingIn = false,
   droppingPlayerId,
   times = [],
   selectedTimeId,
@@ -242,13 +244,21 @@ export function PlayerProfile({
             <SectionBlock title="Próximo passo" aside={<StatusPill tone="warning">Check-in pendente</StatusPill>}>
               <div className="grid gap-2">
                 <p className="m-0 text-[0.82rem] leading-relaxed text-text-soft">Confirme sua presença antes do início do torneio.</p>
-                <button
-                  className={`${buttonBase} w-full border border-[rgba(199,149,255,0.55)] bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5`}
-                  disabled={actionLoading}
-                  onClick={onCheckin}
-                >
-                  {actionLoading ? "Aguarde..." : "Fazer check-in"}
-                </button>
+                {isCheckingIn ? (
+                  <div className="flex flex-col items-center gap-3 py-3" aria-live="polite" aria-busy="true">
+                    <Loader2 className="size-8 shrink-0 animate-spin text-[#c795ff]" aria-hidden="true" />
+                    <p className="m-0 text-center text-[0.9rem] font-semibold text-text-main">Fazendo check-in...</p>
+                    <p className="m-0 text-center text-[0.78rem] text-text-muted">Aguarde, isso pode levar alguns segundos.</p>
+                  </div>
+                ) : (
+                  <button
+                    className={`${buttonBase} w-full border border-[rgba(199,149,255,0.55)] bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] hover:not-disabled:-translate-y-0.5`}
+                    disabled={actionLoading}
+                    onClick={onCheckin}
+                  >
+                    Fazer check-in
+                  </button>
+                )}
               </div>
             </SectionBlock>
           )}
