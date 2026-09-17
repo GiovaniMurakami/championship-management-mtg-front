@@ -61,7 +61,7 @@ export function LigaRankingTimesSection({ ranking, loading }) {
           <span className="font-semibold text-text-main">{times.length}</span>{" "}
           time{times.length !== 1 ? "s" : ""}
         </span>
-        <span className="text-[0.72rem] text-[rgba(190,175,215,0.4)]">ordenado por pontos</span>
+        <span className="text-[0.72rem] text-[rgba(190,175,215,0.4)]">pontos · OMW% · GW% · OGW%</span>
       </div>
       <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
         {times.map((time, idx) => {
@@ -109,6 +109,11 @@ export function LigaRankingTimesSection({ ranking, loading }) {
                 <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd] block">
                   {nome}
                 </span>
+                {time.omwp != null && (
+                  <span className="block text-[0.66rem] tabular-nums text-[rgba(190,175,215,0.45)]">
+                    OMW {(Number(time.omwp) * 100).toFixed(1)}% · GW {(Number(time.gwp) * 100).toFixed(1)}% · OGW {(Number(time.ogwp) * 100).toFixed(1)}%
+                  </span>
+                )}
                 {getTotalMembros(time) != null && (
                   <span className="text-[0.72rem] text-[rgba(190,175,215,0.45)]">{getTotalMembros(time)} membros</span>
                 )}

@@ -268,7 +268,7 @@ Torneios: POST /torneio/criar, /:id/inscrever
 Ligas:    CRUD /liga/* + GET /liga/:id/ranking
           (`jogador.nome` = nick MOL)
 
-Metagame: GET /metagame?formato=&dias=30
+Metagame: GET /metagame?formato=&dias=30&limite=30&offset=0
           GET /metagame/:formato/:slug?dias=30   (público; sem JWT)
           (`usuario.nome` = nick MOL)
 
@@ -283,7 +283,7 @@ Imagens:  POST /imagem/upload-url → uploadParaS3 (PUT direto no S3)
 
 **Fuso horário:** campos `horario`, `criadoEm`, `rodadaIniciadaEm` vêm da API em **Brasília (UTC-3)**. Use `src/utils/brasiliaTime.js` para exibir/formatar no front.
 
-**Permissões no torneio:** dono, admin global ou **anfitrião** (`anfitriaoId`) podem gerenciar o torneio (`canManageTournament` no front).
+**Permissões no torneio:** dono, admin global ou **anfitrião** (`anfitriaoId`) podem gerenciar o torneio (`canManageTournament` no front) enquanto ele não está finalizado. Depois de encerrado, só o admin vê **Editar torneio** (premiação e demais campos). O ranking da liga desempata por pontos, OMW%, GW% e OGW%, como o torneio. O metagame pede os 30 primeiros arquétipos e “Mostrar mais” busca o restante com `offset`.
 
 Erros do backend: campo `mensagem` ou `message`; validação Zod em `errors[]`/`erros[]`.
 
@@ -485,4 +485,4 @@ npm run preview
 
 ---
 
-*Última revisão: agosto/2026 — alinhado com v1.2.39 (ligas, metagame, decks, times e experiência de torneios)*
+*Última revisão: setembro/2026 — metagame com “Mostrar mais”, desempate de liga e edição de torneio finalizado pelo admin*

@@ -21,6 +21,7 @@ import { BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
 const DIAS_OPCOES = [7, 14, 30, 90];
 const DIAS_PADRAO = 30;
 const FORMATO_PADRAO = "pauper";
+const LIMITE_DECKS = 30;
 
 function parseDias(valor) {
   const n = Number(valor);
@@ -63,9 +64,11 @@ export function MetagamePage() {
     return undefined;
   }, [formato, dias, searchParams, setSearchParams]);
 
+  const [carregandoMais, setCarregandoMais] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
-    buscarMetagame({ formato, dias, ...(dateQuery ? { dataInicio, dataFim } : {}) })
+    buscarMetagame({ formato, dias, limite: LIMITE_DECKS, offset: 0, ...(dateQuery ? { dataInicio, dataFim } : {}) })
       .then((res) => {
         if (!cancelled) setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       })
@@ -88,7 +91,6 @@ export function MetagamePage() {
   const recentes = data?.recentes ?? [];
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
-  const { cores: coresPorSlug } = useMetagameDeckColors(data?.arquetipos, formato);
 
   useEffect(() => () => closeCardPreview(), [closeCardPreview]);
 
@@ -98,6 +100,38 @@ export function MetagamePage() {
     if (!q) return lista;
     return lista.filter((a) => a.nome.toLowerCase().includes(q));
   }, [data, busca]);
+  const restantes = Math.max(0, (data?.paginacao?.total ?? data?.arquetipos?.length ?? 0) - (data?.arquetipos?.length ?? 0));
+  const { cores: coresPorSlug } = useMetagameDeckColors(data?.arquetipos, formato);
+  const mostrarMais = useCallback(() => {
+    if (carregandoMais || restantes === 0 || !data) return;
+    setCarregandoMais(true);
+    buscarMetagame({
+      formato,
+      dias,
+      offset: data.arquetipos.length,
+      ...(dateQuery ? { dataInicio, dataFim } : {}),
+    })
+      .then((res) => {
+        const extra = res?.data ?? res;
+        setResult((prev) => {
+          if (prev.key !== requestKey || !prev.data) return prev;
+          const existentes = new Set(prev.data.arquetipos.map((arquetipo) => arquetipo.slug));
+          const novos = (extra?.arquetipos ?? []).filter((arquetipo) => !existentes.has(arquetipo.slug));
+          return {
+            ...prev,
+            data: {
+              ...prev.data,
+              arquetipos: [...prev.data.arquetipos, ...novos],
+              paginacao: extra?.paginacao ?? { ...prev.data.paginacao, offset: prev.data.arquetipos.length + novos.length },
+            },
+          };
+        });
+      })
+      .catch((err) => {
+        logError("Erro ao carregar o restante do metagame:", err);
+      })
+      .finally(() => setCarregandoMais(false));
+  }, [carregandoMais, data, dataFim, dataInicio, dateQuery, dias, formato, restantes, requestKey]);
 
   return (
     <PageShell>
@@ -155,7 +189,14 @@ export function MetagamePage() {
         />
       )}
       {!loading && !erro && (data?.arquetipos?.length ?? 0) > 0 && matrixView && (
-        <MetagameMatrix arquetipos={data.arquetipos} formato={formato} dias={dias} />
+        <MetagameMatrix
+          arquetipos={data.arquetipos}
+          formato={formato}
+          dias={dias}
+          restantes={restantes}
+          carregandoMais={carregandoMais}
+          onMostrarMais={mostrarMais}
+        />
       )}
       {!loading && !matrixView && (data?.arquetipos?.length ?? 0) > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6 items-start">
@@ -179,6 +220,16 @@ export function MetagamePage() {
                   />
                 ))}
               </div>
+            )}
+            {restantes > 0 && (
+              <button
+                type="button"
+                className={`${BTN_SECONDARY} mt-4 min-h-11`}
+                disabled={carregandoMais}
+                onClick={mostrarMais}
+              >
+                {carregandoMais ? "Buscando..." : `Mostrar mais (${restantes})`}
+              </button>
             )}
           </div>
           <MetagameRecentSidebar

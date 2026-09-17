@@ -81,6 +81,7 @@ export function TournamentDetailPage() {
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
   const canManage = canManageTournament && (isRegistrationOpen || torneio?.status === "em_andamento");
+  const canEditFinished = isAdmin && isFinished;
 
   const torneioNome = torneio?.nome || torneio?.torneioNome;
   usePageTitle(torneioNome, {
@@ -117,9 +118,9 @@ export function TournamentDetailPage() {
         >
           ← Voltar para torneios
         </button>
-        {canManage && (
+        {(canManage || canEditFinished) && (
           <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
-            {isAdmin && (
+            {isAdmin && !isFinished && (
               <button
                 className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
                 onClick={() => setShowHostModal(true)}
