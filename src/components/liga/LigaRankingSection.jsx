@@ -374,6 +374,19 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
   );
 }
 
+function formatPctLiga(valor) {
+  return valor == null ? "—" : `${(Number(valor) * 100).toFixed(1)}%`;
+}
+
+function DesempateLiga({ stats }) {
+  if (stats?.omwp == null && stats?.gwp == null && stats?.ogwp == null) return null;
+  return (
+    <span className="text-[0.66rem] tabular-nums text-[rgba(190,175,215,0.45)]">
+      OMW {formatPctLiga(stats.omwp)} · GW {formatPctLiga(stats.gwp)} · OGW {formatPctLiga(stats.ogwp)}
+    </span>
+  );
+}
+
 function RecordeVd({ vitorias, derrotas, empates, className = "" }) {
   return (
     <span className={`text-[0.8rem] font-semibold tabular-nums text-[#c4b5fd] ${className}`}>
@@ -405,11 +418,14 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
       <PlayerAvatar jogador={jogador.jogador} idx={idx} />
 
-      <div className="flex-1 min-w-0 flex flex-col items-start sm:flex-row sm:items-center gap-[0.45rem]">
-        <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
-          <UsuarioNomeExibicao nome={nome} usuarioId={jogador.jogador?.id} excluido={excluido} />
+      <div className="flex-1 min-w-0 flex flex-col items-start gap-[0.15rem]">
+        <span className="flex items-center gap-[0.45rem] max-w-full">
+          <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
+            <UsuarioNomeExibicao nome={nome} usuarioId={jogador.jogador?.id} excluido={excluido} />
+          </span>
+          {isLogado && <VoceBadge />}
         </span>
-        {isLogado && <VoceBadge />}
+        <DesempateLiga stats={jogador} />
       </div>
 
       <div className="hidden min-[520px]:flex items-center flex-shrink-0 min-w-[3.5rem] justify-end">
@@ -566,7 +582,7 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
       <SectionInfo
         count={totalTimes}
         label={`time${totalTimes !== 1 ? "s" : ""}`}
-        hint="ranking coletivo"
+        hint="pontos · OMW% · GW% · OGW%"
       />
 
       {rankingTimes.length === 0 ? (
@@ -601,7 +617,10 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
                   className="border-t border-[rgba(217,180,255,0.07)] hover:bg-white/[0.02] transition-colors duration-150"
                 >
                   <td className="px-2 sm:px-5 py-4 text-[0.88rem] font-semibold text-text-main">{time.posicao ?? idx + 1}</td>
-                  <td className="px-2 sm:px-5 py-4 text-[0.9rem] [overflow-wrap:anywhere] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
+                  <td className="px-2 sm:px-5 py-4 text-[0.9rem] [overflow-wrap:anywhere] font-medium text-[#c4b5fd]">
+                    <span className="block">{time.time?.nome || "—"}</span>
+                    <DesempateLiga stats={time} />
+                  </td>
                   <td className="px-2 sm:px-5 py-4">
                     <RecordeVd
                       vitorias={time.vitorias ?? 0}
@@ -842,7 +861,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               <SectionInfo
                 count={jogadoresTotal}
                 label={`jogador${jogadoresTotal !== 1 ? "es" : ""}`}
-                hint="ordenado por pontos · desempate % vitória"
+                hint="pontos · OMW% · GW% · OGW%"
               />
               <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
                 {jogadoresPagina.map((j, idx) => (

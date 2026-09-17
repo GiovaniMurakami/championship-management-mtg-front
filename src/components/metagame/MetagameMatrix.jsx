@@ -1,7 +1,7 @@
 import { useDateRangeParams } from "../../hooks/useDateRangeParams";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
+import { BTN_SECONDARY, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 
 function rateClass(rate) {
   if (rate > 50) return "bg-success/20 text-text-main";
@@ -23,7 +23,7 @@ function RateCell({ stats, label }) {
   );
 }
 
-export function MetagameMatrix({ arquetipos, formato, dias }) {
+export function MetagameMatrix({ arquetipos, formato, dias, restantes = 0, carregandoMais = false, onMostrarMais }) {
   const { dateQuery } = useDateRangeParams();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("partidas");
@@ -100,6 +100,16 @@ export function MetagameMatrix({ arquetipos, formato, dias }) {
             </tbody>
           </table>
         </div>
+      )}
+      {restantes > 0 && (
+        <button
+          type="button"
+          className={`${BTN_SECONDARY} mt-4 min-h-11`}
+          disabled={carregandoMais}
+          onClick={onMostrarMais}
+        >
+          {carregandoMais ? "Buscando..." : `Mostrar mais (${restantes})`}
+        </button>
       )}
     </section>
   );

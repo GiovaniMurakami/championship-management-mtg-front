@@ -13,7 +13,8 @@ O produto possui os fluxos principais implementados:
 - torneios Swiss com Top Cut, check-in, pareamentos, resultados e standings em tempo real;
 - ingresso por link, anfitrião delegado e controles administrativos;
 - ligas, rankings, times e perfis públicos;
-- metagame por formato, arquétipos, listas e matchups;
+- metagame por formato, arquétipos, listas e matchups (primeiros 30 e “Mostrar mais”);
+- ranking de liga com o mesmo desempate do torneio (OMW%, GW% e OGW%);
 - comunidade, parceiros, anúncios e páginas legais;
 - contador de vida e calculadora Swiss/Top 8;
 - exportação de Top 8 para imagem, story e vídeo.

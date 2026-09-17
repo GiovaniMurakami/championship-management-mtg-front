@@ -29,12 +29,12 @@ describe("matriz de confrontos", () => {
     fireEvent.change(screen.getByLabelText("Até"), { target: { value: "2026-08-31" } });
     expect(buscarMetagame).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: "Aplicar datas" }));
-    await waitFor(() => expect(buscarMetagame).toHaveBeenLastCalledWith({ formato: "pauper", dias: 30, dataInicio: "2026-08-01", dataFim: "2026-08-31" }));
+    await waitFor(() => expect(buscarMetagame).toHaveBeenLastCalledWith({ formato: "pauper", dias: 30, limite: 30, offset: 0, dataInicio: "2026-08-01", dataFim: "2026-08-31" }));
     await screen.findByRole("table");
     expect(screen.getAllByRole("link", { name: "Burn" })[0]).toHaveAttribute("href", "/metagame/pauper/burn?dias=30&dataInicio=2026-08-01&dataFim=2026-08-31");
     fireEvent.click(screen.getByRole("button", { name: /01\/08\/2026.*31\/08\/2026/ }));
     fireEvent.click(screen.getByRole("button", { name: "Limpar datas" }));
-    await waitFor(() => expect(buscarMetagame).toHaveBeenLastCalledWith({ formato: "pauper", dias: 30 }));
+    await waitFor(() => expect(buscarMetagame).toHaveBeenLastCalledWith({ formato: "pauper", dias: 30, limite: 30, offset: 0 }));
     expect(buscarArquetipoMetagame).not.toHaveBeenCalled();
   });
   it("preserva a perspectiva de cada linha, os empates e a ausência de partidas", async () => {
@@ -57,6 +57,34 @@ describe("matriz de confrontos", () => {
     expect(buscarArquetipoMetagame).not.toHaveBeenCalled();
   });
 
+  it("mostra os 30 primeiros decks e só monta o restante ao clicar em mostrar mais", async () => {
+    const muitos = Array.from({ length: 31 }, (_, i) => ({
+      slug: `deck-${String(i).padStart(2, "0")}`,
+      nome: `Deck ${String(i).padStart(2, "0")}`,
+      metaPct: 1,
+      copias: 1,
+      winrate: 50,
+      vitorias: 1,
+      derrotas: 1,
+      empates: 0,
+      cores: ["R"],
+      matchups: [],
+    }));
+    buscarMetagame.mockImplementation(async (params) => params.offset
+      ? { arquetipos: [muitos[30]], recentes: [], paginacao: { total: 31, offset: 30, limite: 1 } }
+      : { arquetipos: muitos.slice(0, 30), recentes: [], paginacao: { total: 31, offset: 0, limite: 30 } });
+    render(<MemoryRouter initialEntries={["/metagame?formato=pauper&dias=30"]}><MetagamePage /></MemoryRouter>);
+    await screen.findByText("Deck 00");
+    expect(screen.queryByText("Deck 30")).not.toBeInTheDocument();
+    expect(buscarMetagame).toHaveBeenCalledWith({ formato: "pauper", dias: 30, limite: 30, offset: 0 });
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar mais (1)" }));
+    await screen.findByText("Deck 30");
+    expect(buscarMetagame).toHaveBeenLastCalledWith({ formato: "pauper", dias: 30, offset: 30 });
+    fireEvent.click(screen.getByRole("button", { name: "Matriz de confrontos" }));
+    expect(screen.getByRole("columnheader", { name: "Deck 30" })).toBeInTheDocument();
+    expect(buscarMetagame).toHaveBeenCalledTimes(2);
+  });
+
   it("reutiliza a listagem ao alternar visualizações e faz uma só busca ao trocar o período", async () => {
     render(<MemoryRouter initialEntries={["/metagame?formato=pauper&dias=30"]}><MetagamePage /></MemoryRouter>);
     await screen.findByText("Burn");
@@ -66,7 +94,7 @@ describe("matriz de confrontos", () => {
     expect(buscarMetagame).toHaveBeenCalledTimes(1);
     expect(buscarArquetipoMetagame).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText("Decks dos últimos"), { target: { value: "7" } });
-    await waitFor(() => expect(buscarMetagame).toHaveBeenCalledWith({ formato: "pauper", dias: 7 }));
+    await waitFor(() => expect(buscarMetagame).toHaveBeenCalledWith({ formato: "pauper", dias: 7, limite: 30, offset: 0 }));
     await screen.findByRole("cell", { name: "Burn contra Terror: 50% de vitórias em 4 partidas" });
     expect(screen.getByRole("button", { name: "Matriz de confrontos" })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: "Cards" }));
