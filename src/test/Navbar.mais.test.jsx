@@ -3,8 +3,8 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { Navbar } from "../components/ui/Navbar";
 
-describe("Navbar — dropdown Ferramentas", () => {
-  it("abre o dropdown e lista as páginas", () => {
+describe("Navbar — dropdown Mais", () => {
+  it("abre o dropdown e lista comunidade, competição e ferramentas", () => {
     render(
       <MemoryRouter>
         <Navbar
@@ -17,7 +17,10 @@ describe("Navbar — dropdown Ferramentas", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Mais/i }));
+    expect(screen.getByRole("menuitem", { name: /Posts/i })).toHaveAttribute("href", "/comunidade");
+    expect(screen.getByRole("menuitem", { name: /Ligas/i })).toHaveAttribute("href", "/ligas");
+    expect(screen.getByRole("menuitem", { name: /Times/i })).toHaveAttribute("href", "/times");
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
       "href",
       "/ferramentas/contador-vida",
@@ -28,7 +31,7 @@ describe("Navbar — dropdown Ferramentas", () => {
     );
   });
 
-  it("mantém as ferramentas públicas sem login", () => {
+  it("mantém os itens públicos sem login", () => {
     const onOpenAuth = vi.fn();
     render(
       <MemoryRouter>
@@ -42,7 +45,7 @@ describe("Navbar — dropdown Ferramentas", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Mais/i }));
     expect(onOpenAuth).not.toHaveBeenCalled();
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
       "href",

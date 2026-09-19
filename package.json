@@ -20,6 +20,7 @@
     "ably": "^2.20.0",
     "axios": "^1.16.1",
     "country-flag-emoji-polyfill": "^0.1.10",
+    "jszip": "^3.10.2",
     "lucide-react": "^1.37.0",
     "mp4-muxer": "^5.2.2",
     "react": "^19.2.0",

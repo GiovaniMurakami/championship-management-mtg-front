@@ -25,7 +25,9 @@ export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [authRefreshing, setAuthRefreshing] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const pendingAuthActionRef = useRef(null);
+  const loggingOutRef = useRef(false);
 
   const [loginForm, setLoginForm] = useState({ email: "", senha: "" });
   const [registerForm, setRegisterForm] = useState({
@@ -185,10 +187,25 @@ export function AuthProvider({ children }) {
   };
 
   const clearAuth = async () => {
-    try { if (token) await logoutUsuario(token); } catch { /* ignora */ }
+    if (loggingOutRef.current) return;
+    loggingOutRef.current = true;
+    setLoggingOut(true);
+    const startedAt = Date.now();
+    try {
+      if (token) await logoutUsuario(token);
+    } catch {
+      /* ignora */
+    }
     setToken("");
     setUsuario(null);
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    const elapsed = Date.now() - startedAt;
+    const minVisibleMs = 650;
+    if (elapsed < minVisibleMs) {
+      await new Promise((resolve) => setTimeout(resolve, minVisibleMs - elapsed));
+    }
+    loggingOutRef.current = false;
+    setLoggingOut(false);
   };
 
   const openAuth = (tab) => {
@@ -360,6 +377,8 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = Boolean(token && usuario);
   const isAdmin = (usuario?.role ?? "user") === "admin";
+  const isEditor = (usuario?.role ?? "user") === "editor";
+  const podeEditarBlog = isAdmin || isEditor;
 
   const value = {
     authInitialized,
@@ -374,6 +393,8 @@ export function AuthProvider({ children }) {
     registerForm,
     isAuthenticated,
     isAdmin,
+    isEditor,
+    podeEditarBlog,
     showEditProfileModal,
     editProfileForm,
     loginLockout,
@@ -389,6 +410,7 @@ export function AuthProvider({ children }) {
     handleProfilePhoto,
     setAuthTab,
     clearAuth,
+    loggingOut,
     openEditProfileModal,
     closeEditProfileModal,
     handleUpdateProfile,

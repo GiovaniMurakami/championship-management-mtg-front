@@ -15,13 +15,6 @@ function NavAvatar({ nome, fotoUrl }) {
   );
 }
 
-const IconHome = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-
 const IconTrophy = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
@@ -79,6 +72,19 @@ const IconTools = () => (
   </svg>
 );
 
+const IconBlog = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+);
+
+const IconCommunity = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
 const IconEdit = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -94,8 +100,14 @@ const IconLogout = () => (
   </svg>
 );
 
+const Chevron = () => (
+  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 const mobileLinkClass = ({ isActive }) =>
-  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-lg no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
+  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.5rem] rounded-lg no-underline font-semibold text-[0.9rem] transition-all duration-[180ms] ${isActive
     ? "bg-[rgba(167,79,255,0.18)] text-text-main"
     : "text-text-soft hover:bg-[rgba(167,79,255,0.1)] hover:text-text-main"
   }`;
@@ -106,24 +118,34 @@ const desktopLinkClass = ({ isActive }) =>
     : "text-text-muted hover:text-text-main"
   }`;
 
+const dropdownItemClass =
+  "block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main";
+
+const dropdownPanelClass =
+  "absolute top-[calc(100%+0.7rem)] left-1/2 z-50 min-w-[220px] -translate-x-1/2 rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] p-1.5 shadow-[0_12px_28px_rgba(3,2,8,0.55)]";
+
+const sectionLabelClass =
+  "mx-2 mb-1 mt-2 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-text-subtle first:mt-1";
+
 export function Navbar({
   usuario,
   onOpenAuth,
   onLogout,
   isAuthenticated,
   onOpenEditProfile,
+  loggingOut = false,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const [maisOpen, setMaisOpen] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const navRef = useRef(null);
-  const toolsRef = useRef(null);
+  const maisRef = useRef(null);
   const dashboardRef = useRef(null);
   const isAdmin = usuario?.role === "admin";
 
   const close = () => {
     setMenuOpen(false);
-    setToolsOpen(false);
+    setMaisOpen(false);
     setDashboardOpen(false);
   };
 
@@ -132,8 +154,8 @@ export function Navbar({
       if (navRef.current && !navRef.current.contains(e.target)) {
         setMenuOpen(false);
       }
-      if (toolsRef.current && !toolsRef.current.contains(e.target)) {
-        setToolsOpen(false);
+      if (maisRef.current && !maisRef.current.contains(e.target)) {
+        setMaisOpen(false);
       }
       if (dashboardRef.current && !dashboardRef.current.contains(e.target)) {
         setDashboardOpen(false);
@@ -151,17 +173,25 @@ export function Navbar({
     return () => window.removeEventListener("resize", handler);
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [menuOpen]);
+
   return (
     <header
       ref={navRef}
-      className="fixed top-3 left-1/2 -translate-x-1/2 z-40 flex w-[min(1120px,calc(100vw-1.5rem))] items-center justify-between gap-4 rounded-[1.35rem] border border-line-soft bg-[color-mix(in_srgb,var(--color-surface)_78%,transparent)] backdrop-blur-2xl px-4 py-[0.65rem] shadow-card max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:top-2 max-nav:row-gap-[0.6rem]"
+      className="fixed top-3 left-1/2 z-40 flex w-[min(1040px,calc(100vw-1.5rem))] -translate-x-1/2 items-center justify-between gap-3 rounded-[1.35rem] border border-line-soft bg-[color-mix(in_srgb,var(--color-surface)_78%,transparent)] px-4 py-[0.65rem] shadow-card backdrop-blur-2xl max-nav:top-2 max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:row-gap-[0.6rem]"
     >
-      {/* Brand */}
       <a
         href={MAIN_SITE_URL}
         target="_top"
         rel="noopener noreferrer"
-        className="shrink-0 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+        className="shrink-0 cursor-pointer opacity-80 transition-opacity hover:opacity-100"
       >
         <img
           src={BRAND_LOGO_URL}
@@ -181,54 +211,62 @@ export function Navbar({
         </span>
       </a>
 
-      {/* Desktop nav */}
-      <nav className="flex items-center gap-4 max-nav:hidden" aria-label="Navegação principal">
+      <nav className="flex items-center gap-5 max-nav:hidden" aria-label="Navegação principal">
         <NavLink to="/" className={desktopLinkClass} onClick={close}>
           Torneios
         </NavLink>
-
         <NavLink to="/decks" className={desktopLinkClass} onClick={close}>
           Decks
         </NavLink>
-
-        <NavLink to="/comunidade" className={desktopLinkClass} onClick={close}>Comunidade</NavLink>
-
         <NavLink to="/metagame" className={desktopLinkClass} onClick={close}>
           Metagame
         </NavLink>
+        <NavLink to="/blog" className={desktopLinkClass} onClick={close}>
+          Blog
+        </NavLink>
 
-        <NavLink to="/ligas" className={desktopLinkClass} onClick={close}>Ligas</NavLink>
-        <NavLink to="/times" className={desktopLinkClass} onClick={close}>Times</NavLink>
-        <div className="relative" ref={toolsRef}>
+        <div className="relative" ref={maisRef}>
           <button
             type="button"
-            className={`inline-flex items-center gap-1 border-none bg-transparent p-0 text-[0.9rem] font-semibold cursor-pointer transition-colors duration-200 ${toolsOpen ? "text-white" : "text-text-soft hover:text-white"}`}
-            aria-expanded={toolsOpen}
+            className={`inline-flex items-center gap-1 border-none bg-transparent p-0 text-[0.9rem] font-semibold cursor-pointer transition-colors duration-200 ${maisOpen ? "text-white" : "text-text-muted hover:text-text-main"}`}
+            aria-expanded={maisOpen}
             aria-haspopup="menu"
-            onClick={() => setToolsOpen((open) => !open)}
+            onClick={() => setMaisOpen((open) => !open)}
           >
-            Ferramentas
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            Mais
+            <Chevron />
           </button>
-          {toolsOpen && (
-            <div role="menu" className="absolute top-[calc(100%+0.7rem)] left-1/2 -translate-x-1/2 min-w-[220px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] shadow-[0_12px_28px_rgba(3,2,8,0.55)] p-1.5 z-50">
-              <NavLink role="menuitem" to="/ferramentas/contador-vida" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Contador de vida</NavLink>
-              <NavLink role="menuitem" to="/ferramentas/calculadora-swiss" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Calculadora Swiss / Top 8</NavLink>
+          {maisOpen && (
+            <div role="menu" className={dropdownPanelClass}>
+              <p className={sectionLabelClass}>Comunidade</p>
+              <NavLink role="menuitem" to="/comunidade" className={dropdownItemClass} onClick={close}>
+                Posts
+              </NavLink>
+              <p className={sectionLabelClass}>Competição</p>
+              <NavLink role="menuitem" to="/ligas" className={dropdownItemClass} onClick={close}>
+                Ligas
+              </NavLink>
+              <NavLink role="menuitem" to="/times" className={dropdownItemClass} onClick={close}>
+                Times
+              </NavLink>
+              <p className={sectionLabelClass}>Ferramentas</p>
+              <NavLink role="menuitem" to="/ferramentas/contador-vida" className={dropdownItemClass} onClick={close}>
+                Contador de vida
+              </NavLink>
+              <NavLink role="menuitem" to="/ferramentas/calculadora-swiss" className={dropdownItemClass} onClick={close}>
+                Calculadora Swiss / Top 8
+              </NavLink>
             </div>
           )}
         </div>
-
       </nav>
 
-      {/* Desktop auth */}
       <div className="flex items-center gap-[0.6rem] max-nav:hidden">
         {usuario ? (
           <div className="relative" ref={dashboardRef}>
             <Tooltip content="Menu do usuário" placement="bottom" focusable={false}>
               <button
-                className="inline-flex items-center gap-2 border border-line rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.8rem] py-[0.45rem] text-[0.85rem] text-text-main cursor-pointer"
+                className="inline-flex items-center gap-2 border border-line rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.7rem] py-[0.45rem] text-[0.85rem] text-text-main cursor-pointer"
                 type="button"
                 onClick={() => setDashboardOpen((open) => !open)}
                 aria-label="Abrir menu do usuário"
@@ -236,29 +274,53 @@ export function Navbar({
                 aria-haspopup="menu"
               >
                 <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
-                <span className="text-[0.84rem] font-semibold text-text-main">{usuario.nome}</span>
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <span className="max-w-[7.5rem] truncate text-[0.84rem] font-semibold text-text-main">{usuario.nome}</span>
+                <Chevron />
               </button>
             </Tooltip>
             {dashboardOpen && (
-              <div role="menu" className="absolute right-0 top-[calc(100%+0.7rem)] z-50 min-w-[230px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] p-1.5 shadow-[0_12px_28px_rgba(3,2,8,0.55)]">
-                <NavLink role="menuitem" to={`/usuarios/${usuario.id}`} className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Meu perfil</NavLink>
-                <button type="button" role="menuitem" className="flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={() => { onOpenEditProfile(); close(); }}>
+              <div
+                role="menu"
+                className="absolute right-0 top-[calc(100%+0.7rem)] z-50 min-w-[230px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] p-1.5 shadow-[0_12px_28px_rgba(3,2,8,0.55)]"
+              >
+                <NavLink role="menuitem" to={`/usuarios/${usuario.id}`} className={dropdownItemClass} onClick={close}>
+                  Meu perfil
+                </NavLink>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
+                  onClick={() => { onOpenEditProfile(); close(); }}
+                >
                   <IconEdit />
                   Editar perfil
                 </button>
                 {isAdmin && (
                   <>
-                    <p className="mx-3 mb-1 mt-2 border-t border-line pt-2 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle">Administração</p>
-                    <NavLink role="menuitem" to="/dashboard" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Anúncios</NavLink>
-                    <NavLink role="menuitem" to="/dashboard/bloqueios" className="block rounded-lg px-3 py-2.5 text-[0.88rem] font-semibold text-text-soft no-underline hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main" onClick={close}>Bloqueio de usuários</NavLink>
+                    <p className={`${sectionLabelClass} border-t border-line pt-2`}>Administração</p>
+                    <NavLink role="menuitem" to="/dashboard" className={dropdownItemClass} onClick={close}>
+                      Anúncios
+                    </NavLink>
+                    <NavLink role="menuitem" to="/dashboard/anuncio-diario" className={dropdownItemClass} onClick={close}>
+                      Anúncio diário
+                    </NavLink>
+                    <NavLink role="menuitem" to="/dashboard/permissoes" className={dropdownItemClass} onClick={close}>
+                      Permissões
+                    </NavLink>
+                    <NavLink role="menuitem" to="/dashboard/bloqueios" className={dropdownItemClass} onClick={close}>
+                      Bloqueio de usuários
+                    </NavLink>
                   </>
                 )}
-                <button type="button" role="menuitem" className="mt-1 flex w-full items-center gap-2 border-x-0 border-b-0 border-t border-line bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-danger/10 hover:text-red-300" onClick={() => { onLogout(); close(); }}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={loggingOut}
+                  className="mt-1 flex w-full items-center gap-2 border-x-0 border-b-0 border-t border-line bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-danger/10 hover:text-red-300 disabled:cursor-wait disabled:opacity-60"
+                  onClick={() => { onLogout(); close(); }}
+                >
                   <IconLogout />
-                  Sair
+                  {loggingOut ? "Saindo..." : "Sair"}
                 </button>
               </div>
             )}
@@ -266,14 +328,14 @@ export function Navbar({
         ) : (
           <>
             <button
-              className="border border-line rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-text-soft transition-all duration-200 hover:border-line-strong hover:text-text-main hover:bg-[rgba(167,79,255,0.08)]"
+              className="cursor-pointer rounded-xl border border-line bg-transparent px-4 py-[0.6rem] font-bold text-text-soft transition-all duration-200 hover:border-line-strong hover:bg-[rgba(167,79,255,0.08)] hover:text-text-main"
               type="button"
               onClick={() => { onOpenAuth("register"); close(); }}
             >
               Cadastro
             </button>
             <button
-              className="border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white transition-all duration-200 hover:shadow-[0_4px_20px_rgba(142,57,237,0.45)] hover:-translate-y-[1px] active:translate-y-0"
+              className="cursor-pointer rounded-xl border border-[rgba(199,149,255,0.5)] bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] px-4 py-[0.6rem] font-bold text-white transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_20px_rgba(142,57,237,0.45)] active:translate-y-0"
               type="button"
               onClick={() => { onOpenAuth("login"); close(); }}
             >
@@ -283,140 +345,143 @@ export function Navbar({
         )}
       </div>
 
-      {/* Hamburger */}
       <button
-        className="hidden max-nav:inline-flex relative items-center justify-center w-[2.35rem] h-[2.35rem] border border-line rounded-xl bg-[rgba(167,79,255,0.22)] cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.32)] hover:border-[rgba(199,149,255,0.55)] active:bg-[rgba(167,79,255,0.4)] ml-auto"
+        className="ml-auto hidden h-[2.35rem] w-[2.35rem] cursor-pointer items-center justify-center rounded-xl border border-line bg-[rgba(167,79,255,0.22)] transition-all duration-[180ms] hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.32)] active:bg-[rgba(167,79,255,0.4)] max-nav:relative max-nav:inline-flex"
         type="button"
         aria-expanded={menuOpen}
         aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
         onClick={() => setMenuOpen((p) => !p)}
       >
         <span
-          className="absolute w-[1.1rem] h-[2px] rounded-full bg-[#f5edff] transition-all duration-[220ms]"
+          className="absolute h-[2px] w-[1.1rem] rounded-full bg-[#f5edff] transition-all duration-[220ms]"
           style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-5px)" }}
         />
         <span
-          className="absolute w-[1.1rem] h-[2px] rounded-full bg-[#f5edff] transition-opacity duration-[180ms]"
+          className="absolute h-[2px] w-[1.1rem] rounded-full bg-[#f5edff] transition-opacity duration-[180ms]"
           style={{ opacity: menuOpen ? 0 : 1 }}
         />
         <span
-          className="absolute w-[1.1rem] h-[2px] rounded-full bg-[#f5edff] transition-all duration-[220ms]"
+          className="absolute h-[2px] w-[1.1rem] rounded-full bg-[#f5edff] transition-all duration-[220ms]"
           style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(5px)" }}
         />
       </button>
 
-      {/* Mobile panel */}
-      {
-        menuOpen && (
-          <div
-            className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-line rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)] animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] max-nav:col-span-full"
-            role="dialog"
-            aria-label="Menu de navegação"
-          >
-            <nav className="flex flex-col gap-[0.2rem]">
-              <NavLink to="/" className={mobileLinkClass} onClick={close}>
-                <IconTrophy />
-                <span>Torneios</span>
-              </NavLink>
+      {menuOpen && (
+        <div
+          className="absolute top-[calc(100%+0.5rem)] right-0 left-0 z-50 flex max-h-[min(78dvh,calc(100dvh-4.75rem))] max-nav:col-span-full flex-col overflow-hidden animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] rounded-2xl border border-line bg-[rgba(14,9,28,0.97)] shadow-[0_16px_40px_rgba(3,2,8,0.6)] backdrop-blur-2xl"
+          role="dialog"
+          aria-label="Menu de navegação"
+        >
+          <nav className="flex min-h-0 flex-1 flex-col gap-[0.1rem] overflow-y-auto overscroll-contain px-3 pt-3 pb-2 [-webkit-overflow-scrolling:touch]">
+            <NavLink to="/" className={mobileLinkClass} onClick={close}>
+              <IconTrophy />
+              <span>Torneios</span>
+            </NavLink>
+            <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
+              <IconDeck />
+              <span>Decks</span>
+            </NavLink>
+            <NavLink to="/metagame" className={mobileLinkClass} onClick={close}>
+              <IconMetagame />
+              <span>Metagame</span>
+            </NavLink>
+            <NavLink to="/blog" className={mobileLinkClass} onClick={close}>
+              <IconBlog />
+              <span>Blog</span>
+            </NavLink>
 
-              <NavLink to="/decks" className={mobileLinkClass} onClick={close}>
-                <IconDeck />
-                <span>Decks</span>
-              </NavLink>
+            <p className="mb-0.5 mt-2 px-[0.75rem] text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle">
+              Mais
+            </p>
+            <NavLink to="/comunidade" className={mobileLinkClass} onClick={close}>
+              <IconCommunity />
+              <span>Posts</span>
+            </NavLink>
+            <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
+              <IconLiga />
+              <span>Ligas</span>
+            </NavLink>
+            <NavLink to="/times" className={mobileLinkClass} onClick={close}>
+              <IconTime />
+              <span>Times</span>
+            </NavLink>
+            <NavLink to="/ferramentas/contador-vida" className={mobileLinkClass} onClick={close}>
+              <IconTools />
+              <span>Contador de vida</span>
+            </NavLink>
+            <NavLink to="/ferramentas/calculadora-swiss" className={mobileLinkClass} onClick={close}>
+              <IconTools />
+              <span>Calculadora Swiss / Top 8</span>
+            </NavLink>
 
-              <NavLink to="/comunidade" className={mobileLinkClass} onClick={close}>
-                <span className="inline-flex w-5 justify-center" aria-hidden="true">&#9673;</span>
-                <span>Comunidade</span>
-              </NavLink>
-
-              <NavLink to="/metagame" className={mobileLinkClass} onClick={close}>
-                <IconMetagame />
-                <span>Metagame</span>
-              </NavLink>
-
-              <div className="mt-1 mb-1">
-                <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
-                  <IconLiga />
-                  <span>Ligas</span>
+            {isAuthenticated && isAdmin && (
+              <div className="mt-2 flex flex-col gap-0.5 rounded-xl border border-line bg-white/[0.02] p-1.5">
+                <p className="m-0 flex items-center gap-[0.65rem] px-[0.75rem] py-[0.35rem] text-[0.72rem] font-bold uppercase tracking-[0.08em] text-text-subtle">
+                  <IconDashboard />
+                  <span>Administração</span>
+                </p>
+                <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
+                  <span className="pl-[1.4rem]">Anúncios</span>
                 </NavLink>
-                <NavLink to="/times" className={mobileLinkClass} onClick={close}>
-                  <IconTime />
-                  <span>Times</span>
+                <NavLink to="/dashboard/anuncio-diario" className={mobileLinkClass} onClick={close}>
+                  <span className="pl-[1.4rem]">Anúncio diário</span>
                 </NavLink>
-                <NavLink to="/ferramentas/contador-vida" className={mobileLinkClass} onClick={close}>
-                  <IconTools />
-                  <span>Contador de vida</span>
+                <NavLink to="/dashboard/permissoes" className={mobileLinkClass} onClick={close}>
+                  <span className="pl-[1.4rem]">Permissões</span>
                 </NavLink>
-                <NavLink to="/ferramentas/calculadora-swiss" className={mobileLinkClass} onClick={close}>
-                  <IconTools />
-                  <span>Calculadora Swiss / Top 8</span>
+                <NavLink to="/dashboard/bloqueios" className={mobileLinkClass} onClick={close}>
+                  <span className="pl-[1.4rem]">Bloqueio de usuários</span>
                 </NavLink>
               </div>
+            )}
+          </nav>
 
-              {isAuthenticated && isAdmin && (
-                <div className="flex flex-col gap-0.5 rounded-xl border border-line bg-white/[0.02] p-1.5">
-                  <p className="flex items-center gap-[0.65rem] px-[0.75rem] py-[0.45rem] m-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-text-subtle">
-                    <IconDashboard />
-                    <span>Administração</span>
-                  </p>
-                  <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Anúncios</span>
-                  </NavLink>
-                  <NavLink to="/dashboard/bloqueios" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Bloqueio de usuários</span>
-                  </NavLink>
-                </div>
-              )}
-            </nav>
-
-            <div className="h-px bg-[rgba(217,180,255,0.2)] my-3" />
-
-            <div className="flex flex-col gap-2">
-              {usuario ? (
-                <>
-                  <button
-                    className="flex items-center gap-3 px-[0.75rem] py-[0.6rem] rounded-lg border border-line bg-[rgba(167,79,255,0.1)] cursor-pointer w-full text-left text-text-main transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
-                    type="button"
-                    onClick={() => { onOpenEditProfile(); close(); }}
-                  >
-                    <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
-                    <div className="flex-1 flex flex-col gap-[0.1rem] min-w-0">
-                      <span className="text-[0.9rem] font-semibold text-text-main whitespace-nowrap overflow-hidden text-ellipsis">{usuario.nome}</span>
-                      <span className="text-[0.74rem] text-text-soft">Editar perfil</span>
-                    </div>
-                    <IconEdit />
-                  </button>
-                  <button
-                    className="flex items-center justify-center gap-2 border border-line rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-[rgba(255,255,255,0.03)] text-text-main"
-                    type="button"
-                    onClick={() => { onLogout(); close(); }}
-                  >
-                    <IconLogout />
-                    Sair
-                  </button>
-                </>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    className="border border-line rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-transparent text-text-soft transition-all duration-200 hover:border-line-strong hover:text-text-main hover:bg-[rgba(167,79,255,0.08)] min-h-[44px]"
-                    type="button"
-                    onClick={() => { onOpenAuth("register"); close(); }}
-                  >
-                    Cadastro
-                  </button>
-                  <button
-                    className="border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.65rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white transition-all duration-200 hover:shadow-[0_4px_16px_rgba(142,57,237,0.4)] min-h-[44px]"
-                    type="button"
-                    onClick={() => { onOpenAuth("login"); close(); }}
-                  >
-                    Entrar
-                  </button>
-                </div>
-              )}
-            </div>
+          <div className="shrink-0 border-t border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.98)] px-3 py-3">
+            {usuario ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-line bg-[rgba(167,79,255,0.1)] px-[0.75rem] py-[0.55rem] text-left text-text-main transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
+                  type="button"
+                  onClick={() => { onOpenEditProfile(); close(); }}
+                >
+                  <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
+                  <div className="flex min-w-0 flex-1 flex-col gap-[0.1rem]">
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.9rem] font-semibold text-text-main">{usuario.nome}</span>
+                    <span className="text-[0.74rem] text-text-soft">Editar perfil</span>
+                  </div>
+                  <IconEdit />
+                </button>
+                <button
+                  className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-[rgba(255,255,255,0.03)] px-4 py-[0.55rem] font-bold text-text-main disabled:cursor-wait disabled:opacity-60"
+                  type="button"
+                  disabled={loggingOut}
+                  onClick={() => { onLogout(); close(); }}
+                >
+                  <IconLogout />
+                  {loggingOut ? "Saindo..." : "Sair"}
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  className="min-h-[44px] cursor-pointer rounded-xl border border-line bg-transparent px-4 py-[0.65rem] font-bold text-text-soft transition-all duration-200 hover:border-line-strong hover:bg-[rgba(167,79,255,0.08)] hover:text-text-main"
+                  type="button"
+                  onClick={() => { onOpenAuth("register"); close(); }}
+                >
+                  Cadastro
+                </button>
+                <button
+                  className="min-h-[44px] cursor-pointer rounded-xl border border-[rgba(199,149,255,0.5)] bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] px-4 py-[0.65rem] font-bold text-white transition-all duration-200 hover:shadow-[0_4px_16px_rgba(142,57,237,0.4)]"
+                  type="button"
+                  onClick={() => { onOpenAuth("login"); close(); }}
+                >
+                  Entrar
+                </button>
+              </div>
+            )}
           </div>
-        )
-      }
+        </div>
+      )}
     </header>
   );
 }

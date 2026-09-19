@@ -11,6 +11,8 @@ export { FormSection } from "./FormSection";
 export { InlineAlert } from "./InlineAlert";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { CookieConsentBanner } from "./CookieConsentBanner";
+export { AnuncioDiarioModal } from "./AnuncioDiarioModal";
+export { LogoutOverlay } from "./LogoutOverlay";
 export { Footer } from "./Footer";
 export { Hero } from "./Hero";
 export { LandingHeader } from "./LandingHeader";

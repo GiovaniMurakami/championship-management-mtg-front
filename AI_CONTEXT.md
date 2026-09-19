@@ -17,6 +17,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
+- **Blog** (`/blog`) — artigos com markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]`), editores e aprovação admin
 
 **Backend:** API REST própria (não está neste repositório).  
 **Deploy:** AWS Amplify (`amplify.yml` → `dist/`).
@@ -183,6 +184,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | `/torneios/:id` | público (leitura) | `TournamentDetailPage` |
 | `/torneio/ingressar/:token` | público | `TournamentJoinPage` |
 | `/dashboard` | auth + admin | `DashboardPage` (anúncios) |
+| `/dashboard/anuncio-diario` | auth + admin | `DashboardAnuncioDiarioPage` |
 | `/dashboard/bloqueios` | auth + admin | `DashboardBloqueiosPage` |
 | `/termos-de-uso` | público | `TermosDeUsoPage` |
 | `/privacidade` | público | `PrivacidadePage` (LGPD) |
@@ -218,7 +220,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
 | Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin escolhe `cartaRepresentativa` no detalhe do arquétipo) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
-| Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
+| Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardAnuncioDiarioPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
 | HTTP/errors | `services/httpClient.js` |
 | Todos endpoints REST | `services/backendApi.js` |
@@ -277,6 +279,7 @@ Decks:    CRUD /deck/* — `usuario.nome` em listar/buscar = nick MOL
 Times:    CRUD /time/* + entrar, sair, convite, solicitar, aprovar, rejeitar
 
 Site:     GET/PUT /site/anuncios, POST /site/anuncios/:id/clique
+          GET/PUT /site/anuncio-diario, POST visualizacao/clique
 
 Imagens:  POST /imagem/upload-url → uploadParaS3 (PUT direto no S3)
 ```

@@ -94,33 +94,55 @@ function canvasToBlob(canvas, type, quality) {
 
 /**
  * Redimensiona e comprime para JPEG adequado a og:image (share em redes sociais).
+ * Com `crop: true`, preenche exatamente targetW×targetH (center crop), sem barras.
  * Se a otimização falhar, devolve o arquivo original (upload ainda funciona).
  */
-export async function otimizarBannerParaUpload(file) {
+export async function otimizarBannerParaUpload(file, options = {}) {
     if (!file || typeof document === "undefined") {
         return file;
     }
 
-    // Já é JPEG pequeno o bastante — evita reprocessar desnecessariamente.
-    if (file.type === "image/jpeg" && file.size <= OG_BANNER_TARGET_BYTES) {
+    const {
+        crop = false,
+        targetWidth = OG_BANNER_MAX_WIDTH,
+        targetHeight = OG_BANNER_MAX_HEIGHT,
+    } = options;
+
+    // Já é JPEG pequeno o bastante — evita reprocessar desnecessariamente (exceto crop).
+    if (!crop && file.type === "image/jpeg" && file.size <= OG_BANNER_TARGET_BYTES) {
         return file;
     }
 
     try {
         const img = await loadImageElement(file);
-        const { width, height } = calcularDimensoesOg(img.naturalWidth || img.width, img.naturalHeight || img.height);
+        const srcW = img.naturalWidth || img.width;
+        const srcH = img.naturalHeight || img.height;
 
         const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (!ctx) {
             return file;
         }
 
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
+        if (crop) {
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            const scale = Math.max(targetWidth / srcW, targetHeight / srcH);
+            const drawW = srcW * scale;
+            const drawH = srcH * scale;
+            const dx = (targetWidth - drawW) / 2;
+            const dy = (targetHeight - drawH) / 2;
+            ctx.fillStyle = "#0e091c";
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+            ctx.drawImage(img, dx, dy, drawW, drawH);
+        } else {
+            const { width, height } = calcularDimensoesOg(srcW, srcH, targetWidth, targetHeight);
+            canvas.width = width;
+            canvas.height = height;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+        }
 
         let quality = OG_BANNER_INITIAL_QUALITY;
         let blob = await canvasToBlob(canvas, "image/jpeg", quality);
@@ -184,14 +206,16 @@ async function requestPresignedUrl(file, token) {
 }
 
 export async function uploadBannerImage(file, token, onProgress, options = {}) {
-    const { optimize = true } = options;
+    const { optimize = true, crop = false, targetWidth, targetHeight } = options;
     const validationError = validateBannerImageFile(file);
 
     if (validationError) {
         throw validationError;
     }
 
-    const fileParaUpload = optimize ? await otimizarBannerParaUpload(file) : file;
+    const fileParaUpload = optimize
+        ? await otimizarBannerParaUpload(file, { crop, targetWidth, targetHeight })
+        : file;
     const initialUpload = await requestPresignedUrl(fileParaUpload, token);
 
     try {

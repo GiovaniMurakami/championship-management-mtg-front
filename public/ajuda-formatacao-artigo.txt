@@ -1,0 +1,66 @@
+# Guia de formatação de artigos — Tiago Fuguete
+
+Você pode escrever direto no editor ou importar um arquivo .txt / .md / .docx
+no formato do modelo (botão "Escolher arquivo" ou baixe /modelo-artigo.txt).
+
+## Formato do arquivo
+
+Título: Seu título
+Chamada: Frase curta do card
+Tags: tag1; tag2
+Descrição: Resumo curto
+
+ARTIGO:
+Corpo do artigo a partir daqui…
+
+Os metadados acima preenchem o formulário. Tudo depois de ARTIGO: vira o corpo.
+A capa continua sendo enviada como imagem no formulário.
+
+## Markup suportado
+
+### Título de seção
+[h1]{ Nome da seção }
+
+### Carta no texto (link/hover Scryfall)
+Escreva o nome entre colchetes duplos:
+[[Tolarian Terror]]
+
+### Bloco de info da carta (imagem + detalhes)
+ [cardinfo]{Tolarian Terror}
+
+### Cartas lado a lado
+[cardside](1 Argivian Phalanx ||1 Tolarian Terror || 1 Writhing Necromass ||1 Molten Monstrosity || 1 Yavimaya Sojourner )
+
+Quantidade opcional no início de cada carta. Separe cartas com || .
+
+### Deck embutido
+Use o mesmo formato da URL do deck: início do id (5 caracteres) + nome slug.
+
+[deck](a1b2c-mono-blue-terror)
+
+Também aceita o UUID completo do deck. A lista de cartas (main/side) aparece no artigo.
+
+## Exemplo completo (corpo)
+
+Salva galera! Hoje vamos falar sobre as três opções para jogar com a [[Tolarian Terror]]: Mono Blue, Dimir e Izzet.
+
+ [cardinfo]{Tolarian Terror}
+
+O ciclo de Dominaria Unida trouxe cartas como:
+[cardside](1 Argivian Phalanx ||1 Tolarian Terror || 1 Writhing Necromass ||1 Molten Monstrosity || 1 Yavimaya Sojourner )
+
+[h1]{ Mono Blue Terror }
+Versão mais aggro e direta. Cartas-chave: [[Cryptic Serpent]], [[Murmuring Mystic]] e [[Lórien Revealed]].
+
+[deck](a1b2c-nome-do-deck)
+
+[cardside](1 Mental Note || 1 Thought Scour)
+
+[h1]{Palavras Finais}
+Jogue com todos e escolha o que combina com você. Deixe sua opinião nos comentários!
+
+## Dicas
+- Nomes de cartas em inglês (como no Scryfall) funcionam melhor.
+- Quebras de linha e parágrafos normais são mantidos.
+- Admin publica na hora; editor envia para aprovação.
+- Edições de artigos publicados também passam por aprovação do admin.
