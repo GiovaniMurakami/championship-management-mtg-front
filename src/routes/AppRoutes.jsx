@@ -30,6 +30,8 @@ const DashboardPage       = lazy(() => import("../pages/DashboardPage").then(m =
 const DashboardBloqueiosPage = lazy(() => import("../pages/DashboardBloqueiosPage").then(m => ({ default: m.DashboardBloqueiosPage })));
 const DashboardPermissoesPage = lazy(() => import("../pages/DashboardPermissoesPage").then(m => ({ default: m.DashboardPermissoesPage })));
 const DashboardAnuncioDiarioPage = lazy(() => import("../pages/DashboardAnuncioDiarioPage").then(m => ({ default: m.DashboardAnuncioDiarioPage })));
+const DashboardNewsletterPage = lazy(() => import("../pages/DashboardNewsletterPage").then(m => ({ default: m.DashboardNewsletterPage })));
+const NewsletterDescadastrarPage = lazy(() => import("../pages/NewsletterDescadastrarPage").then(m => ({ default: m.NewsletterDescadastrarPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
 const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
@@ -97,6 +99,10 @@ export function AppRoutes() {
         <Route path="/dashboard/anuncio-diario" element={
           <ProtectedRoute requireAdmin><DashboardAnuncioDiarioPage /></ProtectedRoute>
         } />
+        <Route path="/dashboard/newsletter" element={
+          <ProtectedRoute requireAdmin><DashboardNewsletterPage /></ProtectedRoute>
+        } />
+        <Route path="/newsletter/descadastrar" element={<NewsletterDescadastrarPage />} />
 
         <Route path="/times" element={<TimePage />} />
         <Route path="/times/criar" element={

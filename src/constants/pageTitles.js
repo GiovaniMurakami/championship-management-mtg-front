@@ -13,6 +13,7 @@ export const PAGE_TITLES = {
   dashboardBloqueios: "Bloqueio de usuários",
   dashboardPermissoes: "Permissões de usuários",
   dashboardAnuncioDiario: "Anúncio diário",
+  dashboardNewsletter: "Newsletter de metagame",
   times: "Times",
   criarTime: "Criar Time",
   editarTime: "Editar Time",

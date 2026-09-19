@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BaseModal } from "../ui/BaseModal";
 import { DeleteConfirmModal } from "../ui/DeleteConfirmModal";
-import { FormFeedback, FormField } from "../ui";
+import { FormFeedback, FormField, Switch } from "../ui";
 import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY } from "../../styles/uiClasses";
 
 export function EditProfileModal({
@@ -71,6 +71,23 @@ export function EditProfileModal({
             value={form.nickArena}
             onChange={(event) => onFormChange((current) => ({ ...current, nickArena: event.target.value }))}
           />
+
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-line-soft bg-white/[0.03] px-3 py-3">
+            <div className="min-w-0">
+              <p className="m-0 text-sm font-semibold text-text-main">Newsletter de metagame</p>
+              <p className="m-0 mt-0.5 text-xs text-text-muted">
+                Resumo semanal por e-mail toda segunda-feira.
+              </p>
+            </div>
+            <Switch
+              checked={Boolean(form.newsletterMetagame)}
+              onCheckedChange={(checked) =>
+                onFormChange((current) => ({ ...current, newsletterMetagame: checked }))
+              }
+              label={form.newsletterMetagame ? "Sim" : "Não"}
+              aria-label="Receber newsletter de metagame"
+            />
+          </div>
 
           {message ? <FormFeedback message={message} /> : null}
 

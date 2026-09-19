@@ -27,4 +27,8 @@ describe("pageTitles", () => {
   it("inclui título do metagame", () => {
     expect(PAGE_TITLES.metagame).toBe("Metagame");
   });
+
+  it("inclui título do dashboard de newsletter", () => {
+    expect(PAGE_TITLES.dashboardNewsletter).toMatch(/Newsletter/i);
+  });
 });

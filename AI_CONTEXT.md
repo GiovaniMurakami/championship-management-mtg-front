@@ -184,7 +184,8 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | `/torneios/:id` | público (leitura) | `TournamentDetailPage` |
 | `/torneio/ingressar/:token` | público | `TournamentJoinPage` |
 | `/dashboard` | auth + admin | `DashboardPage` (anúncios) |
-| `/dashboard/anuncio-diario` | auth + admin | `DashboardAnuncioDiarioPage` |
+| `/dashboard/newsletter` | auth + admin | `DashboardNewsletterPage` |
+| `/newsletter/descadastrar` | público | `NewsletterDescadastrarPage` |
 | `/dashboard/bloqueios` | auth + admin | `DashboardBloqueiosPage` |
 | `/termos-de-uso` | público | `TermosDeUsoPage` |
 | `/privacidade` | público | `PrivacidadePage` (LGPD) |
@@ -220,7 +221,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
 | Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin escolhe `cartaRepresentativa` no detalhe do arquétipo) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
-| Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardAnuncioDiarioPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
+| Site | `pages/DashboardPage.jsx`, anúncio diário, newsletter opt-in no login |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
 | HTTP/errors | `services/httpClient.js` |
 | Todos endpoints REST | `services/backendApi.js` |

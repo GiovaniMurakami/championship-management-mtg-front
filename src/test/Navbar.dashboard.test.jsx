@@ -27,6 +27,10 @@ describe("Navbar — dropdown do usuário", () => {
       "href",
       "/dashboard/anuncio-diario",
     );
+    expect(screen.getByRole("menuitem", { name: /^Newsletter$/i })).toHaveAttribute(
+      "href",
+      "/dashboard/newsletter",
+    );
     expect(screen.getByRole("menuitem", { name: /Permissões/i })).toHaveAttribute(
       "href",
       "/dashboard/permissoes",

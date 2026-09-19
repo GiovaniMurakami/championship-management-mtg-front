@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop, CookieConsentBanner, AnuncioDiarioModal, LogoutOverlay } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop, CookieConsentBanner, AnuncioDiarioModal, LogoutOverlay, NewsletterOptInModal } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import {
@@ -157,6 +157,7 @@ function AppContent() {
     editProfileForm, setEditProfileForm, handleUpdateProfile,
     handleDeleteAccount, deleteAccountLoading, deleteAccountError,
     loggingOut,
+    showNewsletterOptIn, newsletterOptInLoading, responderNewsletterOptIn,
   } = useAuth();
 
   const { pathname } = useLocation();
@@ -231,6 +232,12 @@ function AppContent() {
       <CookieConsentBanner />
       <AnuncioDiarioModal />
       <LogoutOverlay open={loggingOut} />
+      <NewsletterOptInModal
+        isOpen={showNewsletterOptIn && !showAuthModal && !loggingOut}
+        isLoading={newsletterOptInLoading}
+        onAccept={() => responderNewsletterOptIn(true)}
+        onDecline={() => responderNewsletterOptIn(false)}
+      />
     </div>
   );
 }

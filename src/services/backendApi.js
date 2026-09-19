@@ -93,6 +93,11 @@ export const atualizarUsuario = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const buscarMeuUsuario = (token) =>
+  httpClient.get("/usuario/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const excluirConta = (payload, token) =>
   httpClient.delete("/usuario/conta", {
     headers: { Authorization: `Bearer ${token}` },
@@ -506,6 +511,31 @@ export const excluirArtigo = (artigoId, token) =>
   httpClient.delete(`/artigo/${encodeURIComponent(artigoId)}`, { headers: { Authorization: `Bearer ${token}` } });
 export const definirEditor = (usuarioId, editor, token) =>
   httpClient.put(`/usuario/${encodeURIComponent(usuarioId)}/editor`, { editor }, { headers: { Authorization: `Bearer ${token}` } });
+
+export const listarAssinantesNewsletter = (token, params = {}) =>
+  httpClient.get("/usuario/newsletter/assinantes", {
+    headers: { Authorization: `Bearer ${token}` },
+    params,
+  });
+
+const descadastroEmAndamento = new Map();
+
+export const descadastrarNewsletter = (token) => {
+  const chave = String(token || "").trim();
+  if (!chave) {
+    return Promise.reject(new Error("Link de descadastro inválido ou incompleto."));
+  }
+  const existente = descadastroEmAndamento.get(chave);
+  if (existente) return existente;
+
+  const pedido = httpClient
+    .post("/usuario/newsletter/descadastrar", { token: chave })
+    .finally(() => {
+      descadastroEmAndamento.delete(chave);
+    });
+  descadastroEmAndamento.set(chave, pedido);
+  return pedido;
+};
 
 // Story fundos (admin)
 export const listarStoryFundos = (token) =>

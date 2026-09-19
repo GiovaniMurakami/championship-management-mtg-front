@@ -3,6 +3,7 @@ import {
   loginUsuario,
   cadastrarUsuario,
   atualizarUsuario,
+  buscarMeuUsuario,
   excluirConta,
   logoutUsuario,
   obterPresignedUrl,
@@ -44,9 +45,12 @@ export function AuthProvider({ children }) {
     nickMTGO: "",
     nickArena: "",
     fotoUrl: "",
+    newsletterMetagame: false,
   });
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState("");
+  const [showNewsletterOptIn, setShowNewsletterOptIn] = useState(false);
+  const [newsletterOptInLoading, setNewsletterOptInLoading] = useState(false);
 
   const [loginLockout, setLoginLockout] = useState(false);
   const [rateLimitMsg, setRateLimitMsg] = useState("");
@@ -54,6 +58,41 @@ export function AuthProvider({ children }) {
   // Restaurar sessão ao montar — renova access token expirado antes de liberar as rotas
   useEffect(() => {
     let cancelled = false;
+
+    const syncUsuarioDoServidor = async (accessToken, baseUsuario) => {
+      if (!accessToken) return baseUsuario;
+      try {
+        const me = await buscarMeuUsuario(accessToken);
+        if (!me?.id) return baseUsuario;
+        return {
+          ...(baseUsuario || {}),
+          ...me,
+          newsletterMetagame: me.newsletterMetagame === true
+            ? true
+            : me.newsletterMetagame === false
+              ? false
+              : null,
+        };
+      } catch {
+        return baseUsuario;
+      }
+    };
+
+    const persistSession = (accessToken, nextUsuario, refreshToken = "") => {
+      let previous = {};
+      try {
+        previous = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+      } catch {
+        previous = {};
+      }
+      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+        token: accessToken,
+        refreshToken: refreshToken || previous.refreshToken || "",
+        usuario: nextUsuario,
+      }));
+      setToken(accessToken);
+      setUsuario(nextUsuario);
+    };
 
     const restoreSession = async () => {
       const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
@@ -64,38 +103,42 @@ export function AuthProvider({ children }) {
 
       try {
         const parsed = JSON.parse(savedAuth);
-        const storedToken = parsed.token || "";
-        const storedUsuario = parsed.usuario || null;
+        let accessToken = parsed.token || "";
+        let storedUsuario = parsed.usuario || null;
 
-        if (storedToken && parsed.refreshToken && isAccessTokenExpiredOrExpiring(storedToken)) {
+        if (accessToken && parsed.refreshToken && isAccessTokenExpiredOrExpiring(accessToken)) {
           try {
             const freshToken = await ensureFreshToken();
             if (cancelled) return;
-            setToken(freshToken || "");
-            setUsuario(storedUsuario);
+            accessToken = freshToken || "";
           } catch {
             if (cancelled) return;
-            // Falha definitiva já dispara auth:logout; transitória mantém o que há no storage
             const latest = window.localStorage.getItem(AUTH_STORAGE_KEY);
             if (latest) {
               try {
                 const reparsed = JSON.parse(latest);
-                setToken(reparsed.token || "");
-                setUsuario(reparsed.usuario || null);
+                accessToken = reparsed.token || "";
+                storedUsuario = reparsed.usuario || null;
               } catch {
-                setToken("");
-                setUsuario(null);
+                accessToken = "";
+                storedUsuario = null;
               }
             } else {
-              setToken("");
-              setUsuario(null);
+              accessToken = "";
+              storedUsuario = null;
             }
           }
+        }
+
+        if (cancelled) return;
+
+        if (accessToken) {
+          const synced = await syncUsuarioDoServidor(accessToken, storedUsuario);
+          if (cancelled) return;
+          persistSession(accessToken, synced, parsed.refreshToken || "");
         } else {
-          if (!cancelled) {
-            setToken(storedToken);
-            setUsuario(storedUsuario);
-          }
+          setToken("");
+          setUsuario(null);
         }
       } catch {
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -107,6 +150,13 @@ export function AuthProvider({ children }) {
     restoreSession();
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    if (!authInitialized || !usuario || showAuthModal || loggingOut) return;
+    if (usuario.newsletterMetagame == null) {
+      setShowNewsletterOptIn(true);
+    }
+  }, [authInitialized, usuario, showAuthModal, loggingOut]);
 
   // Ao voltar para a aba, tenta renovar antes do próximo clique falhar
   useEffect(() => {
@@ -175,15 +225,77 @@ export function AuthProvider({ children }) {
       previousAuth = {};
     }
 
+    const nextUsuario = {
+      ...(previousAuth.usuario || {}),
+      ...(authData.usuario || {}),
+    };
+
     const nextAuth = {
       token: authData.token,
       refreshToken: authData.refreshToken ?? previousAuth.refreshToken ?? "",
-      usuario: authData.usuario,
+      usuario: nextUsuario,
     };
 
     setToken(nextAuth.token);
-    setUsuario(nextAuth.usuario);
+    setUsuario(nextUsuario);
     window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
+
+    if (nextUsuario && nextUsuario.newsletterMetagame == null) {
+      setShowNewsletterOptIn(true);
+    }
+  };
+
+  const marcarNewsletterDescadastrada = (usuarioId) => {
+    if (!usuarioId) return;
+    let previousAuth = {};
+    try {
+      previousAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+    } catch {
+      previousAuth = {};
+    }
+    const atual = previousAuth.usuario || usuario;
+    if (!atual?.id || atual.id !== usuarioId) return;
+
+    saveAuth({
+      token: previousAuth.token || token,
+      refreshToken: previousAuth.refreshToken,
+      usuario: {
+        ...atual,
+        newsletterMetagame: false,
+      },
+    });
+    setShowNewsletterOptIn(false);
+    setEditProfileForm((current) => (
+      current ? { ...current, newsletterMetagame: false } : current
+    ));
+  };
+
+  const responderNewsletterOptIn = async (aceitar) => {
+    if (!token || newsletterOptInLoading) return;
+    setNewsletterOptInLoading(true);
+    try {
+      const updated = await atualizarUsuario({ newsletterMetagame: Boolean(aceitar) }, token);
+      saveAuth({
+        token,
+        usuario: {
+          ...usuario,
+          ...updated,
+          newsletterMetagame: Boolean(aceitar),
+        },
+      });
+      setShowNewsletterOptIn(false);
+    } catch {
+      // mesmo com falha, fecha para não travar o usuário; pode mudar no perfil
+      setShowNewsletterOptIn(false);
+      if (usuario) {
+        saveAuth({
+          token,
+          usuario: { ...usuario, newsletterMetagame: Boolean(aceitar) },
+        });
+      }
+    } finally {
+      setNewsletterOptInLoading(false);
+    }
   };
 
   const clearAuth = async () => {
@@ -198,6 +310,7 @@ export function AuthProvider({ children }) {
     }
     setToken("");
     setUsuario(null);
+    setShowNewsletterOptIn(false);
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
     const elapsed = Date.now() - startedAt;
     const minVisibleMs = 650;
@@ -292,23 +405,59 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const openEditProfileModal = () => {
-    if (usuario) {
-      setEditProfileForm({
-        nome: usuario.nome || "",
-        telefone: usuario.telefone || "",
-        nickMTGO: usuario.nickMTGO || "",
-        nickArena: usuario.nickArena || "",
-        fotoUrl: usuario.fotoUrl || "",
-      });
-    }
+  const openEditProfileModal = async () => {
     setAuthMessage("");
     setShowEditProfileModal(true);
+
+    const base = usuario;
+    if (!base) return;
+
+    setEditProfileForm({
+      nome: base.nome || "",
+      telefone: base.telefone || "",
+      nickMTGO: base.nickMTGO || "",
+      nickArena: base.nickArena || "",
+      fotoUrl: base.fotoUrl || "",
+      newsletterMetagame: Boolean(base.newsletterMetagame),
+    });
+
+    if (!token) return;
+    try {
+      const me = await buscarMeuUsuario(token);
+      if (!me?.id) return;
+      const newsletterMetagame = me.newsletterMetagame === true
+        ? true
+        : me.newsletterMetagame === false
+          ? false
+          : null;
+      const synced = { ...base, ...me, newsletterMetagame };
+      saveAuth({ token, usuario: synced });
+      setEditProfileForm({
+        nome: synced.nome || "",
+        telefone: synced.telefone || "",
+        nickMTGO: synced.nickMTGO || "",
+        nickArena: synced.nickArena || "",
+        fotoUrl: synced.fotoUrl || "",
+        newsletterMetagame: Boolean(newsletterMetagame),
+      });
+    } catch {
+      // mantém dados da sessão local
+    }
   };
+
+  useEffect(() => {
+    if (!authInitialized || !usuario) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("newsletter") !== "preferencias") return;
+    openEditProfileModal();
+    params.delete("newsletter");
+    const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", next);
+  }, [authInitialized, usuario?.id]);
 
   const closeEditProfileModal = () => {
     setShowEditProfileModal(false);
-    setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "", fotoUrl: "" });
+    setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "", fotoUrl: "", newsletterMetagame: false });
     setDeleteAccountError("");
   };
 
@@ -317,7 +466,9 @@ export function AuthProvider({ children }) {
     setAuthLoading(true);
     setAuthMessage("");
     try {
-      const payload = {};
+      const payload = {
+        newsletterMetagame: Boolean(editProfileForm.newsletterMetagame),
+      };
       if (editProfileForm.nome) payload.nome = editProfileForm.nome;
       if (editProfileForm.telefone) payload.telefone = editProfileForm.telefone;
       if (editProfileForm.nickMTGO) payload.nickMTGO = editProfileForm.nickMTGO;
@@ -325,7 +476,15 @@ export function AuthProvider({ children }) {
       if (editProfileForm.fotoUrl) payload.fotoUrl = editProfileForm.fotoUrl;
 
       const updatedUsuario = await atualizarUsuario(payload, token);
-      saveAuth({ token, usuario: updatedUsuario });
+      saveAuth({
+        token,
+        usuario: {
+          ...usuario,
+          ...updatedUsuario,
+          newsletterMetagame: Boolean(editProfileForm.newsletterMetagame),
+        },
+      });
+      setShowNewsletterOptIn(false);
       setAuthMessage("Perfil atualizado com sucesso.");
       setShowEditProfileModal(false);
     } catch (error) {
@@ -411,6 +570,10 @@ export function AuthProvider({ children }) {
     setAuthTab,
     clearAuth,
     loggingOut,
+    showNewsletterOptIn,
+    newsletterOptInLoading,
+    responderNewsletterOptIn,
+    marcarNewsletterDescadastrada,
     openEditProfileModal,
     closeEditProfileModal,
     handleUpdateProfile,

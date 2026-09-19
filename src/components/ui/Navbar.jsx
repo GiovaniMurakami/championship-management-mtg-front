@@ -304,6 +304,9 @@ export function Navbar({
                     <NavLink role="menuitem" to="/dashboard/anuncio-diario" className={dropdownItemClass} onClick={close}>
                       Anúncio diário
                     </NavLink>
+                    <NavLink role="menuitem" to="/dashboard/newsletter" className={dropdownItemClass} onClick={close}>
+                      Newsletter
+                    </NavLink>
                     <NavLink role="menuitem" to="/dashboard/permissoes" className={dropdownItemClass} onClick={close}>
                       Permissões
                     </NavLink>
@@ -423,12 +426,15 @@ export function Navbar({
                 <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
                   <span className="pl-[1.4rem]">Anúncios</span>
                 </NavLink>
-                <NavLink to="/dashboard/anuncio-diario" className={mobileLinkClass} onClick={close}>
-                  <span className="pl-[1.4rem]">Anúncio diário</span>
-                </NavLink>
-                <NavLink to="/dashboard/permissoes" className={mobileLinkClass} onClick={close}>
-                  <span className="pl-[1.4rem]">Permissões</span>
-                </NavLink>
+                  <NavLink to="/dashboard/anuncio-diario" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Anúncio diário</span>
+                  </NavLink>
+                  <NavLink to="/dashboard/newsletter" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Newsletter</span>
+                  </NavLink>
+                  <NavLink to="/dashboard/permissoes" className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">Permissões</span>
+                  </NavLink>
                 <NavLink to="/dashboard/bloqueios" className={mobileLinkClass} onClick={close}>
                   <span className="pl-[1.4rem]">Bloqueio de usuários</span>
                 </NavLink>

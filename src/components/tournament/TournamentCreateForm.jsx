@@ -3,7 +3,7 @@ import { criarTorneio, listarLigas } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
-import { Button, Checkbox, SelectField, FormFeedback, FormSection } from "../ui";
+import { Button, Checkbox, SelectField, FormFeedback, FormSection, MultiSelectDropdown } from "../ui";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
 import {
@@ -91,11 +91,6 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       ativo = false;
     };
   }, [token]);
-
-  const handleLigaChange = (event) => {
-    const value = event.target.value;
-    setCreateForm((prev) => ({ ...prev, ligaIds: value ? [value] : [] }));
-  };
 
   const handleStoryPreviewUrlChange = useCallback((url) => {
     setStoryPreview(url || "");
@@ -219,20 +214,15 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
             </div>
 
             <div className="flex flex-col gap-2">
-              <FieldLabel htmlFor="ligaId">Liga <span className="font-normal normal-case tracking-normal text-text-muted">(opcional)</span></FieldLabel>
-              <SelectField
-                id="ligaId"
-                name="ligaId"
-                value={createForm.ligaIds?.[0] || ""}
-                onChange={handleLigaChange}
+              <FieldLabel>Ligas <span className="font-normal normal-case tracking-normal text-text-muted">(opcional, pode escolher mais de uma)</span></FieldLabel>
+              <MultiSelectDropdown
+                options={ligas.map((liga) => ({ value: liga.id, label: liga.nome }))}
+                value={createForm.ligaIds || []}
+                onChange={(next) => setCreateForm((prev) => ({ ...prev, ligaIds: next }))}
                 disabled={isSubmitting}
-                className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-brand"
                 placeholder="Nenhuma"
-                options={ligas.map((liga) => ({
-                  value: liga.id,
-                  label: liga.nome,
-                }))}
+                searchPlaceholder="Buscar liga…"
+                emptyLabel="Nenhuma liga disponível"
               />
             </div>
 
