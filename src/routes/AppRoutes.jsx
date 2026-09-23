@@ -4,6 +4,16 @@ import { ProtectedRoute } from "../components";
 import { UuidParamGuard } from "../components/ui/UuidParamGuard";
 import { Spinner } from "../components/ui/Spinner";
 
+function RedirectBlogArtigo() {
+  const { id } = useParams();
+  return <Navigate to={`/artigos/${id}`} replace />;
+}
+
+function RedirectBlogArtigoEditar() {
+  const { id } = useParams();
+  return <Navigate to={`/artigos/${id}/editar`} replace />;
+}
+
 // Rotas lazy-loaded — cada rota gera um chunk separado pelo Vite
 const DeckBuilderPage     = lazy(() => import("../pages/DeckBuilderPage").then(m => ({ default: m.DeckBuilderPage })));
 const MyDecksPage         = lazy(() => import("../pages/MyDecksPage").then(m => ({ default: m.MyDecksPage })));
@@ -20,10 +30,18 @@ const TermosDeUsoPage     = lazy(() => import("../pages/TermosDeUsoPage").then(m
 const PrivacidadePage     = lazy(() => import("../pages/PrivacidadePage").then(m => ({ default: m.PrivacidadePage })));
 const LandingPage         = lazy(() => import("../pages/LandingPage").then(m => ({ default: m.LandingPage })));
 const LandingBlogPage     = lazy(() => import("../pages/LandingBlogPage").then(m => ({ default: m.LandingBlogPage })));
+const BlogPage            = lazy(() => import("../pages/BlogPage").then(m => ({ default: m.BlogPage })));
+const BlogArticlePage     = lazy(() => import("../pages/BlogArticlePage").then(m => ({ default: m.BlogArticlePage })));
+const BlogEditorPage      = lazy(() => import("../pages/BlogEditorPage").then(m => ({ default: m.BlogEditorPage })));
+const BlogPendingPage     = lazy(() => import("../pages/BlogPendingPage").then(m => ({ default: m.BlogPendingPage })));
 const LandingSobreMimPage = lazy(() => import("../pages/LandingSobreMimPage").then(m => ({ default: m.LandingSobreMimPage })));
 const LandingParceirosPage = lazy(() => import("../pages/LandingParceirosPage").then(m => ({ default: m.LandingParceirosPage })));
 const DashboardPage       = lazy(() => import("../pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const DashboardBloqueiosPage = lazy(() => import("../pages/DashboardBloqueiosPage").then(m => ({ default: m.DashboardBloqueiosPage })));
+const DashboardPermissoesPage = lazy(() => import("../pages/DashboardPermissoesPage").then(m => ({ default: m.DashboardPermissoesPage })));
+const DashboardAnuncioDiarioPage = lazy(() => import("../pages/DashboardAnuncioDiarioPage").then(m => ({ default: m.DashboardAnuncioDiarioPage })));
+const DashboardNewsletterPage = lazy(() => import("../pages/DashboardNewsletterPage").then(m => ({ default: m.DashboardNewsletterPage })));
+const NewsletterDescadastrarPage = lazy(() => import("../pages/NewsletterDescadastrarPage").then(m => ({ default: m.NewsletterDescadastrarPage })));
 const NotFoundPage        = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const TimePage            = lazy(() => import("../pages/TimePage").then(m => ({ default: m.TimePage })));
 const TimeDetailPage      = lazy(() => import("../pages/TimeDetailPage").then(m => ({ default: m.TimeDetailPage })));
@@ -85,6 +103,16 @@ export function AppRoutes() {
         <Route path="/dashboard/bloqueios" element={
           <ProtectedRoute requireAdmin><DashboardBloqueiosPage /></ProtectedRoute>
         } />
+        <Route path="/dashboard/permissoes" element={
+          <ProtectedRoute requireAdmin><DashboardPermissoesPage /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/anuncio-diario" element={
+          <ProtectedRoute requireAdmin><DashboardAnuncioDiarioPage /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/newsletter" element={
+          <ProtectedRoute requireAdmin><DashboardNewsletterPage /></ProtectedRoute>
+        } />
+        <Route path="/newsletter/descadastrar" element={<NewsletterDescadastrarPage />} />
 
         <Route path="/times" element={<TimePage />} />
         <Route path="/times/criar" element={
@@ -130,13 +158,33 @@ export function AppRoutes() {
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
         <Route path="/privacidade" element={<PrivacidadePage />} />
-        <Route path="/blog" element={<LandingBlogPage />} />
+        <Route path="/artigos" element={<BlogPage />} />
+        <Route path="/artigos/novo" element={
+          <ProtectedRoute><BlogEditorPage /></ProtectedRoute>
+        } />
+        <Route path="/artigos/pendentes" element={
+          <ProtectedRoute requireAdmin><BlogPendingPage /></ProtectedRoute>
+        } />
+        <Route path="/artigos/:id/editar" element={
+          <UuidParamGuard param="id">
+            <ProtectedRoute><BlogEditorPage /></ProtectedRoute>
+          </UuidParamGuard>
+        } />
+        <Route path="/artigos/:id" element={
+          <UuidParamGuard param="id"><BlogArticlePage /></UuidParamGuard>
+        } />
+        <Route path="/blog-legado" element={<LandingBlogPage />} />
         <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
         <Route path="/parceiros" element={<LandingParceirosPage />} />
 
         {/* Redirects de rotas antigas */}
+        <Route path="/blog" element={<Navigate to="/artigos" replace />} />
+        <Route path="/blog/novo" element={<Navigate to="/artigos/novo" replace />} />
+        <Route path="/blog/pendentes" element={<Navigate to="/artigos/pendentes" replace />} />
+        <Route path="/blog/:id/editar" element={<RedirectBlogArtigoEditar />} />
+        <Route path="/blog/:id" element={<RedirectBlogArtigo />} />
         <Route path="/landing-page" element={<Navigate to="/" replace />} />
-        <Route path="/landing-page/blog" element={<Navigate to="/blog" replace />} />
+        <Route path="/landing-page/blog" element={<Navigate to="/artigos" replace />} />
         <Route path="/landing-page/sobre-mim" element={<Navigate to="/sobre-mim" replace />} />
         <Route path="/landing-page/parceiros" element={<Navigate to="/parceiros" replace />} />
 

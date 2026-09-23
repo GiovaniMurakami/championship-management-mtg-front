@@ -114,6 +114,7 @@ function normalizeCard(card) {
     cmc,
     manaCost: card.mana_cost || "",
     typeLine: card.type_line || "",
+    oracleText: card.oracle_text || card.card_faces?.[0]?.oracle_text || "",
   };
 }
 

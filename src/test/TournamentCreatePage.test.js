@@ -33,12 +33,12 @@ describe("buildCopyTournamentInitialValues", () => {
     expect(values.horario).toMatch(/T/);
   });
 
-  it("copia a primeira liga do torneio original", () => {
+  it("copia todas as ligas do torneio original", () => {
     const values = buildCopyTournamentInitialValues({
       nome: "FNM",
       ligaIds: ["liga-1", "liga-2"],
     });
-    expect(values.ligaIds).toEqual(["liga-1"]);
+    expect(values.ligaIds).toEqual(["liga-1", "liga-2"]);
   });
 
   it("nao coloca bannerUrl no campo linkBanner", () => {

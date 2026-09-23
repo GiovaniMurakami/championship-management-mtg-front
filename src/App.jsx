@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop, CookieConsentBanner } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop, CookieConsentBanner, AnuncioDiarioModal, LogoutOverlay, NewsletterOptInModal } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
 import {
@@ -14,7 +14,7 @@ import {
   WORDPRESS_EMBED_URL,
 } from "./utils/externalNavigation";
 
-const BARE_ROUTES = ["/blog", "/sobre-mim", "/parceiros"];
+const BARE_ROUTES = ["/sobre-mim", "/parceiros"];
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -156,6 +156,9 @@ function AppContent() {
     handleRegister, loginLockout, showEditProfileModal, closeEditProfileModal,
     editProfileForm, setEditProfileForm, handleUpdateProfile,
     handleDeleteAccount, deleteAccountLoading, deleteAccountError,
+    loggingOut,
+    showNewsletterOptIn, newsletterOptInLoading, responderNewsletterOptIn,
+    podeEditarBlog,
   } = useAuth();
 
   const { pathname } = useLocation();
@@ -185,6 +188,7 @@ function AppContent() {
         onLogout={clearAuth}
         isAuthenticated={isAuthenticated}
         onOpenEditProfile={openEditProfileModal}
+        loggingOut={loggingOut}
       />
 
       <main className="flex-1 min-w-0">
@@ -223,10 +227,19 @@ function AppContent() {
         onDeleteAccount={handleDeleteAccount}
         deleteLoading={deleteAccountLoading}
         deleteError={deleteAccountError}
+        podeEditarAssinatura={Boolean(podeEditarBlog)}
       />
 
       <Footer />
       <CookieConsentBanner />
+      <AnuncioDiarioModal />
+      <LogoutOverlay open={loggingOut} />
+      <NewsletterOptInModal
+        isOpen={showNewsletterOptIn && !showAuthModal && !loggingOut}
+        isLoading={newsletterOptInLoading}
+        onAccept={() => responderNewsletterOptIn(true)}
+        onDecline={() => responderNewsletterOptIn(false)}
+      />
     </div>
   );
 }

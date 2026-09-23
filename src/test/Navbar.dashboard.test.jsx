@@ -23,6 +23,18 @@ describe("Navbar — dropdown do usuário", () => {
 
     expect(screen.getByRole("menuitem", { name: /Editar perfil/i })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /Anúncios/i })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("menuitem", { name: /Anúncio diário/i })).toHaveAttribute(
+      "href",
+      "/dashboard/anuncio-diario",
+    );
+    expect(screen.getByRole("menuitem", { name: /^Newsletter$/i })).toHaveAttribute(
+      "href",
+      "/dashboard/newsletter",
+    );
+    expect(screen.getByRole("menuitem", { name: /Permissões/i })).toHaveAttribute(
+      "href",
+      "/dashboard/permissoes",
+    );
     expect(screen.getByRole("menuitem", { name: /Bloqueio de usuários/i })).toHaveAttribute(
       "href",
       "/dashboard/bloqueios",

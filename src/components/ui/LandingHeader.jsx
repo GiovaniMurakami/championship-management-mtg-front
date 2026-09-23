@@ -6,7 +6,7 @@ import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
 const NAV_LINKS = [
     { label: "Home", href: MAIN_SITE_URL, external: true },
     { label: "Torneios", href: "/torneio" },
-    { label: "Blog", href: "/blog" },
+    { label: "Artigos", href: "/artigos" },
     { label: "Sobre mim", href: "/sobre-mim" },
     { label: "Parceiros", href: "/parceiros" },
 ];

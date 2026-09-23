@@ -93,6 +93,11 @@ export const atualizarUsuario = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const buscarMeuUsuario = (token) =>
+  httpClient.get("/usuario/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const excluirConta = (payload, token) =>
   httpClient.delete("/usuario/conta", {
     headers: { Authorization: `Bearer ${token}` },
@@ -287,7 +292,7 @@ export const buscarMeuHistorico = (torneioId, token) =>
   });
 
 export const buscarDeck = (deckId, token) =>
-  httpClient.get(`/deck/${deckId}`, optionalAuthConfig(token));
+  httpClient.get(`/deck/${encodeURIComponent(deckId)}`, optionalAuthConfig(token));
 
 export const atualizarTorneio = (torneioId, payload, token) =>
   httpClient.put(`/torneio/${torneioId}`, payload, {
@@ -456,6 +461,25 @@ export const salvarAnuncios = (anuncios, token) =>
 export const registrarCliqueAnuncio = (anuncioId) =>
   httpClient.post(`/site/anuncios/${encodeURIComponent(anuncioId)}/clique`, {});
 
+export const buscarAnuncioDiario = () =>
+  httpClient.get("/site/anuncio-diario");
+
+export const buscarAnuncioDiarioAdmin = (token) =>
+  httpClient.get("/site/anuncio-diario/admin", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const salvarAnuncioDiario = (payload, token) =>
+  httpClient.put("/site/anuncio-diario", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const registrarVisualizacaoAnuncioDiario = (anuncioId) =>
+  httpClient.post("/site/anuncio-diario/visualizacao", { anuncioId });
+
+export const registrarCliqueAnuncioDiario = (anuncioId) =>
+  httpClient.post("/site/anuncio-diario/clique", { anuncioId });
+
 // Posts
 export const listarPosts = (token, params = {}) => httpClient.get("/post", { ...optionalAuthConfig(token), params });
 export const buscarPost = (postId, token) => httpClient.get(`/post/${encodeURIComponent(postId)}`, optionalAuthConfig(token));
@@ -465,6 +489,53 @@ export const comentarPost = (postId, texto, token) => httpClient.post(`/post/${e
 export const curtirPost = (postId, token) => httpClient.post(`/post/${encodeURIComponent(postId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
 export const descurtirPost = (postId, token) => httpClient.delete(`/post/${encodeURIComponent(postId)}/curtida`, { headers: { Authorization: `Bearer ${token}` } });
 export const excluirPost = (postId, token) => httpClient.delete(`/post/${encodeURIComponent(postId)}`, { headers: { Authorization: `Bearer ${token}` } });
+
+// Artigos (blog)
+export const listarArtigos = (token, params = {}) =>
+  httpClient.get("/artigo", { ...optionalAuthConfig(token), params });
+export const buscarArtigo = (artigoId, token) =>
+  httpClient.get(`/artigo/${encodeURIComponent(artigoId)}`, optionalAuthConfig(token));
+export const criarArtigo = (payload, token) =>
+  httpClient.post("/artigo", payload, { headers: { Authorization: `Bearer ${token}` } });
+export const editarArtigo = (artigoId, payload, token) =>
+  httpClient.put(`/artigo/${encodeURIComponent(artigoId)}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+export const aprovarArtigo = (artigoId, aprovar, token) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/aprovacao`, { aprovar }, { headers: { Authorization: `Bearer ${token}` } });
+export const comentarArtigo = (artigoId, texto, token) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario`, { texto }, { headers: { Authorization: `Bearer ${token}` } });
+export const curtirArtigo = (artigoId, token) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
+export const descurtirArtigo = (artigoId, token) =>
+  httpClient.delete(`/artigo/${encodeURIComponent(artigoId)}/curtida`, { headers: { Authorization: `Bearer ${token}` } });
+export const excluirArtigo = (artigoId, token) =>
+  httpClient.delete(`/artigo/${encodeURIComponent(artigoId)}`, { headers: { Authorization: `Bearer ${token}` } });
+export const definirEditor = (usuarioId, editor, token) =>
+  httpClient.put(`/usuario/${encodeURIComponent(usuarioId)}/editor`, { editor }, { headers: { Authorization: `Bearer ${token}` } });
+
+export const listarAssinantesNewsletter = (token, params = {}) =>
+  httpClient.get("/usuario/newsletter/assinantes", {
+    headers: { Authorization: `Bearer ${token}` },
+    params,
+  });
+
+const descadastroEmAndamento = new Map();
+
+export const descadastrarNewsletter = (token) => {
+  const chave = String(token || "").trim();
+  if (!chave) {
+    return Promise.reject(new Error("Link de descadastro inválido ou incompleto."));
+  }
+  const existente = descadastroEmAndamento.get(chave);
+  if (existente) return existente;
+
+  const pedido = httpClient
+    .post("/usuario/newsletter/descadastrar", { token: chave })
+    .finally(() => {
+      descadastroEmAndamento.delete(chave);
+    });
+  descadastroEmAndamento.set(chave, pedido);
+  return pedido;
+};
 
 // Story fundos (admin)
 export const listarStoryFundos = (token) =>

@@ -6,7 +6,8 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
   const statItems = [
     { label: "Torneios realizados", value: stats.torneiosRealizados },
     { label: "Jogadores ativos", value: stats.jogadoresAtivos },
-    { label: "Formatos suportados", value: stats.formatosSuportados },
+    { label: "Tix distribuídos", value: stats.premiacaoTix },
+    { label: "PPs distribuídos", value: stats.premiacaoPlayerPoints },
   ];
 
   return (
@@ -26,9 +27,9 @@ export function Hero({ onOpenAuth, isAuthenticated }) {
             <Button variant="secondary" size="lg" onClick={() => onOpenAuth?.("login")}>Entrar</Button>
           </div>
         )}
-        <dl className="mx-auto mt-12 grid max-w-[620px] grid-cols-3 divide-x divide-line-soft border-t border-line-soft pt-7 max-[560px]:grid-cols-1 max-[560px]:divide-x-0 max-[560px]:divide-y">
+        <dl className="mx-auto mt-12 grid max-w-[760px] grid-cols-4 divide-x divide-line-soft border-t border-line-soft pt-7 max-[720px]:grid-cols-2 max-[720px]:divide-x-0 max-[720px]:gap-y-4 max-[400px]:grid-cols-1">
           {statItems.map((stat) => (
-            <div key={stat.label} className="px-5 max-[560px]:py-4">
+            <div key={stat.label} className="px-4 max-[720px]:py-2">
               <dd className="m-0 font-display text-2xl font-bold tracking-[-0.03em] text-text-main">
                 {loading ? "—" : formatSiteStatValue(stat.value)}
               </dd>
