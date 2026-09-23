@@ -356,6 +356,13 @@ export const buscarMetagame = (params) =>
 export const buscarArquetipoMetagame = (formato, slug, params) =>
   httpClient.get(`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(slug)}`, { params });
 
+export const salvarCartaRepresentativaArquetipo = (formato, slug, cartaRepresentativa, token) =>
+  httpClient.put(
+    `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(slug)}/carta-representativa`,
+    { cartaRepresentativa: cartaRepresentativa || null },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
 // Times
 export const criarTime = (payload, token) =>
   httpClient.post("/time/criar", payload, {
