@@ -2,7 +2,7 @@
 
 SPA para organizar campeonatos, decks, ligas, times e metagame de Magic: The Gathering. O frontend consome a API do repositório `championship-management-mtg` e oferece atualização em tempo real durante torneios.
 
-Versão atual: **1.2.44**
+Versão atual: **1.2.45**
 
 ## Estado atual
 
