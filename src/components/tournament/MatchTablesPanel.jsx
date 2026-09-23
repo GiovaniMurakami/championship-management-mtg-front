@@ -7,6 +7,7 @@ import { formatTournamentRoundLabel, isEliminationPhase } from "../../utils/tour
 import { editarPareamentosRodada } from "../../services/backendApi";
 import { SelectField } from "../ui";
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
+import { InlineAlert } from "../ui/InlineAlert";
 
 function getMesa(partida, index) {
     return partida.mesa ?? partida.mesaNumero ?? partida.numeroMesa ?? index + 1;
@@ -49,7 +50,7 @@ function MatchCard({ partida, index, usuarioId }) {
         : "VS";
 
     return (
-        <article className={`min-w-0 max-w-full overflow-visible rounded-[10px] px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
+        <article className={`min-w-0 max-w-full overflow-visible rounded-lg px-[0.85rem] pt-[0.7rem] pb-[0.8rem] transition-[border-color,background] duration-200 ${isMe ? "border border-[rgba(167,79,255,0.5)] bg-[rgba(167,79,255,0.07)] hover:border-[rgba(167,79,255,0.7)] hover:bg-[rgba(167,79,255,0.1)]" : "border border-[rgba(56,189,248,0.15)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(56,189,248,0.3)] hover:bg-[rgba(56,189,248,0.04)]"} ${isFinalizada ? "opacity-[0.82]" : ""}`}>
             <div className="flex items-start justify-between gap-2 mb-[0.55rem] flex-wrap max-md:flex-col max-md:items-start">
                 <div className="flex items-center gap-[0.4rem] min-w-0">
                     <span className="text-[0.72rem] font-bold text-[#7dd3fc] tracking-[0.04em] uppercase">Mesa {getMesa(partida, index)}</span>
@@ -72,7 +73,7 @@ function MatchCard({ partida, index, usuarioId }) {
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-[0.4rem] max-md:grid-cols-1 max-md:gap-2">
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-start max-md:items-center max-md:text-center ${p1.isMe ? "[&_.mtp-player-name]:text-[#c4b5fd]" : ""}`}>
                     <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p1.isMe ? "text-[#c4b5fd]" : "text-[#e2e8f0]"}`}>
-                        <UsuarioNomeExibicao nome={p1.name} excluido={p1.excluido} />
+                        <UsuarioNomeExibicao nome={p1.name} usuarioId={partida.jogador1Id || partida.jogador1?.id} excluido={p1.excluido} />
                     </span>
                     {p1.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em]">VOCÊ</span>}
                     {isFinalizada && !isBye && (
@@ -80,14 +81,14 @@ function MatchCard({ partida, index, usuarioId }) {
                     )}
                 </div>
 
-                <span className={`text-[0.88rem] font-extrabold tracking-[0.04em] text-center px-2 py-[0.2rem] rounded-[6px] flex-shrink-0 max-md:mx-auto ${isFinalizada ? "text-white bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.3)]" : "text-[rgba(199,149,255,0.7)] bg-[rgba(167,79,255,0.1)] border border-[rgba(167,79,255,0.2)]"}`}>
+                <span className={`text-[0.88rem] font-extrabold tracking-[0.04em] text-center px-2 py-[0.2rem] rounded-md flex-shrink-0 max-md:mx-auto ${isFinalizada ? "text-white bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.3)]" : "text-[rgba(199,149,255,0.7)] bg-[rgba(167,79,255,0.1)] border border-[rgba(167,79,255,0.2)]"}`}>
                     {score}
                 </span>
 
                 <div className={`flex flex-col gap-[0.15rem] min-w-0 items-end text-right max-md:items-center max-md:text-center ${p2.isMe ? "" : ""} ${isBye ? "" : ""}`}>
                     {p2.isMe && <span className="text-[0.55rem] font-black text-[#c4b5fd] bg-[rgba(167,79,255,0.14)] rounded-full px-[0.28rem] py-0 leading-[1.25] tracking-[0.04em]">VOCÊ</span>}
                     <span className={`text-[0.86rem] font-semibold max-w-full truncate max-md:whitespace-normal max-md:break-words max-md:overflow-visible ${p2.isMe ? "text-[#c4b5fd]" : isBye ? "text-[rgba(226,232,240,0.4)] italic" : "text-[#e2e8f0]"}`}>
-                        {isBye ? p2.name : <UsuarioNomeExibicao nome={p2.name} excluido={p2.excluido} />}
+                        {isBye ? p2.name : <UsuarioNomeExibicao nome={p2.name} usuarioId={partida.jogador2Id || partida.jogador2?.id} excluido={p2.excluido} />}
                     </span>
                     {isFinalizada && !isBye && (
                         <ConfirmationIcon confirmed={player2Confirmed} label={`${p2.name}: ${player2Confirmed ? "confirmou" : "falta confirmar"}`} />
@@ -312,7 +313,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
 
             <div className="flex items-center justify-between gap-3 flex-wrap mb-[0.9rem] max-md:flex-col max-md:items-stretch">
                 <div className="flex items-center gap-[0.65rem] flex-wrap">
-                    <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-[#f5edff]">Mesas</h2>
+                    <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main">Mesas</h2>
                     {isOngoing && (
                         <span className="text-[0.75rem] font-semibold text-[#7dd3fc] bg-[rgba(56,189,248,0.1)] border border-[rgba(56,189,248,0.25)] rounded-full px-[0.65rem] py-[0.2rem]">
                             Rodada {formatTournamentRoundLabel(torneio)}
@@ -325,36 +326,39 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                     )}
                 </div>
 
-                {showRoundPicker && (
-                    <div className="flex items-center gap-[0.3rem] flex-wrap max-md:w-full min-w-0 max-w-full" role="tablist" aria-label="Selecionar rodada">
-                        {roundNumbers.map((r) => (
-                            <button
-                                key={r}
-                                type="button"
-                                role="tab"
-                                aria-selected={Number(selectedRound) === r}
-                                className={`border rounded-full px-[0.6rem] py-[0.25rem] min-w-[2.2rem] text-[0.75rem] font-bold cursor-pointer transition-all duration-150 flex-shrink-0 ${Number(selectedRound) === r ? "bg-[rgba(56,189,248,0.22)] border-[rgba(56,189,248,0.7)] text-white" : "border-[rgba(125,211,252,0.3)] bg-[rgba(125,211,252,0.06)] text-[#93c5fd] hover:bg-[rgba(125,211,252,0.16)] hover:border-[rgba(125,211,252,0.5)] hover:text-[#bae6fd]"}`}
-                                onClick={() => setSelectedRoundOverride(r)}
-                            >
-                                R{r}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <div className="flex items-center justify-end gap-2 max-md:w-full max-md:flex-col max-md:items-stretch">
+                    {showRoundPicker && (
+                        <div className="inline-flex h-9 items-center overflow-hidden rounded-xl border border-[rgba(125,211,252,0.28)] bg-black/10 max-md:w-full" role="tablist" aria-label="Selecionar rodada">
+                            {roundNumbers.map((r) => (
+                                <button
+                                    key={r}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={Number(selectedRound) === r}
+                                    className={`h-full min-w-[2.55rem] border-0 border-r border-r-[rgba(125,211,252,0.18)] px-2 text-[0.75rem] font-bold cursor-pointer transition-colors duration-150 last:border-r-0 max-md:flex-1 ${Number(selectedRound) === r ? "bg-[#0ea5e9] text-[#071521]" : "bg-transparent text-[#93c5fd] hover:bg-[rgba(125,211,252,0.12)] hover:text-[#e0f2fe]"}`}
+                                    onClick={() => setSelectedRoundOverride(r)}
+                                >
+                                    R{r}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
-                {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
-                    <button
-                        type="button"
-                        className="inline-flex items-center justify-center gap-[0.4rem] px-3 py-[0.45rem] rounded-[0.7rem] border border-[rgba(125,211,252,0.35)] bg-[rgba(56,189,248,0.08)] text-[#7dd3fc] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.16)] max-md:w-full"
-                        onClick={handleOpenPairingsEditor}
-                    >
-                        Editar pareamentos
-                    </button>
-                )}
+                    {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
+                        <button
+                            type="button"
+                            className="inline-flex h-9 items-center justify-center gap-2 px-3 rounded-xl border border-[rgba(125,211,252,0.42)] bg-[rgba(56,189,248,0.12)] text-[#bae6fd] text-[0.78rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.22)] hover:text-white active:scale-[0.98]"
+                            onClick={handleOpenPairingsEditor}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                            Editar pareamentos
+                        </button>
+                    )}
+                </div>
             </div>
 
             {isTopCut && total > 0 && (
-                <div className="mb-3 rounded-[0.75rem] border border-[rgba(250,204,21,0.22)] bg-[rgba(250,204,21,0.07)] px-3 py-2 text-[0.82rem] font-semibold text-[#fef3c7]">
+                <div className="mb-3 rounded-lg border border-[rgba(250,204,21,0.22)] bg-[rgba(250,204,21,0.07)] px-3 py-2 text-[0.82rem] font-semibold text-[#fef3c7]">
                     Pareamentos do corte eliminatório visíveis para os jogadores classificados.
                 </div>
             )}
@@ -381,7 +385,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                             placeholder="Buscar jogador ou mesa…"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-[0.6rem] pl-3 pr-[1.8rem] py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
+                            className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(56,189,248,0.18)] rounded-xl pl-3 pr-[1.8rem] py-[0.38rem] text-[0.83rem] text-[#e2e8f0] placeholder-[rgba(186,230,253,0.35)] focus:outline-none focus:border-[rgba(56,189,248,0.5)] transition-[border-color] duration-150"
                         />
                         <svg className="absolute right-[0.6rem] top-1/2 -translate-y-1/2 text-[rgba(186,230,253,0.4)] pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                             <circle cx="11" cy="11" r="8" />
@@ -391,7 +395,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                     <button
                         type="button"
                         onClick={() => setShowPendingOnly(p => !p)}
-                        className={`inline-flex items-center justify-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-[0.6rem] text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 max-md:w-full ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-[#beafd7] hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"}`}
+                        className={`inline-flex items-center justify-center gap-[0.3rem] px-3 py-[0.38rem] border rounded-xl text-[0.8rem] font-semibold cursor-pointer transition-all duration-150 flex-shrink-0 max-md:w-full active:scale-[0.98] ${showPendingOnly ? "bg-[rgba(250,204,21,0.18)] border-[rgba(250,204,21,0.6)] text-[#fde047]" : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.12)] text-text-soft hover:bg-[rgba(255,255,255,0.08)] hover:text-text-main"}`}
                     >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -402,7 +406,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                         <button
                             type="button"
                             onClick={() => setSearchQuery("")}
-                            className="inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border border-[rgba(217,180,255,0.2)] rounded-[0.6rem] text-[0.8rem] text-[#beafd7] cursor-pointer hover:text-[#f5edff] hover:bg-[rgba(255,255,255,0.05)] transition-all duration-150 flex-shrink-0"
+                            className="inline-flex items-center gap-[0.3rem] px-3 py-[0.38rem] border border-line rounded-xl text-[0.8rem] text-text-soft cursor-pointer hover:text-text-main hover:bg-[rgba(255,255,255,0.05)] transition-all duration-150 flex-shrink-0 active:scale-[0.98]"
                         >
                             ✕ Limpar
                         </button>
@@ -419,7 +423,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
             )}
 
             {total === 0 ? (
-                <p className="text-[#beafd7] text-[0.9rem] m-0">
+                <p className="text-text-soft text-[0.9rem] m-0">
                     {isFinished
                         ? "Nenhuma mesa para a rodada selecionada."
                         : "Ainda não há mesas para a rodada atual."}
@@ -464,7 +468,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                                 <SelectField
                                     value={partida.jogador1Id}
                                     onChange={(e) => handlePairingChange(index, "jogador1Id", e.target.value)}
-                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-md px-3 py-2 text-text-main"
                                     placeholder="Jogador 1"
                                     disabled={partida.locked || pairingsLoading}
                                 >
@@ -473,7 +477,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                                 <SelectField
                                     value={partida.jogador2Id}
                                     onChange={(e) => handlePairingChange(index, "jogador2Id", e.target.value)}
-                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff]"
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-md px-3 py-2 text-text-main"
                                     placeholder="BYE"
                                     disabled={partida.locked || pairingsLoading}
                                 >
@@ -484,7 +488,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                                     min="1"
                                     value={partida.mesa}
                                     onChange={(e) => handlePairingChange(index, "mesa", e.target.value)}
-                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-[0.6rem] px-3 py-2 text-[#f5edff] disabled:opacity-60"
+                                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(56,189,248,0.2)] rounded-md px-3 py-2 text-text-main disabled:opacity-60"
                                     placeholder="Mesa"
                                     disabled={pairingsLoading}
                                 />
@@ -511,9 +515,9 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                         </div>
                     )}
 
-                    {pairingsError && <p className="text-[#fca5a5] text-[0.85rem] mt-4 mb-0">{pairingsError}</p>}
+                    {pairingsError ? <InlineAlert type="error" className="mt-4">{pairingsError}</InlineAlert> : null}
                     <div className="flex gap-3 mt-5 max-md:flex-col">
-                        <button type="button" className="flex-1 px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors max-md:w-full" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
+                        <button type="button" className="flex-1 px-4 py-2 border border-line rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors max-md:w-full" onClick={() => setPairingsOpen(false)} disabled={pairingsLoading}>Cancelar</button>
                         <button type="button" className="flex-1 px-4 py-2 border border-[rgba(56,189,248,0.5)] rounded-lg text-[#7dd3fc] text-[0.9rem] font-semibold bg-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.2)] transition-colors disabled:opacity-50 max-md:w-full" onClick={handleSavePairings} disabled={pairingsLoading}>{pairingsLoading ? "Salvando..." : "Salvar pareamentos"}</button>
                     </div>
                 </div>

@@ -32,7 +32,7 @@ export function LandingSobreMimPage() {
                         alt="Tiago Fuguete"
                         className="w-full md:w-80 rounded-2xl object-cover flex-shrink-0"
                     />
-                    <div className="space-y-4 text-[#beafd7] leading-relaxed">
+                    <div className="space-y-4 text-text-soft leading-relaxed">
                         <p>
                             "Olá, meu nome é Tiago… Mas ninguém me chama assim. Desde pequeno carrego um
                             apelido que não escolhi, mas que hoje faz parte de quem eu sou: Tiago Fuguete. 🚀
@@ -57,7 +57,7 @@ export function LandingSobreMimPage() {
             </section>
 
             {/* Apoiase */}
-            <section className="bg-[#080514] py-12 border-y border-[rgba(217,180,255,0.12)]">
+            <section className="bg-[#080514] py-12 border-y border-line-soft">
                 <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
                     <div className="flex-1 text-center md:text-left">
                         <h2 className="text-2xl md:text-3xl font-bold mb-3">Apoie o meu trabalho pelo Apoia-se</h2>
@@ -94,7 +94,7 @@ export function LandingSobreMimPage() {
             </section>
 
             {/* Supporters */}
-            <section className="bg-[#080514] py-16 border-t border-[rgba(217,180,255,0.12)]">
+            <section className="bg-[#080514] py-16 border-t border-line-soft">
                 <div className="max-w-5xl mx-auto px-4 text-center">
                     <h2 className="text-2xl md:text-3xl font-bold mb-2">Obrigado! 🙏</h2>
                     <p className="text-[#9b8dc0] mb-10 text-sm">Esse projeto existe graças a cada um de vocês</p>
@@ -102,7 +102,7 @@ export function LandingSobreMimPage() {
                         {SUPPORTERS_LIST.map((name) => (
                             <span
                                 key={name}
-                                className="inline-block px-3 py-1 rounded-full border border-[rgba(217,180,255,0.15)] bg-[rgba(167,79,255,0.08)] text-[#beafd7] text-xs hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.4)] hover:text-[#f5edff] transition-all duration-200 cursor-default"
+                                className="inline-block px-3 py-1 rounded-full border border-line-soft bg-[rgba(167,79,255,0.08)] text-text-soft text-xs hover:bg-[rgba(167,79,255,0.2)] hover:border-[rgba(199,149,255,0.4)] hover:text-text-main transition-all duration-200 cursor-default"
                             >
                                 {name}
                             </span>

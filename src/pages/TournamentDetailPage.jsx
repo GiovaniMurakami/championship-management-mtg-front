@@ -55,9 +55,11 @@ export function TournamentDetailPage() {
     handleGerarLinkIngresso,
     handleStartTournament,
     handleNextRound,
+    handlePublishRound,
     handleRefazerRodada,
     handleEncerrarTorneio,
-    handleBulkDropPlayers,
+    handleDropPlayersWithoutDeck,
+    handleDropPlayersWithoutCheckin,
     handleDropPlayer,
     handleUndropPlayer,
     handleSelfDrop,
@@ -69,8 +71,6 @@ export function TournamentDetailPage() {
     selectedTimeId,
     setSelectedTimeId,
     loadPartidas,
-    realtimeToast,
-    dismissRealtimeToast,
     corteInfo,
     dismissCorteInfo,
     usuario,
@@ -80,7 +80,8 @@ export function TournamentDetailPage() {
   const isFinished = torneio?.status === "finalizado";
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
   const isOngoing = torneio?.status === "em_andamento";
-  const canManage = canManageTournament && isRegistrationOpen;
+  const canManage = canManageTournament && (isRegistrationOpen || torneio?.status === "em_andamento");
+  const canEditFinished = isAdmin && isFinished;
 
   const torneioNome = torneio?.nome || torneio?.torneioNome;
   usePageTitle(torneioNome, {
@@ -96,8 +97,8 @@ export function TournamentDetailPage() {
   };
 
   const handleEditSubmit = async (payload) => {
-    await handleEditTorneio(payload);
-    setShowEditModal(false);
+    const ok = await handleEditTorneio(payload);
+    if (ok) setShowEditModal(false);
   };
 
   const handleDeleteConfirmed = async (_confirmName, closeModal) => {
@@ -112,14 +113,14 @@ export function TournamentDetailPage() {
     <PageShell>
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap max-md:flex-col max-md:items-stretch">
         <button
-          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06] max-md:w-full max-md:justify-center"
+          className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-line rounded-xl bg-white/[0.03] text-text-soft text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-line-strong hover:bg-white/[0.06] max-md:w-full max-md:justify-center"
           onClick={() => navigate("/")}
         >
           ← Voltar para torneios
         </button>
-        {canManage && (
+        {(canManage || canEditFinished) && (
           <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
-            {isAdmin && (
+            {isAdmin && !isFinished && (
               <button
                 className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
                 onClick={() => setShowHostModal(true)}
@@ -133,12 +134,12 @@ export function TournamentDetailPage() {
             >
               Editar torneio
             </button>
-            <button
+            {isRegistrationOpen && <button
               className="px-4 py-2 border border-[rgba(239,68,68,0.5)] rounded-lg bg-[rgba(239,68,68,0.08)] text-[#fca5a5] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(239,68,68,0.25)] hover:text-white max-md:flex-1"
               onClick={() => setShowDeleteConfirm(true)}
             >
               Excluir torneio
-            </button>
+            </button>}
           </div>
         )}
       </div>
@@ -175,18 +176,11 @@ export function TournamentDetailPage() {
           canManage: canManageTournament,
           onStartTournament: handleStartTournament,
           onNextRound: handleNextRound,
+          onPublishRound: handlePublishRound,
           onRefazerRodada: handleRefazerRodada,
           onEncerrarTorneio: handleEncerrarTorneio,
-          onDropPlayersWithoutDeck: (playerIds) => handleBulkDropPlayers(playerIds, {
-            actionKey: "drop-missing-decks",
-            successMessage: "Jogadores sem deck dropados com sucesso!",
-            errorMessage: "Erro ao dropar jogadores sem deck.",
-          }),
-          onDropPlayersWithoutCheckin: (playerIds) => handleBulkDropPlayers(playerIds, {
-            actionKey: "drop-missing-checkin",
-            successMessage: "Jogadores sem check-in dropados com sucesso!",
-            errorMessage: "Erro ao dropar jogadores sem check-in.",
-          }),
+          onDropPlayersWithoutDeck: handleDropPlayersWithoutDeck,
+          onDropPlayersWithoutCheckin: handleDropPlayersWithoutCheckin,
           onDropPlayer: handleDropPlayer,
           onUndropPlayer: handleUndropPlayer,
           onEditResult: handleReportResult,
@@ -197,6 +191,7 @@ export function TournamentDetailPage() {
           droppingPlayerId,
         };
 
+        const isCheckingIn = actionLoading && adminActionKey === "checkin";
         const shouldShowMatchPanel = Boolean(currentPlayer) && !currentPlayer?.dropped;
         const matchPanelKey = `${myMatch?.id || "none"}:${myMatch?.rodada || ""}:${torneio?.rodadaAtual || ""}`;
         const matchPanel = shouldShowMatchPanel ? (
@@ -208,6 +203,7 @@ export function TournamentDetailPage() {
             onContestResult={handleContestResult}
             onConfirmResult={handleConfirmResult}
             actionLoading={actionLoading}
+            isCheckingIn={isCheckingIn}
             torneio={torneio}
             isOwner={canManageTournament}
             currentPlayer={currentPlayer}
@@ -229,7 +225,9 @@ export function TournamentDetailPage() {
             onInscrever={handleInscrever}
             onInscreverTarde={handleInscreverTarde}
             onSelfDrop={handleSelfDrop}
+            onSelfUndrop={() => handleUndropPlayer(usuario?.id, true)}
             actionLoading={actionLoading}
+            isCheckingIn={isCheckingIn}
             droppingPlayerId={droppingPlayerId}
             times={times}
             selectedTimeId={selectedTimeId}
@@ -320,7 +318,7 @@ export function TournamentDetailPage() {
             <h3 className="text-white font-['Bebas_Neue',sans-serif] text-[1.8rem] tracking-[0.06em] m-0 mb-2">
               Top {corteInfo.corteTop} — Fase Eliminatória!
             </h3>
-            <p className="text-[#beafd7] text-[0.9rem] m-0 mb-5">
+            <p className="text-text-soft text-[0.9rem] m-0 mb-5">
               Os {corteInfo.corteTop} melhores jogadores classificados avançam para a fase eliminatória.
             </p>
             {corteInfo.jogadoresClassificados?.length > 0 && (
@@ -328,41 +326,19 @@ export function TournamentDetailPage() {
                 {corteInfo.jogadoresClassificados.map((j, i) => (
                   <div key={j.usuarioId || i} className="flex items-center gap-2 px-3 py-[0.35rem] rounded-lg bg-[rgba(199,149,255,0.08)] border border-[rgba(199,149,255,0.18)]">
                     <span className="text-[0.72rem] font-bold text-[#a78bfa] w-5 text-center">{i + 1}.</span>
-                    <span className="text-[0.88rem] font-semibold text-[#f5edff]">{j.nome}</span>
+                    <span className="text-[0.88rem] font-semibold text-text-main">{j.nome}</span>
                   </div>
                 ))}
               </div>
             )}
             <button
               type="button"
-              className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-[0.7rem] text-[0.95rem] font-semibold cursor-pointer text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(167,79,255,0.4)] transition-all duration-200"
+              className="inline-flex items-center justify-center w-full px-5 py-[0.65rem] border-none rounded-lg text-[0.95rem] font-semibold cursor-pointer text-white bg-[linear-gradient(145deg,#8e39ed,#5f23b3)] shadow-[0_4px_12px_rgba(167,79,255,0.3)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(167,79,255,0.4)] transition-all duration-200"
               onClick={dismissCorteInfo}
             >
               Entendido!
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Realtime toast */}
-      {realtimeToast && (
-        <div
-          className={`fixed bottom-6 right-6 z-[200] max-w-[340px] flex items-start gap-3 px-4 py-3 rounded-[0.8rem] shadow-[0_8px_24px_rgba(0,0,0,0.5)] border animate-[slide-up_300ms_ease-out] max-md:left-4 max-md:right-4 max-md:bottom-4 max-md:max-w-none ${realtimeToast.type === "error"
-            ? "bg-[rgba(239,68,68,0.16)] border-[rgba(248,113,113,0.5)] text-[#fca5a5]"
-            : realtimeToast.type === "success"
-            ? "bg-[rgba(34,197,94,0.15)] border-[rgba(34,197,94,0.45)] text-[#86efac]"
-            : realtimeToast.type === "warning"
-              ? "bg-[rgba(251,191,36,0.13)] border-[rgba(251,191,36,0.45)] text-[#fde68a]"
-              : "bg-[rgba(56,189,248,0.12)] border-[rgba(56,189,248,0.4)] text-[#7dd3fc]"
-            }`}
-        >
-          <span className="text-[0.88rem] font-semibold leading-snug flex-1">{realtimeToast.msg}</span>
-          <button
-            type="button"
-            className="text-inherit opacity-60 hover:opacity-100 cursor-pointer bg-transparent border-none p-0 text-[1rem] leading-none flex-shrink-0"
-            onClick={dismissRealtimeToast}
-            aria-label="Fechar"
-          >✕</button>
         </div>
       )}
 

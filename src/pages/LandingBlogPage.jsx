@@ -63,7 +63,7 @@ export function LandingBlogPage() {
                             href={post.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-[rgba(217,180,255,0.1)] hover:border-[rgba(199,149,255,0.3)] transition-all"
+                            className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-line-soft hover:border-[rgba(199,149,255,0.3)] transition-all"
                         >
                             <div className="overflow-hidden">
                                 <img
@@ -74,11 +74,11 @@ export function LandingBlogPage() {
                                 />
                             </div>
                             <div className="p-5">
-                                <h2 className="font-semibold text-[#e8dfff] text-lg mb-2 line-clamp-2 group-hover:text-[#c795ff] transition-colors">
+                                <h2 className="font-semibold text-[#e8dfff] text-lg mb-2 line-clamp-2 group-hover:text-brand transition-colors">
                                     {post.title}
                                 </h2>
                                 <p className="text-[#9b8dc0] text-sm mb-3 line-clamp-2">{post.excerpt}</p>
-                                <span className="text-[#c795ff] text-sm font-medium">Ler mais &gt;&gt;</span>
+                                <span className="text-brand text-sm font-medium">Ler mais &gt;&gt;</span>
                             </div>
                         </a>
                     ))}

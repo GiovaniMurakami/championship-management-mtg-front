@@ -64,9 +64,8 @@ src/
 ├── constants/           # Constantes da aplicação
 │   └── auth.js          # Chaves, tamanhos e timeouts
 ├── App.jsx              # Componente raiz (shell + modais)
-├── App.css              # Estilos globais (design system)
 ├── main.jsx             # Entry point
-└── index.css            # Reset global + fontes
+└── index.css            # Reset, fontes e tokens Tailwind
 
 .env                      # Variáveis de ambiente (não commitar)
 .env.example             # Exemplo de .env (commitar)
@@ -342,15 +341,22 @@ Sideboard
 
 ### Definição em `src/routes/AppRoutes.jsx`
 
-```
-/                    → Home (pública)              [Hero + seção de torneios]
-/decks               → DeckBuilderPage (protegida) [Criar novo deck]
-/editar-deck/:id     → DeckBuilderPage (protegida) [Editar deck existente]
-/meus-decks          → MyDecksPage (protegida)     [Lista de decks do usuário]
-/torneios            → TournamentPage (protegida)  [Lista de torneios]
-/torneios/:id        → TournamentDetailPage (prot) [Detalhe e ações do torneio]
-/*                   → Navigate to /              [Fallback]
-```
+| Rota | Função |
+|---|---|
+| `/` | listagem pública de torneios |
+| `/decks`, `/decks/criar`, `/editar-deck/:id` | decks e construtor/editor |
+| `/torneios/:id`, `/torneio/ingressar/:token` | detalhe e ingresso em torneios |
+| `/ligas`, `/ligas/:id` | ligas e rankings |
+| `/times`, `/times/:id` | times e membros |
+| `/metagame`, `/metagame/:formato/:slug` | metagame e arquétipos |
+| `/comunidade`, `/comunidade/:id` | posts da comunidade |
+| `/usuarios/:id` | perfil público |
+| `/dashboard`, `/dashboard/bloqueios` | administração |
+| `/ferramentas/contador-vida` | contador de vida |
+| `/ferramentas/calculadora-swiss` | calculadora Swiss/Top 8 |
+| `/termos-de-uso`, `/privacidade` | páginas legais |
+
+As definições completas, redirects legados, guards e lazy loading ficam em `src/routes/AppRoutes.jsx`.
 
 ### Proteção de Rotas
 
@@ -475,14 +481,16 @@ Body: `{ "resultado": "..." }`
 
 ### Componentes Padrão
 
-- `.btn.primary`: Gradient roxo
-- `.btn.secondary`: Transparente com borda
-- `.btn.ghost`: Sem fundo
-- `.btn.danger`: Fundo vermelho translúcido (para ações destrutivas)
-- `.btn.danger-solid`: Gradient vermelho sólido (confirmação de exclusão)
-- `.feedback`: Box de mensagem (sucesso/aviso)
-- `.feedback.limit-warning`: Laranja/vermelho claro
-- `.feedback.illegal-warning`: Vermelho intenso com borda
+- `<Button variant="primary|secondary|ghost|danger">`: ações com tamanhos e loading consistentes
+- `<BaseModal>`: wrapper de Radix Dialog com portal, focus trap e fechamento por Escape/overlay
+- `<Tabs>`: wrapper de Radix Tabs com navegação por setas e foco visível
+- `<Tooltip>`: wrapper portaled de Radix Tooltip com collision handling
+- `<Checkbox>`: seleção binária/múltipla, inclusive estado indeterminado
+- `<Switch>`: ativação imediata de uma configuração, como status Ativo/Inativo
+- `<SelectField>`: select nativo tematizado, mantido para formulários e teclado mobile
+- `<InlineAlert>` e `<FormFeedback>`: feedback contextual de erro, sucesso, aviso ou informação
+
+Radix UI é usado para comportamento e acessibilidade; a aparência continua controlada pelos tokens Tailwind da aplicação. Features devem importar as wrappers de `src/components/ui`, não os pacotes Radix diretamente. Ícones comuns usam `lucide-react`.
 
 ### Loading Components
 
@@ -562,6 +570,7 @@ npm run dev      # Inicia dev server (hot reload)
 npm run build    # Build production
 npm run lint     # ESLint
 npm run preview  # Preview local do build
+npm run test     # Vitest + Testing Library
 ```
 
 ---
@@ -582,11 +591,13 @@ npm run preview  # Preview local do build
 
 ### Estilizar Novo Componente
 
-- Adicionar classes em `src/App.css` (não usar inline styles)
-- Respeitar variáveis de cor (`var(--brand-2)`, `var(--line)`, `var(--text-soft)`, etc.)
-- Adicionar breakpoints mobile em `@media (max-width: 600px)` e `@media (max-width: 480px)`
-- Para loading states, usar `<Spinner>` ou `<Skeleton*>` components
-- Prefixar classes por contexto: `ds-` (DeckStats), `hs-` (HandSimulator), `td-` (Tournament Detail), `my-deck-` (My Decks)
+- Verificar primeiro se existe uma wrapper em `src/components/ui`.
+- Usar Tailwind CSS e tokens semânticos de `src/index.css`; padrões repetidos ficam em `src/styles/uiClasses.js`.
+- Para comportamento complexo de overlay, foco ou seleção, estender as wrappers Radix existentes em vez de implementar eventos manualmente.
+- Usar Lucide para ícones de interface disponíveis e fornecer `aria-label` em botões somente com ícone.
+- Adicionar responsividade junto ao componente com variantes Tailwind do projeto.
+- Para loading states, usar `<Spinner>` ou componentes `<Skeleton*>`.
+- Cobrir interações por papel acessível com Testing Library e executar `npm run test`, `npm run lint` e `npm run build`.
 
 ---
 
@@ -619,7 +630,10 @@ npm run preview  # Preview local do build
 - [x] Skeleton loading screens (MyDecksPage, TournamentPage, TournamentDetailPage)
 - [x] Spinner reutilizável
 - [x] Responsividade mobile completa (6 breakpoints)
-- [x] CSS sem inline styles (classes CSS dedicadas)
+- [x] Tailwind CSS 4 com tokens semânticos e wrappers de UI acessíveis
+- [x] Ligas, times, metagame, comunidade e perfis públicos
+- [x] Dashboard administrativo, anúncios e bloqueio de usuários
+- [x] Exportação de Top 8 para imagem, story e vídeo
 - [x] Error handling em busca de cartas
 
 ---

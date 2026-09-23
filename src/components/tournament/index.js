@@ -15,5 +15,4 @@ export { TournamentSection } from "./TournamentSection";
 export { TournamentEditModal } from "./TournamentEditModal";
 export { TournamentHostModal } from "./TournamentHostModal";
 export { TournamentLiveEmbeds } from "./TournamentLiveEmbeds";
-export { RoundSoundPicker } from "./RoundSoundPicker";
 export { ExpandableText } from "./ExpandableText";

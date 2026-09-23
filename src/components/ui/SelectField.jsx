@@ -1,10 +1,10 @@
 const BASE_CLASS =
-  "w-full appearance-none rounded-[0.7rem] border border-[rgba(217,180,255,0.2)] bg-white/[0.04] text-[#f5edff] outline-none transition-[border-color,background-color,box-shadow,color] duration-200 hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.045] focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.06] disabled:opacity-60 disabled:cursor-not-allowed [color-scheme:dark] [&_option]:bg-[#1a1129] [&_option]:text-[#f5edff] [&_option:checked]:bg-[#2a1b45] [&_option:disabled]:text-[#8f86a3]";
+  "w-full appearance-none rounded-lg border border-line bg-white/[0.04] text-text-main outline-none transition-[border-color,background-color,box-shadow,color] duration-200 hover:border-line-strong hover:bg-white/[0.045] focus:border-[rgba(199,149,255,0.92)] focus:shadow-[0_0_0_3px_rgba(167,79,255,0.22)] focus:bg-white/[0.06] disabled:opacity-60 disabled:cursor-not-allowed [color-scheme:dark] [&_option]:bg-[#1a1129] [&_option]:text-text-main [&_option:checked]:bg-[#2a1b45] [&_option:disabled]:text-[#8f86a3]";
 const SIZE_CLASS = {
   default: "px-[0.8rem] py-[0.7rem] pr-[2.5rem] text-[0.95rem]",
   compact: "px-[0.55rem] py-[0.3rem] pr-[2rem] text-[0.72rem]",
 };
-const OPTION_CLASS = "bg-[#1a1129] text-[#f5edff]";
+const OPTION_CLASS = "bg-[#1a1129] text-text-main";
 
 function joinClassNames(...values) {
   return values.filter(Boolean).join(" ");

@@ -8,11 +8,12 @@ import { useToast } from "../context/ToastContext";
 import { useRequestSequence } from "../hooks/useRequestSequence";
 import { subscribeToTournament, unsubscribeFromTournament } from "../services/ablyService";
 import { earliestMsUntilAblyWindow, isTournamentAblyWindowOpen } from "../utils/ablyTournamentWindow";
-import { SkeletonTorneioCard } from "../components";
+import { SkeletonCollection } from "../components";
 import { EmptyState } from "../components/ui/EmptyState";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { PageShell } from "../components/ui/PageShell";
 import { Tabs } from "../components/ui/Tabs";
+import { Button } from "../components/ui/Button";
 import { STATUS_BADGE_CLASS, STATUS_LABEL, getTournamentFormatLabel } from "../constants/tournament";
 import { SponsorSection } from "../components";
 import { ExpandableText } from "../components/tournament";
@@ -21,6 +22,7 @@ import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
 import { useSiteEstatisticas, formatSiteStatValue } from "../hooks/useSiteEstatisticas";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { tournamentPath } from "../utils/tournamentUrl";
 
 const LIMITE = 12;
 
@@ -36,18 +38,19 @@ function PlatformStats() {
   const items = [
     { value: stats.torneiosRealizados, label: "Torneios realizados" },
     { value: stats.jogadoresAtivos, label: "Jogadores ativos" },
-    { value: stats.formatosSuportados, label: "Formatos suportados" },
+    { value: stats.premiacaoTix, label: "Tix distribuídos" },
+    { value: stats.premiacaoPlayerPoints, label: "PPs distribuídos" },
   ];
 
   return (
-    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-[rgba(217,180,255,0.1)] bg-white/[0.02] max-md:flex-col max-md:items-start max-md:gap-3">
+    <div className="mb-6 flex items-center gap-6 flex-wrap px-4 py-3 rounded-xl border border-line-soft bg-white/[0.02] max-md:flex-col max-md:items-start max-md:gap-3">
       {items.map((stat, i, arr) => (
         <div key={stat.label} className="flex items-center gap-4 max-md:w-full">
           <div className="flex flex-col">
-            <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-[#c795ff] leading-none">
+            <span className="font-['Bebas_Neue',sans-serif] text-[1.4rem] tracking-[0.04em] text-brand leading-none">
               {loading ? "—" : formatSiteStatValue(stat.value)}
             </span>
-            <span className="text-[#beafd7] text-[0.7rem]">{stat.label}</span>
+            <span className="text-text-soft text-[0.7rem]">{stat.label}</span>
           </div>
           {i < arr.length - 1 && (
             <div className="w-px h-7 bg-[rgba(217,180,255,0.15)] max-md:hidden" />
@@ -72,7 +75,6 @@ export function TournamentPage() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [enrollingId, setEnrollingId] = useState(null);
-  const [inscricoesLocais, setInscricoesLocais] = useState({});
   const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
   const [abaAtiva, setAbaAtiva] = useState(() => resolveAba(searchParams));
@@ -135,6 +137,18 @@ export function TournamentPage() {
   }, [loadTorneios]);
 
   useEffect(() => {
+    let active = true;
+    Promise.all([
+      listarTorneios(token, { status: "inscricoes_abertas", limite: 1, offset: 0 }),
+      listarTorneios(token, { status: "em_andamento", limite: 1, offset: 0 }),
+      listarTorneios(token, { status: "finalizado", limite: 1, offset: 0 }),
+    ]).then(([inscricoes, andamento, encerrados]) => {
+      if (active) setTabTotals({ disponiveis: inscricoes.total + andamento.total, encerrados: encerrados.total });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [token]);
+
+  useEffect(() => {
     const nextParams = new URLSearchParams(searchParams);
     if (abaAtiva === "encerrados") nextParams.set("aba", "encerrados");
     else nextParams.delete("aba");
@@ -156,12 +170,31 @@ export function TournamentPage() {
   }, [loadTorneios]);
 
   const handleParticipanteInscrito = useCallback((_torneioId, data) => {
-    const inscritoId = normalizeId(data?.usuarioId || data?.userId || data?.usuario?.id || data?.id);
+    const inscritoId = normalizeId(data?.jogadorId || data?.usuarioId || data?.userId || data?.usuario?.id || data?.id);
     if (inscritoId && inscritoId === normalizeId(usuario?.id)) {
-      setInscricoesLocais((prev) => ({ ...prev, [_torneioId]: true }));
+      setTorneios((prev) => prev.map((t) => t.id === _torneioId ? { ...t, inscrito: true } : t));
     }
     loadTorneios();
   }, [loadTorneios, usuario?.id]);
+
+  const handleJogadorDropou = useCallback((torneioId, data) => {
+    if (normalizeId(data?.jogadorId) === normalizeId(usuario?.id)) {
+      setTorneios((prev) => prev.map((t) => t.id === torneioId ? { ...t, inscrito: false } : t));
+    }
+    loadTorneios();
+  }, [loadTorneios, usuario?.id]);
+
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "visible") loadTorneios();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [loadTorneios]);
 
   const handleCheckinRealizado = useCallback(() => {
     loadTorneios();
@@ -194,6 +227,9 @@ export function TournamentPage() {
           onResultadoRegistrado: (message) => handleResultadoRegistrado(torneio.id, message.data),
           onTorneioFinalizado: (message) => handleTorneioFinalizado(torneio.id, message.data),
           onParticipanteInscrito: (message) => handleParticipanteInscrito(torneio.id, message.data),
+          onJogadorDropou: (message) => handleJogadorDropou(torneio.id, message.data),
+          onJogadorVoltou: (message) => handleParticipanteInscrito(torneio.id, message.data),
+          onJogadorIngressou: (message) => handleParticipanteInscrito(torneio.id, message.data),
           onCheckinRealizado: (message) => handleCheckinRealizado(torneio.id, message.data),
         });
         channelsRef.current[torneio.id] = channel;
@@ -207,7 +243,7 @@ export function TournamentPage() {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [token, torneios, ablyWindowTick, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleCheckinRealizado]);
+  }, [token, torneios, ablyWindowTick, handleRodadaIniciada, handleResultadoRegistrado, handleTorneioFinalizado, handleParticipanteInscrito, handleJogadorDropou, handleCheckinRealizado]);
 
   useEffect(() => () => {
     Object.values(channelsRef.current).forEach((channel) => {
@@ -230,7 +266,7 @@ export function TournamentPage() {
     setEnrollingId(torneioId);
     try {
       await inscreverTorneio(torneioId, authToken);
-      setInscricoesLocais((prev) => ({ ...prev, [torneioId]: true }));
+      setTorneios((prev) => prev.map((t) => t.id === torneioId ? { ...t, inscrito: true } : t));
       addToast("Inscrição realizada com sucesso!", { type: "success" });
       loadTorneios();
     } catch {
@@ -240,13 +276,13 @@ export function TournamentPage() {
     }
   });
 
-  const handleViewTournament = (torneioId) => navigate(`/torneios/${torneioId}`);
+  const handleViewTournament = (torneio) => navigate(tournamentPath(torneio));
 
   const formatDate = (dateString) => formatBrasiliaDateTime(dateString);
 
   const isInscrito = (torneio) => {
     if (!usuario?.id) return false;
-    return !!(inscricoesLocais[torneio.id] || torneio?.inscrito);
+    return Boolean(torneio?.inscrito);
   };
 
   const torneiosExibidos = torneios;
@@ -263,13 +299,12 @@ export function TournamentPage() {
           Torneios
         </h1>
         {isAdmin && (
-          <button
-            className="px-4 py-[0.7rem] rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] cursor-pointer font-semibold transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:w-full"
-            type="button"
+          <Button
+            className="max-md:w-full"
             onClick={() => navigate("/torneios/criar")}
           >
             + Criar Torneio
-          </button>
+          </Button>
         )}
       </div>
 
@@ -308,21 +343,15 @@ export function TournamentPage() {
       {/* List */}
       <section className="mt-6" aria-busy={loading} aria-live="polite">
         {loading ? (
-          <div className="grid grid-cols-1 min-[640px]:grid-cols-2 min-[1024px]:grid-cols-3 gap-4 mb-8">
-            {[1, 2, 3].map((i) => <SkeletonTorneioCard key={i} />)}
-          </div>
+          <SkeletonCollection variant="tournament" count={6} className="mb-8 min-[1024px]:grid-cols-3" />
         ) : torneiosExibidos.length === 0 ? (
           <EmptyState
             title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio encerrado encontrado"}
             description={abaAtiva === "disponiveis" ? "Quando houver torneios abertos ou em andamento, eles aparecerão aqui." : "Torneios finalizados ficarão disponíveis nesta aba."}
             action={isAdmin && abaAtiva === "disponiveis" && (
-              <button
-                type="button"
-                onClick={() => navigate("/torneios/criar")}
-                className="px-4 py-2 rounded-lg border border-[#4f46e5] bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] font-semibold hover:bg-[#4f46e5] hover:text-white transition-colors"
-              >
+              <Button onClick={() => navigate("/torneios/criar")}>
                 Criar torneio
-              </button>
+              </Button>
             )}
           />
         ) : (
@@ -333,7 +362,7 @@ export function TournamentPage() {
               return (
                 <div
                   key={torneio.id}
-                  className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[0.95rem] shadow-[0_5px_22px_rgba(0,0,0,0.32)] border border-[rgba(217,180,255,0.2)] transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(0,0,0,0.42)] hover:border-[rgba(167,79,255,0.3)]"
+                  className="rounded-2xl bg-surface/80 shadow-card border border-line-soft transition-all duration-[220ms] relative overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
                 >
                   {/* Banner image */}
                   {torneio.bannerUrl && (
@@ -343,23 +372,39 @@ export function TournamentPage() {
                         alt={`Banner de ${torneio.nome}`}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(16,10,32,0.9)]" />
                     </div>
                   )}
 
                   {/* Card header */}
-                  <div className="flex items-center justify-between gap-2 px-3.5 py-[0.65rem] pb-2 border-b border-[rgba(217,180,255,0.2)] bg-white/[0.02] max-md:flex-wrap">
-                    <span className="font-['Bebas_Neue',sans-serif] text-[0.95rem] tracking-[0.12em] text-[#c795ff]">
+                  <div className="flex items-center justify-between gap-2 px-3.5 py-[0.65rem] pb-2 border-b border-line bg-white/[0.02] max-md:flex-wrap">
+                    <span className="text-[0.78rem] font-semibold tracking-[0.04em] text-brand">
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
-                    <span className={`inline-block px-2.5 py-0.5 rounded-[20px] text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
-                      {STATUS_LABEL[torneio.status] ?? torneio.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-2xl text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
+                        {STATUS_LABEL[torneio.status] ?? torneio.status}
+                      </span>
+                      {isAdmin && (
+                        <button
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                          type="button"
+                          onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
+                          aria-label={`Copiar ${torneio.nome}`}
+                          title="Copiar torneio"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  <h3 className="text-[#f5edff] m-0 mb-2.5 font-['Bebas_Neue',sans-serif] text-[1.25rem] tracking-[0.03em] leading-[1.1] px-3.5 pt-3">
+                  <h3 className="text-text-main m-0 mb-2.5 font-display font-semibold text-[1.2rem] tracking-[-0.025em] leading-[1.2] px-3.5 pt-3">
                     {torneio.nome}
                   </h3>
 
@@ -369,10 +414,10 @@ export function TournamentPage() {
                         text={torneio.descricao}
                         maxLines={2}
                         className="text-[#d7d0e6] text-[0.78rem]"
-                        buttonClassName="mt-1.5 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#c795ff] text-[0.72rem] font-semibold cursor-pointer hover:text-white transition-colors"
+                        buttonClassName="mt-1.5 inline-flex items-center gap-2 border-none bg-transparent p-0 text-brand text-[0.72rem] font-semibold cursor-pointer hover:text-white transition-colors"
                       />
                     )}
-                    <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                    <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                         <rect x="3" y="4" width="18" height="18" rx="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
@@ -381,7 +426,7 @@ export function TournamentPage() {
                       </svg>
                       <span>{formatDate(torneio.horario)}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                    <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 0v2" />
                         <circle cx="9" cy="7" r="4" />
@@ -391,7 +436,7 @@ export function TournamentPage() {
                       <span>{torneio.totalInscritos ?? "—"} inscritos</span>
                     </div>
                     {torneio.status !== "inscricoes_abertas" && (
-                      <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                      <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,79,255,0.7)" strokeWidth="2.5" aria-hidden="true" className="shrink-0">
                           <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
                           <polyline points="17 6 23 6 23 12" />
@@ -400,7 +445,7 @@ export function TournamentPage() {
                       </div>
                     )}
                     {torneio.visualizacoes != null && (
-                      <div className="flex items-center gap-2 text-[#beafd7] text-[0.78rem]">
+                      <div className="flex items-center gap-2 text-text-soft text-[0.78rem]">
                         <span>👁</span>
                         <span>{torneio.visualizacoes} visualizações</span>
                       </div>
@@ -408,27 +453,13 @@ export function TournamentPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-auto px-3.5 py-[0.7rem] pb-[0.85rem] border-t border-[rgba(217,180,255,0.2)] bg-white/[0.015] flex gap-2 flex-wrap max-md:flex-col">
+                  <div className="mt-auto px-3.5 py-[0.7rem] pb-[0.85rem] border-t border-line bg-white/[0.015] flex gap-2 flex-wrap max-md:flex-col">
                     <button
                       className="px-3 py-1.5 border border-[#4f46e5] rounded-md text-[0.78rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(79,70,229,0.1)] text-[#4f46e5] transition-all duration-300 hover:bg-[#4f46e5] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full"
-                      onClick={() => handleViewTournament(torneio.id)}
+                        onClick={() => handleViewTournament(torneio)}
                     >
                       Ver Torneio
                     </button>
-
-                    {isAdmin && (
-                      <button
-                        className="px-3 py-1.5 border border-[rgba(167,79,255,0.5)] rounded-md text-[0.78rem] font-medium cursor-pointer uppercase tracking-[0.5px] bg-[rgba(167,79,255,0.08)] text-[#c795ff] transition-all duration-300 hover:bg-[rgba(167,79,255,0.22)] hover:text-white hover:-translate-y-px active:translate-y-0 max-md:w-full flex items-center justify-center gap-[0.35rem]"
-                        type="button"
-                        onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                          <rect x="9" y="9" width="13" height="13" rx="2" />
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                        </svg>
-                        Copiar
-                      </button>
-                    )}
 
                     {torneio.status === "inscricoes_abertas" && (
                       <button
@@ -458,11 +489,11 @@ export function TournamentPage() {
               onClick={() => setPagina((p) => Math.max(1, p - 1))}
               disabled={pagina === 1}
               aria-label="Página anterior"
-              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+              className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
             >
               ←
             </button>
-            <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+            <span className="text-text-soft text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
               {pagina} / {totalPaginas}
             </span>
             <button
@@ -470,7 +501,7 @@ export function TournamentPage() {
               onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
               disabled={pagina === totalPaginas}
               aria-label="Próxima página"
-              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+              className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
             >
               →
             </button>

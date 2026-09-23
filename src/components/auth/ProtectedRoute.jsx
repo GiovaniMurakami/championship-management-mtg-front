@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { Spinner } from "../ui/Spinner";
 
 const PUBLIC_AUTH_PATHS = ["/esqueci-senha", "/reset-senha"];
@@ -43,11 +43,11 @@ export function ProtectedRoute({ requireAdmin = false, children }) {
   if (requireAdmin && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md text-center text-[#f5edff]">
+        <div className="max-w-md text-center text-text-main">
           <h2 className="m-0 mb-2 font-['Bebas_Neue',sans-serif] text-[1.8rem] tracking-[0.04em]">
             Acesso restrito
           </h2>
-          <p className="m-0 text-[0.95rem] text-[#beafd7]">
+          <p className="m-0 text-[0.95rem] text-text-soft">
             Esta área está disponível apenas para administradores.
           </p>
         </div>

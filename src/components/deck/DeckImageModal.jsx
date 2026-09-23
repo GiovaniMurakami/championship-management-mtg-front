@@ -1,23 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buscarCartasPorNome } from "../../services/scryfallApi";
-import { loadCardImagesForDeck, buildVisualCanvas } from "./deckImageCanvas";
+import { loadCardImagesForDeck, buildVisualCanvas, loadImageFromUrl } from "./deckImageCanvas";
 import { Tooltip } from "../ui/Tooltip";
+
+const brandFooterUrl = "/images/top8/rodape.png.png";
 
 export function DeckImageModal({ deck, ownerName, onClose }) {
   const [cardDataMap, setCardDataMap] = useState({});
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState("meta"); // "meta" | "imgs" | "done"
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [ratio, setRatio] = useState("16x9"); // "16x9" | "9x16"
+  const [brandImage, setBrandImage] = useState(null);
 
-  useEffect(() => {
-    if (stage !== "done") {
-      setPreviewUrl(null);
-      return;
-    }
-    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
-    setPreviewUrl(canvas.toDataURL("image/jpeg", 0.92));
-  }, [stage, ratio, deck, cardDataMap, ownerName]);
+  const previewUrl = useMemo(() => {
+    if (stage !== "done") return null;
+    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio, brandImage);
+    return canvas.toDataURL("image/jpeg", 0.92);
+  }, [stage, ratio, deck, cardDataMap, ownerName, brandImage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,6 +27,9 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
     async function run() {
       setStage("meta");
       setProgress(5);
+
+      const logoPromise = loadImageFromUrl(brandFooterUrl, { crossOrigin: null, retries: 0 })
+        .catch(() => null);
 
       const resolved = await buscarCartasPorNome(unique.map((c) => c.nome));
       if (cancelled) return;
@@ -91,6 +93,8 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
       }
 
       if (!cancelled) {
+        setBrandImage(await logoPromise);
+        if (cancelled) return;
         setCardDataMap({ ...map });
         setProgress(100);
         setStage("done");
@@ -105,7 +109,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
   const loadingDone = stage === "done";
 
   const handleDownload = () => {
-    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio);
+    const canvas = buildVisualCanvas(deck, cardDataMap, ownerName, ratio, brandImage);
     const safeName = (deck.nome || "deck")
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase();
     const a = document.createElement("a");
@@ -128,7 +132,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
             {deck.nome}
           </span>
 
-          <div className="flex items-center gap-[2px] bg-[rgba(255,255,255,0.04)] border border-[rgba(217,180,255,0.15)] rounded-lg p-[3px] flex-shrink-0">
+          <div className="flex items-center gap-[2px] bg-[rgba(255,255,255,0.04)] border border-line-soft rounded-lg p-[3px] flex-shrink-0">
             {[
               { key: "16x9", label: "16:9" },
               { key: "9x16", label: "9:16" },
@@ -137,7 +141,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                 key={key}
                 type="button"
                 onClick={() => setRatio(key)}
-                className={`px-[0.65rem] py-[0.3rem] rounded-[0.4rem] text-[0.75rem] font-semibold transition-all duration-150 ${
+                className={`px-[0.65rem] py-[0.3rem] rounded-md text-[0.75rem] font-semibold transition-all duration-150 ${
                   ratio === key
                     ? "bg-[rgba(79,70,229,0.4)] text-white border border-[rgba(99,102,241,0.5)]"
                     : "text-[#888] hover:text-[#c0bfff] border border-transparent"
@@ -160,7 +164,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
               </Tooltip>
             )}
             <button
-              className="w-8 h-8 flex items-center justify-center border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-[#beafd7] text-[1.2rem] cursor-pointer transition-[background,color] duration-150 flex-shrink-0 hover:bg-[rgba(255,255,255,0.08)] hover:text-[#f5edff]"
+              className="w-8 h-8 flex items-center justify-center border border-[rgba(199,149,255,0.25)] rounded-full bg-transparent text-text-soft text-[1.2rem] cursor-pointer transition-[background,color] duration-150 flex-shrink-0 hover:bg-[rgba(255,255,255,0.08)] hover:text-text-main"
               onClick={onClose}
               aria-label="Fechar"
             >
@@ -177,7 +181,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                 style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }}
               />
             </div>
-            <p className="text-[0.8rem] text-[#beafd7] m-0">
+            <p className="text-[0.8rem] text-text-soft m-0">
               {stage === "meta"
                 ? `Buscando dados das cartas… ${progress}%`
                 : `Carregando imagens… ${progress}%`}
@@ -186,7 +190,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
         )}
 
         <div
-          className="rounded-[0.85rem] border border-[rgba(199,149,255,0.2)] overflow-hidden"
+          className="rounded-lg border border-[rgba(199,149,255,0.2)] overflow-hidden"
           style={{ background: "#09050f", minHeight: "40vh" }}
         >
           {previewUrl ? (
@@ -203,7 +207,7 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
                       style={{ width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)" }}
                     />
                   </div>
-                  <p className="text-[0.8rem] text-[#beafd7] m-0">
+                  <p className="text-[0.8rem] text-text-soft m-0">
                     {stage === "meta" ? `Buscando dados… ${progress}%` : `Carregando imagens… ${progress}%`}
                   </p>
                 </>

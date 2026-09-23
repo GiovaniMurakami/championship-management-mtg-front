@@ -1,34 +1,48 @@
+import { useDateRangeParams } from "../../hooks/useDateRangeParams";
+import { formatCardName } from "../../utils/cardName";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useScryfallArt } from "../../hooks/useScryfallArt";
 import { MetagameManaPips } from "./MetagameManaPips";
 
-function formatarNomeCarta(nome) {
-  if (!nome) return "";
-  return nome
-    .split(" ")
-    .map((parte) => (parte ? parte.charAt(0).toUpperCase() + parte.slice(1) : parte))
-    .join(" ");
-}
 
-export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, onCardMouseEnter, onCardMouseLeave }) {
-  const { imagem } = useScryfallArt(arquetipo.cartaRepresentativa);
-  const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}`;
+export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, onCardMouseEnter, onCardMouseLeave }) {
+  const { dateQuery } = useDateRangeParams();
+  const cardRef = useRef(null);
+  const [shouldLoadArt, setShouldLoadArt] = useState(() => typeof IntersectionObserver === "undefined");
+  const { imagem, retry } = useScryfallArt(arquetipo.cartaRepresentativa, { enabled: shouldLoadArt });
+  const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}${dateQuery}`;
   const cartasChave = (arquetipo.cartasChave || []).slice(0, 3);
+
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element || shouldLoadArt || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setShouldLoadArt(true);
+      observer.disconnect();
+    }, { rootMargin: "200px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [shouldLoadArt]);
 
   return (
     <Link
+      ref={cardRef}
       to={to}
-      className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(18,12,32,0.72)] hover:border-[rgba(199,149,255,0.5)] hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
+      onMouseEnter={() => { setShouldLoadArt(true); if (!imagem) retry(); }}
+      onFocus={() => setShouldLoadArt(true)}
+      className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-line-soft bg-[rgba(18,12,32,0.72)] hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
     >
       <div
         className="aspect-[16/9] overflow-hidden bg-[rgba(20,12,36,0.9)]"
         onMouseEnter={() => {
-          if (arquetipo.cartaRepresentativa) onCardMouseEnter?.({ nome: arquetipo.cartaRepresentativa, imagem });
+          if (arquetipo.cartaRepresentativa) onCardMouseEnter?.({ nome: arquetipo.cartaRepresentativa });
         }}
         onMouseLeave={onCardMouseLeave}
       >
         {imagem ? (
-          <img src={imagem} alt="" className="w-full h-full object-cover object-top" />
+          <img src={imagem} alt="" loading="lazy" decoding="async" onError={retry} className="w-full h-full object-cover object-top" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#3b1d66] to-[#1a102c]" />
         )}
@@ -38,34 +52,41 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, onCard
           {arquetipo.nome}
         </div>
         <div className="mt-1.5 min-h-[16px]">
-          <MetagameManaPips colors={colors} />
+          {colorsLoading ? (
+            <span className="inline-block h-4 w-20 rounded bg-white/10 animate-pulse" aria-label="Calculando cores do deck" />
+          ) : (
+            <MetagameManaPips colors={colors} />
+          )}
         </div>
         <ul className="m-0 mt-2 p-0 list-none text-[0.8rem] text-[#cfc3e6] leading-relaxed flex-1">
           {cartasChave.map((carta) => (
             <li
               key={carta}
-              className="truncate cursor-default hover:text-[#f5edff]"
+              tabIndex={0}
+              className="truncate cursor-default hover:text-text-main"
+              onFocus={() => onCardMouseEnter?.({ nome: carta })}
+              onBlur={onCardMouseLeave}
               onMouseEnter={(event) => {
                 event.preventDefault();
                 onCardMouseEnter?.({ nome: carta });
               }}
               onMouseLeave={onCardMouseLeave}
             >
-              {formatarNomeCarta(carta)}
+              {formatCardName(carta)}
             </li>
           ))}
         </ul>
-        <div className="mt-3 pt-2 border-t border-[rgba(217,180,255,0.1)] grid grid-cols-2 gap-2">
+        <div className="mt-3 pt-2 border-t border-line-soft grid grid-cols-2 gap-2">
           <div>
-            <div className="text-[0.65rem] uppercase tracking-wide text-[#8f82ad]">Meta %</div>
-            <div className="font-bold text-[#f5edff] text-[0.95rem]">
+            <div className="text-[0.65rem] uppercase tracking-wide text-text-muted">Meta %</div>
+            <div className="font-bold text-text-main text-[0.95rem]">
               {arquetipo.metaPct}%
-              <span className="ml-1 font-normal text-[0.78rem] text-[#beafd7]">({arquetipo.copias})</span>
+              <span className="ml-1 font-normal text-[0.78rem] text-text-soft">({arquetipo.copias})</span>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[0.65rem] uppercase tracking-wide text-[#8f82ad]">Winrate</div>
-            <div className="font-bold text-[#f5edff] text-[0.95rem]">{arquetipo.winrate}%</div>
+            <div className="text-[0.65rem] uppercase tracking-wide text-text-muted">Winrate</div>
+            <div className="font-bold text-text-main text-[0.95rem]">{arquetipo.winrate}%</div>
           </div>
         </div>
       </div>

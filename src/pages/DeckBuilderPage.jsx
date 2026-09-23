@@ -2,14 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
+import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
+import { CompetitiveStats } from "../components/ui/CompetitiveStats";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import { useCardSearch } from "../hooks/useCardSearch";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { buscarDeck } from "../services/backendApi";
-import { deckHasCardLists, hydrateDeckCards } from "../utils/hydrateDeckCards";
+import { hydrateDeckCards } from "../utils/hydrateDeckCards";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -26,6 +28,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const readOnly = modoVisualizar || forcedReadOnly;
   const [analysisTab, setAnalysisTab] = useState("mao");
   const [originalDeck, setOriginalDeck] = useState(location.state?.deck ?? null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const {
     deckForm, setDeckForm, mainDeck, setMainDeck, sideboard, setSideboard, commander, setCommander,
@@ -42,8 +45,11 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
   const tokenRef = useRef(token);
-  tokenRef.current = token;
   const deckFromState = location.state?.deck;
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   const deckPageTitle = readOnly
     ? PAGE_TITLES.visualizarDeck
@@ -81,12 +87,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
 
     const loadDeckCards = async () => {
       try {
-        // Em modo visualizar, sempre busca na API para trazer estatísticas (win rate).
-        if (!modoVisualizar && deckHasCardLists(deckFromState, id)) {
-          await applyDeck(deckFromState);
-          return;
-        }
-
+        // Busca também ao editar para carregar os resultados do original e das cópias.
         const fullDeck = await buscarDeck(id, tokenRef.current);
         if (cancelled) return;
         await applyDeck(fullDeck);
@@ -109,7 +110,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (isEditMode && id) {
-      handleCreateDeck(event, token, id, originalDeck);
+      handleCreateDeck(event, token, originalDeck?.id || id, originalDeck);
     } else {
       handleCreateDeck(event, token);
     }
@@ -128,19 +129,33 @@ export function DeckBuilderPage({ isEditMode = false }) {
               <span className="text-text-main">
                 <UsuarioNomeExibicao
                   nome={originalDeck.usuario.nome}
+                  usuarioId={originalDeck.usuario.id}
                   excluido={originalDeck.usuario.excluido}
                 />
               </span>
             </div>
           )}
-          {readOnly && originalDeck.estatisticas && (
-            <div className="text-[0.9rem] text-[#86efac]" title="Win rate em torneios (cópias travadas)">
-              {originalDeck.estatisticas.totalPartidas > 0
-                ? `${originalDeck.estatisticas.winrate}% (${originalDeck.estatisticas.vitorias}–${originalDeck.estatisticas.derrotas}–${originalDeck.estatisticas.empates})`
-                : "Sem partidas registradas"}
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => setShowImageModal(true)}
+            className="ml-auto inline-flex items-center gap-2 px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-full bg-[rgba(167,79,255,0.12)] text-[#c4b5fd] text-[0.82rem] font-semibold cursor-pointer hover:bg-[rgba(167,79,255,0.24)]"
+          >
+            Gerar imagem
+          </button>
         </div>
+      )}
+
+      {originalDeck?.estatisticas && (
+        <section aria-labelledby="deck-match-stats-title" className="mb-6">
+          <h2 id="deck-match-stats-title" className="m-0 text-lg font-semibold text-text-main">Estatísticas de partidas</h2>
+          <p className="mt-1 mb-3 text-sm text-text-soft">
+            Resultados somados do deck original e das cópias travadas em torneios. Apenas partidas finalizadas, sem BYEs.
+          </p>
+          <CompetitiveStats stats={originalDeck.estatisticas} />
+          {originalDeck.estatisticas.totalPartidas === 0 && (
+            <p className="mt-3 text-sm text-text-soft">Sem partidas registradas.</p>
+          )}
+        </section>
       )}
 
       <DeckBuilder
@@ -191,7 +206,7 @@ export function DeckBuilderPage({ isEditMode = false }) {
               type="button"
               className={`px-[1.1rem] py-[0.45rem] rounded-full border text-[0.88rem] font-medium cursor-pointer transition-all duration-[180ms] ${
                 analysisTab === key
-                  ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-[#c795ff]"
+                  ? "bg-[rgba(167,79,255,0.18)] border-[rgba(199,149,255,0.5)] text-brand"
                   : "border-line bg-transparent text-text-soft hover:border-[rgba(199,149,255,0.4)] hover:text-text-main"
               }`}
               onClick={() => setAnalysisTab(key)}
@@ -207,6 +222,20 @@ export function DeckBuilderPage({ isEditMode = false }) {
       </div>
 
       <CardPreviewModal card={previewCard} />
+      {showImageModal && originalDeck && (
+        <DeckImageModal
+          deck={{
+            ...originalDeck,
+            nome: deckForm.nome || originalDeck.nome,
+            formato: deckForm.formato || originalDeck.formato,
+            maindeck: mainDeck,
+            sideboard,
+            commander,
+          }}
+          ownerName={originalDeck.usuario?.nome || usuario?.nome || ""}
+          onClose={() => setShowImageModal(false)}
+        />
+      )}
     </PageShell>
   );
 }

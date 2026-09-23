@@ -81,7 +81,7 @@ export function ResetSenhaPage() {
 
   return (
     <FormPageCard>
-      <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+      <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
         Tiago Fuguete · Torneios MTG
       </p>
       <h1 className={FORM_PAGE_TITLE_CLASS}>Redefinir senha</h1>

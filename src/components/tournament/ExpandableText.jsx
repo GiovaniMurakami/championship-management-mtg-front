@@ -79,7 +79,7 @@ export function ExpandableText({
       <div className={className}>
         <button
           type="button"
-          className={headerClassName || "mb-2 flex w-full items-center justify-between gap-3 border-none bg-transparent p-0 text-left text-[#c795ff] cursor-pointer hover:text-white transition-colors"}
+          className={headerClassName || "mb-2 flex w-full items-center justify-between gap-3 border-none bg-transparent p-0 text-left text-brand cursor-pointer hover:text-white transition-colors"}
           onClick={() => canToggle && setExpanded((value) => !value)}
           aria-expanded={canToggle ? expanded : undefined}
         >
@@ -104,7 +104,7 @@ export function ExpandableText({
       {shouldCollapse && (
         <button
           type="button"
-          className={buttonClassName || "mt-2 inline-flex items-center gap-2 border-none bg-transparent p-0 text-[#c795ff] text-[0.82rem] font-semibold cursor-pointer hover:text-white transition-colors"}
+          className={buttonClassName || "mt-2 inline-flex items-center gap-2 border-none bg-transparent p-0 text-brand text-[0.82rem] font-semibold cursor-pointer hover:text-white transition-colors"}
           onClick={() => setExpanded((value) => !value)}
           aria-expanded={expanded}
         >

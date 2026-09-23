@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { listarDecks, deletarDeck } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
 import { useRequestSequence } from "../hooks/useRequestSequence";
-import { SkeletonCard } from "../components";
+import { SkeletonCollection } from "../components";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -12,9 +12,11 @@ import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
 import { Tabs } from "../components/ui/Tabs";
 import { Tooltip } from "../components/ui/Tooltip";
+import { Button } from "../components/ui/Button";
 import { UsuarioNomeExibicao } from "../components/ui/UsuarioExcluidoTag";
 import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
+import { deckPath } from "../utils/deckUrl";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
 
@@ -28,7 +30,7 @@ const FORMAT_META = {
   pauper: { label: "Pauper", color: "#cbd5e1", bg: "rgba(148,163,184,0.18)", border: "rgba(148,163,184,0.45)" },
 };
 
-const LIMITE = 20;
+const LIMITE = 18;
 
 function calcularTotalCartas(cartas) {
   return cartas?.reduce((total, carta) => total + (carta.quantidade || 1), 0) || 0;
@@ -65,6 +67,8 @@ export function MyDecksPage() {
 
   const [buscaInput, setBuscaInput] = useState("");
   const [busca, setBusca] = useState("");
+  const [jogadorInput, setJogadorInput] = useState("");
+  const [jogador, setJogador] = useState("");
   const [somenteMyDecks, setSomenteMyDecks] = useState(false);
   const [pagina, setPagina] = useState(1);
   const [tabTotals, setTabTotals] = useState({ todos: null, meus: null });
@@ -112,6 +116,7 @@ export function MyDecksPage() {
       const params = { limite: LIMITE, offset: (pagina - 1) * LIMITE };
       if (somenteMyDecks && usuario?.id) params.usuarioId = usuario.id;
       if (busca.trim()) params.nome = busca.trim();
+      if (jogador.trim()) params.jogador = jogador.trim();
       const data = await listarDecks(tokenRef.current, params);
       if (!request.isCurrent()) return;
       setDecks(data.decks);
@@ -127,11 +132,25 @@ export function MyDecksPage() {
     } finally {
       if (request.isCurrent()) setLoading(false);
     }
-  }, [pagina, somenteMyDecks, usuario?.id, busca, listRequest]);
+  }, [pagina, somenteMyDecks, usuario?.id, busca, jogador, listRequest]);
 
   useEffect(() => {
     loadDecks();
   }, [loadDecks]);
+
+  useEffect(() => {
+    let active = true;
+    const common = {};
+    if (busca.trim()) common.nome = busca.trim();
+    if (jogador.trim()) common.jogador = jogador.trim();
+    Promise.all([
+      listarDecks(tokenRef.current, { ...common, limite: 1, offset: 0 }),
+      usuario?.id ? listarDecks(tokenRef.current, { ...common, usuarioId: usuario.id, limite: 1, offset: 0 }) : Promise.resolve({ total: 0 }),
+    ]).then(([todos, meus]) => {
+      if (active) setTabTotals({ todos: todos.total, meus: meus.total });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [busca, jogador, usuario?.id, token]);
 
   // Carrega imagem da primeira carta de cada deck
   useEffect(() => {
@@ -145,7 +164,7 @@ export function MyDecksPage() {
       if (!request.isCurrent()) return;
 
       const entries = cards.map((carta, index) =>
-        carta?.imagem ? [decksWithCards[index].id, carta.imagem] : null,
+        carta?.artCrop ? [decksWithCards[index].id, carta.artCrop] : null,
       );
       setDeckImages(Object.fromEntries(entries.filter(Boolean)));
     };
@@ -159,11 +178,14 @@ export function MyDecksPage() {
     e.preventDefault();
     setPagina(1);
     setBusca(buscaInput);
+    setJogador(jogadorInput);
   };
 
   const handleLimparFiltros = () => {
     setBusca("");
     setBuscaInput("");
+    setJogador("");
+    setJogadorInput("");
     setPagina(1);
   };
 
@@ -198,7 +220,7 @@ export function MyDecksPage() {
   };
 
   const handleShareDeck = async (deck) => {
-    const url = buildDeckExternalUrl(deck.id);
+    const url = buildDeckExternalUrl(deck);
 
     try {
       if (navigator.share) {
@@ -221,7 +243,7 @@ export function MyDecksPage() {
     });
   };
 
-  const temFiltrosAtivos = Boolean(busca);
+  const temFiltrosAtivos = Boolean(busca || jogador);
 
   return (
     <PageShell>
@@ -237,9 +259,8 @@ export function MyDecksPage() {
             </p>
           )}
         </div>
-        <button
-          className="inline-flex items-center gap-[0.4rem] border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)] max-sm:justify-center"
-          type="button"
+        <Button
+          className="max-sm:w-full"
           onClick={() => requireAuth(() => navigate("/decks/criar"))}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -247,12 +268,12 @@ export function MyDecksPage() {
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           Criar deck
-        </button>
+        </Button>
       </div>
 
       {/* Filtros */}
       <div className="flex flex-col gap-3 mb-2">
-        <form onSubmit={handleBusca} className="flex gap-2">
+        <form onSubmit={handleBusca} className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             placeholder="Buscar deck por nome..."
@@ -260,17 +281,21 @@ export function MyDecksPage() {
             onChange={(e) => setBuscaInput(e.target.value)}
             className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-[rgba(79,70,229,0.18)] border border-[rgba(79,70,229,0.4)] text-[#a5b4fc] rounded-lg font-semibold text-[0.9rem] hover:bg-[rgba(79,70,229,0.32)] transition-colors whitespace-nowrap"
-          >
+          <input
+            type="text"
+            placeholder="Buscar por jogador..."
+            value={jogadorInput}
+            onChange={(e) => setJogadorInput(e.target.value)}
+            className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
+          />
+          <Button type="submit" variant="secondary" className="whitespace-nowrap">
             Buscar
-          </button>
+          </Button>
           {temFiltrosAtivos && (
             <button
               type="button"
               onClick={handleLimparFiltros}
-              className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors whitespace-nowrap"
+              className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors whitespace-nowrap"
             >
               Limpar
             </button>
@@ -294,9 +319,7 @@ export function MyDecksPage() {
       {/* Conteúdo */}
       <div aria-busy={loading} aria-live="polite">
       {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-6 max-sm:grid-cols-1">
-          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
-        </div>
+        <SkeletonCollection count={6} className="mt-6" />
       ) : error ? (
         <InlineAlert
           type="error"
@@ -324,24 +347,20 @@ export function MyDecksPage() {
               : "Crie seu primeiro deck para começar a jogar."
           }
           action={!temFiltrosAtivos && (
-            <button
-              className="border border-[rgba(199,149,255,0.6)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
-              type="button"
-              onClick={() => requireAuth(() => navigate("/decks/criar"))}
-            >
+            <Button onClick={() => requireAuth(() => navigate("/decks/criar"))}>
               Criar primeiro deck
-            </button>
+            </Button>
           )}
         />
       ) : (
         <>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-6 max-sm:grid-cols-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
             {decksPagina.map((deck) => {
               const owner = isOwner(deck);
               return (
                 <div
                   key={deck.id}
-                  className="border border-[rgba(217,180,255,0.2)] rounded-xl overflow-hidden bg-[rgba(14,9,28,0.9)] flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:border-[rgba(199,149,255,0.3)]"
+                  className="border border-line-soft rounded-2xl overflow-hidden bg-surface/80 shadow-card flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong"
                 >
                   <div
                     className="relative h-40 overflow-hidden bg-[radial-gradient(circle_at_70%_40%,rgba(87,20,166,0.5),transparent_60%),linear-gradient(135deg,#1a0d36,#0d071e)] bg-cover bg-[center_top]"
@@ -355,14 +374,14 @@ export function MyDecksPage() {
                     <div className="absolute top-[0.7rem] left-[0.75rem] right-[0.75rem] flex items-start justify-between gap-2">
                       <FormatBadge formato={deck.formato} />
                       {deck.usuario?.nome && (
-                        <span className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-[rgba(217,180,255,0.2)] backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap ${owner ? "text-[#c795ff]" : "text-text-soft"}`}>
+                        <button type="button" className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-line backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer hover:border-line-strong hover:text-white ${owner ? "text-brand" : "text-text-soft"}`} onClick={() => navigate(`/usuarios/${deck.usuario.id}`)} aria-label={`Ver perfil de ${deck.usuario.nome}`}>
                           {owner ? "Meu deck" : (
                             <UsuarioNomeExibicao
                               nome={deck.usuario.nome}
                               excluido={deck.usuario.excluido}
                             />
                           )}
-                        </span>
+                        </button>
                       )}
                     </div>
                     <Tooltip
@@ -404,14 +423,14 @@ export function MyDecksPage() {
                     </h3>
 
                     <div className="flex flex-wrap gap-[0.4rem] mb-[0.85rem]">
-                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[0.76rem] text-text-soft">
+                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <rect x="2" y="4" width="20" height="16" rx="2" />
                           <path d="M8 4v16M16 4v16" />
                         </svg>
                         <span>{calcularTotalCartas(deck.maindeck)} main</span>
                       </div>
-                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[0.76rem] text-text-soft">
+                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <polyline points="16 3 21 3 21 8" />
                           <line x1="4" y1="20" x2="21" y2="3" />
@@ -420,7 +439,7 @@ export function MyDecksPage() {
                         </svg>
                         <span>{calcularTotalCartas(deck.sideboard)} side</span>
                       </div>
-                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[0.76rem] text-text-soft ml-auto">
+                      <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft ml-auto">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                           <line x1="16" y1="2" x2="16" y2="6" />
@@ -447,25 +466,10 @@ export function MyDecksPage() {
                           <button
                             className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(199,149,255,0.6)] rounded-xl cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
                             type="button"
-                            onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck } })}
+                            onClick={() => navigate(deckPath(deck), { state: { deck } })}
                           >
                             Editar
                           </button>
-                          <Tooltip content="Gerar imagem do deck para compartilhar" focusable={false}>
-                            <button
-                              className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
-                              type="button"
-                              aria-label="Gerar imagem do deck para compartilhar"
-                              onClick={() => setImageModal(deck)}
-                            >
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                <polyline points="21 15 16 10 5 21" />
-                              </svg>
-                              Imagem
-                            </button>
-                          </Tooltip>
                           <button
                             className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(252,88,119,0.4)] rounded-xl cursor-pointer font-bold bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] transition-all duration-[220ms] hover:bg-[rgba(252,88,119,0.28)] hover:border-[rgba(252,88,119,0.7)] hover:text-white"
                             type="button"
@@ -478,11 +482,26 @@ export function MyDecksPage() {
                         <button
                           className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(199,149,255,0.6)] rounded-xl cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]"
                           type="button"
-                          onClick={() => navigate(`/editar-deck/${deck.id}`, { state: { deck, readOnly: true } })}
+                          onClick={() => navigate(deckPath(deck, { view: true }), { state: { deck, readOnly: true } })}
                         >
                           Visualizar
                         </button>
                       )}
+                      <Tooltip content="Gerar imagem do deck para compartilhar" focusable={false}>
+                        <button
+                          className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
+                          type="button"
+                          aria-label="Gerar imagem do deck para compartilhar"
+                          onClick={() => setImageModal(deck)}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                          </svg>
+                          Imagem
+                        </button>
+                      </Tooltip>
                     </div>
                   </div>
                 </div>
@@ -498,11 +517,11 @@ export function MyDecksPage() {
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
                 aria-label="Página anterior"
-                className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 ←
               </button>
-              <span className="text-[#beafd7] text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
+              <span className="text-text-soft text-[0.85rem] min-w-[60px] text-center" aria-live="polite">
                 {pagina} / {totalPaginas}
               </span>
               <button
@@ -510,7 +529,7 @@ export function MyDecksPage() {
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
                 aria-label="Próxima página"
-                className="px-3 py-2 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
               >
                 →
               </button>
@@ -523,7 +542,7 @@ export function MyDecksPage() {
       {imageModal && (
         <DeckImageModal
           deck={imageModal}
-          ownerName={usuario?.nome}
+          ownerName={imageModal.usuario?.nome || (isOwner(imageModal) ? usuario?.nome : "")}
           onClose={() => setImageModal(null)}
         />
       )}

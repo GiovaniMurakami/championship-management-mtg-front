@@ -198,7 +198,7 @@ function drawWatermark(ctx, canvasW, canvasH) {
   ctx.restore();
 }
 
-function drawFooter(ctx, canvasW, canvasH, footerH) {
+function drawFooter(ctx, canvasW, canvasH, footerH, brandImage, centered = false) {
   const fy = canvasH - footerH;
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, fy, canvasW, footerH);
@@ -210,13 +210,30 @@ function drawFooter(ctx, canvasW, canvasH, footerH) {
   ctx.fillStyle = line;
   ctx.fillRect(0, fy, canvasW, 1.5);
 
-  const brandGrad = ctx.createLinearGradient(16, fy, 200, fy);
-  brandGrad.addColorStop(0, "#a855f7");
-  brandGrad.addColorStop(1, "#7c3aed");
-  ctx.fillStyle = brandGrad;
+  const brandText = "TIAGO FUGUETE";
+  const logoH = 28;
+  const logoW = brandImage
+    ? Math.round(logoH * (brandImage.naturalWidth || brandImage.width) / (brandImage.naturalHeight || brandImage.height))
+    : 0;
   ctx.font = "bold 24px Arial, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("FUGUETE", 20, fy + footerH / 2 + 8);
+  const signatureW = brandImage ? logoW : ctx.measureText(brandText).width;
+  const signatureX = centered ? (canvasW - signatureW) / 2 : 20;
+  if (brandImage) {
+    const logoY = fy + (footerH - logoH) / 2;
+    const logoCanvas = document.createElement("canvas");
+    logoCanvas.width = logoW;
+    logoCanvas.height = logoH;
+    const logoCtx = logoCanvas.getContext("2d");
+    logoCtx.drawImage(brandImage, 0, 0, logoW, logoH);
+    logoCtx.globalCompositeOperation = "source-in";
+    logoCtx.fillStyle = "#ffffff";
+    logoCtx.fillRect(0, 0, logoW, logoH);
+    ctx.drawImage(logoCanvas, signatureX, logoY);
+  } else {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(brandText, signatureX, fy + footerH / 2 + 8);
+  }
 
   ctx.fillStyle = "#3d2470";
   ctx.font = "16px Arial, sans-serif";
@@ -353,7 +370,7 @@ function layoutPilesInBox(availW, availH, pileCount, pileLen, gapX = 10, gapY = 
   return best;
 }
 
-export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") {
+export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9", brandImage = null) {
   const MAX_PILE = 4;
   const HEADER_H = 96;
   const STATS_H = 40;
@@ -481,7 +498,9 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
     SIDE916_H = sideCards.length > 0 ? SC9_MAX_PILE_H + 56 : 0;
     const mainH = nRows * PILE_H + (nRows - 1) * mainGapY;
     CANVAS_H = HEADER_H + STATS_H + PAD + mainH + SIDE916_H + FOOTER_H + PAD;
-    mainOriginX = MAIN_X;
+    const mainCols = Math.min(totalPiles, pilesPerRow);
+    const mainUsedW = mainCols * CARD_W + Math.max(0, mainCols - 1) * mainGapX;
+    mainOriginX = Math.max(PAD, Math.floor((CANVAS_W - mainUsedW) / 2));
     mainOriginY = HEADER_H + STATS_H + PAD;
   }
 
@@ -528,9 +547,7 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
     const rowY = startY + row * (PILE_H + mainGapY);
     const rowUsedW = rowPiles.length * CARD_W + Math.max(0, rowPiles.length - 1) * mainGapX;
     const fullRowW = Math.min(totalPiles, pilesPerRow) * CARD_W + (Math.min(totalPiles, pilesPerRow) - 1) * mainGapX;
-    const rowStartX = is169
-      ? mainOriginX + Math.max(0, Math.floor((fullRowW - rowUsedW) / 2))
-      : mainOriginX;
+    const rowStartX = mainOriginX + Math.max(0, Math.floor((fullRowW - rowUsedW) / 2));
     for (let pi = 0; pi < rowPiles.length; pi++) {
       const pile = rowPiles[pi];
       const pileX = rowStartX + pi * (CARD_W + mainGapX);
@@ -556,13 +573,7 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
         const cy = originY + row * (sPileH + sGapY);
         for (let s = 0; s < pile.length; s++)
           drawCardOnCanvas(ctx, pile[s].img, cx, cy + s * SVS, SCW, SCH, "rgba(167,79,255,0.35)");
-        if (pile.length > 1) {
-          const bdx = cx + SCW - 10, bdy = cy + SCH + (pile.length - 1) * SVS - 10;
-          ctx.fillStyle = "rgba(0,0,0,0.88)";
-          ctx.beginPath(); ctx.arc(bdx + 8, bdy + 8, 8, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 9px Arial, sans-serif";
-          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + 8, bdy + 11); ctx.textAlign = "left";
-        }
+
       }
     } else if (!is169) {
       const sideY = CANVAS_H - FOOTER_H - SIDE916_H + 14;
@@ -571,8 +582,9 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
       dg.addColorStop(0.85, "rgba(167,79,255,0.35)"); dg.addColorStop(1, "rgba(167,79,255,0)");
       ctx.strokeStyle = dg; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(PAD, sideY - 14); ctx.lineTo(CANVAS_W - PAD, sideY - 14); ctx.stroke();
-      ctx.font = "bold 15px Arial, sans-serif"; ctx.fillStyle = "#6b4a9e"; ctx.textAlign = "left";
-      ctx.fillText("SIDEBOARD", PAD, sideY);
+      ctx.font = "bold 15px Arial, sans-serif"; ctx.fillStyle = "#6b4a9e"; ctx.textAlign = "center";
+      ctx.fillText("SIDEBOARD", CANVAS_W / 2, sideY);
+      ctx.textAlign = "left";
       const pilesY = sideY + 20;
       const SC9GAP = 10;
       const sideRowW = sidePiles.length * SC9W + Math.max(0, sidePiles.length - 1) * SC9GAP;
@@ -582,20 +594,13 @@ export function buildVisualCanvas(deck, cardDataMap, ownerName, ratio = "16x9") 
         const pileX = sideStartX + pi * (SC9W + SC9GAP);
         for (let s = 0; s < pile.length; s++)
           drawCardOnCanvas(ctx, pile[s].img, pileX, pilesY + s * SC9VS, SC9W, SC9H, "rgba(167,79,255,0.35)");
-        if (pile.length > 1) {
-          const br = 8;
-          const bdx = pileX + SC9W - br - 2, bdy = pilesY + SC9H + (pile.length - 1) * SC9VS - br - 2;
-          ctx.fillStyle = "rgba(0,0,0,0.88)";
-          ctx.beginPath(); ctx.arc(bdx + br, bdy + br, br, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#fcd34d"; ctx.font = "bold 8px Arial, sans-serif";
-          ctx.textAlign = "center"; ctx.fillText(`×${pile.length}`, bdx + br, bdy + br + 3); ctx.textAlign = "left";
-        }
+
       }
     }
   }
 
   drawWatermark(ctx, CANVAS_W, CANVAS_H);
-  drawFooter(ctx, CANVAS_W, CANVAS_H, FOOTER_H);
+  drawFooter(ctx, CANVAS_W, CANVAS_H, FOOTER_H, brandImage, !is169);
   return canvas;
 }
 

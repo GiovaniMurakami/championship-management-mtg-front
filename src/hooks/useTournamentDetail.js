@@ -13,9 +13,13 @@ import {
     ajustarResultado,
     gerarLinkIngresso,
     proximaRodada,
+    publicarRodada,
+    ajustarTotalRodadas,
     encerrarTorneio,
     refazerRodada,
     dropJogador,
+    dropJogadoresSemDeck,
+    dropJogadoresSemCheckin,
     undropJogador,
     atualizarTorneio,
     deletarTorneio,
@@ -40,35 +44,16 @@ import {
     pickTorneioFieldsFromStandings,
     useTournamentQueries,
 } from "./useTournamentQueries";
-import { normalizeRoundSoundUrl } from "../constants/roundSounds";
-import { playRoundSound, unlockRoundSoundPlayer } from "../utils/roundSoundPlayer";
 import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../utils/ablyTournamentWindow";
 import { formatIsoDatesInMessage } from "../utils/brasiliaTime";
 
 export function useTournamentDetail() {
     const { token, usuario, isAdmin, requireAuth } = useAuth();
     const { addToast } = useToast();
-    const { id: torneioId } = useParams();
+    const { id: torneioRouteId } = useParams();
 
     const [torneio, setTorneio] = useState(null);
-    const somRodadaRef = useRef(null);
-    somRodadaRef.current = torneio?.somRodada ?? null;
 
-    const playTorneioRoundSound = useCallback((somUrl) => {
-        const url = normalizeRoundSoundUrl(somUrl);
-        if (!url) return;
-        playRoundSound(url);
-    }, []);
-
-    useEffect(() => {
-        const unlock = () => { unlockRoundSoundPlayer(); };
-        window.addEventListener("pointerdown", unlock, { once: true });
-        window.addEventListener("keydown", unlock, { once: true });
-        return () => {
-            window.removeEventListener("pointerdown", unlock);
-            window.removeEventListener("keydown", unlock);
-        };
-    }, []);
     const [standings, setStandings] = useState([]);
     const [partidas, setPartidas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -101,7 +86,8 @@ export function useTournamentDetail() {
         standingsQuery,
         matchesQuery,
         teamsQuery,
-    } = useTournamentQueries({ torneioId, token });
+    } = useTournamentQueries({ torneioId: torneioRouteId, token });
+    const torneioId = tournamentQuery.data?.id ?? torneioRouteId;
     const guard = useActionGuard(800);
     const isCheckedForNextRound = (player, rodadaAtual) =>
         Number(player?.checkinRodada) >= Number(rodadaAtual);
@@ -206,7 +192,7 @@ export function useTournamentDetail() {
     useEffect(() => {
         if (!matchesQuery.data) return;
         const partidasList = normalizeMatchesPayload(matchesQuery.data);
-        if (Array.isArray(partidasList) && partidasList.length > 0) {
+        if (Array.isArray(partidasList)) {
             setPartidas(partidasList);
         }
     }, [matchesQuery.data]);
@@ -227,7 +213,11 @@ export function useTournamentDetail() {
         if (!torneioId) return;
         setError("");
         try {
-            const { data } = await tournamentQuery.refetch();
+            const { data, isError, error } = await tournamentQuery.refetch();
+            if (isError) {
+                setError(error?.message || "Erro ao carregar dados do torneio.");
+                return;
+            }
             if (!data) return;
             setTorneio(data);
             setPartidas(data.partidas || data.rodadaAtualPartidas || []);
@@ -240,10 +230,14 @@ export function useTournamentDetail() {
         if (!torneioId) return;
 
         try {
-            const { data } = await matchesQuery.refetch();
+            const { data, isError, error } = await matchesQuery.refetch();
+            if (isError) {
+                setError(error?.message || "Não foi possível atualizar as mesas.");
+                return;
+            }
             const partidasList = normalizeMatchesPayload(data);
 
-            if (Array.isArray(partidasList) && partidasList.length > 0) {
+            if (Array.isArray(partidasList)) {
                 setPartidas(partidasList);
             }
         } catch {
@@ -254,7 +248,11 @@ export function useTournamentDetail() {
     const loadStandings = useCallback(async () => {
         if (!torneioId) return;
         try {
-            const { data } = await standingsQuery.refetch();
+            const { data, isError, error } = await standingsQuery.refetch();
+            if (isError) {
+                setError(error?.message || "Não foi possível atualizar a classificação.");
+                return;
+            }
             if (!data) return;
             setStandings(normalizeStandingsPayload(data));
             if (data.partidas || data.rodadaAtualPartidas) {
@@ -294,8 +292,6 @@ export function useTournamentDetail() {
                 loadTournament();
                 loadStandings();
                 loadPartidas();
-                const somUrl = data.somRodada || somRodadaRef.current;
-                playTorneioRoundSound(somUrl);
             },
             onResultadoRegistrado: (msg) => {
                 const partidaAtualizada = msg?.data?.partida || msg?.data;
@@ -476,6 +472,11 @@ export function useTournamentDetail() {
                     : `${usuarioNome || "Jogador"} entrou no torneio.`;
                 showToast(toastMsg, "success");
             },
+            onTorneioAtualizado: () => {
+                loadTournament();
+                loadStandings();
+                loadPartidas();
+            },
             onTotalRodadasAlterado: (msg) => {
                 const data = msg?.data || {};
                 setTorneio((prev) => prev ? { ...prev, totalRodadas: data.totalRodadas } : prev);
@@ -499,7 +500,7 @@ export function useTournamentDetail() {
         return () => {
             if (channel) unsubscribeFromTournament(channel);
         };
-    }, [torneioId, token, torneioRealtimeWindow, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState, playTorneioRoundSound]);
+    }, [torneioId, token, torneioRealtimeWindow, ablyWindowTick, loadTournament, loadStandings, loadPartidas, mergePartidaState, showToast, upsertPartidaState]);
 
     const dismissCorteInfo = useCallback(() => setCorteInfo(null), []);
 
@@ -631,9 +632,21 @@ export function useTournamentDetail() {
     const handleCheckin = async () => {
         if (!torneioId) return;
         setActionLoading(true);
+        setAdminActionKey("checkin");
         setError("");
         try {
-            await checkinTorneio(torneioId, token);
+            const resultado = await checkinTorneio(torneioId, token);
+            const usuarioId = resultado?.usuario?.id || usuario?.id;
+            const checkinRodada = resultado?.checkinRodada ?? resultado?.checkInRodada;
+            if (usuarioId && checkinRodada != null) {
+                setStandings((prev) =>
+                    prev.map((p) =>
+                        p.usuario?.id === usuarioId || p.usuarioId === usuarioId || p.id === usuarioId
+                            ? { ...p, checkinRodada }
+                            : p
+                    )
+                );
+            }
             setSuccessMsg("Check-in realizado!");
             await loadStandings();
             clearMessages();
@@ -642,6 +655,7 @@ export function useTournamentDetail() {
             clearMessages();
         } finally {
             setActionLoading(false);
+            setAdminActionKey("");
         }
     };
 
@@ -838,8 +852,8 @@ export function useTournamentDetail() {
 
     const enforceNextRoundCheckin = false;
 
-    const handleNextRound = async () => {
-        if (!torneioId || !canManageTournament) return;
+    const handleNextRound = async (rodadaExtra = false) => {
+        if (!torneioId || !canManageTournament) return false;
         if (enforceNextRoundCheckin && requiresNextRoundCheckin && pendingCheckinPlayers.length > 0) {
             const total = pendingCheckinPlayers.length;
             setError(
@@ -852,35 +866,50 @@ export function useTournamentDetail() {
         setAdminActionKey("next-round");
         setError("");
         try {
+            if (rodadaExtra === true) {
+                if (nextRoundAction !== "finish-tournament" || torneio.emCorte) return false;
+                const atual = Number(torneio.rodadaAtual);
+                const mesas = partidas.filter((p) => Number(p.rodada) === atual);
+                if (!mesas.length || mesas.some((p) => p.status !== "finalizada")) {
+                    throw new Error("Finalize todas as partidas antes de jogar mais uma rodada.");
+                }
+                const atualizado = await ajustarTotalRodadas(torneioId, atual + 1, token);
+                setTorneio((prev) => ({ ...prev, totalRodadas: atualizado.totalRodadas }));
+            }
             const actionBeforeRequest = nextRoundAction;
             const data = await proximaRodada(torneioId, token);
             if (data?.finalizado) {
                 setTorneio((prev) => (prev ? { ...prev, ...data, status: "finalizado" } : { ...data, status: "finalizado" }));
                 setSuccessMsg("Torneio finalizado com sucesso!");
+                await loadTournament();
+                await loadStandings();
+                await loadPartidas();
+                clearMessages();
+                return "finalizado";
             } else if (actionBeforeRequest === "start-top-cut") {
-                setSuccessMsg("Corte iniciado com sucesso!");
+                setSuccessMsg("Corte gerado. Publique as mesas quando estiver pronto.");
             } else if (actionBeforeRequest === "advance-top-cut") {
-                setSuccessMsg("Fase eliminatória avançada com sucesso!");
+                setSuccessMsg("Próxima fase gerada. Publique as mesas quando estiver pronto.");
             } else {
-                if (data?.rodadaIniciadaEm) {
-                    setTorneio((prev) => prev ? {
-                        ...prev,
-                        rodadaAtual: data.rodadaAtual ?? prev.rodadaAtual,
-                        totalRodadas: data.totalRodadas ?? prev.totalRodadas,
-                        emCorte: data.emCorte ?? prev.emCorte,
-                        rodadaIniciadaEm: data.rodadaIniciadaEm,
-                    } : prev);
-                }
-                setSuccessMsg(`Rodada ${data?.rodadaAtual || "seguinte"} iniciada!`);
-                playTorneioRoundSound(somRodadaRef.current);
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    rodadaAtual: data.rodadaAtual ?? prev.rodadaAtual,
+                    totalRodadas: data.totalRodadas ?? prev.totalRodadas,
+                    emCorte: data.emCorte ?? prev.emCorte,
+                    rodadaPublicada: data.rodadaPublicada ?? false,
+                    rodadaIniciadaEm: data.rodadaIniciadaEm,
+                } : prev);
+                setSuccessMsg(`Rodada ${data?.rodadaAtual || "seguinte"} gerada. Publique as mesas quando estiver pronto.`);
             }
             await loadTournament();
             await loadStandings();
             await loadPartidas();
             clearMessages();
+            return true;
         } catch (err) {
             setError(err.message || "Erro ao avançar para a próxima rodada.");
             clearMessages();
+            return false;
         } finally {
             setActionLoading(false);
             setAdminActionKey("");
@@ -946,8 +975,41 @@ export function useTournamentDetail() {
         }
     };
 
+    const handlePublishRound = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("publish-round");
+        setError("");
+        try {
+            const data = await publicarRodada(torneioId, token);
+            setTorneio((prev) => prev ? {
+                ...prev,
+                rodadaPublicada: true,
+                rodadaAtual: data?.rodadaAtual ?? prev.rodadaAtual,
+                totalRodadas: data?.totalRodadas ?? prev.totalRodadas,
+                emCorte: data?.emCorte ?? prev.emCorte,
+                rodadaIniciadaEm: data?.rodadaIniciadaEm,
+            } : prev);
+            setSuccessMsg("Mesas publicadas!");
+            void Promise.all([loadTournament(), loadStandings(), loadPartidas()])
+                .then(() => clearMessages())
+                .catch((err) => {
+                    setError(err.message || "Erro ao atualizar o torneio após publicar.");
+                    clearMessages();
+                });
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao publicar as mesas.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
     const handleStartTournament = async () => {
-        if (!torneioId || !canManageTournament) return;
+        if (!torneioId || !canManageTournament) return false;
 
         setActionLoading(true);
         setAdminActionKey("start-tournament");
@@ -960,11 +1022,11 @@ export function useTournamentDetail() {
                     status: "em_andamento",
                     rodadaAtual: data.rodadaAtual ?? 1,
                     totalRodadas: data.totalRodadas ?? prev.totalRodadas,
+                    rodadaPublicada: data.rodadaPublicada ?? false,
                     ...(data.rodadaIniciadaEm ? { rodadaIniciadaEm: data.rodadaIniciadaEm } : {}),
                 } : prev);
             }
-            setSuccessMsg("Torneio iniciado com sucesso!");
-            playTorneioRoundSound(somRodadaRef.current);
+            setSuccessMsg("Pareamentos gerados. Publique as mesas quando estiver pronto.");
             await loadTournament();
             await loadStandings();
             await loadPartidas();
@@ -1038,6 +1100,62 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleDropPlayersWithoutDeck = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("drop-missing-decks");
+        setDroppingPlayerId("__bulk__");
+        setError("");
+        try {
+            const resultado = await dropJogadoresSemDeck(torneioId, token);
+            const total = Number(resultado?.totalDropados) || 0;
+            setSuccessMsg(total > 0
+                ? `${total} jogador(es) sem deck removido(s) com sucesso!`
+                : "Nenhum jogador sem deck encontrado na atualização mais recente.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao dropar jogadores sem deck.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
+    const handleDropPlayersWithoutCheckin = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("drop-missing-checkin");
+        setDroppingPlayerId("__bulk__");
+        setError("");
+        try {
+            const resultado = await dropJogadoresSemCheckin(torneioId, token);
+            const total = Number(resultado?.totalDropados) || 0;
+            setSuccessMsg(total > 0
+                ? `${total} jogador(es) sem check-in dropado(s) com sucesso!`
+                : "Nenhum jogador sem check-in encontrado na atualização mais recente.");
+            await loadTournament();
+            await loadStandings();
+            await loadPartidas();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao dropar jogadores sem check-in.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+            setDroppingPlayerId("");
+        }
+    };
+
     const handleDropPlayer = async (jogadorId) => {
         if (!torneioId || !canManageTournament || !jogadorId) return;
         setActionLoading(true);
@@ -1061,8 +1179,8 @@ export function useTournamentDetail() {
         }
     };
 
-    const handleUndropPlayer = async (jogadorId) => {
-        if (!torneioId || !canManageTournament || !jogadorId) return;
+    const handleUndropPlayer = async (jogadorId, self = false) => {
+        if (!torneioId || (!self && !canManageTournament) || !jogadorId) return;
         setActionLoading(true);
         setAdminActionKey("undrop-player");
         setDroppingPlayerId(jogadorId);
@@ -1121,9 +1239,11 @@ export function useTournamentDetail() {
             setSuccessMsg("Torneio atualizado com sucesso!");
             await loadTournament();
             clearMessages();
+            return true;
         } catch (err) {
             setError(err.message || "Erro ao atualizar torneio.");
             clearMessages();
+            return false;
         } finally {
             setActionLoading(false);
         }
@@ -1203,9 +1323,12 @@ export function useTournamentDetail() {
         handleGerarLinkIngresso,
         handleStartTournament: guard(handleStartTournament),
         handleNextRound: guard(handleNextRound),
+        handlePublishRound: guard(handlePublishRound),
         handleRefazerRodada: guard(handleRefazerRodada),
         handleEncerrarTorneio: guard(handleEncerrarTorneio),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
+        handleDropPlayersWithoutDeck: guard(handleDropPlayersWithoutDeck),
+        handleDropPlayersWithoutCheckin: guard(handleDropPlayersWithoutCheckin),
         handleDropPlayer: guard(handleDropPlayer),
         handleUndropPlayer: guard(handleUndropPlayer),
         handleSelfDrop: guard(handleSelfDrop),
@@ -1222,4 +1345,3 @@ export function useTournamentDetail() {
         token,
     };
 }
-

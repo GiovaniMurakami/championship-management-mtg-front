@@ -1,7 +1,7 @@
 export function MetagameFormatNav({ formato, formatos, onFormato }) {
   return (
     <nav
-      className="flex flex-wrap items-center gap-x-1 gap-y-1 mb-4 pb-3 border-b border-[rgba(217,180,255,0.12)] text-[0.9rem]"
+      className="flex flex-wrap items-center gap-x-1 gap-y-1 mb-4 pb-3 border-b border-line-soft text-[0.9rem]"
       aria-label="Formatos"
     >
       {formatos.map((f, idx) => (
@@ -25,11 +25,11 @@ export function MetagameFormatNav({ formato, formatos, onFormato }) {
 export function MetagamePeriodoSelect({ dias, diasOpcoes, onDias }) {
   return (
     <label className="flex items-center gap-2 shrink-0">
-      <span className="text-[0.8rem] text-[#8f82ad] whitespace-nowrap">Decks dos últimos</span>
+      <span className="text-[0.8rem] text-text-muted whitespace-nowrap">Decks dos últimos</span>
       <select
         value={String(dias)}
         onChange={(e) => onDias(Number(e.target.value))}
-        className="border border-[rgba(217,180,255,0.2)] rounded-[0.7rem] bg-white/[0.03] text-[#f5edff] px-3 py-1.5 text-[0.88rem] [color-scheme:dark] [&_option]:bg-[#1a1129]"
+        className="border border-line rounded-lg bg-white/[0.03] text-text-main px-3 py-1.5 text-[0.88rem] [color-scheme:dark] [&_option]:bg-[#1a1129]"
       >
         {diasOpcoes.map((d) => (
           <option key={d} value={d}>{d} dias</option>

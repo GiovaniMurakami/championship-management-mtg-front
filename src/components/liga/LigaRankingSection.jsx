@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { buscarCartaPorId, buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
+import { isScryfallId } from "../../utils/scryfallId";
 import { EmptyState } from "../ui/EmptyState";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 
@@ -30,6 +31,25 @@ function avatarGradient(idx) {
   return AVATAR_PALETTES[idx % AVATAR_PALETTES.length];
 }
 
+function PlayerAvatar({ jogador, idx = 0, large = false }) {
+  const [failedUrl, setFailedUrl] = useState(null);
+  const fotoUrl = jogador?.excluido ? null : jogador?.fotoUrl;
+
+  return (
+    <span className={`${large ? "w-16 h-16 text-lg" : "w-9 h-9 text-[0.72rem]"} overflow-hidden rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center font-bold text-white flex-shrink-0 select-none`}>
+      {fotoUrl && fotoUrl !== failedUrl ? (
+        <img
+          src={fotoUrl}
+          alt=""
+          loading="lazy"
+          className="w-full h-full object-cover"
+          onError={() => setFailedUrl(fotoUrl)}
+        />
+      ) : getInitials(jogador?.excluido ? "UE" : jogador?.nome)}
+    </span>
+  );
+}
+
 function calcWinRate(vitorias, derrotas, empates) {
   const total = vitorias + derrotas + empates;
   return total > 0 ? Math.round((vitorias / total) * 100) : null;
@@ -54,13 +74,13 @@ function CardPreviewTooltip({ imageUrl, x, y, visible, isLoading }) {
   return (
     <div className="fixed z-[9999] pointer-events-none" style={{ left: x, top: y }}>
       {isLoading || !imageUrl ? (
-        <div className="w-[180px] h-[252px] rounded-[10px] bg-[rgba(26,16,50,0.95)] border border-[rgba(199,149,255,0.3)] animate-pulse" />
+        <div className="w-[180px] h-[252px] rounded-lg bg-[rgba(26,16,50,0.95)] border border-[rgba(199,149,255,0.3)] animate-pulse" />
       ) : (
         <img
           src={imageUrl}
           alt="Card preview"
           width={180}
-          className="w-[180px] rounded-[10px] shadow-[0_16px_48px_rgba(0,0,0,0.9),0_0_0_1px_rgba(199,149,255,0.25)] block"
+          className="w-[180px] rounded-lg shadow-[0_16px_48px_rgba(0,0,0,0.9),0_0_0_1px_rgba(199,149,255,0.25)] block"
           loading="eager"
         />
       )}
@@ -82,16 +102,55 @@ function WinRateBar({ rate, className = "" }) {
 }
 
 function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", className = "" }) {
+  const buttonRef = useRef(null);
+  const [lazyImage, setLazyImage] = useState(() => _imgCache.get(cardName) || null);
+  const displayImage = imageUrl || lazyImage;
   const sizes = {
     sm: "w-[38px] h-[53px] rounded-[5px]",
-    md: "w-[52px] h-[72px] rounded-[6px]",
-    lg: "w-full aspect-[5/7] rounded-[8px]",
+    md: "w-[52px] h-[72px] rounded-md",
+    lg: "w-full aspect-[5/7] rounded-md",
   };
+
+  useEffect(() => {
+    if (!cardName || displayImage) return undefined;
+    const element = buttonRef.current;
+    if (!element) return undefined;
+    let cancelled = false;
+    const load = () => {
+      const cached = _imgCache.get(cardName);
+      if (cached) {
+        setLazyImage(cached);
+        return;
+      }
+      buscarCartaPorNome(cardName)
+        .then((card) => {
+          const url = card?.imagem || null;
+          _imgCache.set(cardName, url);
+          if (!cancelled) setLazyImage(url);
+        })
+        .catch(() => undefined);
+    };
+    if (typeof IntersectionObserver === "undefined") {
+      load();
+      return () => { cancelled = true; };
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      load();
+    }, { rootMargin: "160px" });
+    observer.observe(element);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
+  }, [cardName, displayImage]);
 
   if (!cardName) return null;
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       className={`flex-shrink-0 overflow-hidden border border-[rgba(199,149,255,0.25)] bg-[rgba(26,16,50,0.8)] shadow-[0_4px_12px_rgba(0,0,0,0.35)] cursor-default p-0 transition-transform duration-200 hover:scale-[1.04] hover:border-[rgba(199,149,255,0.45)] ${sizes[size]} ${className}`}
       onMouseEnter={(e) => onHover?.(cardName, e)}
@@ -100,9 +159,9 @@ function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", clas
       onBlur={onLeave}
       aria-label={cardName}
     >
-      {imageUrl ? (
+      {displayImage ? (
         <img
-          src={imageUrl}
+          src={displayImage}
           alt=""
           className="w-full h-full object-cover object-top block"
           loading="lazy"
@@ -142,7 +201,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
     topDeck && {
       label: "Arquétipo #1",
       value: topDeck.nome || "—",
-      detail: `${topDeck.totalUsos ?? 0} usos · ${topDeck.winrate ?? Math.round(((topDeck.vitorias ?? 0) / Math.max(topDeck.totalUsos ?? 1, 1)) * 100)}% win`,
+      detail: `${topDeck.totalDecks ?? 0} decks · ${topDeck.totalUsos ?? 0} usos · ${topDeck.winrate ?? Math.round(((topDeck.vitorias ?? 0) / Math.max(topDeck.totalUsos ?? 1, 1)) * 100)}% win`,
       accent: "#7dd3fc",
     },
     topCarta && {
@@ -160,7 +219,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
       {chips.map((chip) => (
         <div
           key={chip.label}
-          className="rounded-[0.85rem] border border-[rgba(217,180,255,0.12)] bg-white/[0.025] px-4 py-3"
+          className="min-w-0 rounded-lg border border-line-soft bg-white/[0.025] px-4 py-3"
         >
           <p
             className="m-0 text-[0.65rem] uppercase tracking-[0.08em] font-semibold mb-1"
@@ -168,7 +227,7 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
           >
             {chip.label}
           </p>
-          <p className="m-0 text-[0.92rem] font-semibold text-[#f5edff] truncate">{chip.value}</p>
+          <p className="m-0 text-[0.92rem] font-semibold text-text-main truncate">{chip.value}</p>
           <p className="m-0 mt-[0.25rem] text-[0.72rem] text-[rgba(190,175,215,0.45)]">{chip.detail}</p>
         </div>
       ))}
@@ -179,20 +238,27 @@ function RankingOverview({ ranking, jogadores, decks, cartas }) {
   );
 }
 
-function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent }) {
+function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHover, onLeave, accent, artwork = false, jogador }) {
   return (
     <div
-      className="relative rounded-[1rem] border overflow-hidden flex flex-col"
+      className="relative min-w-0 rounded-xl border overflow-hidden flex flex-col"
       style={{
         borderColor: `${accent}55`,
         background: `linear-gradient(155deg, ${accent}12 0%, rgba(16,10,32,0.95) 100%)`,
       }}
     >
+      {artwork && cardName && (
+        <div className="absolute inset-x-0 top-0 z-0 h-32 overflow-hidden bg-white/[0.04]" aria-hidden="true">
+          {imageUrl ? <img src={imageUrl} alt="" className="h-full w-full object-cover object-center" /> : <span className="block h-full w-full animate-pulse bg-white/[0.06]" />}
+          <span className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-[rgba(16,10,32,0.95)]" />
+        </div>
+      )}
       <div className="absolute top-3 left-3 z-10">
         <MedalBadge pos={pos} />
       </div>
-      <div className="p-4 pt-12 flex flex-col items-center gap-3 flex-1">
-        {cardName && (
+      <div className={`relative z-[1] p-4 flex flex-col items-center gap-3 flex-1 ${artwork && cardName ? "pt-36" : "pt-12"}`}>
+        {jogador && <PlayerAvatar jogador={jogador} idx={(pos ?? 1) - 1} large />}
+        {cardName && !artwork && (
           <div className="w-[88px]">
             <CardThumbnail
               cardName={cardName}
@@ -203,8 +269,8 @@ function SpotlightCard({ pos, title, subtitle, imageUrl, cardName, stats, onHove
             />
           </div>
         )}
-        <div className="text-center w-full min-w-0">
-          <p className="m-0 font-semibold text-[#f5edff] text-[0.95rem] truncate">{title}</p>
+        <div className={`text-center w-full min-w-0 ${artwork && cardName ? "rounded-lg border border-white/[0.06] bg-[rgba(16,10,32,0.82)] px-3 py-2 shadow-[0_-8px_24px_rgba(16,10,32,0.45)]" : ""}`}>
+          <p className="m-0 font-semibold text-white text-[0.95rem] truncate">{title}</p>
           {subtitle && (
             <p className="m-0 mt-[0.2rem] text-[0.72rem] text-[rgba(190,175,215,0.45)] truncate">{subtitle}</p>
           )}
@@ -261,7 +327,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
   return (
     <li
       key={carta.id ?? carta.nome ?? idx}
-      className={`flex items-center gap-3 px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}
+      className={`flex items-center gap-2 px-3 sm:gap-3 sm:px-5 py-[0.75rem] hover:bg-white/[0.025] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}
     >
       <MedalBadge pos={pos} />
 
@@ -281,7 +347,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
           onFocus={(e) => onCardHover(nome, e)}
           onBlur={onCardLeave}
         >
-          <span className="font-semibold text-[0.92rem] text-[#f5edff] group-hover:text-[#c4b5fd] transition-colors duration-150 overflow-hidden text-ellipsis whitespace-nowrap max-w-full block">
+          <span className="font-semibold text-[0.92rem] text-text-main group-hover:text-[#c4b5fd] transition-colors duration-150 [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap max-w-full block">
             {nome}
           </span>
         </button>
@@ -295,7 +361,7 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
             Cópias
           </p>
-          <p className="m-0 text-[0.88rem] font-semibold text-[#c795ff]">{copias}</p>
+          <p className="m-0 text-[0.88rem] font-semibold text-brand">{copias}</p>
         </div>
         <div className="text-right">
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
@@ -305,6 +371,19 @@ function CartaRow({ carta, idx, maxCopias, cardImageUrl, onCardHover, onCardLeav
         </div>
       </div>
     </li>
+  );
+}
+
+function formatPctLiga(valor) {
+  return valor == null ? "—" : `${(Number(valor) * 100).toFixed(1)}%`;
+}
+
+function DesempateLiga({ stats }) {
+  if (stats?.omwp == null && stats?.gwp == null && stats?.ogwp == null) return null;
+  return (
+    <span className="text-[0.66rem] tabular-nums text-[rgba(190,175,215,0.45)]">
+      OMW {formatPctLiga(stats.omwp)} · GW {formatPctLiga(stats.gwp)} · OGW {formatPctLiga(stats.ogwp)}
+    </span>
   );
 }
 
@@ -330,24 +409,23 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
   return (
     <li
-      className={`flex items-center gap-3 px-5 py-[0.85rem] transition-colors duration-150 hover:bg-white/[0.025] ${isLogado
+      className={`flex items-center gap-2 px-3 sm:gap-3 sm:px-5 py-[0.85rem] transition-colors duration-150 hover:bg-white/[0.025] ${isLogado
           ? "bg-[rgba(79,70,229,0.07)] border-l-[3px] border-l-[rgba(99,102,241,0.55)]"
           : ""
         }`}
     >
       <MedalBadge pos={pos} />
 
-      <span
-        className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(idx)} flex items-center justify-center text-[0.72rem] font-bold text-white flex-shrink-0 select-none`}
-      >
-        {getInitials(excluido ? "UE" : nome)}
-      </span>
+      <PlayerAvatar jogador={jogador.jogador} idx={idx} />
 
-      <div className="flex-1 min-w-0 flex items-center gap-[0.45rem] overflow-hidden">
-        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
-          <UsuarioNomeExibicao nome={nome} excluido={excluido} />
+      <div className="flex-1 min-w-0 flex flex-col items-start gap-[0.15rem]">
+        <span className="flex items-center gap-[0.45rem] max-w-full">
+          <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-[#c4b5fd]">
+            <UsuarioNomeExibicao nome={nome} usuarioId={jogador.jogador?.id} excluido={excluido} />
+          </span>
+          {isLogado && <VoceBadge />}
         </span>
-        {isLogado && <VoceBadge />}
+        <DesempateLiga stats={jogador} />
       </div>
 
       <div className="hidden min-[520px]:flex items-center flex-shrink-0 min-w-[3.5rem] justify-end">
@@ -356,7 +434,7 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
       {winRate !== null && (
         <div className="hidden min-[480px]:flex flex-col flex-shrink-0 w-[4.5rem] gap-[0.25rem]">
-          <span className="text-[0.75rem] font-semibold text-right text-[#beafd7]">
+          <span className="text-[0.75rem] font-semibold text-right text-text-soft">
             {winRate}%
           </span>
           <WinRateBar rate={winRate} />
@@ -372,11 +450,12 @@ function PlayerRow({ jogador, idx, isLogado }) {
 
 // ── Deck list row ──────────────────────────────────────────────────────────────
 
-function DeckRow({ deck, cardImageUrl, maxUsos, onCardHover, onCardLeave }) {
+function DeckRow({ deck, cardImageUrl, cardDisplayName, maxUsos, onCardHover, onCardLeave }) {
   const pos = deck.posicao;
   const nome = deck.nome || "—";
-  const cartaPrincipal = deck.cartaPrincipal;
+  const cartaPrincipal = deck.cartaRepresentativa || deck.cartaPrincipal;
   const usos = deck.totalUsos ?? 0;
+  const totalDecks = deck.totalDecks ?? 0;
   const wins = deck.vitorias ?? 0;
   const losses = deck.derrotas ?? 0;
   const winRate = deck.winrate ?? (usos > 0 ? Math.round((wins / usos) * 1000) / 10 : null);
@@ -384,7 +463,7 @@ function DeckRow({ deck, cardImageUrl, maxUsos, onCardHover, onCardLeave }) {
   const isTop3 = pos <= 3;
 
   return (
-    <li className={`flex items-center gap-3 px-5 py-[0.9rem] hover:bg-white/[0.02] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}>
+    <li className={`flex items-center gap-2 px-3 sm:gap-3 sm:px-5 py-[0.9rem] hover:bg-white/[0.02] transition-colors duration-150 ${isTop3 ? "bg-white/[0.015]" : ""}`}>
       <MedalBadge pos={pos} />
 
       {cartaPrincipal ? (
@@ -395,18 +474,18 @@ function DeckRow({ deck, cardImageUrl, maxUsos, onCardHover, onCardLeave }) {
           onLeave={onCardLeave}
         />
       ) : (
-        <span className="flex-shrink-0 w-[38px] h-[53px] rounded-[5px] border border-[rgba(217,180,255,0.15)] bg-[rgba(26,16,50,0.5)] flex items-center justify-center text-[1.1rem] opacity-40">
+        <span className="flex-shrink-0 w-[38px] h-[53px] rounded-[5px] border border-line-soft bg-[rgba(26,16,50,0.5)] flex items-center justify-center text-[1.1rem] opacity-40">
           🃏
         </span>
       )}
 
       <div className="flex-1 min-w-0">
-        <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#f5edff] block">
+        <span className="max-w-full font-semibold [overflow-wrap:anywhere] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap text-[0.92rem] text-text-main block">
           {nome}
         </span>
         {cartaPrincipal && (
           <p className="m-0 mt-[0.15rem] text-[0.72rem] text-[rgba(190,175,215,0.45)] truncate">
-            {cartaPrincipal}
+            {cardDisplayName || (isScryfallId(cartaPrincipal) ? "" : cartaPrincipal)}
           </p>
         )}
         <div className="mt-[0.35rem] max-w-[180px] hidden min-[560px]:block">
@@ -416,6 +495,12 @@ function DeckRow({ deck, cardImageUrl, maxUsos, onCardHover, onCardLeave }) {
 
       {/* Stats */}
       <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="text-right hidden min-[480px]:block">
+          <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
+            Decks
+          </p>
+          <p className="m-0 text-[0.88rem] font-semibold text-[#86efac]">{totalDecks}</p>
+        </div>
         <div className="text-right hidden min-[480px]:block">
           <p className="m-0 text-[0.62rem] uppercase tracking-[0.07em] text-[rgba(190,175,215,0.45)] leading-none mb-[0.2rem]">
             Usos
@@ -451,20 +536,20 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-4">
       {/* Tab bar skeleton */}
-      <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.1)] rounded-xl p-1 h-[46px] animate-pulse" />
+      <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-line-soft rounded-xl p-1 h-[46px] animate-pulse" />
 
       {/* Podium skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-[1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] h-[230px] animate-pulse"
+            className="rounded-xl border border-line-soft bg-white/[0.03] h-[230px] animate-pulse"
           />
         ))}
       </div>
 
       {/* List skeleton */}
-      <div className="rounded-[1rem] border border-[rgba(217,180,255,0.1)] bg-white/[0.03] overflow-hidden">
+      <div className="rounded-xl border border-line-soft bg-white/[0.03] overflow-hidden">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -480,9 +565,9 @@ function LoadingSkeleton() {
 
 function SectionInfo({ count, label, hint }) {
   return (
-    <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-[rgba(217,180,255,0.1)] bg-white/[0.015]">
-      <span className="text-[0.78rem] text-[#beafd7]">
-        <span className="font-semibold text-[#f5edff]">{count}</span> {label}
+    <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between px-3 sm:px-5 py-[0.6rem] border-b border-line-soft bg-white/[0.015]">
+      <span className="text-[0.78rem] text-text-soft">
+        <span className="font-semibold text-text-main">{count}</span> {label}
       </span>
       {hint && (
         <span className="text-[0.72rem] text-[rgba(190,175,215,0.4)]">{hint}</span>
@@ -493,11 +578,11 @@ function SectionInfo({ count, label, hint }) {
 
 function TeamRankingTable({ rankingTimes, totalTimes }) {
   return (
-    <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden">
+    <div className="bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-line-soft overflow-hidden">
       <SectionInfo
         count={totalTimes}
         label={`time${totalTimes !== 1 ? "s" : ""}`}
-        hint="ranking coletivo"
+        hint="pontos · OMW% · GW% · OGW%"
       />
 
       {rankingTimes.length === 0 ? (
@@ -511,14 +596,14 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[640px]">
+          <table className="w-full table-fixed sm:table-auto border-collapse">
             <thead>
               <tr className="bg-white/[0.03] text-left">
                 {["Posição", "Time", "V/D", "Pontos"].map((column) => (
                   <th
                     key={column}
                     scope="col"
-                    className="px-5 py-3 text-[0.72rem] uppercase tracking-[0.08em] text-[rgba(190,175,215,0.5)] font-semibold"
+                    className="px-2 sm:px-5 py-3 text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.08em] text-[rgba(190,175,215,0.5)] font-semibold"
                   >
                     {column}
                   </th>
@@ -531,16 +616,19 @@ function TeamRankingTable({ rankingTimes, totalTimes }) {
                   key={time.time?.id ?? time.id ?? idx}
                   className="border-t border-[rgba(217,180,255,0.07)] hover:bg-white/[0.02] transition-colors duration-150"
                 >
-                  <td className="px-5 py-4 text-[0.88rem] font-semibold text-[#f5edff]">{time.posicao ?? idx + 1}</td>
-                  <td className="px-5 py-4 text-[0.9rem] font-medium text-[#c4b5fd]">{time.time?.nome || "—"}</td>
-                  <td className="px-5 py-4">
+                  <td className="px-2 sm:px-5 py-4 text-[0.88rem] font-semibold text-text-main">{time.posicao ?? idx + 1}</td>
+                  <td className="px-2 sm:px-5 py-4 text-[0.9rem] [overflow-wrap:anywhere] font-medium text-[#c4b5fd]">
+                    <span className="block">{time.time?.nome || "—"}</span>
+                    <DesempateLiga stats={time} />
+                  </td>
+                  <td className="px-2 sm:px-5 py-4">
                     <RecordeVd
                       vitorias={time.vitorias ?? 0}
                       derrotas={time.derrotas ?? 0}
                       empates={time.empates ?? 0}
                     />
                   </td>
-                  <td className="px-5 py-4 font-['Bebas_Neue',sans-serif] text-[1.2rem] tracking-[0.04em] text-[rgba(240,180,41,0.8)]">
+                  <td className="px-2 sm:px-5 py-4 font-['Bebas_Neue',sans-serif] text-[1.2rem] tracking-[0.04em] text-[rgba(240,180,41,0.8)]">
                     {time.pontos ?? 0}
                   </td>
                 </tr>
@@ -562,6 +650,8 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const [jogadoresPage, setJogadoresPage] = useState(1);
   const [decksPage, setDecksPage] = useState(1);
   const [cardImages, setCardImages] = useState({});
+  const [cardArtImages, setCardArtImages] = useState({});
+  const [cardDisplayNames, setCardDisplayNames] = useState({});
   const [cardPreview, setCardPreview] = useState({
     visible: false,
     imageUrl: null,
@@ -574,7 +664,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     if (!cardName || cardName === "—") return;
     const rect = e.currentTarget.getBoundingClientRect();
     const spaceRight = window.innerWidth - rect.right;
-    const x = spaceRight > 210 ? rect.right + 12 : rect.left - 198;
+    const x = Math.max(8, Math.min(spaceRight > 210 ? rect.right + 12 : rect.left - 198, window.innerWidth - 188));
     const y = Math.max(8, Math.min(rect.top - 20, window.innerHeight - 280));
 
     if (_imgCache.has(cardName)) {
@@ -583,7 +673,9 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     }
     setCardPreview({ visible: true, imageUrl: null, x, y, isLoading: true });
     try {
-      const card = await buscarCartaPorNome(cardName);
+      const card = isScryfallId(cardName)
+        ? await buscarCartaPorId(cardName)
+        : await buscarCartaPorNome(cardName);
       const url = card?.imagem || null;
       _imgCache.set(cardName, url);
       setCardPreview((prev) =>
@@ -603,10 +695,10 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
     const deckList = ranking.rankingDecks || ranking.decks || [];
     const cartaList = ranking.rankingCartas || ranking.cartas || ranking.cards || [];
-    const cardNames = [
-      ...deckList.map((deck) => deck.cartaPrincipal),
-      ...cartaList.map((carta) => carta.nome || carta.name),
-    ].filter(Boolean);
+    const cardNames = [...new Set((subAba === "cartas"
+      ? cartaList.slice(0, 3).map((carta) => carta.nome || carta.name)
+      : deckList.slice(0, 3).map((deck) => deck.cartaRepresentativa || deck.cartaPrincipal)
+    ).filter(Boolean))];
 
     if (cardNames.length === 0) return;
 
@@ -617,14 +709,21 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       if (cancelled) return;
 
       const images = {};
+      const artImages = {};
+      const displayNames = {};
       cardNames.forEach((name, index) => {
         const imagem = cards[index]?.imagem;
+        const arte = cards[index]?.artCrop;
         if (imagem) {
           images[name] = imagem;
           _imgCache.set(name, imagem);
         }
+        if (arte) artImages[name] = arte;
+        if (cards[index]?.nome) displayNames[name] = cards[index].nome;
       });
-      setCardImages(images);
+      setCardImages((current) => ({ ...current, ...images }));
+      setCardArtImages((current) => ({ ...current, ...artImages }));
+      setCardDisplayNames((current) => ({ ...current, ...displayNames }));
     };
 
     loadImages();
@@ -632,7 +731,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     return () => {
       cancelled = true;
     };
-  }, [ranking]);
+  }, [ranking, subAba]);
 
   if (loading) return <LoadingSkeleton />;
 
@@ -682,15 +781,16 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
   const maxUsos = decks[0]?.totalUsos ?? 1;
   const topDecks = decks.slice(0, Math.min(3, decks.length));
   const topCartas = cartas.slice(0, Math.min(3, cartas.length));
+  const topJogadores = jogadores.slice(0, Math.min(3, jogadores.length));
 
   const meuRanking = userId ? jogadores.find((j) => j.jogador?.id === userId) : null;
 
   const cardClass =
-    "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden";
+    "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-line-soft overflow-hidden";
   const teamRankingSection = isTeamLeague ? (
     <section className="space-y-3" aria-label="Ranking coletivo">
       <div>
-        <h3 className="m-0 text-[1.05rem] font-semibold text-[#f5edff]">Ranking coletivo</h3>
+        <h3 className="m-0 text-[1.05rem] font-semibold text-text-main">Ranking coletivo</h3>
         <p className="m-0 mt-1 text-[0.82rem] text-[rgba(190,175,215,0.45)]">
           Classificação consolidada dos times da liga.
         </p>
@@ -709,13 +809,13 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
       {/* ── Sub-tabs ── */}
       {tabs.length > 1 && (
-        <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(217,180,255,0.1)] rounded-xl p-1 mb-5">
+        <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-line-soft rounded-xl p-1 mb-5">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setSubAba(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-[0.4rem] px-4 py-[0.5rem] rounded-[0.6rem] text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
+              className={`min-w-0 flex-1 flex flex-col sm:flex-row items-center justify-center gap-[0.4rem] px-1 sm:px-4 py-[0.5rem] rounded-md text-[0.85rem] font-medium transition-all duration-200 ${activeTab === tab.key
                   ? "bg-[rgba(79,70,229,0.35)] text-white border border-[rgba(99,102,241,0.45)] shadow-sm"
                   : "text-[#888] hover:text-[#c0bfff] border border-transparent"
                 }`}
@@ -724,7 +824,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               <span
                 className={`text-[0.68rem] px-[0.45rem] py-[0.1rem] rounded-full leading-[1.5] ${activeTab === tab.key
                     ? "bg-white/[0.18] text-white"
-                    : "bg-[rgba(217,180,255,0.1)] text-[#beafd7]"
+                    : "bg-[rgba(217,180,255,0.1)] text-text-soft"
                   }`}
               >
                 {tab.count}
@@ -737,12 +837,31 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {/* ── Jogadores ── */}
       {activeTab === "jogadores" && (
         <div className="space-y-4">
+          {topJogadores.length > 0 && (
+            <div className={`grid gap-3 ${topJogadores.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topJogadores.length === 2 ? "grid-cols-1 min-[480px]:grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+              {topJogadores.map((jogador) => (
+                <SpotlightCard
+                  key={jogador.jogador?.id || jogador.posicao}
+                  pos={jogador.posicao}
+                  jogador={jogador.jogador}
+                  title={jogador.jogador?.nome || "Jogador"}
+                  subtitle={`${jogador.pontos ?? 0} pts`}
+                  accent="#fbbf24"
+                  stats={(
+                    <div className="text-center text-[0.72rem] text-[#fde68a]">
+                      {formatRecordeVd(jogador.vitorias ?? 0, jogador.derrotas ?? 0, jogador.empates ?? 0)}
+                    </div>
+                  )}
+                />
+              ))}
+            </div>
+          )}
           {jogadoresTotal > 0 && (
             <div className={cardClass}>
               <SectionInfo
                 count={jogadoresTotal}
                 label={`jogador${jogadoresTotal !== 1 ? "es" : ""}`}
-                hint="ordenado por pontos · desempate % vitória"
+                hint="pontos · OMW% · GW% · OGW%"
               />
               <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
                 {jogadoresPagina.map((j, idx) => (
@@ -755,21 +874,21 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
                 ))}
               </ul>
               {jogadoresPages > 1 && (
-                <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
+                <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-line-soft">
                   <button
                     type="button"
-                    className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                    className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                     onClick={() => setJogadoresPage((p) => Math.max(1, p - 1))}
                     disabled={jogadoresClamped <= 1}
                   >
                     ←
                   </button>
-                  <span className="text-[0.8rem] text-[#beafd7]">
+                  <span className="text-[0.8rem] text-text-soft">
                     {jogadoresClamped} / {jogadoresPages}
                   </span>
                   <button
                     type="button"
-                    className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                    className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                     onClick={() => setJogadoresPage((p) => Math.min(jogadoresPages, p + 1))}
                     disabled={jogadoresClamped >= jogadoresPages}
                   >
@@ -781,9 +900,10 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
           )}
 
           {meuRanking && !jogadoresPagina.some((j) => j.jogador?.id === userId) && (
-            <div className="rounded-[0.85rem] border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
+            <div className="rounded-lg border border-[rgba(99,102,241,0.35)] bg-[rgba(79,70,229,0.1)] px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <MedalBadge pos={meuRanking.posicao} />
+                <PlayerAvatar jogador={meuRanking.jogador} idx={(meuRanking.posicao ?? 1) - 1} />
                 <div className="min-w-0">
                   <p className="m-0 text-[0.78rem] text-[rgba(190,175,215,0.5)]">Sua posição</p>
                   <p className="m-0 font-semibold text-[#c4b5fd] truncate">{meuRanking.jogador?.nome}</p>
@@ -815,23 +935,27 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {activeTab === "decks" && (
         <div className="space-y-4">
           {topDecks.length > 0 && (
-            <div className={`grid gap-3 ${topDecks.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topDecks.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+            <div className={`grid gap-3 ${topDecks.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topDecks.length === 2 ? "grid-cols-1 min-[480px]:grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
               {topDecks.map((deck) => {
                 const wr = deck.winrate ?? (deck.totalUsos > 0 ? Math.round((deck.vitorias / deck.totalUsos) * 1000) / 10 : 0);
+                const cartaRepresentativa = deck.cartaRepresentativa || deck.cartaPrincipal;
                 return (
                   <SpotlightCard
                     key={deck.nome}
                     pos={deck.posicao}
                     title={deck.nome}
-                    subtitle={deck.cartaPrincipal}
-                    cardName={deck.cartaPrincipal}
-                    imageUrl={deck.cartaPrincipal ? cardImages[deck.cartaPrincipal] : null}
+                    subtitle={cardDisplayNames[cartaRepresentativa] || (isScryfallId(cartaRepresentativa) ? "" : cartaRepresentativa)}
+                    cardName={cartaRepresentativa}
+                    imageUrl={cartaRepresentativa ? (cardArtImages[cartaRepresentativa] || cardImages[cartaRepresentativa]) : null}
+                    artwork
                     accent="#7dd3fc"
                     onHover={handleCardHover}
                     onLeave={handleCardLeave}
                     stats={
-                      <div className="flex items-center justify-between w-full text-[0.72rem]">
-                        <span className="text-[#7dd3fc]">{deck.totalUsos ?? 0} usos</span>
+                      <div className="flex flex-wrap gap-2 items-center justify-between w-full text-[0.72rem]">
+                        <span className="text-[#7dd3fc]">
+                          {deck.totalDecks ?? 0} decks · {deck.totalUsos ?? 0} usos
+                        </span>
                         <span className="font-semibold" style={{ color: winRateStyle(Math.round(wr)).color }}>
                           {wr % 1 === 0 ? wr : wr.toFixed(1)}% win
                         </span>
@@ -854,7 +978,8 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
               <DeckRow
                 key={d.nome ?? idx}
                 deck={d}
-                cardImageUrl={d.cartaPrincipal ? cardImages[d.cartaPrincipal] : null}
+                cardImageUrl={(d.cartaRepresentativa || d.cartaPrincipal) ? cardImages[d.cartaRepresentativa || d.cartaPrincipal] : null}
+                cardDisplayName={cardDisplayNames[d.cartaRepresentativa || d.cartaPrincipal]}
                 maxUsos={maxUsos}
                 onCardHover={handleCardHover}
                 onCardLeave={handleCardLeave}
@@ -862,21 +987,21 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
             ))}
           </ul>
           {decksPages > 1 && (
-            <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-[rgba(217,180,255,0.1)]">
+            <div className="flex items-center justify-center gap-2 px-5 py-3 border-t border-line-soft">
               <button
                 type="button"
-                className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                 onClick={() => setDecksPage((p) => Math.max(1, p - 1))}
                 disabled={decksClamped <= 1}
               >
                 ←
               </button>
-              <span className="text-[0.8rem] text-[#beafd7]">
+              <span className="text-[0.8rem] text-text-soft">
                 {decksClamped} / {decksPages}
               </span>
               <button
                 type="button"
-                className="px-3 py-1 rounded-lg border border-[rgba(217,180,255,0.15)] bg-white/[0.03] text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
+                className="px-3 py-1 rounded-lg border border-line-soft bg-white/[0.03] text-text-soft text-[0.8rem] disabled:opacity-40 hover:not-disabled:border-[rgba(199,149,255,0.4)] hover:not-disabled:text-white transition-colors"
                 onClick={() => setDecksPage((p) => Math.min(decksPages, p + 1))}
                 disabled={decksClamped >= decksPages}
               >
@@ -892,7 +1017,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
       {activeTab === "cartas" && (
         <div className="space-y-4">
           {topCartas.length > 0 && (
-            <div className={`grid gap-3 ${topCartas.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topCartas.length === 2 ? "grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
+            <div className={`grid gap-3 ${topCartas.length === 1 ? "grid-cols-1 max-w-[220px] mx-auto" : topCartas.length === 2 ? "grid-cols-1 min-[480px]:grid-cols-2 max-w-md mx-auto" : "grid-cols-1 sm:grid-cols-3"}`}>
               {topCartas.map((carta) => {
                 const nome = carta.nome || carta.name;
                 return (
@@ -940,4 +1065,3 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     </div>
   );
 }
-

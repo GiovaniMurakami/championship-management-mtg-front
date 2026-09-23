@@ -6,6 +6,7 @@ import {
 } from "../../constants/roundSounds";
 import { TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 import { playRoundSound, unlockRoundSoundPlayer } from "../../utils/roundSoundPlayer";
+import { InlineAlert } from "../ui/InlineAlert";
 
 const ROW_CLASS =
   "flex items-stretch gap-1.5 rounded-lg border overflow-hidden transition-all duration-150";
@@ -156,7 +157,7 @@ export function RoundSoundPicker({ value, onChange, disabled = false, idPrefix =
       ) : null}
 
       {previewError ? (
-        <p className="text-[0.78rem] text-[#fca5a5] m-0">{previewError}</p>
+        <InlineAlert type="error" className="py-2 text-[0.78rem]">{previewError}</InlineAlert>
       ) : null}
 
       <p className="text-[0.78rem] text-[#8ea0c7] m-0">

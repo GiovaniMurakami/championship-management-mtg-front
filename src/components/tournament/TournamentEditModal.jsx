@@ -5,8 +5,7 @@ import { sanitizeText } from "../../utils/sanitize";
 import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
 import { BTN_GHOST, BTN_PRIMARY, FORM_COUNTER_CLASS, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
-import { FormFeedback, FormSection, SelectField } from "../ui";
-import { RoundSoundPicker } from "./RoundSoundPicker";
+import { Checkbox, FormFeedback, FormSection, SelectField } from "../ui";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
 
@@ -33,8 +32,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     maxRodadas: "",
     corteTop: "",
     linkBanner: "",
-    somRodada: "",
-    linkLive: "",
+    playerPoints: "", tix: "",
+  linkLive: "",
     secreto: false,
     exibirNomeJogador: "nome",
   });
@@ -74,13 +73,13 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       nome: torneio.nome || "",
       horario: toDatetimeLocal(torneio.horario),
       formato: torneio.formato || "standard",
-      descricao: torneio.descricao || torneio.premio || "",
+      descricao: torneio.descricao || (typeof torneio.premio === "string" ? torneio.premio : "") || "",
       regras: torneio.regras || "",
       maxJogadores: torneio.maxJogadores ?? "",
       maxRodadas: torneio.maxRodadas ?? "",
       corteTop: torneio.corteTop ?? "",
       linkBanner: torneio.linkBanner || "",
-      somRodada: torneio.somRodada || "",
+      playerPoints: torneio.premio?.playerPoints ?? "", tix: torneio.premio?.tix ?? "",
       linkLive: torneio.linkLive || "",
       secreto: torneio.secreto ?? false,
       exibirNomeJogador: torneio.exibirNomeJogador || "nome",
@@ -90,6 +89,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
   if (!isOpen) return null;
 
+  const estruturaBloqueada = torneio?.status === "em_andamento";
   const isUploading = uploadingBanner || uploadingStory;
   const isDisabled = loading || isUploading;
   const totalCheckin = Number(torneio?.totalCheckin || 0);
@@ -168,8 +168,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       descricao: optionalTrimmed(sanitizeText(form.descricao)),
       regras: optionalTrimmed(sanitizeText(form.regras)),
       linkBanner: optionalTrimmed(form.linkBanner),
-      somRodada: optionalTrimmed(form.somRodada),
-      linkLive: optionalTrimmed(form.linkLive),
+      premio: { playerPoints: Number(form.playerPoints || 0), tix: Number(form.tix || 0) },
+      linkLive: form.linkLive.trim(),
       maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
       maxRodadas: form.maxRodadas ? Number(form.maxRodadas) : undefined,
       corteTop: form.corteTop ? Number(form.corteTop) : undefined,
@@ -184,22 +184,25 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       payload.storyFundoTextoRodape = storyFundoTextoRodape;
     }
 
+    if (torneio?.status === "em_andamento") {
+      for (const campo of ["formato", "maxJogadores", "maxRodadas", "corteTop"]) delete payload[campo];
+    }
     onSubmit(payload);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="bg-[#110a22] border border-[rgba(217,180,255,0.2)] rounded-2xl w-full max-w-[620px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(217,180,255,0.15)]">
+      <div className="bg-[#110a22] border border-line rounded-2xl w-full max-w-[620px] max-h-[90vh] overflow-y-auto shadow-[0_24px_64px_rgba(0,0,0,0.6)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line-soft">
           <h2 className="text-white font-semibold text-[1.2rem] m-0">Editar Torneio</h2>
-          <button type="button" className="text-[#beafd7] hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={onClose} aria-label="Fechar">X</button>
+          <button type="button" className="text-text-soft hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/[0.08]" onClick={onClose} aria-label="Fechar">X</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 grid gap-5">
           <FormSection title="Informações Básicas">
             <input name="nome" type="text" value={form.nome} onChange={handleChange} required disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
             <div className="flex items-center gap-3 py-1">
-              <input id="secreto" name="secreto" type="checkbox" checked={form.secreto} onChange={handleChange} disabled={isDisabled} className="w-4 h-4 rounded accent-[#8e39ed] cursor-pointer" />
+              <Checkbox id="secreto" name="secreto" checked={form.secreto} onChange={handleChange} disabled={isDisabled} />
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
@@ -214,7 +217,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 onChange={handleChange}
                 disabled={isDisabled}
                 className={TOURNAMENT_SELECT_CLASS}
-                iconClassName="text-[#c795ff]"
+                iconClassName="text-brand"
                 options={[
                   { value: "nome", label: "Nome completo" },
                   { value: "nickMOL", label: "Nick MOL" },
@@ -227,9 +230,9 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               name="formato"
               value={form.formato}
               onChange={handleChange}
-              disabled={isDisabled}
+              disabled={isDisabled || estruturaBloqueada}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#c795ff]"
+              iconClassName="text-brand"
               options={TOURNAMENT_FORMATS.map((item) => ({
                 value: item.value,
                 label: item.label,
@@ -243,10 +246,18 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
           <FormSection title="Estrutura">
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
-              <input name="maxJogadores" type="number" min="2" value={form.maxJogadores} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} placeholder="Max. jogadores" />
+              <div className="grid gap-1.5">
+                <label htmlFor="edit-maxJogadores" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                  Máximo de jogadores <span className="text-text-soft text-[0.8rem]">(opcional)</span>
+                </label>
+                <input id="edit-maxJogadores" name="maxJogadores" type="number" min="2" value={form.maxJogadores} onChange={handleChange} disabled={isDisabled || estruturaBloqueada} className={TOURNAMENT_INPUT_CLASS} placeholder="Ex: 32" aria-describedby="edit-maxJogadores-help" />
+                <p id="edit-maxJogadores-help" className="m-0 text-xs text-text-soft">
+                  {estruturaBloqueada ? "O limite de jogadores não pode ser alterado após o início do torneio." : "Limite de participantes do torneio. Sem valor, não há limite de jogadores."}
+                </p>
+              </div>
               <div className="grid gap-1.5">
                 <label htmlFor="edit-maxRodadas" className="text-[#e0e0e0] font-medium text-[0.9rem]">
-                  Total de rodadas Swiss <span className="text-[#beafd7] text-[0.8rem]">(opcional)</span>
+                  Total de rodadas Swiss <span className="text-text-soft text-[0.8rem]">(opcional)</span>
                 </label>
                 <input
                   id="edit-maxRodadas"
@@ -256,7 +267,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                   max="30"
                   value={form.maxRodadas}
                   onChange={handleChange}
-                  disabled={isDisabled}
+                  disabled={isDisabled || estruturaBloqueada}
                   className={TOURNAMENT_INPUT_CLASS}
                   placeholder="Ex: 8"
                 />
@@ -275,9 +286,9 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
               name="corteTop"
               value={form.corteTop}
               onChange={handleChange}
-              disabled={isDisabled}
+              disabled={isDisabled || estruturaBloqueada}
               className={TOURNAMENT_SELECT_CLASS}
-              iconClassName="text-[#c795ff]"
+              iconClassName="text-brand"
               options={TOP_CUT_OPTIONS.map((option) => ({
                 value: option.value,
                 label: option.label,
@@ -289,8 +300,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
             {bannerPreview ? (
               <div className="relative rounded-lg overflow-hidden border border-[rgba(79,70,229,0.3)]">
-                <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[160px] object-cover" />
-                <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-[6px] py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isDisabled}>X Remover</button>
+                <img src={bannerPreview} alt="Preview do banner" className="block w-full max-h-[160px] object-contain" />
+                <button type="button" className="absolute top-2 right-2 bg-[rgba(0,0,0,0.65)] text-[#fca5a5] border border-[rgba(239,68,68,0.4)] rounded-md py-[3px] px-[10px] text-[0.75rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(239,68,68,0.35)] disabled:opacity-50" onClick={removeBanner} disabled={isDisabled}>X Remover</button>
               </div>
             ) : (
               <button type="button" className="flex items-center justify-center gap-[0.6rem] w-full py-[0.75rem] px-4 border-2 border-dashed border-[rgba(79,70,229,0.4)] rounded-lg bg-[rgba(79,70,229,0.04)] text-[#a5b4fc] text-[0.85rem] cursor-pointer transition-all duration-200 hover:border-[#a5b4fc] hover:bg-[rgba(79,70,229,0.1)] hover:text-[#c7d2fe] disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => bannerInputRef.current?.click()} disabled={isDisabled}>
@@ -299,6 +310,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             )}
 
             <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={handleBannerFileChange} disabled={isDisabled} />
+            <p className="m-0 text-[0.75rem] text-text-muted">Recomendado: 1200 × 480 px (proporção 5:2).</p>
             {bannerError ? <FormFeedback message={bannerError} variant="error" /> : null}
             {isUploading && (
               <div className="flex flex-col gap-1.5">
@@ -313,15 +325,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
             )}
 
             <input name="linkBanner" type="url" placeholder="Link do banner" value={form.linkBanner} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
-            <div className="flex flex-col gap-2">
-              <label className="text-[#e0e0e0] font-medium text-[0.95rem]">Som de nova rodada</label>
-              <RoundSoundPicker
-                idPrefix="edit-som-rodada"
-                value={form.somRodada}
-                onChange={(somRodada) => setForm((prev) => ({ ...prev, somRodada }))}
-                disabled={isDisabled}
-              />
-            </div>
+            <label className="flex flex-col gap-2 text-text-main">Prêmio · Player Points<input name="playerPoints" type="number" min="0" step="1" value={form.playerPoints} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} /></label>
+            <label className="flex flex-col gap-2 text-text-main">Prêmio · Tix<input name="tix" type="number" min="0" step="any" value={form.tix} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} /></label>
             <input name="linkLive" type="url" placeholder="Live no YouTube" value={form.linkLive} onChange={handleChange} disabled={isDisabled} className={TOURNAMENT_INPUT_CLASS} />
           </FormSection>
 
@@ -332,6 +337,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                   ref={storyFundoPickerRef}
                   token={token}
                   valueUrl={torneio?.storyFundoUrl || ""}
+                  valueTextoRodape={torneio?.storyFundoTextoRodape || "claro"}
                   disabled={isDisabled}
                   onPreviewUrlChange={handleStoryPreviewUrlChange}
                   onTextoRodapeChange={setStoryPreviewTextoRodape}

@@ -10,6 +10,8 @@ import { ingressarComToken } from "../services/backendApi";
 import { useMyDecks } from "../hooks/useMyDecks";
 import { Spinner } from "../components/ui/Spinner";
 import { SelectField } from "../components/ui";
+import { FormFeedback } from "../components/ui/FormFeedback";
+import { Button } from "../components/ui/Button";
 import {
   AUTH_TABS_CLASS,
   BTN_GHOST,
@@ -106,7 +108,7 @@ export function TournamentJoinPage() {
                         <JoinFlowSteps currentStep={1} />
                         <div className="text-center mb-5">
                             <h2 className="text-white font-semibold text-[1.25rem] mb-1">Passo 1 · Sua conta</h2>
-                            <p className="text-[#9f91bd] text-[0.88rem]">
+                            <p className="text-text-subtle text-[0.88rem]">
                                 Entre ou crie uma conta para continuar o ingresso.
                             </p>
                         </div>
@@ -231,14 +233,14 @@ export function TournamentJoinPage() {
                                 <JoinFlowSteps currentStep={2} />
                                 <div className="text-center mb-5">
                                     <h2 className="text-white font-semibold text-[1.25rem] mb-1">Passo 2 · Escolha o deck</h2>
-                                    <p className="text-[#9f91bd] text-[0.88rem]">
+                                    <p className="text-text-subtle text-[0.88rem]">
                                         Selecione o deck que você usará neste torneio.
                                     </p>
                                 </div>
 
                                 {decks.length === 0 ? (
-                                    <div className="rounded-xl border border-[rgba(217,180,255,0.16)] bg-[rgba(255,255,255,0.02)] p-5 text-center">
-                                        <p className="text-[0.88rem] text-[#beafd7] mb-4">
+                                    <div className="rounded-xl border border-line-soft bg-[rgba(255,255,255,0.02)] p-5 text-center">
+                                        <p className="text-[0.88rem] text-text-soft mb-4">
                                             Você ainda não tem decks cadastrados.
                                         </p>
                                         <Link to="/decks/criar" className={`inline-flex ${BTN_PRIMARY}`}>
@@ -291,7 +293,7 @@ export function TournamentJoinPage() {
                                 <div className="flex justify-center mb-5">
                                     <div className="w-10 h-10 rounded-full border-2 border-[rgba(199,149,255,0.3)] border-t-[#c795ff] animate-spin" />
                                 </div>
-                                <p className="text-[#beafd7] text-[0.95rem] m-0">Ingressando no torneio…</p>
+                                <p className="text-text-soft text-[0.95rem] m-0">Ingressando no torneio…</p>
                             </div>
                         )}
 
@@ -301,14 +303,13 @@ export function TournamentJoinPage() {
                                     <span className="text-[2.5rem]" role="img" aria-label="Erro">❌</span>
                                 </div>
                                 <h2 className="text-white font-semibold text-[1.3rem] mb-2">Não foi possível ingressar</h2>
-                                <p className="text-[#fca5a5] text-[0.9rem] mb-5">{errorMsg}</p>
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center justify-center px-5 py-[0.65rem] border border-[rgba(217,180,255,0.3)] rounded-[0.7rem] text-[0.9rem] font-semibold cursor-pointer transition-all duration-200 text-[#beafd7] bg-transparent hover:bg-white/[0.06] hover:text-white"
+                                <FormFeedback message={errorMsg} variant="error" className="mb-5 text-left" />
+                                <Button
+                                    variant="secondary"
                                     onClick={() => navigate("/")}
                                 >
                                     Ver torneios
-                                </button>
+                                </Button>
                             </div>
                         )}
 
@@ -321,24 +322,24 @@ export function TournamentJoinPage() {
                                 </div>
 
                                 {matchData && (
-                                    <div className="mb-5 p-4 rounded-[0.85rem] border border-[rgba(217,180,255,0.2)] bg-[rgba(255,255,255,0.03)] text-center">
+                                    <div className="mb-5 p-4 rounded-lg border border-line bg-[rgba(255,255,255,0.03)] text-center">
                                         {isBye ? (
                                             <>
-                                                <p className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#beafd7] mb-2">Sua partida desta rodada</p>
+                                                <p className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-text-soft mb-2">Sua partida desta rodada</p>
                                                 <p className="text-[1.4rem] font-bold text-[#f87171] mb-1">BYE</p>
                                                 <div className="flex items-center justify-center gap-2 mb-1">
-                                                    <span className="text-[0.9rem] font-semibold text-[#f5edff]">Você</span>
+                                                    <span className="text-[0.9rem] font-semibold text-text-main">Você</span>
                                                     <span className="text-[1rem] font-bold text-[#fbbf24] px-1">0 – 2</span>
-                                                    <span className="text-[0.9rem] font-semibold text-[#f5edff]">BYE</span>
+                                                    <span className="text-[0.9rem] font-semibold text-text-main">BYE</span>
                                                 </div>
                                                 <p className="text-[0.75rem] text-[#888] mt-1">Penalidade aplicada por ingresso tardio.</p>
                                             </>
                                         ) : (
                                             <>
-                                                <p className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#beafd7] mb-3">Sua partida desta rodada</p>
+                                                <p className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-text-soft mb-3">Sua partida desta rodada</p>
                                                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                                                     <div className="text-center">
-                                                        <span className="text-[0.9rem] font-semibold text-[#f5edff] break-words">
+                                                        <span className="text-[0.9rem] font-semibold text-text-main break-words">
                                                             {matchData.jogador1Nome || matchData.jogador1?.nome || "Jogador 1"}
                                                         </span>
                                                     </div>
@@ -346,7 +347,7 @@ export function TournamentJoinPage() {
                                                         {matchData.vitoriasJogador1 ?? 0} – {matchData.vitoriasJogador2 ?? 2}
                                                     </span>
                                                     <div className="text-center">
-                                                        <span className="text-[0.9rem] font-semibold text-[#f5edff] break-words">
+                                                        <span className="text-[0.9rem] font-semibold text-text-main break-words">
                                                             {matchData.jogador2Nome || matchData.jogador2?.nome || "Jogador 2"}
                                                         </span>
                                                     </div>

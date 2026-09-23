@@ -28,7 +28,7 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-[58px] rounded-[0.9rem] bg-white/[0.04] animate-pulse" />
+        <div key={i} className="h-[58px] rounded-xl bg-white/[0.04] animate-pulse" />
       ))}
     </div>
   );
@@ -52,16 +52,16 @@ export function LigaRankingTimesSection({ ranking, loading }) {
   }
 
   const cardClass =
-    "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-[1rem] border border-[rgba(217,180,255,0.15)] overflow-hidden";
+    "bg-[linear-gradient(155deg,rgba(26,16,50,0.98)_0%,rgba(16,10,32,0.98)_100%)] rounded-xl border border-line-soft overflow-hidden";
 
   return (
     <div className={cardClass}>
-      <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-[rgba(217,180,255,0.1)] bg-white/[0.015]">
-        <span className="text-[0.78rem] text-[#beafd7]">
-          <span className="font-semibold text-[#f5edff]">{times.length}</span>{" "}
+      <div className="flex items-center justify-between px-5 py-[0.6rem] border-b border-line-soft bg-white/[0.015]">
+        <span className="text-[0.78rem] text-text-soft">
+          <span className="font-semibold text-text-main">{times.length}</span>{" "}
           time{times.length !== 1 ? "s" : ""}
         </span>
-        <span className="text-[0.72rem] text-[rgba(190,175,215,0.4)]">ordenado por pontos</span>
+        <span className="text-[0.72rem] text-[rgba(190,175,215,0.4)]">pontos · OMW% · GW% · OGW%</span>
       </div>
       <ul className="divide-y divide-[rgba(217,180,255,0.07)] m-0 p-0 list-none">
         {times.map((time, idx) => {
@@ -109,6 +109,11 @@ export function LigaRankingTimesSection({ ranking, loading }) {
                 <span className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-[0.92rem] text-[#c4b5fd] block">
                   {nome}
                 </span>
+                {time.omwp != null && (
+                  <span className="block text-[0.66rem] tabular-nums text-[rgba(190,175,215,0.45)]">
+                    OMW {(Number(time.omwp) * 100).toFixed(1)}% · GW {(Number(time.gwp) * 100).toFixed(1)}% · OGW {(Number(time.ogwp) * 100).toFixed(1)}%
+                  </span>
+                )}
                 {getTotalMembros(time) != null && (
                   <span className="text-[0.72rem] text-[rgba(190,175,215,0.45)]">{getTotalMembros(time)} membros</span>
                 )}
@@ -119,7 +124,7 @@ export function LigaRankingTimesSection({ ranking, loading }) {
               </span>
 
               {winRate !== null && (
-                <span className="hidden min-[600px]:block text-[0.75rem] font-semibold flex-shrink-0 w-[3.2rem] text-right text-[#beafd7]">
+                <span className="hidden min-[600px]:block text-[0.75rem] font-semibold flex-shrink-0 w-[3.2rem] text-right text-text-soft">
                   {winRate}%
                 </span>
               )}

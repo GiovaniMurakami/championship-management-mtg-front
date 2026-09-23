@@ -123,11 +123,6 @@ const doRefresh = async () => {
     throw err;
   }
 
-  // Outra aba pode ter renovado enquanto esta aguardava
-  if (savedAuth.token && !isAccessTokenExpiredOrExpiring(savedAuth.token, 0)) {
-    return savedAuth.token;
-  }
-
   try {
     const data = await httpClient.post(
       "/usuario/refresh-token",
@@ -172,11 +167,17 @@ const doRefresh = async () => {
  * Garante um access token usable. Deduplica refreshes concorrentes.
  * @returns {Promise<string|null>} token fresco, ou null se não há sessão
  */
-export const ensureFreshToken = async () => {
+export const ensureFreshToken = async ({ forceRefresh = false, rejectedToken } = {}) => {
   const savedAuth = readStoredAuth();
   if (!savedAuth.token && !savedAuth.refreshToken) return null;
 
-  if (savedAuth.token && !isAccessTokenExpiredOrExpiring(savedAuth.token)) {
+  // Após 401, só reutiliza um token diferente daquele rejeitado pelo servidor.
+  // Isso também evita renovar novamente quando outra requisição/aba já renovou.
+  if (
+    savedAuth.token
+    && !isAccessTokenExpiredOrExpiring(savedAuth.token)
+    && (!forceRefresh || (rejectedToken && savedAuth.token !== rejectedToken))
+  ) {
     return savedAuth.token;
   }
 
@@ -272,7 +273,8 @@ httpClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const newToken = await ensureFreshToken();
+        const rejectedToken = originalRequest.headers?.Authorization?.replace(/^Bearer /, "");
+        const newToken = await ensureFreshToken({ forceRefresh: true, rejectedToken });
         if (!newToken) throw new Error("no_refresh_token");
         originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers.Authorization = `Bearer ${newToken}`;

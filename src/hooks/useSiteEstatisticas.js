@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { buscarEstatisticasSite } from "../services/backendApi";
-import { TOURNAMENT_FORMATS } from "../constants/tournament";
 
 const FALLBACK_STATS = {
   torneiosRealizados: 0,
   jogadoresAtivos: 0,
-  formatosSuportados: TOURNAMENT_FORMATS.length,
+  premiacaoTix: 0,
+  premiacaoPlayerPoints: 0,
 };
 
 export function useSiteEstatisticas() {
@@ -21,7 +21,8 @@ export function useSiteEstatisticas() {
         setStats({
           torneiosRealizados: data?.torneiosRealizados ?? 0,
           jogadoresAtivos: data?.jogadoresAtivos ?? 0,
-          formatosSuportados: data?.formatosSuportados ?? TOURNAMENT_FORMATS.length,
+          premiacaoTix: data?.premiacaoTix ?? 0,
+          premiacaoPlayerPoints: data?.premiacaoPlayerPoints ?? 0,
         });
       })
       .catch(() => {
@@ -41,5 +42,7 @@ export function useSiteEstatisticas() {
 
 export function formatSiteStatValue(value) {
   if (typeof value !== "number" || Number.isNaN(value)) return "—";
-  return String(value);
+  return value.toLocaleString("pt-BR", {
+    maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+  });
 }

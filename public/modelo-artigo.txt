@@ -1,0 +1,17 @@
+Título: Título do seu artigo aqui
+Chamada: Frase curta que aparece no card do blog
+
+Tags: Pauper; Metagame; SuaTag
+
+Descrição: Resumo curto do artigo para a listagem.
+
+ARTIGO:
+Salva galera! Escreva o corpo do artigo a partir daqui.
+
+Use [[Nome da Carta]] para citar cartas.
+ [cardinfo]{Nome da Carta}
+[cardside](1 Carta A || 1 Carta B)
+[h1]{Seção}
+[deck](a1b2c-nome-do-deck)
+
+Consulte o guia de formatação na tela do editor.

@@ -1,3 +1,4 @@
+import { formatCardName } from "../../utils/cardName";
 export function CardPreviewModal({ card }) {
   if (!card) {
     return null;
@@ -10,12 +11,14 @@ export function CardPreviewModal({ card }) {
     >
       <img
         src={card.imagem}
-        alt={card.nome}
-        className="w-[clamp(180px,22vw,230px)] max-w-full aspect-[63/88] object-cover rounded-[0.8rem]"
+        alt={formatCardName(card.nome)}
+        className="w-[clamp(180px,22vw,230px)] max-w-full aspect-[63/88] object-cover rounded-lg"
       />
-      <p className="mt-[0.65rem] mb-0 text-[#efe6ff] font-semibold text-center max-w-[clamp(180px,22vw,230px)]">
-        {card.nome}
-      </p>
+      {card.nome ? (
+        <p className="mt-[0.65rem] mb-0 text-[#efe6ff] font-semibold text-center max-w-[clamp(180px,22vw,230px)]">
+          {formatCardName(card.nome)}
+        </p>
+      ) : null}
     </div>
   );
 }

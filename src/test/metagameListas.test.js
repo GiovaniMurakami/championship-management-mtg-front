@@ -26,6 +26,7 @@ describe("ordenarListasPorRecencia", () => {
 
     expect(ordenarListasPorRecencia(listas).map((l) => l.deckId)).toEqual(["b", "a"]);
   });
+
 });
 
 describe("agruparResultadosPorTorneio", () => {

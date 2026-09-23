@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
@@ -21,7 +21,7 @@ function toInt(value, fallback = 0) {
 
 function Field({ id, label, value, onChange, min = 0, max }) {
   return (
-    <label className="grid gap-1.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#9f91bd]">
+    <label className="grid gap-1.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-text-subtle">
       {label}
       <input
         id={id}
@@ -54,11 +54,12 @@ export function CalculadoraSwissPage() {
   const byePlayersN = toInt(playersWithBye, 0);
   const byesEachN = toInt(byesPerPlayer, 0);
 
-  useEffect(() => {
+  const handlePlayersChange = (value) => {
+    setPlayers(value);
     if (roundsTouched) return;
-    const recommended = recommendedSwissRounds(playersN);
+    const recommended = recommendedSwissRounds(toInt(value, 0));
     if (recommended > 0) setRounds(String(recommended));
-  }, [playersN, roundsTouched]);
+  };
 
   const result = useMemo(() => {
     if (playersN < 2 || roundsN < 1 || topCutN < 1) return null;
@@ -76,10 +77,10 @@ export function CalculadoraSwissPage() {
   return (
     <PageShell className="max-w-[920px] mx-auto">
       <header className="mb-6">
-        <p className="m-0 mb-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+        <p className="m-0 mb-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
           Ferramentas
         </p>
-        <h1 className="m-0 font-['Bebas_Neue',sans-serif] text-[2.2rem] tracking-[0.04em] text-[#f5edff]">
+        <h1 className="m-0 font-['Bebas_Neue',sans-serif] text-[2.2rem] tracking-[0.04em] text-text-main">
           Calculadora de top 8 de torneio suíço
         </h1>
       </header>
@@ -95,7 +96,7 @@ export function CalculadoraSwissPage() {
             label="Quantidade de jogadores"
             value={players}
             min={2}
-            onChange={setPlayers}
+            onChange={handlePlayersChange}
           />
           <Field
             id="qtd-rodadas"
@@ -138,22 +139,22 @@ export function CalculadoraSwissPage() {
         </h2>
 
         {!result ? (
-          <p className="m-0 text-[0.9rem] text-[#8f82ad]">
+          <p className="m-0 text-[0.9rem] text-text-muted">
             Informe pelo menos 2 jogadores, 1 rodada e um corte válido.
           </p>
         ) : (
           <>
-            <p className="m-0 text-[1rem] text-[#f5edff]">
+            <p className="m-0 text-[1rem] text-text-main">
               Resultado que garante o top:{" "}
-              <strong className="text-[#c795ff]">
+              <strong className="text-brand">
                 {result.guaranteedRecord || "—"}
               </strong>
             </p>
 
-            <div className="overflow-x-auto rounded-xl border border-[rgba(217,180,255,0.18)]">
+            <div className="overflow-x-auto rounded-xl border border-line">
               <table className="w-full min-w-[480px] border-collapse text-left text-[0.9rem]">
                 <thead>
-                  <tr className="bg-[rgba(167,79,255,0.12)] text-[#c795ff]">
+                  <tr className="bg-[rgba(167,79,255,0.12)] text-brand">
                     <th className="px-3 py-2.5 font-semibold">Resultado do jogador</th>
                     <th className="px-3 py-2.5 font-semibold">Número de jogadores</th>
                     <th className="px-3 py-2.5 font-semibold">
@@ -165,7 +166,7 @@ export function CalculadoraSwissPage() {
                   {result.rows.map((row) => (
                     <tr
                       key={row.recordLabel}
-                      className={`border-t border-[rgba(217,180,255,0.12)] ${
+                      className={`border-t border-line-soft ${
                         row.status === "garantido"
                           ? "bg-[rgba(34,197,94,0.08)]"
                           : row.status === "bolha"
@@ -173,13 +174,13 @@ export function CalculadoraSwissPage() {
                             : ""
                       }`}
                     >
-                      <td className="px-3 py-2.5 text-[#f5edff] font-semibold tabular-nums">
+                      <td className="px-3 py-2.5 text-text-main font-semibold tabular-nums">
                         {row.recordLabel}
                       </td>
-                      <td className="px-3 py-2.5 text-[#beafd7] tabular-nums">
+                      <td className="px-3 py-2.5 text-text-soft tabular-nums">
                         {formatPlayerCount(row.players)}
                       </td>
-                      <td className="px-3 py-2.5 text-[#beafd7] tabular-nums">
+                      <td className="px-3 py-2.5 text-text-soft tabular-nums">
                         {`${Math.round(row.probability)}%`}
                       </td>
                     </tr>
@@ -195,32 +196,32 @@ export function CalculadoraSwissPage() {
         <h2 id="faq-rounds" className={FORM_SECTION_TITLE_CLASS}>
           Quantas rodadas suíças um torneio precisa?
         </h2>
-        <p className="m-0 text-[0.9rem] text-[#9f91bd] leading-relaxed">
+        <p className="m-0 text-[0.9rem] text-text-subtle leading-relaxed">
           O número de rodadas é determinado pelo número de jogadores usando a potência de 2.
           A tabela abaixo mostra melhor:
         </p>
-        <p className="m-0 text-[0.9rem] text-[#9f91bd] leading-relaxed">
+        <p className="m-0 text-[0.9rem] text-text-subtle leading-relaxed">
           Se a organização quiser, você pode jogar mais do que o número recomendado de rodadas,
           mas corre o risco de ter o mesmo jogador com 2 byes ou até mesmo dois jogadores tendo
           que se enfrentar novamente.
         </p>
-        <div className="overflow-x-auto rounded-xl border border-[rgba(217,180,255,0.18)]">
+        <div className="overflow-x-auto rounded-xl border border-line">
           <table className="w-full min-w-[320px] border-collapse text-left text-[0.9rem]">
             <thead>
-              <tr className="bg-[rgba(167,79,255,0.12)] text-[#c795ff]">
+              <tr className="bg-[rgba(167,79,255,0.12)] text-brand">
                 <th className="px-3 py-2.5 font-semibold">Número de jogadores</th>
                 <th className="px-3 py-2.5 font-semibold">Número de rodadas</th>
               </tr>
             </thead>
             <tbody>
               {SWISS_ROUNDS_TABLE.map((row) => (
-                <tr key={row.rounds} className="border-t border-[rgba(217,180,255,0.12)]">
-                  <td className="px-3 py-2 text-[#beafd7]">
+                <tr key={row.rounds} className="border-t border-line-soft">
+                  <td className="px-3 py-2 text-text-soft">
                     {row.minPlayers === row.maxPlayers
                       ? String(row.minPlayers)
                       : `${row.minPlayers}-${row.maxPlayers}`}
                   </td>
-                  <td className="px-3 py-2 text-[#f5edff] font-semibold">{row.rounds}</td>
+                  <td className="px-3 py-2 text-text-main font-semibold">{row.rounds}</td>
                 </tr>
               ))}
             </tbody>
@@ -232,7 +233,7 @@ export function CalculadoraSwissPage() {
         <h2 id="faq-swiss" className={FORM_SECTION_TITLE_CLASS}>
           Como funciona um torneio suíço?
         </h2>
-        <p className="m-0 text-[0.9rem] text-[#9f91bd] leading-relaxed">
+        <p className="m-0 text-[0.9rem] text-text-subtle leading-relaxed">
           Um torneio suíço é semelhante a um torneio Round-Robin em que nenhum jogador é eliminado.
           Todos os jogadores jogarão todas as rodadas, e o jogador com o maior número de pontos no
           final do torneio é o vencedor.
@@ -243,7 +244,7 @@ export function CalculadoraSwissPage() {
         <h2 id="faq-pontos" className={FORM_SECTION_TITLE_CLASS}>
           Como você calcula pontos em um torneio suíço?
         </h2>
-        <p className="m-0 text-[0.9rem] text-[#9f91bd] leading-relaxed">
+        <p className="m-0 text-[0.9rem] text-text-subtle leading-relaxed">
           Cada vitória dá 3 pontos, cada empate 1 ponto e as derrotas dão 0 pontos. Quando os
           jogadores estão empatados, a porcentagem de vitórias no jogo, a porcentagem de vitórias
           no jogo do oponente e mais podem ser usadas para determinar qual jogador está no topo.
@@ -254,7 +255,7 @@ export function CalculadoraSwissPage() {
         <h2 id="faq-pair" className={FORM_SECTION_TITLE_CLASS}>
           Como funciona o emparelhamento em torneios suíços?
         </h2>
-        <p className="m-0 text-[0.9rem] text-[#9f91bd] leading-relaxed">
+        <p className="m-0 text-[0.9rem] text-text-subtle leading-relaxed">
           Em um torneio do sistema suíço, os jogadores nunca são eliminados. Em vez disso, os
           jogadores são emparelhados em todas as rodadas. Os jogadores são emparelhados com a
           pessoa mais próxima deles nas chaves, normalmente, jogadores com o mesmo número de

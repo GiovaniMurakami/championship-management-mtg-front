@@ -3,12 +3,12 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { Navbar } from "../components/ui/Navbar";
 
-describe("Navbar — dropdown Ferramentas", () => {
-  it("abre o dropdown e lista as páginas individuais", () => {
+describe("Navbar — dropdown Mais", () => {
+  it("abre o dropdown e lista comunidade, competição e ferramentas", () => {
     render(
       <MemoryRouter>
         <Navbar
-          usuario={{ nome: "Admin", role: "user" }}
+          usuario={{ id: "5f01d815-0fe7-4c06-a2e6-e2e321727fe0", nome: "Admin", role: "user" }}
           isAuthenticated
           onOpenAuth={vi.fn()}
           onLogout={vi.fn()}
@@ -17,10 +17,10 @@ describe("Navbar — dropdown Ferramentas", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole("link", { name: /^Ferramentas$/i })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
-
+    fireEvent.click(screen.getByRole("button", { name: /Mais/i }));
+    expect(screen.getByRole("menuitem", { name: /Posts/i })).toHaveAttribute("href", "/comunidade");
+    expect(screen.getByRole("menuitem", { name: /Ligas/i })).toHaveAttribute("href", "/ligas");
+    expect(screen.getByRole("menuitem", { name: /Times/i })).toHaveAttribute("href", "/times");
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
       "href",
       "/ferramentas/contador-vida",
@@ -31,7 +31,7 @@ describe("Navbar — dropdown Ferramentas", () => {
     );
   });
 
-  it("sem login, Ferramentas continua pública e lista as páginas", () => {
+  it("mantém os itens públicos sem login", () => {
     const onOpenAuth = vi.fn();
     render(
       <MemoryRouter>
@@ -45,8 +45,7 @@ describe("Navbar — dropdown Ferramentas", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Ferramentas/i }));
-
+    fireEvent.click(screen.getByRole("button", { name: /Mais/i }));
     expect(onOpenAuth).not.toHaveBeenCalled();
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(
       "href",

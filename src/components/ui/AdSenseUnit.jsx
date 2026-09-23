@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ADSENSE_CLIENT, ADSENSE_UNITS, isAdSenseEnabled } from "../../constants/adsense";
 import { applyAdSensePersonalization, loadAdSenseScript } from "../../utils/adsenseScript";
 import { useCookieConsent } from "./CookieConsentBanner";
 
-const BASE_CLASS = "overflow-hidden";
+const BASE_CLASS = "overflow-hidden bg-transparent";
 
 function getUnitStyle(config) {
   if (config.fixedSize) {
@@ -23,6 +23,7 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
   const config = ADSENSE_UNITS[unit];
   const containerRef = useRef(null);
   const pushed = useRef(false);
+  const [adStatus, setAdStatus] = useState("loading");
   const { decided, marketing } = useCookieConsent();
   const enabled = isAdSenseEnabled() && decided;
 
@@ -32,6 +33,16 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
     const container = containerRef.current;
     if (!container) return undefined;
 
+    const ins = container.querySelector("ins.adsbygoogle");
+    const syncAdStatus = () => {
+      const status = ins?.getAttribute("data-ad-status");
+      if (status === "filled" || status === "unfilled") setAdStatus(status);
+    };
+    const statusObserver = typeof MutationObserver !== "undefined" && ins
+      ? new MutationObserver(syncAdStatus)
+      : null;
+    statusObserver?.observe(ins, { attributes: true, attributeFilter: ["data-ad-status"] });
+
     pushed.current = false;
     let cancelled = false;
 
@@ -40,7 +51,6 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
 
       applyAdSensePersonalization(marketing);
 
-      const ins = container.querySelector("ins.adsbygoogle");
       if (ins?.getAttribute("data-adsbygoogle-status")) return;
 
       const loaded = await loadAdSenseScript();
@@ -57,13 +67,19 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
 
     tryPush();
 
-    if (typeof ResizeObserver === "undefined") return () => { cancelled = true; };
+    if (typeof ResizeObserver === "undefined") {
+      return () => {
+        cancelled = true;
+        statusObserver?.disconnect();
+      };
+    }
 
     const observer = new ResizeObserver(() => { tryPush(); });
     observer.observe(container);
     return () => {
       cancelled = true;
       observer.disconnect();
+      statusObserver?.disconnect();
     };
   }, [config, enabled, marketing, unit]);
 
@@ -72,10 +88,15 @@ export function AdSenseUnit({ unit = "topBanner", className = "" }) {
   const useResponsive = config.fullWidthResponsive && !config.fixedSize;
 
   return (
-    <div ref={containerRef} className={`${BASE_CLASS} ${className}`.trim()} aria-hidden="true">
+    <div
+      ref={containerRef}
+      className={`${BASE_CLASS} ${adStatus === "unfilled" ? "hidden" : ""} ${className}`.trim()}
+      aria-hidden="true"
+      data-ad-state={adStatus}
+    >
       <ins
-        className="adsbygoogle"
-        style={getUnitStyle(config)}
+        className={`adsbygoogle bg-transparent transition-opacity duration-200 ${adStatus === "filled" ? "opacity-100" : "opacity-0"}`}
+        style={{ ...getUnitStyle(config), backgroundColor: "transparent" }}
         data-ad-client={ADSENSE_CLIENT}
         data-ad-slot={config.slot}
         data-ad-format={config.format}

@@ -95,7 +95,7 @@ export function LandingDecksPage() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             <div className="absolute bottom-0 left-0 right-0 p-4">
                                 <h2 className="text-lg font-bold text-white">{d.name}</h2>
-                                <span className="text-[#c795ff] text-sm font-semibold">Ver deck →</span>
+                                <span className="text-brand text-sm font-semibold">Ver deck →</span>
                             </div>
                         </a>
                     ))}
@@ -103,7 +103,7 @@ export function LandingDecksPage() {
             </section>
 
             {/* Apoiase CTA */}
-            <section className="bg-[#080514] py-12 border-t border-[rgba(217,180,255,0.12)]">
+            <section className="bg-[#080514] py-12 border-t border-line-soft">
                 <div className="max-w-3xl mx-auto px-4 text-center">
                     <h2 className="text-2xl md:text-3xl font-bold mb-4">Veja decks e side guides exclusivos no nosso Apoia-se!</h2>
                     <a

@@ -33,6 +33,7 @@ export function pickTorneioFieldsFromStandings(data) {
   if (data.status !== undefined) patch.status = data.status;
   if (data.totalInscritos !== undefined) patch.totalInscritos = data.totalInscritos;
   if (data.emCorte !== undefined) patch.emCorte = data.emCorte;
+  if (data.rodadaPublicada !== undefined) patch.rodadaPublicada = data.rodadaPublicada;
   if (data.nome !== undefined) patch.nome = data.nome;
   if (data.torneioNome !== undefined) patch.nome = data.torneioNome;
   return patch;
@@ -48,19 +49,24 @@ export function useTournamentQueries({ torneioId, token, enabled = true }) {
   const tournamentQuery = useQuery({
     queryKey: [...tournamentQueryKeys.detail(torneioId), Boolean(token)],
     queryFn: () => buscarTorneio(torneioId, token),
+    // Permissões e estado podem mudar enquanto o usuário está em outra página.
+    refetchOnMount: "always",
     enabled: canFetch,
   });
+  const resolvedId = tournamentQuery.data?.id;
 
   const standingsQuery = useQuery({
-    queryKey: [...tournamentQueryKeys.standings(torneioId), Boolean(token)],
-    queryFn: () => getStandings(torneioId, token),
-    enabled: canFetch,
+    queryKey: [...tournamentQueryKeys.standings(resolvedId), Boolean(token)],
+    queryFn: () => getStandings(resolvedId, token),
+    refetchOnMount: "always",
+    enabled: Boolean(canFetch && resolvedId),
   });
 
   const matchesQuery = useQuery({
-    queryKey: [...tournamentQueryKeys.matches(torneioId), Boolean(token)],
-    queryFn: () => listarPartidasTorneio(torneioId, token),
-    enabled: canFetch,
+    queryKey: [...tournamentQueryKeys.matches(resolvedId), Boolean(token)],
+    queryFn: () => listarPartidasTorneio(resolvedId, token),
+    refetchOnMount: "always",
+    enabled: Boolean(canFetch && resolvedId),
   });
 
   const teamsQuery = useQuery({

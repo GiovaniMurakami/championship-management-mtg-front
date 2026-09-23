@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { cadastrarDeck, atualizarDeck } from "../services/backendApi";
 import { buscarCartasPorEntradas } from "../services/scryfallApi";
 import { toDeckPayload } from "../utils/deckPayload";
+import { coresDasCartasDoBuilder } from "../utils/deckColors";
 import { parseDeckTxt } from "../utils/parseDeckTxt";
 import {
   MAX_DECK_SIZE,
@@ -11,7 +12,7 @@ import {
 } from "../constants/auth";
 
 export function useDeckBuilder() {
-  const [deckForm, setDeckForm] = useState({ nome: "", formato: "", linkLigaMagic: "" });
+  const [deckForm, setDeckForm] = useState({ nome: "", formato: "", linkLigaMagic: "", oculto: false });
   const [mainDeck, setMainDeck] = useState([]);
   const [sideboard, setSideboard] = useState([]);
   const [commander, setCommander] = useState([]);
@@ -58,6 +59,7 @@ export function useDeckBuilder() {
             isBasicLand,
             legalities: card.legalities || {},
             colors: card.colors || card.colorIdentity || [],
+            colorIdentity: card.colorIdentity?.length ? card.colorIdentity : (card.colors || []),
             cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
             manaCost: card.manaCost || "",
             typeLine: card.typeLine || "",
@@ -95,6 +97,7 @@ export function useDeckBuilder() {
           isBasicLand,
           legalities: card.legalities || {},
           colors: card.colors || card.colorIdentity || [],
+          colorIdentity: card.colorIdentity?.length ? card.colorIdentity : (card.colors || []),
           cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
           manaCost: card.manaCost || "",
           typeLine: card.typeLine || "",
@@ -181,6 +184,7 @@ export function useDeckBuilder() {
       const formatoIgual = deckForm.formato === originalDeck.formato;
       const linkLigaMagicIgual =
         (deckForm.linkLigaMagic || "") === (originalDeck.linkLigaMagic || "");
+      const ocultoIgual = Boolean(deckForm.oculto) === Boolean(originalDeck.oculto);
       const maindeckIgual = compareDeckCards(
         mainDeck,
         originalDeck.maindeck || [],
@@ -202,6 +206,7 @@ export function useDeckBuilder() {
         nomeIgual
         && formatoIgual
         && linkLigaMagicIgual
+        && ocultoIgual
         && maindeckIgual
         && sideboardIgual
         && commanderIgual
@@ -264,6 +269,7 @@ export function useDeckBuilder() {
     setDeckLoading(true);
 
     try {
+      const ehCommander = deckForm.formato === "commander" || deckForm.formato === "commander500";
       const payload = {
         nome: deckForm.nome,
         formato: deckForm.formato,
@@ -271,6 +277,8 @@ export function useDeckBuilder() {
         maindeck: toDeckPayload(mainDeck),
         sideboard: toDeckPayload(sideboard),
         commander: toDeckPayload(commander),
+        cores: coresDasCartasDoBuilder(ehCommander ? commander : mainDeck),
+        oculto: Boolean(deckForm.oculto),
       };
 
       if (deckIdParam) {
@@ -279,7 +287,7 @@ export function useDeckBuilder() {
       } else {
         await cadastrarDeck(payload, token);
         setDeckMessage("Deck cadastrado com sucesso.");
-        setDeckForm({ nome: "", formato: "", linkLigaMagic: "" });
+        setDeckForm({ nome: "", formato: "", linkLigaMagic: "", oculto: false });
         setMainDeck([]);
         setSideboard([]);
         setCommander([]);
@@ -309,6 +317,7 @@ export function useDeckBuilder() {
           isBasicLand: card.isBasicLand,
           legalities: card.legalities || {},
           colors: card.colors || card.colorIdentity || [],
+          colorIdentity: card.colorIdentity?.length ? card.colorIdentity : (card.colors || []),
           cmc: Number.isFinite(card.cmc) ? card.cmc : Number(card.cmc) || 0,
           manaCost: card.manaCost || "",
           typeLine: card.typeLine || "",

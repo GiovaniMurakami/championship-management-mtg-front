@@ -1,5 +1,6 @@
 export const NEXT_ROUND_ACTION = {
     NONE: "none",
+    PUBLISH_ROUND: "publish-round",
     NEXT_SWISS_ROUND: "next-swiss-round",
     START_TOP_CUT: "start-top-cut",
     ADVANCE_TOP_CUT: "advance-top-cut",
@@ -115,6 +116,10 @@ export function getTournamentNextAction(torneio) {
         return NEXT_ROUND_ACTION.NONE;
     }
 
+    if (torneio?.rodadaPublicada === false) {
+        return NEXT_ROUND_ACTION.PUBLISH_ROUND;
+    }
+
     if (isEliminationPhase(torneio)) {
         return NEXT_ROUND_ACTION.ADVANCE_TOP_CUT;
     }
@@ -133,6 +138,13 @@ export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
     const pendingCount = toPositiveNumber(pendingCheckinCount);
 
     switch (nextAction) {
+        case NEXT_ROUND_ACTION.PUBLISH_ROUND:
+            return {
+                action: nextAction,
+                cta: "Publicar mesas",
+                blockedCta: "Publicar mesas",
+                status: "Pareamentos gerados. Publique quando estiver pronto.",
+            };
         case NEXT_ROUND_ACTION.NEXT_SWISS_ROUND:
             return {
                 action: nextAction,

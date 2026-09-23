@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { BaseModal } from "../ui/BaseModal";
 import { DeleteConfirmModal } from "../ui/DeleteConfirmModal";
-import { FormFeedback, FormField } from "../ui";
-import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY } from "../../styles/uiClasses";
+import { FormFeedback, FormField, Switch } from "../ui";
+import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY, FORM_LABEL_CLASS } from "../../styles/uiClasses";
 
 export function EditProfileModal({
   isOpen,
@@ -16,6 +16,7 @@ export function EditProfileModal({
   onDeleteAccount,
   deleteLoading = false,
   deleteError = "",
+  podeEditarAssinatura = false,
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -28,13 +29,13 @@ export function EditProfileModal({
     <>
       <BaseModal isOpen={isOpen && !showDeleteConfirm} onClose={handleClose}>
         <div className="mb-5 text-center">
-          <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+          <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
             Sua conta
           </p>
-          <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-[#f5edff] m-0">
+          <h2 className="font-['Bebas_Neue',sans-serif] text-[1.85rem] tracking-[0.04em] text-text-main m-0">
             Editar perfil
           </h2>
-          <p className="mt-1 text-[0.88rem] text-[#9f91bd]">
+          <p className="mt-1 text-[0.88rem] text-text-subtle">
             Atualize como você aparece nos torneios e pareamentos.
           </p>
         </div>
@@ -72,6 +73,49 @@ export function EditProfileModal({
             onChange={(event) => onFormChange((current) => ({ ...current, nickArena: event.target.value }))}
           />
 
+          {podeEditarAssinatura ? (
+            <div className="rounded-xl border border-line-soft bg-white/[0.03] px-3 py-3">
+              <p className="m-0 text-sm font-semibold text-text-main">Assinatura dos artigos</p>
+              <p className="m-0 mt-0.5 text-xs text-text-muted">
+                Aparece no final dos seus artigos com sua foto de perfil, nome e esta descrição.
+              </p>
+              <label className={`${FORM_LABEL_CLASS} mt-3`} htmlFor="profile-descricao-assinatura">
+                Descrição
+              </label>
+              <textarea
+                id="profile-descricao-assinatura"
+                rows={3}
+                maxLength={500}
+                value={form.descricaoAssinatura || ""}
+                onChange={(event) =>
+                  onFormChange((current) => ({ ...current, descricaoAssinatura: event.target.value }))
+                }
+                placeholder="Ex.: Editor de Pauper, jogador competitivo e criador de conteúdo."
+                className="w-full rounded-xl border border-line bg-transparent px-3 py-2 text-sm text-text-main placeholder:text-text-subtle focus:border-brand focus:outline-none"
+              />
+              <p className="m-0 mt-1 text-right text-[0.7rem] text-text-subtle">
+                {(form.descricaoAssinatura || "").length}/500
+              </p>
+            </div>
+          ) : null}
+
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-line-soft bg-white/[0.03] px-3 py-3">
+            <div className="min-w-0">
+              <p className="m-0 text-sm font-semibold text-text-main">Newsletter de metagame</p>
+              <p className="m-0 mt-0.5 text-xs text-text-muted">
+                Resumo semanal por e-mail toda segunda-feira.
+              </p>
+            </div>
+            <Switch
+              checked={Boolean(form.newsletterMetagame)}
+              onCheckedChange={(checked) =>
+                onFormChange((current) => ({ ...current, newsletterMetagame: checked }))
+              }
+              label={form.newsletterMetagame ? "Sim" : "Não"}
+              aria-label="Receber newsletter de metagame"
+            />
+          </div>
+
           {message ? <FormFeedback message={message} /> : null}
 
           <div className="flex gap-3 pt-1">
@@ -79,7 +123,7 @@ export function EditProfileModal({
               {isLoading ? "Salvando..." : "Salvar"}
             </button>
             <button
-              className={`flex-1 ${BTN_GHOST} border border-[rgba(217,180,255,0.2)]`}
+              className={`flex-1 ${BTN_GHOST} border border-line`}
               type="button"
               onClick={handleClose}
               disabled={isLoading || deleteLoading}
@@ -93,7 +137,7 @@ export function EditProfileModal({
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-[#ffa8b8]">
             Zona de risco
           </p>
-          <p className="mt-2 mb-3 text-[0.84rem] leading-relaxed text-[#beafd7]">
+          <p className="mt-2 mb-3 text-[0.84rem] leading-relaxed text-text-soft">
             A exclusão anonimiza sua conta e remove dados pessoais. Decks e
             participações em torneios são preservados e passam a aparecer como
             &quot;Usuário excluído&quot;. Esta ação é irreversível.

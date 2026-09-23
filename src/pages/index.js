@@ -20,3 +20,4 @@ export { DashboardBloqueiosPage } from "./DashboardBloqueiosPage";
 export { MetagamePage } from "./MetagamePage";
 export { MetagameArquetipoPage } from "./MetagameArquetipoPage";
 export { PrivacidadePage } from "./PrivacidadePage";
+export { UserProfilePage } from "./UserProfilePage";

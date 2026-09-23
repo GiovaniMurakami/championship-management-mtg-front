@@ -9,18 +9,18 @@ function LifePlayer({ label, life, onChange, inverted = false }) {
     <div
       className={[
         "flex-1 min-h-0 flex flex-col items-center justify-center gap-4 px-4 py-5",
-        "rounded-2xl border border-[rgba(217,180,255,0.2)]",
+        "rounded-2xl border border-line",
         inverted
           ? "bg-[linear-gradient(180deg,rgba(79,46,140,0.35),rgba(20,12,40,0.55))]"
           : "bg-[linear-gradient(0deg,rgba(79,46,140,0.35),rgba(20,12,40,0.55))]",
         inverted ? "rotate-180" : "",
       ].join(" ")}
     >
-      <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.12em] text-[#c795ff]">
+      <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.12em] text-brand">
         {label}
       </p>
       <p
-        className="m-0 font-['Bebas_Neue',sans-serif] text-[clamp(4.5rem,18vw,7rem)] tracking-[0.04em] text-[#f5edff] leading-none tabular-nums select-none"
+        className="m-0 font-['Bebas_Neue',sans-serif] text-[clamp(4.5rem,18vw,7rem)] tracking-[0.04em] text-text-main leading-none tabular-nums select-none"
         aria-live="polite"
       >
         {life}
@@ -67,10 +67,10 @@ export function ContadorVidaPage() {
   return (
     <PageShell className="max-w-[720px] mx-auto !py-3 sm:!py-4">
       <header className="mb-3 text-center sm:text-left">
-        <p className="m-0 mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#c795ff]">
+        <p className="m-0 mb-1 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-brand">
           Ferramentas
         </p>
-        <h1 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.8rem] sm:text-[2.2rem] tracking-[0.04em] text-[#f5edff]">
+        <h1 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.8rem] sm:text-[2.2rem] tracking-[0.04em] text-text-main">
           Contador de vida
         </h1>
       </header>
@@ -83,8 +83,8 @@ export function ContadorVidaPage() {
         <LifePlayer label="Jogador 2" life={life2} onChange={setLife2} inverted />
 
         {/* Faixa central de controles (legível pelos dois) */}
-        <div className="flex flex-wrap items-center justify-center gap-2 px-2 py-2 rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(12,8,24,0.75)]">
-          <span className="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#9f91bd] w-full text-center sm:w-auto sm:mr-1">
+        <div className="flex flex-wrap items-center justify-center gap-2 px-2 py-2 rounded-xl border border-line-soft bg-[rgba(12,8,24,0.75)]">
+          <span className="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-text-subtle w-full text-center sm:w-auto sm:mr-1">
             Vida inicial
           </span>
           <button

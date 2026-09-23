@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.37** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.44** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -17,6 +17,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
+- **Artigos** (`/artigos`) — artigos com markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]`), editores com assinatura (foto/nome/descrição) e aprovação admin
 
 **Backend:** API REST própria (não está neste repositório).  
 **Deploy:** AWS Amplify (`amplify.yml` → `dist/`).
@@ -32,6 +33,8 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 | React Router 7 | Rotas (lazy-loaded) |
 | TanStack React Query 5 | Cache de dados servidor |
 | Tailwind CSS 4 | Estilos (`@tailwindcss/vite`) |
+| Radix UI Primitives | Comportamento acessível de Dialog, Tabs, Tooltip, Checkbox e Switch |
+| Lucide React | Ícones de comandos e estados da interface |
 | Axios | HTTP (`httpClient.js`) |
 | Ably | Realtime de torneios |
 | Scryfall API | Dados de cartas MTG |
@@ -98,6 +101,34 @@ src/
 - Tema dark roxo/violeta; fonte display `Bebas_Neue` para títulos
 - **Não** criar arquivos CSS por componente (exceto `index.css` global)
 
+### Componentes de UI e primitives
+- `src/components/ui` é a camada pública de UI da aplicação; prefira seus exports a usar primitives diretamente nas features.
+- Radix UI fornece comportamento e acessibilidade, enquanto Tailwind e os tokens do projeto definem a aparência.
+- Wrappers atuais: `BaseModal` (Dialog), `Tabs`, `Tooltip`, `Checkbox` e `Switch`.
+- Preserve a API das wrappers ao evoluí-las, pois elas são usadas transversalmente por páginas e componentes de domínio.
+- Use Lucide React para ícones comuns. Não desenhe SVG manual nem use caracteres de texto quando existir um ícone equivalente.
+- Controles devem manter foco visível, suporte a teclado, estados disabled/loading e nomes acessíveis.
+- `SelectField` continua nativo; não troque por um select customizado sem validar formulários, teclado mobile e compatibilidade com `onChange`.
+
+### Diretrizes de design — abordagem Apple
+
+O produto segue os princípios de interface da Apple como referência de qualidade, sem copiar a aparência do iOS e sem abandonar a identidade dark roxa do projeto. Ao criar ou alterar telas:
+
+- **Clareza antes de decoração:** cada tela deve ter um objetivo e uma ação principal evidentes. Remover ruído visual, textos redundantes e controles sem função clara.
+- **Hierarquia forte:** organizar conteúdo por importância com título, resumo, conteúdo e ações. A ação primária deve se destacar; ações secundárias e destrutivas devem ter menor peso visual.
+- **Conteúdo em primeiro plano:** superfícies, bordas, sombras e efeitos existem para estruturar o conteúdo, nunca para competir com ele.
+- **Profundidade com propósito:** usar elevação, transparência e `backdrop-blur` apenas para comunicar camadas, contexto ou sobreposição. Evitar glassmorphism excessivo e efeitos puramente ornamentais.
+- **Consistência e familiaridade:** reutilizar componentes de `src/components/ui`, tokens semânticos de `src/index.css` e variantes de `src/styles/uiClasses.js`. Não inventar um padrão novo quando já existir equivalente.
+- **Feedback imediato:** toda interação deve comunicar hover/focus/pressed/loading/success/error. Ações assíncronas bloqueiam repetição, preservam contexto e informam claramente o resultado.
+- **Divulgação progressiva:** mostrar primeiro o essencial e revelar detalhes ou ações avançadas sob demanda. Evitar telas densas com todas as opções expostas simultaneamente.
+- **Movimento discreto e funcional:** transições devem explicar mudança de estado ou relação espacial, normalmente entre 150–300 ms. Respeitar `prefers-reduced-motion`; evitar animações longas, repetitivas ou que atrasem uma ação.
+- **Alvos confortáveis:** controles interativos devem ter área clicável mínima próxima de `44×44px`, inclusive no mobile, com espaçamento suficiente para evitar toques acidentais.
+- **Legibilidade e acessibilidade:** manter contraste adequado, foco visível, labels/nomes acessíveis e navegação por teclado. Não depender apenas de cor, ícone, tooltip ou animação para transmitir informação.
+- **Responsividade natural:** desenhar primeiro o fluxo e a prioridade do conteúdo. No mobile, empilhar e simplificar; não apenas reduzir tamanhos ou esconder ações essenciais.
+- **Texto direto:** labels e mensagens em português BR devem ser curtos, humanos e específicos. Botões descrevem a ação (`Criar time`, `Salvar alterações`) e confirmações destrutivas explicitam o impacto.
+
+Checklist para mudanças visuais: a hierarquia é óbvia, existe apenas uma ação primária por contexto, estados interativos estão cobertos, o conteúdo funciona em mobile/teclado e nenhum efeito visual foi adicionado sem função. A especificação de tokens continua em `src/styles/DESIGN_SYSTEM.md`.
+
 ### Imports
 - Preferir barrel exports quando existem (`from "../components"`, `from "../hooks"`)
 - `useAuth` é re-exportado de `hooks/useAuth.js` → implementação em `context/AuthContext.jsx`
@@ -153,6 +184,8 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | `/torneios/:id` | público (leitura) | `TournamentDetailPage` |
 | `/torneio/ingressar/:token` | público | `TournamentJoinPage` |
 | `/dashboard` | auth + admin | `DashboardPage` (anúncios) |
+| `/dashboard/newsletter` | auth + admin | `DashboardNewsletterPage` |
+| `/newsletter/descadastrar` | público | `NewsletterDescadastrarPage` |
 | `/dashboard/bloqueios` | auth + admin | `DashboardBloqueiosPage` |
 | `/termos-de-uso` | público | `TermosDeUsoPage` |
 | `/privacidade` | público | `PrivacidadePage` (LGPD) |
@@ -188,11 +221,12 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
 | Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin escolhe `cartaRepresentativa` no detalhe do arquétipo) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
-| Admin/dashboard | `pages/DashboardPage.jsx`, `pages/DashboardBloqueiosPage.jsx` |
+| Site | `pages/DashboardPage.jsx`, anúncio diário, newsletter opt-in no login |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
 | HTTP/errors | `services/httpClient.js` |
 | Todos endpoints REST | `services/backendApi.js` |
 | Classes UI compartilhadas | `styles/uiClasses.js` |
+| Primitives e wrappers UI | `components/ui/BaseModal.jsx`, `Tabs.jsx`, `Tooltip.jsx`, `Checkbox.jsx`, `Switch.jsx` |
 | Formatos/status torneio | `constants/tournament.js` |
 
 ---
@@ -237,7 +271,7 @@ Torneios: POST /torneio/criar, /:id/inscrever
 Ligas:    CRUD /liga/* + GET /liga/:id/ranking
           (`jogador.nome` = nick MOL)
 
-Metagame: GET /metagame?formato=&dias=30
+Metagame: GET /metagame?formato=&dias=30&limite=30&offset=0
           GET /metagame/:formato/:slug?dias=30   (público; sem JWT)
           (`usuario.nome` = nick MOL)
 
@@ -246,13 +280,14 @@ Decks:    CRUD /deck/* — `usuario.nome` em listar/buscar = nick MOL
 Times:    CRUD /time/* + entrar, sair, convite, solicitar, aprovar, rejeitar
 
 Site:     GET/PUT /site/anuncios, POST /site/anuncios/:id/clique
+          GET/PUT /site/anuncio-diario (carrossel), POST visualizacao/clique com anuncioId
 
 Imagens:  POST /imagem/upload-url → uploadParaS3 (PUT direto no S3)
 ```
 
 **Fuso horário:** campos `horario`, `criadoEm`, `rodadaIniciadaEm` vêm da API em **Brasília (UTC-3)**. Use `src/utils/brasiliaTime.js` para exibir/formatar no front.
 
-**Permissões no torneio:** dono, admin global ou **anfitrião** (`anfitriaoId`) podem gerenciar o torneio (`canManageTournament` no front).
+**Permissões no torneio:** dono, admin global ou **anfitrião** (`anfitriaoId`) podem gerenciar o torneio (`canManageTournament` no front) enquanto ele não está finalizado. Depois de encerrado, só o admin vê **Editar torneio** (premiação e demais campos). O ranking da liga desempata por pontos, OMW%, GW% e OGW%, como o torneio. O metagame pede os 30 primeiros arquétipos e “Mostrar mais” busca o restante com `offset`.
 
 Erros do backend: campo `mensagem` ou `message`; validação Zod em `errors[]`/`erros[]`.
 
@@ -454,4 +489,4 @@ npm run preview
 
 ---
 
-*Última revisão: agosto/2026 — alinhado com v1.2.37 (melhorias em Minha inscrição e feedback automático de erros)*
+*Última revisão: setembro/2026 — metagame com “Mostrar mais”, desempate de liga e edição de torneio finalizado pelo admin*

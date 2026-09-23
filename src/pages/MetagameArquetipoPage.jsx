@@ -1,9 +1,12 @@
+import { DateRangeFilter } from "../components/ui/DateRangeFilter";
+import { useDateRangeParams } from "../hooks/useDateRangeParams";
+import { useResolvedMetagameListas } from "../hooks/useResolvedMetagameListas";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { atualizarDeck, buscarArquetipoMetagame } from "../services/backendApi";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
-import { Spinner } from "../components/ui/Spinner";
+import { SkeletonMetagameArchetype } from "../components/ui/Skeleton";
 import { BackButton } from "../components/ui/BackButton";
 import {
   MetagameFormatNav,
@@ -17,11 +20,11 @@ import {
 } from "../components/metagame";
 import { useScryfallArt } from "../hooks/useScryfallArt";
 import { useMetagameDeckColors } from "../hooks/useMetagameDeckColors";
-import { useResolvedMetagameListas } from "../hooks/useResolvedMetagameListas";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
+import { Button } from "../components/ui/Button";
 import { TOURNAMENT_FORMATS, getTournamentFormatLabel } from "../constants/tournament";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { logError } from "../utils/logger";
@@ -29,57 +32,66 @@ import { chaveMetagameLista, ordenarListasPorRecencia } from "../utils/metagameL
 
 const DIAS_OPCOES = [7, 14, 30, 90];
 const DIAS_PADRAO = 30;
+const LIMITE_LISTAS = 10;
 
 function parseDias(valor) {
   const n = Number(valor);
   return DIAS_OPCOES.includes(n) ? n : DIAS_PADRAO;
 }
 
+function parsePagina(valor) {
+  const n = Number(valor);
+  return Number.isInteger(n) && n > 0 ? n : 1;
+}
+
 export function MetagameArquetipoPage() {
+  const { dataInicio, dataFim, dateQuery, applyDates } = useDateRangeParams();
   const { formato, slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   const dias = parseDias(searchParams.get("dias"));
-  const requestKey = `${formato}:${slug}:${dias}`;
+  const paginaListas = parsePagina(searchParams.get("paginaListas"));
+  const offsetListas = (paginaListas - 1) * LIMITE_LISTAS;
+  const requestKey = `${formato}:${slug}:${dias}:${dateQuery}:${paginaListas}`;
   const [result, setResult] = useState({ key: "", data: null, erro: "" });
+  const [listasAbertas, setListasAbertas] = useState({ key: "", valores: {} });
   const [salvandoDeckId, setSalvandoDeckId] = useState("");
   const [salvandoArquivo, setSalvandoArquivo] = useState(false);
   const [salvandoCarta, setSalvandoCarta] = useState(false);
-  const [listaAberta, setListaAberta] = useState("");
 
   const data = result.key === requestKey ? result.data : null;
   const loading = result.key !== requestKey;
   const erro = loading ? "" : result.erro;
-  const listUrl = `/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}`;
+  const listUrl = `/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}${dateQuery}`;
 
   usePageTitle(data?.nome ? `${data.nome} | Metagame` : "Metagame");
-  const { imagem } = useScryfallArt(data?.cartaRepresentativa);
-  const arquetiposCores = useMemo(() => (data ? [data] : []), [data]);
-  const coresPorSlug = useMetagameDeckColors(arquetiposCores, formato);
+  const { imagem, retry } = useScryfallArt(data?.cartaRepresentativa);
+  const { cores: coresPorSlug } = useMetagameDeckColors(data ? [data] : [], formato);
+  const cores = coresPorSlug[data?.slug] || data?.cores || [];
   const { previewCard, openCardPreview, closeCardPreview } = useCardPreview();
-  const listasResolvidas = useResolvedMetagameListas(data?.listas);
+  const { listas: listasComCartas } = useResolvedMetagameListas(data?.listas);
   const listasOrdenadas = useMemo(
-    () => ordenarListasPorRecencia(listasResolvidas, data?.resultados),
-    [listasResolvidas, data?.resultados],
+    () => ordenarListasPorRecencia(listasComCartas, data?.resultados),
+    [listasComCartas, data?.resultados],
   );
-  const chaveListaPadrao = listasOrdenadas[0] ? chaveMetagameLista(listasOrdenadas[0]) : "";
-
+  const paginacaoListas = data?.paginacaoListas;
+  const totalPaginasListas = paginacaoListas?.totalPaginas ?? 1;
+  const podeVoltarListas = paginaListas > 1;
+  const podeAvancarListas = paginaListas < totalPaginasListas;
+  const atualizarPaginaListas = useCallback((pagina) => {
+    const next = new URLSearchParams(searchParams);
+    if (dias !== DIAS_PADRAO || next.has("dias")) next.set("dias", String(dias));
+    if (pagina > 1) next.set("paginaListas", String(pagina));
+    else next.delete("paginaListas");
+    setSearchParams(next, { replace: true });
+  }, [dias, searchParams, setSearchParams]);
   useEffect(() => () => closeCardPreview(), [closeCardPreview]);
-
-  useEffect(() => {
-    setListaAberta((atual) => {
-      if (atual && listasOrdenadas.some((lista) => chaveMetagameLista(lista) === atual)) {
-        return atual;
-      }
-      return chaveListaPadrao;
-    });
-  }, [chaveListaPadrao, listasOrdenadas]);
 
   const recarregar = useCallback(async () => {
     try {
-      const res = await buscarArquetipoMetagame(formato, slug, { dias });
+      const res = await buscarArquetipoMetagame(formato, slug, { dias, limiteListas: LIMITE_LISTAS, offsetListas, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) });
       setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       return true;
     } catch (err) {
@@ -90,7 +102,7 @@ export function MetagameArquetipoPage() {
       }
       throw err;
     }
-  }, [dias, formato, listUrl, navigate, requestKey, slug]);
+  }, [dias, formato, listUrl, navigate, requestKey, slug, dateQuery, dataInicio, dataFim, offsetListas]);
 
   const salvarNome = useCallback(async (deckIds, nomeConsolidado) => {
     const ids = [...new Set(deckIds.filter(Boolean))];
@@ -110,7 +122,7 @@ export function MetagameArquetipoPage() {
 
   useEffect(() => {
     let cancelled = false;
-    buscarArquetipoMetagame(formato, slug, { dias })
+    buscarArquetipoMetagame(formato, slug, { dias, limiteListas: LIMITE_LISTAS, offsetListas, resumo: false, ...(dateQuery ? { dataInicio, dataFim } : {}) })
       .then((res) => {
         if (!cancelled) setResult({ key: requestKey, data: res?.data ?? res, erro: "" });
       })
@@ -128,21 +140,22 @@ export function MetagameArquetipoPage() {
         }
       });
     return () => { cancelled = true; };
-  }, [formato, slug, dias, requestKey]);
+  }, [formato, slug, dias, requestKey, dateQuery, dataInicio, dataFim, offsetListas]);
 
   return (
     <PageShell>
       <MetagameFormatNav
         formato={formato}
         formatos={TOURNAMENT_FORMATS}
-        onFormato={(value) => navigate(`/metagame?formato=${encodeURIComponent(value)}&dias=${dias}`)}
+        onFormato={(value) => navigate(`/metagame?formato=${encodeURIComponent(value)}&dias=${dias}${dateQuery}`)}
       />
 
-      <BackButton onClick={() => navigate(`/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}`)}>
+      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
+      <BackButton onClick={() => navigate(`/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}${dateQuery}`)}>
         ← Metagame
       </BackButton>
 
-      {loading && <Spinner text="Carregando arquétipo..." />}
+      {loading && <SkeletonMetagameArchetype />}
       {!loading && erro && <EmptyState title="Arquétipo" description={erro} />}
       {!loading && data && (
         <>
@@ -152,17 +165,20 @@ export function MetagameArquetipoPage() {
               <img
                 src={imagem}
                 alt=""
-                className="w-[96px] h-[70px] object-cover object-top rounded-xl border border-[rgba(217,180,255,0.18)] cursor-default"
-                onMouseEnter={() => openCardPreview({ nome: data.cartaRepresentativa, imagem })}
+                loading="lazy"
+                decoding="async"
+                onError={retry}
+                className="w-[96px] h-[70px] object-cover object-top rounded-xl border border-line cursor-default"
+                onMouseEnter={() => openCardPreview({ nome: data.cartaRepresentativa })}
                 onMouseLeave={closeCardPreview}
               />
             )}
             <div>
               <h1 className="m-0 text-white text-[2rem] font-bold flex items-center gap-2 flex-wrap">
                 {data.nome}
-                <MetagameManaPips colors={coresPorSlug[data.slug]} />
+                <MetagameManaPips colors={cores} />
               </h1>
-              <p className="m-0 mt-1 text-[#beafd7]">
+              <p className="m-0 mt-1 text-text-soft">
                 {getTournamentFormatLabel(formato)} · meta {data.metaPct}% ({data.copias}) · winrate {data.winrate}%
                 ({data.vitorias}-{data.derrotas}-{data.empates})
               </p>
@@ -171,19 +187,24 @@ export function MetagameArquetipoPage() {
             <MetagamePeriodoSelect
               dias={dias}
               diasOpcoes={DIAS_OPCOES}
-              onDias={(value) => setSearchParams({ dias: String(value) }, { replace: true })}
+              onDias={(value) => {
+                const next = new URLSearchParams(searchParams);
+                next.set("dias", String(value));
+                next.delete("paginaListas");
+                setSearchParams(next, { replace: true });
+              }}
             />
           </div>
 
           {isAdmin && token && (
-            <div className="mb-6 rounded-xl border border-[rgba(217,180,255,0.14)] bg-[rgba(167,79,255,0.06)] p-3 flex flex-col gap-5">
+            <div className="mb-6 rounded-xl border border-line-soft bg-[rgba(167,79,255,0.06)] p-3 flex flex-col gap-5">
               <MetagameNomeConsolidadoEditor
                 key={`arquetipo-${data.nome}`}
                 valorInicial={data.nome === "Outros" ? "" : data.nome}
                 salvando={salvandoArquivo}
                 dica="Altera o nome consolidado de todas as listas deste grupo. O deck passa a aparecer neste (ou em outro) arquétipo em todo o site."
                 onSalvar={async (nomeConsolidado) => {
-                  const ids = (data.listas || []).map((l) => l.deckId);
+                  const ids = data.deckIds || (data.listas || []).map((l) => l.deckId);
                   setSalvandoArquivo(true);
                   try {
                     await salvarNome(ids, nomeConsolidado);
@@ -204,7 +225,7 @@ export function MetagameArquetipoPage() {
                 onCardMouseLeave={closeCardPreview}
                 onPreviewDismiss={closeCardPreview}
                 onSalvar={async (cartaRepresentativa) => {
-                  const ids = (data.listas || []).map((l) => l.deckId);
+                  const ids = data.deckIds || (data.listas || []).map((l) => l.deckId);
                   setSalvandoCarta(true);
                   try {
                     await salvarCarta(ids, cartaRepresentativa);
@@ -221,19 +242,47 @@ export function MetagameArquetipoPage() {
 
           <MetagameMatchupsSection matchups={data.matchups} formato={formato} dias={dias} />
 
-          <h2 className="m-0 mb-3 text-[#f5edff] text-[1.25rem]">Listas</h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="m-0 text-text-main text-[1.25rem]">Listas</h2>
+            {paginacaoListas && paginacaoListas.total > LIMITE_LISTAS && (
+              <div className="flex items-center gap-2 text-[0.85rem] text-text-soft">
+                <span>
+                  Página {paginacaoListas.pagina} de {paginacaoListas.totalPaginas} · {paginacaoListas.total} listas
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!podeVoltarListas || loading}
+                  onClick={() => atualizarPaginaListas(paginaListas - 1)}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!podeAvancarListas || loading}
+                  onClick={() => atualizarPaginaListas(paginaListas + 1)}
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
+          </div>
           <div className="flex flex-col gap-3 mb-8">
             {listasOrdenadas.length === 0 ? (
-              <p className="text-[#beafd7]">Nenhuma lista neste período.</p>
+              <p className="text-text-soft">Nenhuma lista neste período.</p>
             ) : (
-              listasOrdenadas.map((lista) => {
+              listasOrdenadas.map((lista, index) => {
                 const chave = chaveMetagameLista(lista);
-                return (
-                  <MetagameListaCard
+                const expandida = listasAbertas.key === requestKey ? (listasAbertas.valores[chave] ?? index === 0) : index === 0;
+                return <MetagameListaCard
                     key={chave}
                     lista={lista}
-                    expandida={chave === listaAberta}
-                    onToggle={() => setListaAberta((atual) => (atual === chave ? "" : chave))}
+                    expandida={expandida}
+                    onToggle={() => setListasAbertas(prev => ({
+                      key: requestKey,
+                      valores: { ...(prev.key === requestKey ? prev.valores : {}), [chave]: !expandida },
+                    }))}
                     onCardMouseEnter={openCardPreview}
                     onCardMouseLeave={closeCardPreview}
                     isAdmin={Boolean(isAdmin && token)}
@@ -249,8 +298,7 @@ export function MetagameArquetipoPage() {
                         setSalvandoDeckId("");
                       }
                     } : undefined}
-                  />
-                );
+                  />;
               })
             )}
           </div>

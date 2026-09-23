@@ -17,6 +17,7 @@ export function isUsuarioExcluido(usuarioOuFlag) {
 /** Nome público + tag quando a conta foi excluída. */
 export function UsuarioNomeExibicao({
   nome,
+  usuarioId,
   excluido = false,
   className = "",
   nameClassName = "",
@@ -30,5 +31,18 @@ export function UsuarioNomeExibicao({
     );
   }
 
+  if (usuarioId) {
+    return (
+      <Link
+        to={`/usuarios/${usuarioId}`}
+        className={`${nameClassName} ${className} text-inherit no-underline hover:text-brand hover:underline hover:underline-offset-2`.trim()}
+        onClick={(event) => event.stopPropagation()}
+      >
+        {nome}
+      </Link>
+    );
+  }
+
   return <span className={`${nameClassName} ${className}`.trim()}>{nome}</span>;
 }
+import { Link } from "react-router-dom";

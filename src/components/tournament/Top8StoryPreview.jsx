@@ -35,7 +35,7 @@ export function Top8StoryPreview({
 
   return (
     <div className={`flex flex-col gap-2 ${className}`.trim()}>
-      <p className="text-[0.82rem] text-[#beafd7] m-0">Pré-visualização do story</p>
+      <p className="text-[0.82rem] text-text-soft m-0">Pré-visualização do story</p>
       <div
         className="w-full max-w-[220px] aspect-[9/16] rounded-xl overflow-hidden border border-[rgba(199,149,255,0.25)] bg-cover bg-center relative shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
         style={{ backgroundImage: `url("${backgroundUrl}")` }}
@@ -67,7 +67,7 @@ export function Top8StoryPreview({
           ))}
         </ul>
       </div>
-      <p className="text-[0.75rem] text-[#8f82ad] m-0 max-w-[220px]">
+      <p className="text-[0.75rem] text-text-muted m-0 max-w-[220px]">
         Escolha um fundo cadastrado ou cadastre um novo com nome. A quantidade de jogadores e a data ficam acima do 1º lugar.
       </p>
     </div>

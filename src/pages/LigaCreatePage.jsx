@@ -4,11 +4,10 @@ import { criarLiga, atualizarLiga, buscarLiga, listarTorneios } from "../service
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
-import { BackButton, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
+import { BackButton, Button, Checkbox, FormFeedback, FormField, FormSection, PageShell } from "../components/ui";
 import {
   BTN_PRIMARY,
   BTN_SECONDARY,
-  BTN_SUBMIT,
   FORM_LABEL_CLASS,
   FORM_PAGE_SHELL_CLASS,
   FORM_PAGE_TITLE_CLASS,
@@ -17,6 +16,8 @@ import {
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { uploadBannerImage, validateBannerImageFile } from "../utils/bannerUpload";
+import { formatBrasiliaDate } from "../utils/brasiliaTime";
 
 const buildTorneiosParams = ({ dataInicio, dataFim }) => {
   const params = new URLSearchParams();
@@ -30,9 +31,14 @@ export function LigaCreatePage({ editMode = false }) {
   const { token } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const bannerInputRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [form, setForm] = useState({ nome: "", descricao: "", tipo: "individual" });
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+  const [bannerRemovido, setBannerRemovido] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [filtrosTorneio, setFiltrosTorneio] = useState({
     dataInicio: searchParams.get("dataInicio") || "",
     dataFim: searchParams.get("dataFim") || "",
@@ -77,7 +83,8 @@ export function LigaCreatePage({ editMode = false }) {
       if (ligaData) {
         const liga = ligaData.liga || ligaData;
         setForm({ nome: liga.nome || "", descricao: liga.descricao || "", tipo: liga.tipo || "individual" });
-        const ids = (liga.torneios || []).map((t) => t.id ?? t);
+        setBannerPreview(liga.bannerUrl || null);
+        const ids = (liga.torneioIds || liga.torneios || []).map((t) => t.id ?? t);
         setTorneiosSelecionados(ids.map(String));
       }
     } catch (err) {
@@ -95,6 +102,27 @@ export function LigaCreatePage({ editMode = false }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleBannerChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const validationError = validateBannerImageFile(file);
+    if (validationError) {
+      setError(validationError.userMessage);
+      return;
+    }
+    setError("");
+    setBannerFile(file);
+    setBannerRemovido(false);
+    setBannerPreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveBanner = () => {
+    setBannerFile(null);
+    setBannerPreview(null);
+    setBannerRemovido(true);
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
   };
 
   const handleFiltroChange = (e) => {
@@ -171,9 +199,13 @@ export function LigaCreatePage({ editMode = false }) {
     setLoading(true);
     setError("");
     try {
+      let bannerUrl;
+      if (bannerFile) bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
       const payload = {
         ...form,
         torneioIds: torneiosSelecionados,
+        ...(bannerUrl ? { bannerUrl } : {}),
+        ...(editMode && bannerRemovido ? { bannerUrl: "" } : {}),
       };
       if (editMode && ligaId) {
         await atualizarLiga(ligaId, payload, token);
@@ -188,6 +220,7 @@ export function LigaCreatePage({ editMode = false }) {
       logError(err);
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -228,6 +261,25 @@ export function LigaCreatePage({ editMode = false }) {
                 required
                 disabled={loading}
               />
+              <div className="grid gap-2">
+                <span className={FORM_LABEL_CLASS}>Banner da liga <span className="normal-case tracking-normal font-normal text-text-muted">(opcional)</span></span>
+                {bannerPreview ? (
+                  <div className="grid gap-3">
+                    <img src={bannerPreview} alt="Preview do banner da liga" className="h-36 w-full rounded-xl border border-[rgba(199,149,255,0.3)] object-contain" />
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={loading} className={BTN_SECONDARY}>Trocar imagem</button>
+                      <button type="button" onClick={handleRemoveBanner} disabled={loading} className="px-4 py-2 rounded-lg border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.07)] text-[#fca5a5] font-semibold hover:bg-[rgba(239,68,68,0.16)] disabled:opacity-50">Remover</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={loading} className={`${BTN_SECONDARY} justify-self-start`}>Selecionar banner</button>
+                )}
+                <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleBannerChange} className="hidden" />
+                <p className="m-0 text-xs text-text-muted">Recomendado: 1200 × 480 px (proporção 5:2).</p>
+                {loading && bannerFile && uploadProgress > 0 && (
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full bg-gradient-to-r from-[#8e39ed] to-[#5f23b3]" style={{ width: `${uploadProgress}%` }} /></div>
+                )}
+              </div>
               <FormField
                 id="liga-descricao"
                 name="descricao"
@@ -242,7 +294,7 @@ export function LigaCreatePage({ editMode = false }) {
               />
               <div className="grid gap-2">
                 <span className={FORM_LABEL_CLASS}>Tipo de Liga</span>
-                <div className="flex gap-3">
+                <div className="flex flex-col min-[400px]:flex-row gap-3">
                   {[
                     { value: "individual", label: "Individual" },
                     { value: "times", label: "Times" },
@@ -252,7 +304,7 @@ export function LigaCreatePage({ editMode = false }) {
                       className={`flex items-center gap-2 flex-1 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
                         form.tipo === value
                           ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.12)]"
-                          : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
+                          : "border-line-soft bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                       }`}
                     >
                       <input
@@ -264,7 +316,7 @@ export function LigaCreatePage({ editMode = false }) {
                         disabled={loading}
                         className="accent-[#8e39ed]"
                       />
-                      <span className="text-[#f5edff] text-[0.9rem] font-medium">{label}</span>
+                      <span className="text-text-main text-[0.9rem] font-medium">{label}</span>
                     </label>
                   ))}
                 </div>
@@ -339,7 +391,7 @@ export function LigaCreatePage({ editMode = false }) {
                     <button
                       type="button"
                       onClick={handleLimparFiltrosTorneio}
-                      className="px-4 py-2 rounded-lg border border-[rgba(217,180,255,0.2)] bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
+                      className="px-4 py-2 rounded-lg border border-line bg-white/[0.03] text-text-soft text-[0.9rem] font-semibold hover:text-white hover:border-[rgba(199,149,255,0.45)] transition-colors"
                     >
                       Limpar filtros
                     </button>
@@ -355,19 +407,23 @@ export function LigaCreatePage({ editMode = false }) {
                         className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-150 ${
                           selected
                             ? "border-[rgba(199,149,255,0.45)] bg-[rgba(167,79,255,0.12)]"
-                            : "border-[rgba(217,180,255,0.12)] bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
+                            : "border-line-soft bg-white/[0.02] hover:border-[rgba(217,180,255,0.25)] hover:bg-white/[0.04]"
                         }`}
                       >
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 accent-[#8e39ed] cursor-pointer"
+                        <Checkbox
                           checked={selected}
-                          onChange={() => toggleTorneio(torneio.id)}
+                          onCheckedChange={() => toggleTorneio(torneio.id)}
                           disabled={loading || loadingTorneios}
+                          aria-label={`Selecionar torneio ${torneio.nome}`}
                         />
                         <div className="flex-1 min-w-0">
-                          <span className="block text-[#f5edff] text-[0.88rem] font-medium truncate">{torneio.nome}</span>
-                          <span className="text-[#beafd7] text-[0.77rem]">{(torneio.formato || "").toUpperCase()}</span>
+                          <span className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2 text-text-main text-[0.88rem] font-medium min-w-0">
+                            <span className="max-w-full [overflow-wrap:anywhere]">{torneio.nome}</span>
+                            {torneio.horario && (
+                              <span className="shrink-0 text-[0.74rem] font-normal text-[#a99cbe]">· {formatBrasiliaDate(torneio.horario)}</span>
+                            )}
+                          </span>
+                          <span className="text-text-soft text-[0.77rem]">{(torneio.formato || "").toUpperCase()}</span>
                         </div>
                       </label>
                     );
@@ -375,7 +431,7 @@ export function LigaCreatePage({ editMode = false }) {
                 </div>
               )}
               {torneiosSelecionados.length > 0 && (
-                <p className="text-[#c795ff] text-[0.8rem] m-0">
+                <p className="text-brand text-[0.8rem] m-0">
                   {torneiosDisponiveis.length} filtrado(s), {torneiosSelecionados.length} selecionado(s)
                 </p>
               )}
@@ -383,11 +439,11 @@ export function LigaCreatePage({ editMode = false }) {
 
             {error ? <FormFeedback message={error} variant="error" /> : null}
 
-            <button type="submit" className={BTN_SUBMIT} disabled={loading}>
+            <Button type="submit" size="lg" block loading={loading}>
               {loading
                 ? editMode ? "Salvando..." : "Criando..."
                 : editMode ? "Salvar Alterações" : "Criar Liga"}
-            </button>
+            </Button>
           </form>
         </div>
       </section>

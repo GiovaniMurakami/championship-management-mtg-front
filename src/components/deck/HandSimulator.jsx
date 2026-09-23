@@ -1,3 +1,4 @@
+import { formatCardName } from "../../utils/cardName";
 import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -45,8 +46,8 @@ export function HandSimulator({ mainDeck }) {
   const isDisabled = !mainDeck || mainDeck.length === 0 || totalCards < 7;
 
   return (
-    /* hs-container: border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full */
-    <div className="border border-line rounded-[0.8rem] p-4 bg-white/[0.01] w-full">
+    /* hs-container: border border-line rounded-lg p-4 bg-white/[0.01] w-full */
+    <div className="border border-line rounded-lg p-4 bg-white/[0.01] w-full">
       {/* hs-header: flex justify-between items-center mb-3 */}
       <div className="flex justify-between items-center mb-3">
         {/* hs-title: text-[1.1rem] m-0 text-text-main */}
@@ -78,10 +79,10 @@ export function HandSimulator({ mainDeck }) {
             {/* hs-hand-fan: flex justify-center items-end w-fit mx-auto */}
             <div className="flex justify-center items-end w-fit mx-auto">
               {hand.map((card, index) => (
-                /* hs-card: relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease shrink-0 hover:-translate-y-3 */
-                <Tooltip key={`${card.nome}-${index}`} content={card.nome} focusable={false}>
+                /* hs-card: relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-md overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease shrink-0 hover:-translate-y-3 */
+                <Tooltip key={`${card.nome}-${index}`} content={formatCardName(card.nome)} focusable={false}>
                   <div
-                    className="relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-[0.4rem] overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease-[ease] shrink-0 hover:!-translate-y-3"
+                    className="relative w-[112px] max-[600px]:w-[84px] h-[156px] max-[600px]:h-[117px] rounded-md overflow-hidden border border-line bg-black/30 origin-bottom shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform duration-[180ms] ease-[ease] shrink-0 hover:!-translate-y-3"
                     style={{
                       marginLeft: index === 0 ? "0" : "-20px",
                       transform: `translateY(${Math.abs(3 - index) * 9 - 12}px) rotate(${(index - 3) * 3}deg)`,
@@ -90,10 +91,10 @@ export function HandSimulator({ mainDeck }) {
                   >
                     {card.imagem ? (
                       /* hs-card-img: w-full h-full object-cover */
-                      <img src={card.imagem} alt={card.nome} className="w-full h-full object-cover" />
+                      <img src={card.imagem} alt={formatCardName(card.nome)} className="w-full h-full object-cover" />
                     ) : (
                       /* hs-card-name: flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words */
-                      <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{card.nome}</div>
+                      <div className="flex items-center justify-center h-full p-1 text-[0.7rem] text-center break-words">{formatCardName(card.nome)}</div>
                     )}
                   </div>
                 </Tooltip>
@@ -103,10 +104,10 @@ export function HandSimulator({ mainDeck }) {
 
           {/* hs-actions: flex gap-2 — each btn gets flex-1 */}
           <div className="flex gap-2">
-            <button className="flex-1 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-white/[0.03] text-[#f5edff] transition-all duration-[220ms] hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.08]" type="button" onClick={drawHand}>
+            <button className="flex-1 border border-line rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-white/[0.03] text-text-main transition-all duration-[220ms] hover:border-line-strong hover:bg-white/[0.08]" type="button" onClick={drawHand}>
               ⟳ Mulligan
             </button>
-            <button className="flex-1 border border-[rgba(217,180,255,0.2)] rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-[#beafd7] transition-all duration-[220ms] hover:border-[rgba(199,149,255,0.5)] hover:text-white hover:bg-white/[0.05]" type="button" onClick={closeHand}>
+            <button className="flex-1 border border-line rounded-xl px-4 py-[0.6rem] cursor-pointer font-bold bg-transparent text-text-soft transition-all duration-[220ms] hover:border-line-strong hover:text-white hover:bg-white/[0.05]" type="button" onClick={closeHand}>
               Fechar
             </button>
           </div>

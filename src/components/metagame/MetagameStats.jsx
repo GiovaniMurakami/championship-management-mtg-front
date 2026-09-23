@@ -14,14 +14,14 @@ export function formatarRecorde(vitorias = 0, derrotas = 0, empates = 0) {
 
 export function RecordeTexto({ vitorias = 0, derrotas = 0, empates = 0, className = "" }) {
   return (
-    <span className={`tabular-nums text-[#beafd7] ${className}`.trim()}>
+    <span className={`tabular-nums text-text-soft ${className}`.trim()}>
       {formatarRecorde(vitorias, derrotas, empates)}
     </span>
   );
 }
 
 export function WinrateMeter({ rate, className = "" }) {
-  if (rate == null) return <span className="text-[#8f82ad]">—</span>;
+  if (rate == null) return <span className="text-text-muted">—</span>;
   const style = winrateStyle(rate);
   return (
     <div className={`flex flex-col gap-1 min-w-[4.5rem] ${className}`}>
@@ -62,7 +62,7 @@ export function ColocacaoBadge({ colocacao }) {
     );
   }
   return (
-    <span className="inline-flex items-center justify-center min-w-8 h-8 px-1.5 rounded-full bg-white/[0.04] border border-[rgba(217,180,255,0.16)] text-[0.72rem] font-semibold text-[#beafd7]">
+    <span className="inline-flex items-center justify-center min-w-8 h-8 px-1.5 rounded-full bg-white/[0.04] border border-line-soft text-[0.72rem] font-semibold text-text-soft">
       {pos ? `${pos}º` : "—"}
     </span>
   );

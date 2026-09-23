@@ -1,5 +1,6 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
+import { InlineAlert } from "../ui/InlineAlert";
 import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
@@ -94,9 +95,13 @@ function calcLayout(canvasH, headerEndY, bottomReserve, n, nominalCardH) {
   return { cardH, cardGap, startY };
 }
 
-//  Static PNG (1080 � 1920) 
+//  Static PNG (1080 × 1920)
 
-async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, headline, textoRodape } = {}) {
+function top8Filename(players, tournamentName) {
+  return `top${players.length}-${(tournamentName || "torneio").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase()}.png`;
+}
+
+async function renderTop8Canvas(players, tournamentName, { backgroundUrl, headline, textoRodape } = {}) {
   const W = 1080;
   const H = 1920;
   const canvas = document.createElement("canvas");
@@ -179,10 +184,65 @@ async function downloadTop8Canvas(players, tournamentName, { backgroundUrl, head
     ctx.textAlign = "left";
   });
 
+  return { canvas, filename: top8Filename(players, tournamentName) };
+}
+
+async function downloadTop8Canvas(players, tournamentName, options = {}) {
+  const { canvas, filename } = await renderTop8Canvas(players, tournamentName, options);
   const link = document.createElement("a");
-  link.download = `top${players.length}-${(tournamentName || "torneio").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-").toLowerCase()}.png`;
+  link.download = filename;
   link.href = canvas.toDataURL("image/png");
   link.click();
+}
+
+function canvasToBlob(canvas, type = "image/png") {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Não foi possível gerar a imagem."));
+        return;
+      }
+      resolve(blob);
+    }, type);
+  });
+}
+
+async function shareTop8ToInstagram(players, tournamentName, options = {}) {
+  const { canvas, filename } = await renderTop8Canvas(players, tournamentName, options);
+  const blob = await canvasToBlob(canvas);
+  const file = new File([blob], filename, { type: "image/png" });
+
+  if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    const canShareFiles = typeof navigator.canShare !== "function" || navigator.canShare({ files: [file] });
+    if (canShareFiles) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: tournamentName || "Top Story",
+          text: "Story do top do torneio",
+        });
+        return { shared: true };
+      } catch (error) {
+        if (error?.name === "AbortError") return { shared: false, aborted: true };
+        // cai no fallback de download
+      }
+    }
+  }
+
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+
+  // Abre o Instagram Stories quando possível (mobile); no desktop o usuário usa a imagem baixada.
+  try {
+    window.open("instagram://story-camera", "_blank", "noopener,noreferrer");
+  } catch {
+    // ignore
+  }
+
+  return { shared: false, downloaded: true };
 }
 
 //  Animated video  canvas dimensions (scaled �2.25 � 1080 � 1920 output) 
@@ -380,9 +440,7 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
     try {
       muxerMod = await import("mp4-muxer");
     } catch {
-      alert("Erro ao carregar o encoder de MP4. Tente novamente.");
-      onDone?.();
-      return;
+      throw new Error("Erro ao carregar o encoder de MP4. Tente novamente.");
     }
     const { Muxer, ArrayBufferTarget } = muxerMod;
 
@@ -409,17 +467,13 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
       });
     } catch {
       encoder.close();
-      alert("Este navegador n�o suporta a codifica��o H.264. Tente no Chrome ou Safari.");
-      onDone?.();
-      return;
+      throw new Error("Este navegador não suporta a codificação H.264. Tente no Chrome ou Safari.");
     }
 
     for (let f = 0; f < totalFrames; f++) {
       if (encErr) {
-        alert("Erro ao codificar: " + encErr.message);
         encoder.close();
-        onDone?.();
-        return;
+        throw new Error(`Erro ao codificar o vídeo: ${encErr.message}`);
       }
       renderFrame(ctx, f, n, revealOrder, layout, backgroundImage, headerMeta);
       const timestamp = Math.round(f * (1_000_000 / FPS));
@@ -553,6 +607,8 @@ export function Top8StoryModal({
 
   const [topN, setTopN] = useState(defaultN);
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
+  const [exportError, setExportError] = useState("");
+  const [sharingInstagram, setSharingInstagram] = useState(false);
 
   const players = allPlayers.slice(0, topN);
   const previewLayout = storyContentLayout(1920, Math.max(players.length, 1), 150);
@@ -563,11 +619,31 @@ export function Top8StoryModal({
 
   const handleMp4 = async () => {
     if (videoProgress !== null) return;
+    setExportError("");
     setVideoProgress(0);
-    await generateAnimatedMp4(players, torneioNome, setVideoProgress, () =>
-      setVideoProgress(null),
-      exportOptions,
-    );
+    try {
+      await generateAnimatedMp4(players, torneioNome, setVideoProgress, undefined, exportOptions);
+    } catch (error) {
+      setExportError(error?.message || "Não foi possível gerar o vídeo.");
+    } finally {
+      setVideoProgress(null);
+    }
+  };
+
+  const handleInstagramShare = async () => {
+    if (videoProgress !== null || sharingInstagram) return;
+    setExportError("");
+    setSharingInstagram(true);
+    try {
+      const result = await shareTop8ToInstagram(players, torneioNome, exportOptions);
+      if (result?.downloaded && !result?.shared) {
+        setExportError("Imagem baixada. Abra o Instagram Stories e selecione a imagem na galeria.");
+      }
+    } catch (error) {
+      setExportError(error?.message || "Não foi possível compartilhar no Instagram.");
+    } finally {
+      setSharingInstagram(false);
+    }
   };
 
   return (
@@ -583,6 +659,11 @@ export function Top8StoryModal({
 
         {/* story-modal-bar: flex items-center justify-between w-full gap-3 flex-wrap */}
         <div className="flex w-full min-w-0 flex-col gap-3">
+          {exportError ? (
+            <InlineAlert type="error" onDismiss={() => setExportError("")}>
+              {exportError}
+            </InlineAlert>
+          ) : null}
           <div className="flex items-center justify-between w-full min-w-0 gap-2">
             <span className="text-[0.9rem] font-bold text-text-soft tracking-[0.05em] uppercase">Story</span>
             <button
@@ -616,10 +697,37 @@ export function Top8StoryModal({
             <button
               className="inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color] duration-[160ms] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] disabled:cursor-not-allowed"
               onClick={() => downloadTop8Canvas(players, torneioNome, exportOptions)}
-              disabled={videoProgress !== null}
+              disabled={videoProgress !== null || sharingInstagram}
             >
-              � PNG
+              ↓ PNG
             </button>
+
+            <Tooltip content="Compartilhar a imagem como story no Instagram" placement="bottom" focusable={false}>
+            <button
+              className={[
+                "inline-flex items-center gap-[0.35rem] px-[0.9rem] py-[0.38rem] border border-[rgba(225,48,108,0.55)] rounded-full bg-[rgba(225,48,108,0.12)] text-[#f9a8d4] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color,opacity] duration-[160ms] whitespace-nowrap",
+                sharingInstagram
+                  ? "opacity-75 cursor-not-allowed"
+                  : "hover:bg-[rgba(225,48,108,0.22)] hover:border-[rgba(225,48,108,0.75)]",
+              ].join(" ")}
+              onClick={handleInstagramShare}
+              disabled={videoProgress !== null || sharingInstagram}
+              aria-label="Compartilhar no Instagram Stories"
+            >
+              {sharingInstagram ? (
+                "Abrindo…"
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+                  </svg>
+                  Instagram
+                </>
+              )}
+            </button>
+            </Tooltip>
 
             {/* story-video-btn */}
             <Tooltip content="Gerar video MP4 animado revelando do ultimo ao primeiro" placement="bottom" focusable={false}>
@@ -631,7 +739,7 @@ export function Top8StoryModal({
                   : "hover:bg-[rgba(167,79,255,0.25)] hover:border-[rgba(199,149,255,0.7)]",
               ].join(" ")}
               onClick={handleMp4}
-              disabled={videoProgress !== null}
+              disabled={videoProgress !== null || sharingInstagram}
               aria-label="Gerar video MP4 animado revelando do ultimo ao primeiro"
             >
               {videoProgress !== null ? (
@@ -674,9 +782,9 @@ export function Top8StoryModal({
           </div>
         )}
 
-        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-[1.2rem] overflow-hidden flex-col items-stretch relative shadow */}
+        {/* story-card: w-full aspect-[9/16] bg gradient border rounded-2xl overflow-hidden flex-col items-stretch relative shadow */}
         <div
-          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-[1.2rem] overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
+          className="w-full max-w-full min-w-0 aspect-[9/16] border border-[rgba(199,149,255,0.2)] rounded-2xl overflow-hidden flex flex-col items-stretch relative shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-cover bg-center [container-type:size]"
           style={{ backgroundImage: `url("${backgroundUrl}")` }}
         >
           {/* story-band story-band--top: h-[6px] shrink-0 gradient */}

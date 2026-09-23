@@ -21,18 +21,19 @@ export function buildCopyTournamentInitialValues(copyFrom) {
     nome: copyFrom.nome || "",
     horario: addOneWeek(copyFrom.horario || copyFrom.dataInicio || copyFrom.data),
     formato: copyFrom.formato || "standard",
-    descricao: copyFrom.descricao || copyFrom.premio || "",
+    descricao: copyFrom.descricao || (typeof copyFrom.premio === "string" ? copyFrom.premio : "") || "",
     regras: copyFrom.regras || "",
     maxJogadores: copyFrom.maxJogadores ? String(copyFrom.maxJogadores) : "",
     maxRodadas: copyFrom.maxRodadas ? String(copyFrom.maxRodadas) : "",
     corteTop: copyFrom.corteTop ? String(copyFrom.corteTop) : "",
     bannerUrl: copyFrom.bannerUrl || "",
     linkBanner: copyFrom.linkBanner || "",
-    somRodada: copyFrom.somRodada || "",
+    playerPoints: copyFrom.premio?.playerPoints ?? "", tix: copyFrom.premio?.tix ?? "",
     linkLive: copyFrom.linkLive || "",
     storyFundoUrl: copyFrom.storyFundoUrl || "",
     secreto: Boolean(copyFrom.secreto),
     exibirNomeJogador: copyFrom.exibirNomeJogador || "nome",
+    ligaIds: Array.isArray(copyFrom.ligaIds) ? copyFrom.ligaIds.map(String).filter(Boolean) : [],
   };
 }
 
@@ -53,7 +54,7 @@ export function TournamentCreatePage() {
   return (
     <PageShell>
       <button
-        className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-[rgba(217,180,255,0.2)] rounded-xl bg-white/[0.03] text-[#beafd7] text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-[rgba(199,149,255,0.5)] hover:bg-white/[0.06]"
+        className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-line rounded-xl bg-white/[0.03] text-text-soft text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-line-strong hover:bg-white/[0.06]"
         type="button"
         onClick={() => navigate("/")}
       >
@@ -66,7 +67,7 @@ export function TournamentCreatePage() {
             <rect x="9" y="9" width="13" height="13" rx="2" />
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
           </svg>
-          Copiando <strong className="text-[#c795ff]">{copyFrom.nome}</strong> — data avançada 1 semana
+          Copiando <strong className="text-brand">{copyFrom.nome}</strong> — data avançada 1 semana
         </div>
       )}
 

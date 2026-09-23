@@ -85,15 +85,15 @@ export function TournamentHostModal({
         <h2 id="host-modal-title" className="m-0 mb-1 font-['Bebas_Neue',sans-serif] text-[1.6rem] tracking-[0.04em] text-white">
           Definir anfitrião
         </h2>
-        <p className="m-0 mb-4 text-[0.88rem] text-[#beafd7]">
+        <p className="m-0 mb-4 text-[0.88rem] text-text-soft">
           O anfitrião terá permissões de administrador neste torneio.
         </p>
 
         {torneio?.anfitriao && (
           <div className="mb-4 rounded-xl border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.08)] px-3 py-2">
-            <p className="m-0 text-[0.75rem] tracking-[0.08em] text-[#c795ff] font-semibold">ANFITRIÃO ATUAL</p>
+            <p className="m-0 text-[0.75rem] tracking-[0.08em] text-brand font-semibold">ANFITRIÃO ATUAL</p>
             <p className="m-0 mt-1 text-[0.95rem] text-white font-medium">{torneio.anfitriao.nome}</p>
-            <p className="m-0 text-[0.8rem] text-[#beafd7]">{torneio.anfitriao.email}</p>
+            <p className="m-0 text-[0.8rem] text-text-soft">{torneio.anfitriao.email}</p>
           </div>
         )}
 
@@ -110,7 +110,7 @@ export function TournamentHostModal({
         </label>
 
         <div
-          className={`max-h-[240px] overflow-y-auto border border-[rgba(217,180,255,0.15)] rounded-xl ${
+          className={`max-h-[240px] overflow-y-auto border border-line-soft rounded-xl ${
             !fetching && total > LIMITE ? "mb-2" : "mb-4"
           }`}
         >
@@ -133,7 +133,7 @@ export function TournamentHostModal({
                       className={`w-full text-left px-3 py-2.5 border-0 border-b border-[rgba(217,180,255,0.08)] cursor-pointer transition-colors ${
                         isSelected
                           ? "bg-[rgba(167,79,255,0.18)] text-white"
-                          : "bg-transparent text-[#f5edff] hover:bg-[rgba(255,255,255,0.04)]"
+                          : "bg-transparent text-text-main hover:bg-[rgba(255,255,255,0.04)]"
                       }`}
                       onClick={() => setSelectedId(usuario.id)}
                     >
@@ -154,11 +154,11 @@ export function TournamentHostModal({
               onClick={() => setPagina((p) => Math.max(1, p - 1))}
               disabled={pagina === 1}
               aria-label="Página anterior"
-              className="px-2.5 py-1.5 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+              className="px-2.5 py-1.5 border border-line rounded-lg text-text-soft text-[0.8rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
             >
               ←
             </button>
-            <span className="text-[#beafd7] text-[0.8rem] min-w-[52px] text-center" aria-live="polite">
+            <span className="text-text-soft text-[0.8rem] min-w-[52px] text-center" aria-live="polite">
               {pagina} / {totalPaginas}
             </span>
             <button
@@ -166,7 +166,7 @@ export function TournamentHostModal({
               onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
               disabled={pagina === totalPaginas}
               aria-label="Próxima página"
-              className="px-2.5 py-1.5 border border-[rgba(217,180,255,0.2)] rounded-lg text-[#beafd7] text-[0.8rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
+              className="px-2.5 py-1.5 border border-line rounded-lg text-text-soft text-[0.8rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
             >
               →
             </button>
