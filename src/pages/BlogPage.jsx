@@ -76,7 +76,46 @@ export function BlogPage() {
         {carregando ? (
           <div className="flex justify-center py-16"><Spinner /></div>
         ) : artigos.length === 0 ? (
-          <p className="text-text-soft">Nenhum artigo publicado ainda.</p>
+          <div className="overflow-hidden rounded-2xl border border-line-soft bg-surface shadow-card">
+            <div className="relative flex aspect-[1200/420] max-h-52 items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#2a1a4a_0%,#120b24_55%,#1a1230_100%)]">
+              <div
+                className="pointer-events-none absolute inset-0 opacity-40"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 20% 30%, rgba(167,79,255,0.35), transparent 45%), radial-gradient(circle at 80% 70%, rgba(252,88,119,0.18), transparent 40%)",
+                }}
+              />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.15)] text-[#c4b5fd] shadow-[0_0_32px_rgba(167,79,255,0.25)]">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M6 4.5h9.5A2.5 2.5 0 0 1 18 7v13.5L12.5 17 7 20.5V7A2.5 2.5 0 0 1 9.5 4.5"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M9 9h6M9 12.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </div>
+            </div>
+            <div className="px-6 py-8 text-center sm:px-10">
+              <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-brand">Em breve</p>
+              <h2 className="m-0 mt-2 text-xl font-semibold tracking-tight text-text-main sm:text-2xl">
+                Ainda não há artigos publicados
+              </h2>
+              <p className="mx-auto m-0 mt-3 max-w-md text-sm leading-relaxed text-text-soft">
+                Em breve você encontra aqui deck techs, análises de metagame e conteúdos da comunidade Pauper.
+              </p>
+              {podeEditarBlog ? (
+                <button
+                  type="button"
+                  className={`${BTN_PRIMARY} mt-6`}
+                  onClick={() => navigate("/artigos/novo")}
+                >
+                  Escrever o primeiro artigo
+                </button>
+              ) : null}
+            </div>
+          </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
             {artigos.map((artigo) => (
