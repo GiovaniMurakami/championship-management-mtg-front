@@ -24,7 +24,7 @@ export const PAGE_TITLES = {
   resetSenha: "Redefinir senha",
   termosDeUso: "Termos de Uso",
   privacidade: "Política de Privacidade",
-  blog: "Blog",
+  blog: "Artigos",
   decks: "Decks",
   sobreMim: "Sobre mim",
   parceiros: "Parceiros",

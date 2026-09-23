@@ -4,6 +4,16 @@ import { ProtectedRoute } from "../components";
 import { UuidParamGuard } from "../components/ui/UuidParamGuard";
 import { Spinner } from "../components/ui/Spinner";
 
+function RedirectBlogArtigo() {
+  const { id } = useParams();
+  return <Navigate to={`/artigos/${id}`} replace />;
+}
+
+function RedirectBlogArtigoEditar() {
+  const { id } = useParams();
+  return <Navigate to={`/artigos/${id}/editar`} replace />;
+}
+
 // Rotas lazy-loaded — cada rota gera um chunk separado pelo Vite
 const DeckBuilderPage     = lazy(() => import("../pages/DeckBuilderPage").then(m => ({ default: m.DeckBuilderPage })));
 const MyDecksPage         = lazy(() => import("../pages/MyDecksPage").then(m => ({ default: m.MyDecksPage })));
@@ -148,19 +158,19 @@ export function AppRoutes() {
         <Route path="/reset-senha" element={<ResetSenhaPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
         <Route path="/privacidade" element={<PrivacidadePage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/blog/novo" element={
+        <Route path="/artigos" element={<BlogPage />} />
+        <Route path="/artigos/novo" element={
           <ProtectedRoute><BlogEditorPage /></ProtectedRoute>
         } />
-        <Route path="/blog/pendentes" element={
+        <Route path="/artigos/pendentes" element={
           <ProtectedRoute requireAdmin><BlogPendingPage /></ProtectedRoute>
         } />
-        <Route path="/blog/:id/editar" element={
+        <Route path="/artigos/:id/editar" element={
           <UuidParamGuard param="id">
             <ProtectedRoute><BlogEditorPage /></ProtectedRoute>
           </UuidParamGuard>
         } />
-        <Route path="/blog/:id" element={
+        <Route path="/artigos/:id" element={
           <UuidParamGuard param="id"><BlogArticlePage /></UuidParamGuard>
         } />
         <Route path="/blog-legado" element={<LandingBlogPage />} />
@@ -168,8 +178,13 @@ export function AppRoutes() {
         <Route path="/parceiros" element={<LandingParceirosPage />} />
 
         {/* Redirects de rotas antigas */}
+        <Route path="/blog" element={<Navigate to="/artigos" replace />} />
+        <Route path="/blog/novo" element={<Navigate to="/artigos/novo" replace />} />
+        <Route path="/blog/pendentes" element={<Navigate to="/artigos/pendentes" replace />} />
+        <Route path="/blog/:id/editar" element={<RedirectBlogArtigoEditar />} />
+        <Route path="/blog/:id" element={<RedirectBlogArtigo />} />
         <Route path="/landing-page" element={<Navigate to="/" replace />} />
-        <Route path="/landing-page/blog" element={<Navigate to="/blog" replace />} />
+        <Route path="/landing-page/blog" element={<Navigate to="/artigos" replace />} />
         <Route path="/landing-page/sobre-mim" element={<Navigate to="/sobre-mim" replace />} />
         <Route path="/landing-page/parceiros" element={<Navigate to="/parceiros" replace />} />
 

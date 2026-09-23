@@ -66,7 +66,7 @@ export function BlogEditorPage() {
       })
       .catch((error) => {
         addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível carregar o artigo."), { type: "error" });
-        navigate("/blog");
+        navigate("/artigos");
       })
       .finally(() => { if (ativo) setCarregando(false); });
     return () => { ativo = false; };
@@ -78,7 +78,7 @@ export function BlogEditorPage() {
         <main className="mx-auto max-w-lg px-4 py-16 text-center">
           <h1>Acesso restrito</h1>
           <p className="text-text-soft">Apenas editores e administradores podem criar artigos.</p>
-          <Link to="/blog" className={`${BTN_SECONDARY} mt-4 inline-block`}>Voltar</Link>
+          <Link to="/artigos" className={`${BTN_SECONDARY} mt-4 inline-block`}>Voltar</Link>
         </main>
       </PageShell>
     );
@@ -146,14 +146,14 @@ export function BlogEditorPage() {
           res.status === "pendente" ? "Edição enviada para aprovação." : "Artigo atualizado.",
           { type: "success" }
         );
-        navigate(`/blog/${id}`);
+        navigate(`/artigos/${id}`);
       } else {
         const res = await criarArtigo(payload, token);
         addToast(
           res.status === "pendente" ? "Artigo enviado para aprovação." : "Artigo publicado.",
           { type: "success" }
         );
-        navigate(`/blog/${res.id}`);
+        navigate(`/artigos/${res.id}`);
       }
     } catch (error) {
       addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível salvar."), { type: "error" });

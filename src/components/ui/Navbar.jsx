@@ -221,8 +221,8 @@ export function Navbar({
         <NavLink to="/metagame" className={desktopLinkClass} onClick={close}>
           Metagame
         </NavLink>
-        <NavLink to="/blog" className={desktopLinkClass} onClick={close}>
-          Blog
+        <NavLink to="/artigos" className={desktopLinkClass} onClick={close}>
+          Artigos
         </NavLink>
 
         <div className="relative" ref={maisRef}>
@@ -388,9 +388,9 @@ export function Navbar({
               <IconMetagame />
               <span>Metagame</span>
             </NavLink>
-            <NavLink to="/blog" className={mobileLinkClass} onClick={close}>
+            <NavLink to="/artigos" className={mobileLinkClass} onClick={close}>
               <IconBlog />
-              <span>Blog</span>
+              <span>Artigos</span>
             </NavLink>
 
             <p className="mb-0.5 mt-2 px-[0.75rem] text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle">

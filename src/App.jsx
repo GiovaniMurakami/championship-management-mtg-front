@@ -158,6 +158,7 @@ function AppContent() {
     handleDeleteAccount, deleteAccountLoading, deleteAccountError,
     loggingOut,
     showNewsletterOptIn, newsletterOptInLoading, responderNewsletterOptIn,
+    podeEditarBlog,
   } = useAuth();
 
   const { pathname } = useLocation();
@@ -226,6 +227,7 @@ function AppContent() {
         onDeleteAccount={handleDeleteAccount}
         deleteLoading={deleteAccountLoading}
         deleteError={deleteAccountError}
+        podeEditarAssinatura={Boolean(podeEditarBlog)}
       />
 
       <Footer />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BaseModal } from "../ui/BaseModal";
 import { DeleteConfirmModal } from "../ui/DeleteConfirmModal";
 import { FormFeedback, FormField, Switch } from "../ui";
-import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY } from "../../styles/uiClasses";
+import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY, FORM_LABEL_CLASS } from "../../styles/uiClasses";
 
 export function EditProfileModal({
   isOpen,
@@ -16,6 +16,7 @@ export function EditProfileModal({
   onDeleteAccount,
   deleteLoading = false,
   deleteError = "",
+  podeEditarAssinatura = false,
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -71,6 +72,32 @@ export function EditProfileModal({
             value={form.nickArena}
             onChange={(event) => onFormChange((current) => ({ ...current, nickArena: event.target.value }))}
           />
+
+          {podeEditarAssinatura ? (
+            <div className="rounded-xl border border-line-soft bg-white/[0.03] px-3 py-3">
+              <p className="m-0 text-sm font-semibold text-text-main">Assinatura dos artigos</p>
+              <p className="m-0 mt-0.5 text-xs text-text-muted">
+                Aparece no final dos seus artigos com sua foto de perfil, nome e esta descrição.
+              </p>
+              <label className={`${FORM_LABEL_CLASS} mt-3`} htmlFor="profile-descricao-assinatura">
+                Descrição
+              </label>
+              <textarea
+                id="profile-descricao-assinatura"
+                rows={3}
+                maxLength={500}
+                value={form.descricaoAssinatura || ""}
+                onChange={(event) =>
+                  onFormChange((current) => ({ ...current, descricaoAssinatura: event.target.value }))
+                }
+                placeholder="Ex.: Editor de Pauper, jogador competitivo e criador de conteúdo."
+                className="w-full rounded-xl border border-line bg-transparent px-3 py-2 text-sm text-text-main placeholder:text-text-subtle focus:border-brand focus:outline-none"
+              />
+              <p className="m-0 mt-1 text-right text-[0.7rem] text-text-subtle">
+                {(form.descricaoAssinatura || "").length}/500
+              </p>
+            </div>
+          ) : null}
 
           <div className="flex items-center justify-between gap-3 rounded-xl border border-line-soft bg-white/[0.03] px-3 py-3">
             <div className="min-w-0">

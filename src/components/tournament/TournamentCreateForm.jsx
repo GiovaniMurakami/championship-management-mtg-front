@@ -82,7 +82,13 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       .then((data) => {
         if (!ativo) return;
         const lista = Array.isArray(data?.ligas) ? data.ligas : Array.isArray(data) ? data : [];
-        setLigas(lista);
+        setLigas(
+          [...lista].sort(
+            (a, b) =>
+              new Date(b.criadoEm || 0).getTime() - new Date(a.criadoEm || 0).getTime()
+              || String(a.nome || "").localeCompare(String(b.nome || ""))
+          )
+        );
       })
       .catch(() => {
         if (ativo) setLigas([]);

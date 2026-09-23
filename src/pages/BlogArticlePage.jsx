@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { ArtigoRenderer } from "../components/blog/ArtigoRenderer";
+import { ArtigoAssinatura } from "../components/blog/ArtigoAssinatura";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -94,7 +95,7 @@ export function BlogArticlePage() {
     try {
       await excluirArtigo(id, token);
       addToast("Artigo excluído.", { type: "success" });
-      navigate("/blog");
+      navigate("/artigos");
     } catch (error) {
       addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível excluir."), { type: "error" });
     }
@@ -109,7 +110,7 @@ export function BlogArticlePage() {
       <PageShell>
         <main className="mx-auto max-w-3xl px-4 py-12 text-center">
           <h1>Artigo não encontrado</h1>
-          <button type="button" className={`${BTN_SECONDARY} mt-4`} onClick={() => navigate("/blog")}>Voltar ao blog</button>
+          <button type="button" className={`${BTN_SECONDARY} mt-4`} onClick={() => navigate("/artigos")}>Voltar aos artigos</button>
         </main>
       </PageShell>
     );
@@ -121,10 +122,10 @@ export function BlogArticlePage() {
     <PageShell>
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-2">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <Link to="/blog" className="text-sm text-text-soft hover:text-text-main">← Blog</Link>
+          <Link to="/artigos" className="text-sm text-text-soft hover:text-text-main">← Artigos</Link>
           <div className="flex flex-wrap gap-2">
             {podeEditar && (
-              <button type="button" className={BTN_SECONDARY} onClick={() => navigate(`/blog/${id}/editar`)}>Editar</button>
+              <button type="button" className={BTN_SECONDARY} onClick={() => navigate(`/artigos/${id}/editar`)}>Editar</button>
             )}
             {isAdmin && artigo.status === "pendente" && (
               <>
@@ -187,6 +188,8 @@ export function BlogArticlePage() {
         <div className="mt-8">
           <ArtigoRenderer conteudo={artigo.conteudo} token={token} />
         </div>
+
+        <ArtigoAssinatura autor={artigo.autor} />
 
         <div className="my-8">
           <AdSenseInArticle />

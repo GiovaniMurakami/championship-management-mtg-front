@@ -45,6 +45,7 @@ export function AuthProvider({ children }) {
     nickMTGO: "",
     nickArena: "",
     fotoUrl: "",
+    descricaoAssinatura: "",
     newsletterMetagame: false,
   });
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
@@ -418,6 +419,7 @@ export function AuthProvider({ children }) {
       nickMTGO: base.nickMTGO || "",
       nickArena: base.nickArena || "",
       fotoUrl: base.fotoUrl || "",
+      descricaoAssinatura: base.descricaoAssinatura || "",
       newsletterMetagame: Boolean(base.newsletterMetagame),
     });
 
@@ -438,6 +440,7 @@ export function AuthProvider({ children }) {
         nickMTGO: synced.nickMTGO || "",
         nickArena: synced.nickArena || "",
         fotoUrl: synced.fotoUrl || "",
+        descricaoAssinatura: synced.descricaoAssinatura || "",
         newsletterMetagame: Boolean(newsletterMetagame),
       });
     } catch {
@@ -457,7 +460,7 @@ export function AuthProvider({ children }) {
 
   const closeEditProfileModal = () => {
     setShowEditProfileModal(false);
-    setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "", fotoUrl: "", newsletterMetagame: false });
+    setEditProfileForm({ nome: "", telefone: "", nickMTGO: "", nickArena: "", fotoUrl: "", descricaoAssinatura: "", newsletterMetagame: false });
     setDeleteAccountError("");
   };
 
@@ -474,6 +477,12 @@ export function AuthProvider({ children }) {
       if (editProfileForm.nickMTGO) payload.nickMTGO = editProfileForm.nickMTGO;
       if (editProfileForm.nickArena) payload.nickArena = editProfileForm.nickArena;
       if (editProfileForm.fotoUrl) payload.fotoUrl = editProfileForm.fotoUrl;
+      if (
+        editProfileForm.descricaoAssinatura !== undefined
+        && (usuario?.role === "editor" || usuario?.role === "admin")
+      ) {
+        payload.descricaoAssinatura = editProfileForm.descricaoAssinatura;
+      }
 
       const updatedUsuario = await atualizarUsuario(payload, token);
       saveAuth({

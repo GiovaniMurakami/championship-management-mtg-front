@@ -38,7 +38,8 @@ function PlatformStats() {
   const items = [
     { value: stats.torneiosRealizados, label: "Torneios realizados" },
     { value: stats.jogadoresAtivos, label: "Jogadores ativos" },
-    { value: stats.formatosSuportados, label: "Formatos suportados" },
+    { value: stats.premiacaoTix, label: "Tix distribuídos" },
+    { value: stats.premiacaoPlayerPoints, label: "PPs distribuídos" },
   ];
 
   return (

@@ -38,7 +38,7 @@ export function BlogPage() {
         setArtigos(res?.artigos || []);
       })
       .catch((error) => {
-        if (ativo) addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível carregar o blog."), { type: "error" });
+        if (ativo) addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível carregar os artigos."), { type: "error" });
       })
       .finally(() => { if (ativo) setCarregando(false); });
     return () => { ativo = false; };
@@ -50,19 +50,19 @@ export function BlogPage() {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-brand">Tiago Fuguete</p>
-            <h1 className="m-0 mt-1 text-3xl font-bold tracking-tight">Blog</h1>
+            <h1 className="m-0 mt-1 text-3xl font-bold tracking-tight">Artigos</h1>
             <p className="m-0 mt-2 max-w-2xl text-text-soft">
               Conteúdos educativos, deck techs e dicas de Pauper — além dos torneios.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {isAdmin && (
-              <button type="button" className={BTN_SECONDARY} onClick={() => navigate("/blog/pendentes")}>
+              <button type="button" className={BTN_SECONDARY} onClick={() => navigate("/artigos/pendentes")}>
                 Pendentes
               </button>
             )}
             {podeEditarBlog && (
-              <button type="button" className={BTN_PRIMARY} onClick={() => navigate("/blog/novo")}>
+              <button type="button" className={BTN_PRIMARY} onClick={() => navigate("/artigos/novo")}>
                 Novo artigo
               </button>
             )}
@@ -82,7 +82,7 @@ export function BlogPage() {
             {artigos.map((artigo) => (
               <Link
                 key={artigo.id}
-                to={`/blog/${artigo.id}`}
+                to={`/artigos/${artigo.id}`}
                 className="group overflow-hidden rounded-2xl border border-line-soft bg-surface shadow-card transition hover:border-line-strong"
               >
                 {artigo.capaUrl ? (

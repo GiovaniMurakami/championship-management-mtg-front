@@ -6,8 +6,8 @@ import {
   registrarVisualizacaoAnuncioDiario,
 } from "../../services/backendApi";
 import {
-  jaViuAnuncioDiarioHoje,
-  marcarAnuncioDiarioVistoHoje,
+  escolherProximoAnuncioDiario,
+  marcarAnuncioDiarioVisto,
 } from "../../utils/anuncioDiario";
 
 export function AnuncioDiarioModal() {
@@ -16,17 +16,17 @@ export function AnuncioDiarioModal() {
   const viewRegistrada = useRef(false);
 
   useEffect(() => {
-    if (jaViuAnuncioDiarioHoje()) return undefined;
-
     let cancelled = false;
 
     buscarAnuncioDiario()
       .then((data) => {
         if (cancelled) return;
-        if (!data?.ativo || !data?.imagemUrl) return;
+        const proximo = escolherProximoAnuncioDiario(data?.anuncios);
+        if (!proximo) return;
         setAnuncio({
-          imagemUrl: data.imagemUrl,
-          link: data.link || "",
+          id: proximo.id,
+          imagemUrl: proximo.imagemUrl,
+          link: proximo.link || "",
         });
         setAberto(true);
       })
@@ -40,19 +40,21 @@ export function AnuncioDiarioModal() {
   }, []);
 
   useEffect(() => {
-    if (!aberto || !anuncio || viewRegistrada.current) return;
+    if (!aberto || !anuncio?.id || viewRegistrada.current) return;
     viewRegistrada.current = true;
-    registrarVisualizacaoAnuncioDiario().catch(() => {});
+    registrarVisualizacaoAnuncioDiario(anuncio.id).catch(() => {});
   }, [aberto, anuncio]);
 
   const fechar = () => {
-    marcarAnuncioDiarioVistoHoje();
+    if (anuncio?.id) marcarAnuncioDiarioVisto(anuncio.id);
     setAberto(false);
   };
 
   const handleClick = () => {
-    marcarAnuncioDiarioVistoHoje();
-    registrarCliqueAnuncioDiario().catch(() => {});
+    if (anuncio?.id) {
+      marcarAnuncioDiarioVisto(anuncio.id);
+      registrarCliqueAnuncioDiario(anuncio.id).catch(() => {});
+    }
     setAberto(false);
   };
 

@@ -474,11 +474,11 @@ export const salvarAnuncioDiario = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const registrarVisualizacaoAnuncioDiario = () =>
-  httpClient.post("/site/anuncio-diario/visualizacao", {});
+export const registrarVisualizacaoAnuncioDiario = (anuncioId) =>
+  httpClient.post("/site/anuncio-diario/visualizacao", { anuncioId });
 
-export const registrarCliqueAnuncioDiario = () =>
-  httpClient.post("/site/anuncio-diario/clique", {});
+export const registrarCliqueAnuncioDiario = (anuncioId) =>
+  httpClient.post("/site/anuncio-diario/clique", { anuncioId });
 
 // Posts
 export const listarPosts = (token, params = {}) => httpClient.get("/post", { ...optionalAuthConfig(token), params });

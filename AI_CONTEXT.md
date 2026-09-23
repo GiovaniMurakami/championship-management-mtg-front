@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.43** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.44** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -17,7 +17,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
-- **Blog** (`/blog`) — artigos com markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]`), editores e aprovação admin
+- **Artigos** (`/artigos`) — artigos com markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]`), editores com assinatura (foto/nome/descrição) e aprovação admin
 
 **Backend:** API REST própria (não está neste repositório).  
 **Deploy:** AWS Amplify (`amplify.yml` → `dist/`).
@@ -280,7 +280,7 @@ Decks:    CRUD /deck/* — `usuario.nome` em listar/buscar = nick MOL
 Times:    CRUD /time/* + entrar, sair, convite, solicitar, aprovar, rejeitar
 
 Site:     GET/PUT /site/anuncios, POST /site/anuncios/:id/clique
-          GET/PUT /site/anuncio-diario, POST visualizacao/clique
+          GET/PUT /site/anuncio-diario (carrossel), POST visualizacao/clique com anuncioId
 
 Imagens:  POST /imagem/upload-url → uploadParaS3 (PUT direto no S3)
 ```

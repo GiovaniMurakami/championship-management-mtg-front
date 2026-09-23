@@ -39,7 +39,7 @@ export function BlogPendingPage() {
       <PageShell>
         <main className="mx-auto max-w-lg px-4 py-16 text-center">
           <h1>Acesso restrito</h1>
-          <button type="button" className={`${BTN_SECONDARY} mt-4`} onClick={() => navigate("/blog")}>Voltar</button>
+          <button type="button" className={`${BTN_SECONDARY} mt-4`} onClick={() => navigate("/artigos")}>Voltar</button>
         </main>
       </PageShell>
     );
@@ -53,7 +53,7 @@ export function BlogPendingPage() {
             <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-brand">Admin</p>
             <h1 className="m-0 mt-1 text-3xl font-bold">Artigos pendentes</h1>
           </div>
-          <Link to="/blog" className={BTN_SECONDARY}>Voltar ao blog</Link>
+          <Link to="/artigos" className={BTN_SECONDARY}>Voltar aos artigos</Link>
         </div>
 
         {carregando ? (
@@ -64,7 +64,7 @@ export function BlogPendingPage() {
           <ul className="space-y-4 list-none p-0">
             {artigos.map((a) => (
               <li key={a.id} className="rounded-2xl border border-line-soft bg-surface p-4">
-                <Link to={`/blog/${a.id}`} className="text-lg font-semibold text-[#c4b5fd] hover:text-white">
+                <Link to={`/artigos/${a.id}`} className="text-lg font-semibold text-[#c4b5fd] hover:text-white">
                   {a.titulo}
                 </Link>
                 <p className="m-0 mt-1 text-sm text-text-soft">
@@ -101,7 +101,7 @@ export function BlogPendingPage() {
                   >
                     Rejeitar
                   </button>
-                  <Link to={`/blog/${a.id}`} className={`${BTN_SECONDARY} inline-flex items-center`}>Revisar</Link>
+                  <Link to={`/artigos/${a.id}`} className={`${BTN_SECONDARY} inline-flex items-center`}>Revisar</Link>
                 </div>
               </li>
             ))}
