@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.44** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.45** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -219,7 +219,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Fluxo de rodadas/top cut | `utils/tournamentFlow.js`, `hooks/useTournamentQueries.js` |
 | Realtime Ably | `services/ablyService.js`, handlers em `useTournamentDetail` e `TournamentPage` |
 | Ligas | `pages/Liga*.jsx`, `components/liga/`, endpoints `/liga/*` em `backendApi.js` |
-| Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin escolhe `cartaRepresentativa` no detalhe do arquétipo) |
+| Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin define `cartaRepresentativa` do arquétipo via `PUT .../carta-representativa`) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
 | Site | `pages/DashboardPage.jsx`, anúncio diário, newsletter opt-in no login |
 | WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
@@ -273,6 +273,7 @@ Ligas:    CRUD /liga/* + GET /liga/:id/ranking
 
 Metagame: GET /metagame?formato=&dias=30&limite=30&offset=0
           GET /metagame/:formato/:slug?dias=30   (público; sem JWT)
+          PUT /metagame/:formato/:slug/carta-representativa  (admin; override do arquétipo)
           (`usuario.nome` = nick MOL)
 
 Decks:    CRUD /deck/* — `usuario.nome` em listar/buscar = nick MOL

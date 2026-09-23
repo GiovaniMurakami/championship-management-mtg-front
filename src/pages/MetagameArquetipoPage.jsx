@@ -3,7 +3,7 @@ import { useDateRangeParams } from "../hooks/useDateRangeParams";
 import { useResolvedMetagameListas } from "../hooks/useResolvedMetagameListas";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { atualizarDeck, buscarArquetipoMetagame } from "../services/backendApi";
+import { atualizarDeck, buscarArquetipoMetagame, salvarCartaRepresentativaArquetipo } from "../services/backendApi";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
 import { SkeletonMetagameArchetype } from "../components/ui/Skeleton";
@@ -112,13 +112,11 @@ export function MetagameArquetipoPage() {
     await recarregar();
   }, [addToast, recarregar, token]);
 
-  const salvarCarta = useCallback(async (deckIds, cartaRepresentativa) => {
-    const ids = [...new Set(deckIds.filter(Boolean))];
-    if (ids.length === 0) return;
-    await Promise.all(ids.map((id) => atualizarDeck(id, { cartaRepresentativa }, token)));
+  const salvarCarta = useCallback(async (cartaRepresentativa) => {
+    await salvarCartaRepresentativaArquetipo(formato, slug, cartaRepresentativa, token);
     addToast(cartaRepresentativa ? "Carta representativa atualizada." : "Carta representativa removida.", { type: "success" });
     await recarregar();
-  }, [addToast, recarregar, token]);
+  }, [addToast, formato, recarregar, slug, token]);
 
   useEffect(() => {
     let cancelled = false;
@@ -220,15 +218,14 @@ export function MetagameArquetipoPage() {
                 key={`carta-${data.cartaRepresentativa || "auto"}`}
                 valorInicial={data.cartaRepresentativa || ""}
                 salvando={salvandoCarta}
-                dica="Busca a carta e escolhe a ilustração que aparece na aba de metagame. Limpar volta à carta mais jogada."
+                dica="Define a arte do arquétipo no metagame (1 override por formato/slug). Limpar volta à carta mais jogada."
                 onCardMouseEnter={openCardPreview}
                 onCardMouseLeave={closeCardPreview}
                 onPreviewDismiss={closeCardPreview}
                 onSalvar={async (cartaRepresentativa) => {
-                  const ids = data.deckIds || (data.listas || []).map((l) => l.deckId);
                   setSalvandoCarta(true);
                   try {
-                    await salvarCarta(ids, cartaRepresentativa);
+                    await salvarCarta(cartaRepresentativa);
                   } catch (err) {
                     logError("Erro ao atualizar carta representativa do arquétipo:", err);
                     addToast("Não foi possível atualizar a carta representativa.", { type: "error" });
