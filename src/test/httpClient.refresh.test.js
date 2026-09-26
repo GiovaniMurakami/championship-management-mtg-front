@@ -74,6 +74,22 @@ describe("refresh após 401", () => {
     expect(adapter).toHaveBeenCalledTimes(3);
   });
 
+  it("não desloga se outra aba grava o token novo logo depois do 401", async () => {
+    const old = token("old");
+    const fresh = token("new");
+    save(old);
+    client.defaults.adapter = async (config) => {
+      if (config.url === "/usuario/refresh-token") {
+        setTimeout(() => save(fresh), 40);
+        return unauthorized(config);
+      }
+      if (config.headers.Authorization === `Bearer ${old}`) return unauthorized(config);
+      return ok(config, { sucesso: true });
+    };
+    await expect(checkin(old)).resolves.toEqual({ sucesso: true });
+    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)).token).toBe(fresh);
+  });
+
   it("encerra sessão quando o refresh também retorna 401", async () => {
     const old = token("old");
     save(old);

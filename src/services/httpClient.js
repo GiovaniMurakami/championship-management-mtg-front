@@ -109,7 +109,19 @@ const isDefinitiveAuthFailure = (error) => {
   return getErrorStatus(error) === 401;
 };
 
-const forceLogout = () => {
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const forceLogout = (tokenAnterior) => {
+  const latest = readStoredAuth();
+  if (
+    tokenAnterior
+    && latest.token
+    && latest.token !== tokenAnterior
+    && !isAccessTokenExpiredOrExpiring(latest.token, 0)
+  ) {
+    window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: latest.token } }));
+    return;
+  }
   window.localStorage.removeItem(AUTH_STORAGE_KEY);
   window.dispatchEvent(new CustomEvent("auth:logout"));
 };
@@ -149,15 +161,18 @@ const doRefresh = async () => {
     window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: newToken } }));
     return newToken;
   } catch (error) {
-    // Corrida entre abas: outra aba pode ter consumido o refresh e gravado tokens novos
-    const latest = readStoredAuth();
-    if (
-      latest.token
-      && latest.token !== savedAuth.token
-      && !isAccessTokenExpiredOrExpiring(latest.token, 0)
-    ) {
-      window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: latest.token } }));
-      return latest.token;
+    // Corrida entre abas: a outra consome o refresh e grava os tokens novos um instante depois.
+    for (let tentativa = 0; tentativa < 8; tentativa += 1) {
+      const latest = readStoredAuth();
+      if (
+        latest.token
+        && latest.token !== savedAuth.token
+        && !isAccessTokenExpiredOrExpiring(latest.token, 0)
+      ) {
+        window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: latest.token } }));
+        return latest.token;
+      }
+      await wait(80);
     }
     throw error;
   }
@@ -182,7 +197,7 @@ export const ensureFreshToken = async ({ forceRefresh = false, rejectedToken } =
   }
 
   if (!savedAuth.refreshToken) {
-    forceLogout();
+    forceLogout(savedAuth.token);
     const err = new Error("no_refresh_token");
     err.status = 401;
     throw err;
@@ -203,7 +218,7 @@ export const ensureFreshToken = async ({ forceRefresh = false, rejectedToken } =
   } catch (error) {
     rejectPending(error);
     if (isDefinitiveAuthFailure(error)) {
-      forceLogout();
+      forceLogout(savedAuth.token);
     }
     throw error;
   } finally {

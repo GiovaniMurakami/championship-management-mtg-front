@@ -22,6 +22,8 @@ vi.mock("../services/backendApi", () => ({
   buscarArtigo: vi.fn(),
   aprovarArtigo: vi.fn(),
   comentarArtigo: vi.fn(),
+  curtirComentarioArtigo: vi.fn(),
+  descurtirComentarioArtigo: vi.fn(),
   curtirArtigo: vi.fn(),
   descurtirArtigo: vi.fn(),
   excluirArtigo: vi.fn(),

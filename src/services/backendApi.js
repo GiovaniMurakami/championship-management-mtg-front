@@ -511,8 +511,15 @@ export const editarArtigo = (artigoId, payload, token) =>
   httpClient.put(`/artigo/${encodeURIComponent(artigoId)}`, payload, { headers: { Authorization: `Bearer ${token}` } });
 export const aprovarArtigo = (artigoId, aprovar, token) =>
   httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/aprovacao`, { aprovar }, { headers: { Authorization: `Bearer ${token}` } });
-export const comentarArtigo = (artigoId, texto, token) =>
-  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario`, { texto }, { headers: { Authorization: `Bearer ${token}` } });
+export const comentarArtigo = (artigoId, texto, token, comentarioPaiId) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario`, {
+    texto,
+    ...(comentarioPaiId ? { comentarioPaiId } : {}),
+  }, { headers: { Authorization: `Bearer ${token}` } });
+export const curtirComentarioArtigo = (artigoId, comentarioId, token) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario/${encodeURIComponent(comentarioId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
+export const descurtirComentarioArtigo = (artigoId, comentarioId, token) =>
+  httpClient.delete(`/artigo/${encodeURIComponent(artigoId)}/comentario/${encodeURIComponent(comentarioId)}/curtida`, { headers: { Authorization: `Bearer ${token}` } });
 export const curtirArtigo = (artigoId, token) =>
   httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
 export const descurtirArtigo = (artigoId, token) =>

@@ -172,24 +172,23 @@ export function UserProfilePage() {
         }
         catch { setMatchMessage("Partida salva. Atualize a página para ver as estatísticas."); }
       }} />}
-      <div className="mb-2 flex flex-wrap items-end gap-3">
-        <label className="grid gap-1 text-sm text-text-soft">
-          Período
-          <select
-            value={personalizado ? "personalizado" : todoPeriodo ? "tudo" : String(diasAtivo)}
-            onChange={(event) => {
-              if (event.target.value !== "personalizado") definirDias(event.target.value);
-            }}
-            className="min-h-11 rounded-lg border border-line bg-white/[0.03] px-3 text-text-main [color-scheme:dark] [&_option]:bg-[#1a1129]"
-          >
-            {DIAS_OPCOES_PERFIL.map((dias) => (
-              <option key={dias} value={dias}>Últimos {dias} dias</option>
-            ))}
-            <option value="tudo">Todo o período</option>
-            {personalizado ? <option value="personalizado">Período personalizado</option> : null}
-          </select>
-        </label>
-        <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={aplicarDatas} />
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <label className="sr-only" htmlFor="perfil-periodo">Período</label>
+        <select
+          id="perfil-periodo"
+          value={personalizado ? "personalizado" : todoPeriodo ? "tudo" : String(diasAtivo)}
+          onChange={(event) => {
+            if (event.target.value !== "personalizado") definirDias(event.target.value);
+          }}
+          className="h-11 rounded-lg border border-line bg-white/[0.03] px-3 text-sm text-text-main [color-scheme:dark] [&_option]:bg-[#1a1129]"
+        >
+          {DIAS_OPCOES_PERFIL.map((dias) => (
+            <option key={dias} value={dias}>Últimos {dias} dias</option>
+          ))}
+          <option value="tudo">Todo o período</option>
+          {personalizado ? <option value="personalizado">Período personalizado</option> : null}
+        </select>
+        <DateRangeFilter className="mb-0" key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={aplicarDatas} />
       </div>
       <p className="text-sm text-text-soft">{periodo.dataInicio ? `Estatísticas, confrontos e resultados de ${periodo.dataInicio.split("-").reverse().join("/")} a ${periodo.dataFim.split("-").reverse().join("/")} (horário de Brasília).` : "Estatísticas, confrontos e resultados de todo o período."}</p>
       <CompetitiveStats stats={estatisticas} expressiveResults={usuario.resultadosExpressivos ?? 0} className="mb-10" />

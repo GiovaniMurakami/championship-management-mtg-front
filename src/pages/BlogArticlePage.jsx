@@ -4,19 +4,19 @@ import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { ArtigoRenderer } from "../components/blog/ArtigoRenderer";
 import { ArtigoAssinatura } from "../components/blog/ArtigoAssinatura";
+import { ArtigoComentarios } from "../components/blog/ArtigoComentarios";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { usePageTitle } from "../hooks/usePageTitle";
 import {
   aprovarArtigo,
   buscarArtigo,
-  comentarArtigo,
   curtirArtigo,
   descurtirArtigo,
   excluirArtigo,
 } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
-import { BTN_DANGER, BTN_PRIMARY, BTN_SECONDARY, FORM_TEXTAREA_CLASS } from "../styles/uiClasses";
+import { BTN_DANGER, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
 import { AdSenseInArticle } from "../components/ui/AdSenseUnit";
 
 export function BlogArticlePage() {
@@ -26,7 +26,6 @@ export function BlogArticlePage() {
   const { addToast } = useToast();
   const [artigo, setArtigo] = useState(null);
   const [carregando, setCarregando] = useState(true);
-  const [comentario, setComentario] = useState("");
   const [ocupado, setOcupado] = useState(false);
 
   usePageTitle(artigo?.titulo || "Artigo");
@@ -68,23 +67,6 @@ export function BlogArticlePage() {
       setOcupado(false);
     }
   });
-
-  const enviarComentario = (event) => {
-    event.preventDefault();
-    agirAutenticado(async (tok) => {
-      if (!comentario.trim() || ocupado) return;
-      setOcupado(true);
-      try {
-        const novo = await comentarArtigo(artigo.id, comentario.trim(), tok);
-        setArtigo((a) => ({ ...a, comentarios: [...(a.comentarios || []), novo] }));
-        setComentario("");
-      } catch (error) {
-        addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível comentar."), { type: "error" });
-      } finally {
-        setOcupado(false);
-      }
-    });
-  };
 
   const aprovar = async (ok) => {
     try {
@@ -201,28 +183,7 @@ export function BlogArticlePage() {
           <AdSenseInArticle />
         </div>
 
-        <section className="mt-10 border-t border-line-soft pt-8">
-          <h2 className="m-0 text-xl font-semibold">Comentários</h2>
-          <form onSubmit={enviarComentario} className="mt-4 space-y-3">
-            <textarea
-              className={FORM_TEXTAREA_CLASS}
-              rows={3}
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              placeholder="Deixe sua opinião…"
-              maxLength={1000}
-            />
-            <button type="submit" className={BTN_PRIMARY} disabled={ocupado || !comentario.trim()}>Comentar</button>
-          </form>
-          <ul className="mt-6 space-y-4 p-0 list-none">
-            {(artigo.comentarios || []).map((c) => (
-              <li key={c.id} className="rounded-xl border border-line-soft bg-white/[0.03] p-4">
-                <p className="m-0 text-sm font-semibold">{c.autor?.nome}</p>
-                <p className="m-0 mt-1 text-sm text-[#e8dff8] whitespace-pre-wrap">{c.texto}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <ArtigoComentarios artigo={artigo} token={token} onArtigo={setArtigo} />
       </main>
     </PageShell>
   );

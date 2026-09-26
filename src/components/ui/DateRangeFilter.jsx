@@ -6,7 +6,7 @@ import { BaseModal } from "./BaseModal";
 
 const displayDate = value => value.split("-").reverse().join("/");
 
-export function DateRangeFilter({ dataInicio = "", dataFim = "", onApply }) {
+export function DateRangeFilter({ dataInicio = "", dataFim = "", onApply, className = "mb-5" }) {
   const id = useId();
   const [open, setOpen] = useState(false);
   const [inicio, setInicio] = useState(dataInicio);
@@ -15,9 +15,9 @@ export function DateRangeFilter({ dataInicio = "", dataFim = "", onApply }) {
   const invalid = !inicio || !fim || inicio > fim;
   const applied = dataInicio && dataFim;
   const apply = range => { setOpen(false); onApply(range); };
-  return <div className="mb-5">
+  return <div className={className}>
     <button type="button" aria-haspopup="dialog" aria-expanded={open}
-      className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand ${applied ? "border-brand/30 bg-brand/10 text-text-main hover:bg-brand/15" : "border-line-soft bg-transparent text-text-soft hover:border-line hover:bg-surface-soft hover:text-text-main"}`}
+      className={`inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand ${applied ? "border-brand/30 bg-brand/10 text-text-main hover:bg-brand/15" : "border-line-soft bg-transparent text-text-soft hover:border-line hover:bg-surface-soft hover:text-text-main"}`}
       onClick={() => { setInicio(dataInicio); setFim(dataFim); setActive("inicio"); setOpen(true); }}>
       <CalendarDays size={16} className={applied ? "text-brand" : ""} aria-hidden="true" />
       {applied ? `${displayDate(dataInicio)} — ${displayDate(dataFim)}` : "Filtrar por período"}
