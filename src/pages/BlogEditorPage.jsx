@@ -14,11 +14,16 @@ import { BTN_PRIMARY, BTN_SECONDARY, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS
 
 const CONTEUDO_INICIAL = `Salva galera! Escreva seu artigo aqui.
 
-Use [[Nome da Carta]] para citar cartas.
+Use [[Nome da Carta]] para citar cartas e [texto](https://exemplo.com) para links.
  [cardinfo]{Nome da Carta}
 [cardside](1 Carta A || 1 Carta B)
-[h1]{Seção}
+[h1 center roxo]{Seção}
+[h2 center dourado]{Um subtítulo}
+[h3]{Um detalhe}
 [deck](a1b2c-nome-do-deck)
+[deck](a1b2c-nome-do-deck){16:9}
+[deck](a1b2c-nome-do-deck){9:16}
+[youtube](https://www.youtube.com/watch?v=VIDEO_ID){Título do vídeo}
 
 Consulte o guia de formatação ao lado.`;
 

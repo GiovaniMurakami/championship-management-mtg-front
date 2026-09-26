@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { buscarCartasPorNome } from "../../services/scryfallApi";
-import { loadCardImagesForDeck, buildVisualCanvas, loadImageFromUrl } from "./deckImageCanvas";
+import { buildVisualCanvas } from "./deckImageCanvas";
+import { carregarArteDoDeck } from "./carregarArteDoDeck";
 import { Tooltip } from "../ui/Tooltip";
-
-const brandFooterUrl = "/images/top8/rodape.png.png";
 
 export function DeckImageModal({ deck, ownerName, onClose }) {
   const [cardDataMap, setCardDataMap] = useState({});
@@ -20,88 +18,22 @@ export function DeckImageModal({ deck, ownerName, onClose }) {
 
   useEffect(() => {
     let cancelled = false;
-    const allCards = [...(deck.maindeck || []), ...(deck.sideboard || [])];
-    const unique = [...new Map(allCards.map((c) => [c.nome, c])).values()];
-    const map = {};
 
-    async function run() {
-      setStage("meta");
-      setProgress(5);
-
-      const logoPromise = loadImageFromUrl(brandFooterUrl, { crossOrigin: null, retries: 0 })
-        .catch(() => null);
-
-      const resolved = await buscarCartasPorNome(unique.map((c) => c.nome));
-      if (cancelled) return;
-
-      unique.forEach((card, index) => {
-        const data = resolved[index];
-        map[card.nome] = {
-          cmc: data?.cmc ?? 0,
-          typeLine: data?.typeLine || "",
-          imagem: data?.imagem || "",
-          img: null,
-        };
-      });
-
-      setCardDataMap({ ...map });
-      setProgress(40);
-      setStage("imgs");
-
-      const images = await loadCardImagesForDeck(
-        unique.map((card) => ({
-          nome: card.nome,
-          imagem: map[card.nome]?.imagem || "",
-        })),
-        {
-          concurrency: 6,
-          isCancelled: () => cancelled,
-          onProgress: (done, total) => {
-            if (cancelled) return;
-            setProgress(40 + Math.round((done / Math.max(total, 1)) * 55));
-          },
-        },
-      );
-
-      if (cancelled) return;
-
-      unique.forEach((card, index) => {
-        if (map[card.nome]) map[card.nome].img = images[index] || null;
-      });
-
-      const failedIndexes = unique
-        .map((card, index) => ({ card, index }))
-        .filter(({ index }) => !images[index]);
-
-      if (failedIndexes.length > 0) {
-        const retryImages = await loadCardImagesForDeck(
-          failedIndexes.map(({ card }) => ({
-            nome: card.nome,
-            imagem: "",
-          })),
-          {
-            concurrency: 2,
-            isCancelled: () => cancelled,
-          },
-        );
+    carregarArteDoDeck(deck, {
+      isCancelled: () => cancelled,
+      onProgress: ({ stage: nextStage, progress: nextProgress }) => {
         if (cancelled) return;
-        failedIndexes.forEach(({ card }, retryIndex) => {
-          if (retryImages[retryIndex] && map[card.nome]) {
-            map[card.nome].img = retryImages[retryIndex];
-          }
-        });
-      }
+        setStage(nextStage === "done" ? "imgs" : nextStage);
+        setProgress(nextProgress);
+      },
+    }).then((arte) => {
+      if (cancelled || !arte) return;
+      setCardDataMap(arte.cardDataMap);
+      setBrandImage(arte.brandImage);
+      setProgress(100);
+      setStage("done");
+    });
 
-      if (!cancelled) {
-        setBrandImage(await logoPromise);
-        if (cancelled) return;
-        setCardDataMap({ ...map });
-        setProgress(100);
-        setStage("done");
-      }
-    }
-
-    run();
     return () => { cancelled = true; };
   }, [deck]);
 
