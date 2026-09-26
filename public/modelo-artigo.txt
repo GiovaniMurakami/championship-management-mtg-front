@@ -19,8 +19,8 @@ Bloco da carta (imagem + texto):
 Cartas lado a lado (quantidade opcional; separe com ||):
 [cardside](1 Argivian Phalanx || 1 Tolarian Terror || 1 Writhing Necromass || 1 Molten Monstrosity || 1 Yavimaya Sojourner)
 
-Títulos em badge. h1 é o maior, h2 o médio e h3 o menor.
-Alinhamento padrão é à esquerda. Use center para centralizar.
+Títulos. h1 é o maior, h2 o médio e h3 o menor.
+A cor pinta só a borda esquerda. Alinhamento padrão é à esquerda. Use center para centralizar.
 Cor opcional: roxo, dourado, verde, vermelho, azul, ciano, branco, laranja, rosa, brand ou um hexadecimal (#22c55e).
 
 [h1]{Título à esquerda}

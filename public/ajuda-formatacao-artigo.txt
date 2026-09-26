@@ -18,8 +18,8 @@ A capa continua sendo enviada como imagem no formulário.
 
 ## Markup suportado
 
-### Títulos em badge
-`h1`, `h2` e `h3` viram badges com tamanhos diferentes.
+### Títulos
+`h1`, `h2` e `h3` têm tamanhos diferentes. A cor escolhida pinta só a borda esquerda; o texto fica fora dela.
 Alinhamento padrão: à esquerda. Use `center` para centralizar.
 A cor é opcional: nome (roxo, dourado, verde, vermelho, azul, ciano, branco, laranja, rosa, brand) ou hexadecimal.
 

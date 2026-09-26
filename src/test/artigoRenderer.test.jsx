@@ -21,16 +21,18 @@ describe("ArtigoRenderer tags novas", () => {
     );
 
     const titulo = screen.getByRole("heading", { name: "Mono Blue" });
-    expect(titulo.style.color).toBe("rgb(192, 132, 252)");
-    expect(titulo.className).toContain("rounded-full");
+    expect(titulo.style.borderLeftColor).toBe("rgb(192, 132, 252)");
+    expect(titulo.className).toContain("border-l-4");
+    expect(titulo.className).not.toContain("rounded-full");
     expect(titulo.parentElement.className).toContain("justify-center");
 
     const subtitulo = screen.getByRole("heading", { name: "Aggro" });
-    expect(subtitulo.className).toContain("rounded-lg");
+    expect(subtitulo.className).toContain("border-l-[3px]");
     expect(subtitulo.parentElement.className).toContain("justify-start");
 
     const detalhe = screen.getByRole("heading", { name: "Detalhe" });
     expect(detalhe.className).toContain("uppercase");
+    expect(detalhe.className).toContain("border-l-2");
     expect(detalhe.parentElement.className).toContain("justify-center");
 
     const guia = screen.getByRole("link", { name: "o guia" });
