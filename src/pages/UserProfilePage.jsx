@@ -12,6 +12,7 @@ import { buscarPerfilPublico } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
 import { useAuth } from "../hooks/useAuth";
 import { CompetitiveStats } from "../components/ui/CompetitiveStats";
+import { PerfilMatrizConfrontos } from "../components/profile/PerfilMatrizConfrontos";
 import { tournamentPath } from "../utils/tournamentUrl";
 import { deckPath } from "../utils/deckUrl";
 
@@ -67,7 +68,7 @@ export function UserProfilePage() {
     </PageShell>
   );
 
-  const { usuario, estatisticas, decks, paginacaoPartidasExternas, partidasExternas = [], ultimosTorneios = [] } = perfil;
+  const { usuario, estatisticas, decks, paginacaoPartidasExternas, partidasExternas = [], ultimosTorneios = [], matrizConfrontos } = perfil;
   const isOwnProfile = String(usuarioLogado?.id || "") === String(usuario.id);
   const uploadPhoto = async (event) => {
     const file = event.target.files?.[0];
@@ -129,6 +130,7 @@ export function UserProfilePage() {
       <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
       <p className="text-sm text-text-soft">{dataInicio && dataFim ? "Estatísticas e resultados no intervalo selecionado (horário de Brasília)." : "Estatísticas e resultados de todo o período."}</p>
       <CompetitiveStats stats={estatisticas} expressiveResults={usuario.resultadosExpressivos ?? 0} className="mb-10" />
+      <PerfilMatrizConfrontos matriz={matrizConfrontos} />
 
       <section className="mb-12" aria-labelledby="external-matches-title">
         <h2 id="external-matches-title" className="m-0 text-[1.55rem] font-semibold text-text-main">Partidas externas</h2>

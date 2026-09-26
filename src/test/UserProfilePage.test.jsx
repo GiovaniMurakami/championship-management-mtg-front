@@ -52,6 +52,29 @@ describe("UserProfilePage", () => {
     for (const label of ["Vitória", "Derrota", "Empate"]) expect(screen.getByText(label)).toBeInTheDocument();
   });
 
+  it("mostra a matriz de confrontos dos decks do perfil", async () => {
+    buscarPerfilPublico.mockResolvedValue({
+      ...perfil,
+      matrizConfrontos: {
+        adversarios: ["Affinity"],
+        linhas: [{
+          nome: "Burn",
+          vitorias: 2,
+          derrotas: 1,
+          empates: 0,
+          partidas: 3,
+          winrate: 66.7,
+          confrontos: [{ nome: "Affinity", vitorias: 2, derrotas: 1, empates: 0, partidas: 3, winrate: 66.7 }],
+        }],
+      },
+    });
+    renderPage();
+    expect(await screen.findByRole("region", { name: "Matriz de confrontos do perfil" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Affinity" })).toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Burn" })).toBeInTheDocument();
+    expect(screen.getAllByText("66.7%").length).toBeGreaterThan(0);
+  });
+
   it("mostra estado vazio quando não existem partidas externas", async () => {
     renderPage();
     expect(await screen.findByText("Nenhuma partida externa registrada.")).toBeInTheDocument();
