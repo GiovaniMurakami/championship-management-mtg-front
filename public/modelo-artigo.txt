@@ -8,10 +8,48 @@ Descrição: Resumo curto do artigo para a listagem.
 ARTIGO:
 Salva galera! Escreva o corpo do artigo a partir daqui.
 
-Use [[Nome da Carta]] para citar cartas.
- [cardinfo]{Nome da Carta}
-[cardside](1 Carta A || 1 Carta B)
-[h1]{Seção}
-[deck](a1b2c-nome-do-deck)
+Carta no texto (hover do Scryfall): [[Tolarian Terror]]
 
-Consulte o guia de formatação na tela do editor.
+Link no texto (a URL precisa começar com http:// ou https://):
+Veja [o site oficial](https://exemplo.com) e a [lista no Scryfall](https://scryfall.com).
+
+Bloco da carta (imagem + texto):
+ [cardinfo]{Tolarian Terror}
+
+Cartas lado a lado (quantidade opcional; separe com ||):
+[cardside](1 Argivian Phalanx || 1 Tolarian Terror || 1 Writhing Necromass || 1 Molten Monstrosity || 1 Yavimaya Sojourner)
+
+Títulos em badge. h1 é o maior, h2 o médio e h3 o menor.
+Alinhamento padrão é à esquerda. Use center para centralizar.
+Cor opcional: roxo, dourado, verde, vermelho, azul, ciano, branco, laranja, rosa, brand ou um hexadecimal (#22c55e).
+
+[h1]{Título à esquerda}
+[h1 center]{Título centralizado}
+[h1 center roxo]{Título roxo centralizado}
+[h1 #22c55e]{Título com cor hexadecimal}
+
+[h2]{Subtítulo à esquerda}
+[h2 center]{Subtítulo centralizado}
+[h2 center dourado]{Subtítulo dourado centralizado}
+[h2 verde]{Subtítulo verde}
+
+[h3]{Detalhe à esquerda}
+[h3 center]{Detalhe centralizado}
+[h3 center azul]{Detalhe azul centralizado}
+
+Deck embutido. Use os 5 primeiros caracteres do id + o slug do nome, ou o UUID completo.
+Sem formato, a exibição é a lista. lista, 16:9 e 9:16 escolhem o visual. O clique abre a tela do deck.
+
+[deck](a1b2c-nome-do-deck)
+[deck](a1b2c-nome-do-deck){lista}
+[deck](a1b2c-nome-do-deck){16:9}
+[deck](a1b2c-nome-do-deck){9:16}
+
+Vídeo do YouTube. Aceita watch, youtu.be, shorts ou só o id. O título entre chaves é opcional e aparece no card, junto com a thumbnail.
+
+[youtube](https://www.youtube.com/watch?v=VIDEO_ID)
+[youtube](https://youtu.be/VIDEO_ID){Título que aparece no card}
+[youtube](https://www.youtube.com/shorts/VIDEO_ID){Short}
+
+[h2]{Palavras finais}
+Jogue com todos e escolha o que combina com você. Deixe sua opinião nos comentários.

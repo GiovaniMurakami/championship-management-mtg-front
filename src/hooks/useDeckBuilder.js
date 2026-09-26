@@ -284,16 +284,16 @@ export function useDeckBuilder() {
       if (deckIdParam) {
         await atualizarDeck(deckIdParam, payload, token);
         setDeckMessage("Deck atualizado com sucesso.");
-      } else {
-        await cadastrarDeck(payload, token);
-        setDeckMessage("Deck cadastrado com sucesso.");
-        setDeckForm({ nome: "", formato: "", linkLigaMagic: "", oculto: false });
-        setMainDeck([]);
-        setSideboard([]);
-        setCommander([]);
+        setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
+        return null;
       }
 
-      setTimeout(() => setDeckMessage(""), MESSAGE_DISPLAY_MS);
+      const criado = await cadastrarDeck(payload, token);
+      if (!criado?.id) {
+        setDeckMessage("Deck cadastrado, mas não foi possível abrir a tela do deck.");
+        return null;
+      }
+      return { id: criado.id, nome: criado.nome || payload.nome };
     } catch (error) {
       setDeckMessage(error.message);
     } finally {

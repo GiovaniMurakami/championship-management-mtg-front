@@ -9,7 +9,6 @@ import { PAGE_TITLES } from "../constants/pageTitles";
 import { listarArtigos } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
-import { AdSenseInArticle } from "../components/ui/AdSenseUnit";
 
 function formatarData(iso) {
   if (!iso) return "";
@@ -67,10 +66,6 @@ export function BlogPage() {
               </button>
             )}
           </div>
-        </div>
-
-        <div className="mb-8">
-          <AdSenseInArticle />
         </div>
 
         {carregando ? (

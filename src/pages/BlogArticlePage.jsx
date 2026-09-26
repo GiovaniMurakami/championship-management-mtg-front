@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
@@ -22,7 +22,7 @@ import { AdSenseInArticle } from "../components/ui/AdSenseUnit";
 export function BlogArticlePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token, isAdmin, requireAuth, usuario, podeEditarBlog } = useAuth();
+  const { token, isAdmin, requireAuth, usuario, podeEditarBlog, authInitialized } = useAuth();
   const { addToast } = useToast();
   const [artigo, setArtigo] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -31,18 +31,24 @@ export function BlogArticlePage() {
 
   usePageTitle(artigo?.titulo || "Artigo");
 
+  const pedidoRef = useRef(0);
+
   const carregar = useCallback(async () => {
+    if (!authInitialized) return;
+    const pedido = ++pedidoRef.current;
     setCarregando(true);
     try {
       const data = await buscarArtigo(id, token);
+      if (pedido !== pedidoRef.current) return;
       setArtigo(data);
     } catch (error) {
+      if (pedido !== pedidoRef.current) return;
       addToast(formatApiErrorMessage(error?.response?.data, "Artigo não encontrado."), { type: "error" });
       setArtigo(null);
     } finally {
-      setCarregando(false);
+      if (pedido === pedidoRef.current) setCarregando(false);
     }
-  }, [id, token, addToast]);
+  }, [authInitialized, id, token, addToast]);
 
   useEffect(() => { carregar(); }, [carregar]);
 

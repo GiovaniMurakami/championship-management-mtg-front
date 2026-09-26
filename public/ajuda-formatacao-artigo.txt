@@ -18,8 +18,29 @@ A capa continua sendo enviada como imagem no formulário.
 
 ## Markup suportado
 
-### Título de seção
-[h1]{ Nome da seção }
+### Títulos em badge
+`h1`, `h2` e `h3` viram badges com tamanhos diferentes.
+Alinhamento padrão: à esquerda. Use `center` para centralizar.
+A cor é opcional: nome (roxo, dourado, verde, vermelho, azul, ciano, branco, laranja, rosa, brand) ou hexadecimal.
+
+[h1]{ Mono Blue Terror }
+[h1 center roxo]{ Título maior, centralizado }
+[h2 center dourado]{ Subtítulo }
+[h2 #22c55e]{ Subtítulo verde }
+[h3]{ Detalhe }
+[h3 center]{ Detalhe centralizado }
+
+### Link no texto
+Qualquer trecho pode virar link. A URL precisa começar com http:// ou https://.
+
+Veja o [site oficial](https://exemplo.com) e a [lista no Scryfall](https://scryfall.com).
+
+### Vídeo do YouTube
+Mostra um card com a thumbnail. Aceita link watch, youtu.be, shorts ou o id do vídeo.
+O título entre chaves é opcional.
+
+[youtube](https://www.youtube.com/watch?v=VIDEO_ID)
+[youtube](https://youtu.be/VIDEO_ID){ Título que aparece no card }
 
 ### Carta no texto (link/hover Scryfall)
 Escreva o nome entre colchetes duplos:
@@ -38,7 +59,15 @@ Use o mesmo formato da URL do deck: início do id (5 caracteres) + nome slug.
 
 [deck](a1b2c-mono-blue-terror)
 
-Também aceita o UUID completo do deck. A lista de cartas (main/side) aparece no artigo.
+Também aceita o UUID completo do deck.
+
+Formato da exibição (o padrão é a lista):
+
+[deck](a1b2c-mono-blue-terror){lista}
+[deck](a1b2c-mono-blue-terror){16:9}
+[deck](a1b2c-mono-blue-terror){9:16}
+
+`lista` mostra main e side como hoje. `16:9` e `9:16` montam a imagem do deck na proporção correspondente. O clique abre a tela do deck.
 
 ## Exemplo completo (corpo)
 
@@ -49,14 +78,18 @@ Salva galera! Hoje vamos falar sobre as três opções para jogar com a [[Tolari
 O ciclo de Dominaria Unida trouxe cartas como:
 [cardside](1 Argivian Phalanx ||1 Tolarian Terror || 1 Writhing Necromass ||1 Molten Monstrosity || 1 Yavimaya Sojourner )
 
-[h1]{ Mono Blue Terror }
-Versão mais aggro e direta. Cartas-chave: [[Cryptic Serpent]], [[Murmuring Mystic]] e [[Lórien Revealed]].
+[h1 center roxo]{ Mono Blue Terror }
+[h2 center]{ Versão aggro e direta }
+[h3]{ Cartas-chave }
+Cartas-chave: [[Cryptic Serpent]], [[Murmuring Mystic]] e [[Lórien Revealed]]. Veja também [o metagame](https://scryfall.com).
 
-[deck](a1b2c-nome-do-deck)
+[deck](a1b2c-nome-do-deck){16:9}
+
+[youtube](https://www.youtube.com/watch?v=VIDEO_ID){Gameplay do deck}
 
 [cardside](1 Mental Note || 1 Thought Scour)
 
-[h1]{Palavras Finais}
+[h2]{Palavras Finais}
 Jogue com todos e escolha o que combina com você. Deixe sua opinião nos comentários!
 
 ## Dicas
