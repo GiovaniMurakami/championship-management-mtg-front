@@ -18,7 +18,8 @@ function Celula({ stats, label }) {
 }
 
 export function PerfilMatrizConfrontos({ matriz }) {
-  const linhas = matriz?.linhas || [];
+  if (!matriz) return null;
+  const linhas = matriz.linhas || [];
   const adversarios = matriz?.adversarios || [];
   if (linhas.length === 0) {
     return (

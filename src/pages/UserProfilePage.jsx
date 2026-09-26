@@ -15,34 +15,79 @@ import { CompetitiveStats } from "../components/ui/CompetitiveStats";
 import { PerfilMatrizConfrontos } from "../components/profile/PerfilMatrizConfrontos";
 import { tournamentPath } from "../utils/tournamentUrl";
 import { deckPath } from "../utils/deckUrl";
+import { DIAS_OPCOES_PERFIL, DIAS_PADRAO_PERFIL, resolverPeriodoPerfil } from "../utils/intervaloDias";
 
 export function UserProfilePage() {
-  const { dataInicio, dataFim, applyDates } = useDateRangeParams();
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { dataInicio, dataFim } = useDateRangeParams();
+  const diasQuery = searchParams.get("dias") || "";
+  const periodo = resolverPeriodoPerfil({ dataInicio, dataFim, dias: diasQuery });
+  const personalizado = Boolean(dataInicio && dataFim);
+  const todoPeriodo = diasQuery === "tudo";
+  const diasAtivo = DIAS_OPCOES_PERFIL.includes(Number(diasQuery)) ? Number(diasQuery) : DIAS_PADRAO_PERFIL;
   const requestedPage = Number(searchParams.get("partidasPagina") || 1);
   const paginaPartidas = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const [showExternalMatch, setShowExternalMatch] = useState(false);
   const [matchMessage, setMatchMessage] = useState("");
   const [perfil, setPerfil] = useState(null);
-  const requestKey = `${id}:${paginaPartidas}:${dataInicio}:${dataFim}`;
-  const [loadedKey, setLoadedKey] = useState("");
-  const loading = loadedKey !== requestKey;
   const [error, setError] = useState("");
   const [deckImages, setDeckImages] = useState({});
   const [photoLoading, setPhotoLoading] = useState(false);
   const [photoMessage, setPhotoMessage] = useState("");
-  const { usuario: usuarioLogado, handleProfilePhoto, token } = useAuth();
+  const { usuario: usuarioLogado, handleProfilePhoto, token, authInitialized } = useAuth();
+  const requestKey = `${id}:${paginaPartidas}:${periodo.dataInicio || ""}:${periodo.dataFim || ""}:${token ? "auth" : "anon"}`;
+  const [loadedKey, setLoadedKey] = useState("");
+  const loading = loadedKey !== requestKey;
   usePageTitle(perfil?.usuario?.nome || PAGE_TITLES.perfilUsuario);
 
   useEffect(() => {
+    if (!authInitialized) return undefined;
     let active = true;
-    buscarPerfilPublico(id, paginaPartidas, dataInicio || dataFim ? { dataInicio, dataFim } : {})
+    buscarPerfilPublico(id, paginaPartidas, periodo.dataInicio ? periodo : {}, token)
       .then((data) => { if (active) { setPerfil(data); setError(""); } })
       .catch((err) => active && setError(err.message || "Não foi possível carregar o perfil."))
       .finally(() => active && setLoadedKey(requestKey));
     return () => { active = false; };
-  }, [id, paginaPartidas, dataInicio, dataFim, requestKey]);
+  }, [id, paginaPartidas, periodo.dataInicio, periodo.dataFim, requestKey, token, authInitialized]);
+
+  useEffect(() => {
+    if (dataInicio || dataFim || diasQuery) return undefined;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("dias", String(DIAS_PADRAO_PERFIL));
+      return next;
+    }, { replace: true });
+    return undefined;
+  }, [dataInicio, dataFim, diasQuery, setSearchParams]);
+
+  const definirDias = (valor) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("dataInicio");
+      next.delete("dataFim");
+      next.delete("partidasPagina");
+      next.set("dias", valor);
+      return next;
+    });
+  };
+
+  const aplicarDatas = (range) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("partidasPagina");
+      if (range.dataInicio && range.dataFim) {
+        next.delete("dias");
+        next.set("dataInicio", range.dataInicio);
+        next.set("dataFim", range.dataFim);
+      } else {
+        next.delete("dataInicio");
+        next.delete("dataFim");
+        next.set("dias", "tudo");
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const decks = perfil?.decks || [];
@@ -56,10 +101,10 @@ export function UserProfilePage() {
     return () => { active = false; };
   }, [perfil]);
 
-  if (loading) return <PageShell><DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} /><SkeletonUserProfile /></PageShell>;
+  if (loading) return <PageShell><DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={aplicarDatas} /><SkeletonUserProfile /></PageShell>;
   if (error || !perfil) return (
     <PageShell>
-      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
+      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={aplicarDatas} />
       <EmptyState
         icon="👤"
         title={error === "Usuário não encontrado" ? "Perfil não encontrado" : "Não foi possível carregar o perfil"}
@@ -122,15 +167,33 @@ export function UserProfilePage() {
         setShowExternalMatch(false);
         setMatchMessage("Partida adicionada.");
         try {
-          setPerfil(await buscarPerfilPublico(id, 1, dataInicio || dataFim ? { dataInicio, dataFim } : {}));
+          setPerfil(await buscarPerfilPublico(id, 1, periodo.dataInicio ? periodo : {}, token));
           setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete("partidasPagina"); return next; }, { replace: true });
         }
         catch { setMatchMessage("Partida salva. Atualize a página para ver as estatísticas."); }
       }} />}
-      <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={applyDates} />
-      <p className="text-sm text-text-soft">{dataInicio && dataFim ? "Estatísticas e resultados no intervalo selecionado (horário de Brasília)." : "Estatísticas e resultados de todo o período."}</p>
+      <div className="mb-2 flex flex-wrap items-end gap-3">
+        <label className="grid gap-1 text-sm text-text-soft">
+          Período
+          <select
+            value={personalizado ? "personalizado" : todoPeriodo ? "tudo" : String(diasAtivo)}
+            onChange={(event) => {
+              if (event.target.value !== "personalizado") definirDias(event.target.value);
+            }}
+            className="min-h-11 rounded-lg border border-line bg-white/[0.03] px-3 text-text-main [color-scheme:dark] [&_option]:bg-[#1a1129]"
+          >
+            {DIAS_OPCOES_PERFIL.map((dias) => (
+              <option key={dias} value={dias}>Últimos {dias} dias</option>
+            ))}
+            <option value="tudo">Todo o período</option>
+            {personalizado ? <option value="personalizado">Período personalizado</option> : null}
+          </select>
+        </label>
+        <DateRangeFilter key={`${dataInicio}:${dataFim}`} dataInicio={dataInicio} dataFim={dataFim} onApply={aplicarDatas} />
+      </div>
+      <p className="text-sm text-text-soft">{periodo.dataInicio ? `Estatísticas, confrontos e resultados de ${periodo.dataInicio.split("-").reverse().join("/")} a ${periodo.dataFim.split("-").reverse().join("/")} (horário de Brasília).` : "Estatísticas, confrontos e resultados de todo o período."}</p>
       <CompetitiveStats stats={estatisticas} expressiveResults={usuario.resultadosExpressivos ?? 0} className="mb-10" />
-      <PerfilMatrizConfrontos matriz={matrizConfrontos} />
+      <PerfilMatrizConfrontos matriz={isOwnProfile ? matrizConfrontos : null} />
 
       <section className="mb-12" aria-labelledby="external-matches-title">
         <h2 id="external-matches-title" className="m-0 text-[1.55rem] font-semibold text-text-main">Partidas externas</h2>

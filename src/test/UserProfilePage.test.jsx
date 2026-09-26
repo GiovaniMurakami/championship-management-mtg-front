@@ -3,12 +3,13 @@ import { fireEvent, render as testingRender, screen, waitFor } from "@testing-li
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserProfilePage } from "../pages/UserProfilePage";
+import { intervaloUltimosDias } from "../utils/intervaloDias";
 import { buscarPerfilPublico, registrarPartidaExterna, buscarMetagame } from "../services/backendApi";
 const render = (ui) => testingRender(<ToastProvider>{ui}</ToastProvider>);
 
 
 const handleProfilePhoto = vi.fn();
-vi.mock("../hooks/useAuth", () => ({ useAuth: () => ({ usuario: { id: "11111111-1111-4111-8111-111111111111" }, handleProfilePhoto, token: "token-teste" }) }));
+vi.mock("../hooks/useAuth", () => ({ useAuth: () => ({ usuario: { id: "11111111-1111-4111-8111-111111111111" }, handleProfilePhoto, token: "token-teste", authInitialized: true }) }));
 vi.mock("../services/backendApi", () => ({ buscarPerfilPublico: vi.fn(), registrarPartidaExterna: vi.fn(), buscarMetagame: vi.fn().mockResolvedValue({ arquetipos: [{ nome: "Affinity" }, { nome: "Burn" }] }) }));
 vi.mock("../services/scryfallApi", () => ({ buscarCartasPorNome: vi.fn().mockResolvedValue([{ imagem: "https://cards.example/bolt.jpg" }]) }));
 
@@ -27,16 +28,18 @@ describe("UserProfilePage", () => {
   it("aplica e limpa o intervalo no perfil", async () => {
     renderPage();
     await screen.findByRole("heading", { name: "Giovani" });
+    expect(buscarPerfilPublico).toHaveBeenCalledWith(perfil.usuario.id, 1, intervaloUltimosDias(30), "token-teste");
+    fireEvent.change(screen.getByLabelText("Período"), { target: { value: "7" } });
+    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, intervaloUltimosDias(7), "token-teste"));
     fireEvent.click(screen.getByRole("button", { name: "Filtrar por período" }));
     fireEvent.change(screen.getByLabelText("De"), { target: { value: "2026-08-01" } });
     fireEvent.change(screen.getByLabelText("Até"), { target: { value: "2026-08-31" } });
-    expect(buscarPerfilPublico).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: "Aplicar datas" }));
-    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, { dataInicio: "2026-08-01", dataFim: "2026-08-31" }));
+    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, { dataInicio: "2026-08-01", dataFim: "2026-08-31" }, "token-teste"));
     await screen.findByRole("heading", { name: "Giovani" });
     fireEvent.click(screen.getByRole("button", { name: /01\/08\/2026.*31\/08\/2026/ }));
     fireEvent.click(screen.getByRole("button", { name: "Limpar datas" }));
-    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, {}));
+    await waitFor(() => expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 1, {}, "token-teste"));
   });
 
   it("mostra data, oponente e resultado das partidas externas", async () => {
@@ -133,7 +136,7 @@ describe("UserProfilePage", () => {
     expect(screen.getByRole("button", { name: "Anterior" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Próxima" }));
     expect(await screen.findByText("Meu Control × Affinity")).toBeInTheDocument();
-    expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 2, {});
+    expect(buscarPerfilPublico).toHaveBeenLastCalledWith(perfil.usuario.id, 2, intervaloUltimosDias(30), "token-teste");
     expect(screen.getByRole("button", { name: "Próxima" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
     expect(await screen.findByText("Meu Burn × Affinity")).toBeInTheDocument();
@@ -144,6 +147,8 @@ describe("UserProfilePage", () => {
     renderPage();
     await screen.findByRole("heading", { name: "Giovani" });
     expect(screen.queryByRole("button", { name: "Adicionar partida externa" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Matriz de confrontos do perfil" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Confrontos" })).not.toBeInTheDocument();
   });
 
   it("permite trocar a foto no próprio perfil", async () => {
