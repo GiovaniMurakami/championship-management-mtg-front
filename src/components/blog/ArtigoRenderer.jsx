@@ -21,32 +21,23 @@ const FORMAT_LABELS = {
   commander500: "Commander 500",
 };
 
-function corComAlpha(hex, alpha) {
-  const h = String(hex || "").replace("#", "");
-  if (!/^[0-9a-f]{6}$/i.test(h)) return `rgba(196, 181, 253, ${alpha})`;
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 const ESTILO_HEADING = {
   h1: {
     Tag: "h2",
-    className: "rounded-full px-5 py-2 text-xl font-bold tracking-tight sm:text-2xl",
+    className: "border-l-4 pl-4 text-xl font-bold tracking-tight text-white sm:text-2xl",
     cor: "#e9d5ff",
     margem: "my-6",
   },
   h2: {
     Tag: "h3",
-    className: "rounded-lg px-3.5 py-1.5 text-lg font-semibold tracking-tight",
+    className: "border-l-[3px] pl-3 text-lg font-semibold tracking-tight text-[#f4eeff]",
     cor: "#c4b5fd",
     margem: "my-5",
   },
   h3: {
     Tag: "h4",
-    className: "rounded-md px-2.5 py-1 text-[0.78rem] font-bold uppercase tracking-[0.14em]",
-    cor: "#ddd6fe",
+    className: "border-l-2 pl-2.5 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-[#ddd6fe]",
+    cor: "#a78bfa",
     margem: "my-4",
   },
 };
@@ -59,14 +50,8 @@ function HeadingBadge({ nivel, value, align = "left", cor }) {
   return (
     <div className={`${estilo.margem} flex ${centralizado ? "justify-center text-center" : "justify-start"}`}>
       <Tag
-        className={`${estilo.className} m-0 inline-flex max-w-full leading-snug`}
-        style={{
-          color,
-          borderColor: corComAlpha(color, 0.55),
-          backgroundColor: corComAlpha(color, nivel === "h3" ? 0.1 : 0.18),
-          borderWidth: 1,
-          borderStyle: "solid",
-        }}
+        className={`${estilo.className} m-0 max-w-full border-y-0 border-r-0 border-solid leading-snug`}
+        style={{ borderLeftColor: color }}
       >
         {value}
       </Tag>
