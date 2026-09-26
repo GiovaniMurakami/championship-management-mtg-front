@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { buscarCartaPorId, buscarCartaPorNome, buscarCartasPorNome } from "../../services/scryfallApi";
 import { isScryfallId } from "../../utils/scryfallId";
 import { EmptyState } from "../ui/EmptyState";
@@ -102,55 +102,17 @@ function WinRateBar({ rate, className = "" }) {
 }
 
 function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", className = "" }) {
-  const buttonRef = useRef(null);
-  const [lazyImage, setLazyImage] = useState(() => _imgCache.get(cardName) || null);
-  const displayImage = imageUrl || lazyImage;
+  const displayImage = imageUrl || _imgCache.get(cardName) || null;
   const sizes = {
     sm: "w-[38px] h-[53px] rounded-[5px]",
     md: "w-[52px] h-[72px] rounded-md",
     lg: "w-full aspect-[5/7] rounded-md",
   };
 
-  useEffect(() => {
-    if (!cardName || displayImage) return undefined;
-    const element = buttonRef.current;
-    if (!element) return undefined;
-    let cancelled = false;
-    const load = () => {
-      const cached = _imgCache.get(cardName);
-      if (cached) {
-        setLazyImage(cached);
-        return;
-      }
-      buscarCartaPorNome(cardName)
-        .then((card) => {
-          const url = card?.imagem || null;
-          _imgCache.set(cardName, url);
-          if (!cancelled) setLazyImage(url);
-        })
-        .catch(() => undefined);
-    };
-    if (typeof IntersectionObserver === "undefined") {
-      load();
-      return () => { cancelled = true; };
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
-      observer.disconnect();
-      load();
-    }, { rootMargin: "160px" });
-    observer.observe(element);
-    return () => {
-      cancelled = true;
-      observer.disconnect();
-    };
-  }, [cardName, displayImage]);
-
   if (!cardName) return null;
 
   return (
     <button
-      ref={buttonRef}
       type="button"
       className={`flex-shrink-0 overflow-hidden border border-[rgba(199,149,255,0.25)] bg-[rgba(26,16,50,0.8)] shadow-[0_4px_12px_rgba(0,0,0,0.35)] cursor-default p-0 transition-transform duration-200 hover:scale-[1.04] hover:border-[rgba(199,149,255,0.45)] ${sizes[size]} ${className}`}
       onMouseEnter={(e) => onHover?.(cardName, e)}
@@ -164,7 +126,6 @@ function CardThumbnail({ cardName, imageUrl, onHover, onLeave, size = "sm", clas
           src={displayImage}
           alt=""
           className="w-full h-full object-cover object-top block"
-          loading="lazy"
         />
       ) : (
         <div className="w-full h-full animate-pulse bg-[rgba(199,149,255,0.12)]" />
@@ -695,17 +656,17 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
 
     const deckList = ranking.rankingDecks || ranking.decks || [];
     const cartaList = ranking.rankingCartas || ranking.cartas || ranking.cards || [];
-    const cardNames = [...new Set((subAba === "cartas"
-      ? cartaList.slice(0, 3).map((carta) => carta.nome || carta.name)
-      : deckList.slice(0, 3).map((deck) => deck.cartaRepresentativa || deck.cartaPrincipal)
-    ).filter(Boolean))];
+    const cardNames = [...new Set([
+      ...cartaList.map((carta) => carta.nome || carta.name),
+      ...deckList.map((deck) => deck.cartaRepresentativa || deck.cartaPrincipal),
+    ].filter(Boolean))];
 
     if (cardNames.length === 0) return;
 
     let cancelled = false;
 
     const loadImages = async () => {
-      const cards = await buscarCartasPorNome(cardNames);
+      const cards = await buscarCartasPorNome(cardNames, { fallbackIndividual: false });
       if (cancelled) return;
 
       const images = {};
@@ -731,7 +692,7 @@ export function LigaRankingSection({ ranking, loading, usuarioLogado }) {
     return () => {
       cancelled = true;
     };
-  }, [ranking, subAba]);
+  }, [ranking]);
 
   if (loading) return <LoadingSkeleton />;
 

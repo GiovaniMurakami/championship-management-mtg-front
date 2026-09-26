@@ -11,6 +11,7 @@ import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { TOURNAMENT_FORMATS, getTournamentFormatLabel } from "../constants/tournament";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useMetagameDeckColors } from "../hooks/useMetagameDeckColors";
+import { useColecaoScryfall } from "../hooks/useColecaoScryfall";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { logError } from "../utils/logger";
@@ -102,6 +103,24 @@ export function MetagamePage() {
   }, [data, busca]);
   const restantes = Math.max(0, (data?.paginacao?.total ?? data?.arquetipos?.length ?? 0) - (data?.arquetipos?.length ?? 0));
   const { cores: coresPorSlug } = useMetagameDeckColors(data?.arquetipos, formato);
+  const nomesColecao = useMemo(() => {
+    const nomes = [];
+    for (const arquetipo of data?.arquetipos ?? []) {
+      if (arquetipo.cartaRepresentativa) nomes.push(arquetipo.cartaRepresentativa);
+      for (const carta of arquetipo.cartasChave || []) nomes.push(carta);
+    }
+    return nomes;
+  }, [data]);
+  const colecao = useColecaoScryfall(nomesColecao);
+  const abrirPreview = useCallback((card) => {
+    const nome = typeof card === "string" ? card : card?.nome;
+    const conhecida = colecao.get(String(nome || "").toLowerCase());
+    if (conhecida?.imagem) {
+      openCardPreview({ nome: conhecida.nome || nome, imagem: conhecida.imagem });
+      return;
+    }
+    openCardPreview(card);
+  }, [colecao, openCardPreview]);
   const mostrarMais = useCallback(() => {
     if (carregandoMais || restantes === 0 || !data) return;
     setCarregandoMais(true);
@@ -215,7 +234,9 @@ export function MetagamePage() {
                     formato={formato}
                     dias={dias}
                     colors={coresPorSlug[arquetipo.slug] || arquetipo.cores || []}
-                    onCardMouseEnter={openCardPreview}
+                    imagem={colecao.get(String(arquetipo.cartaRepresentativa || "").toLowerCase())?.artCrop
+                      || colecao.get(String(arquetipo.cartaRepresentativa || "").toLowerCase())?.imagem}
+                    onCardMouseEnter={abrirPreview}
                     onCardMouseLeave={closeCardPreview}
                   />
                 ))}
