@@ -13,6 +13,18 @@ function groupByName(entries) {
   return Array.from(map.values());
 }
 
+function precarregarImagens(cartas) {
+  const urls = new Set();
+  for (const card of cartas) {
+    if (card?.imagem) urls.add(card.imagem);
+  }
+  for (const url of urls) {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = url;
+  }
+}
+
 function toCardEntry(entry, card) {
   return {
     nome: card?.nome || entry.nome,
@@ -62,16 +74,25 @@ export async function hydrateDeckCards(deck, { setOriginalDeck, setDeckForm, set
         : [],
   );
 
-  const [resolvedMainCards, resolvedSideCards, resolvedCommanderCards] = await Promise.all([
-    buscarCartasPorNome(mainEntries.map((entry) => entry.nome)),
-    buscarCartasPorNome(sideEntries.map((entry) => entry.nome)),
-    buscarCartasPorNome(commanderEntries.map((entry) => entry.nome)),
-  ]);
+  const nomes = [
+    ...mainEntries.map((entry) => entry.nome),
+    ...sideEntries.map((entry) => entry.nome),
+    ...commanderEntries.map((entry) => entry.nome),
+  ];
+  const resolved = await buscarCartasPorNome(nomes);
 
   if (isCancelled?.()) return false;
 
-  setMainDeck(resolvedMainCards.map((card, index) => toCardEntry(mainEntries[index], card)));
-  setSideboard(resolvedSideCards.map((card, index) => toCardEntry(sideEntries[index], card)));
-  setCommander(resolvedCommanderCards.map((card, index) => toCardEntry(commanderEntries[index], card)));
+  const resolvedMainCards = resolved.slice(0, mainEntries.length);
+  const resolvedSideCards = resolved.slice(mainEntries.length, mainEntries.length + sideEntries.length);
+  const resolvedCommanderCards = resolved.slice(mainEntries.length + sideEntries.length);
+  const main = resolvedMainCards.map((card, index) => toCardEntry(mainEntries[index], card));
+  const side = resolvedSideCards.map((card, index) => toCardEntry(sideEntries[index], card));
+  const commanders = resolvedCommanderCards.map((card, index) => toCardEntry(commanderEntries[index], card));
+
+  precarregarImagens([...main, ...side, ...commanders]);
+  setMainDeck(main);
+  setSideboard(side);
+  setCommander(commanders);
   return true;
 }
