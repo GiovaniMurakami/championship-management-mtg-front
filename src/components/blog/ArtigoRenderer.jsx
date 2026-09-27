@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { Play } from "lucide-react";
 import { parseArtigoMarkup, extrairNomesCartas } from "../../utils/artigoMarkup";
@@ -90,23 +91,72 @@ function YoutubeCard({ videoId, url, title }) {
   );
 }
 
-function CardHover({ nome, carta, children }) {
+function medidaPreviewCarta(rect) {
+  const margem = 12;
+  const proporcao = 1.4;
+  const largura = Math.min(440, window.innerWidth - margem * 2, (window.innerHeight - margem * 2) / proporcao);
+  const altura = largura * proporcao;
+  const left = Math.max(margem, Math.min(rect.left + rect.width / 2 - largura / 2, window.innerWidth - largura - margem));
+  const top = Math.max(margem, Math.min(rect.top + rect.height / 2 - altura / 2, window.innerHeight - altura - margem));
+  return { left, top, width: largura };
+}
+
+function PreviewCarta({ aberto, ancoraRef, src, alt }) {
+  const [estilo, setEstilo] = useState(null);
+
+  useLayoutEffect(() => {
+    if (!aberto || !src || !ancoraRef.current) {
+      setEstilo(null);
+      return undefined;
+    }
+    const atualizar = () => {
+      if (!ancoraRef.current) return;
+      setEstilo(medidaPreviewCarta(ancoraRef.current.getBoundingClientRect()));
+    };
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    window.addEventListener("scroll", atualizar, true);
+    return () => {
+      window.removeEventListener("resize", atualizar);
+      window.removeEventListener("scroll", atualizar, true);
+    };
+  }, [aberto, src, ancoraRef]);
+
+  if (!aberto || !src || !estilo) return null;
+  return createPortal(
+    <span
+      className="carta-ampliar pointer-events-none fixed z-[80] overflow-hidden rounded-xl border border-line shadow-[0_24px_60px_rgba(0,0,0,0.65)]"
+      style={estilo}
+    >
+      <img src={src} alt={alt} className="block w-full" />
+    </span>,
+    document.body,
+  );
+}
+
+function CartaAmpliavel({ src, alt, children, className = "" }) {
+  const ref = useRef(null);
   const [aberto, setAberto] = useState(false);
   return (
     <span
-      className="relative inline whitespace-nowrap"
+      ref={ref}
+      className={`relative inline-block ${className}`}
       onMouseEnter={() => setAberto(true)}
       onMouseLeave={() => setAberto(false)}
     >
+      {children}
+      <PreviewCarta aberto={aberto} ancoraRef={ref} src={src} alt={alt} />
+    </span>
+  );
+}
+
+function CardHover({ nome, carta, children }) {
+  return (
+    <CartaAmpliavel src={carta?.imagem} alt={nome} className="whitespace-nowrap align-baseline">
       <span className="text-brand underline decoration-dotted underline-offset-2 font-medium cursor-help">
         {children || nome}
       </span>
-      {aberto && carta?.imagem && (
-        <span className="absolute z-30 left-1/2 -translate-x-1/2 bottom-full mb-2 w-[180px] rounded-lg overflow-hidden shadow-xl border border-line pointer-events-none">
-          <img src={carta.imagem} alt={nome} className="block w-full" />
-        </span>
-      )}
-    </span>
+    </CartaAmpliavel>
   );
 }
 
@@ -121,7 +171,9 @@ function CardInfo({ nome, carta }) {
   return (
     <div className="my-5 flex flex-col sm:flex-row gap-4 rounded-xl border border-line-soft bg-[linear-gradient(155deg,rgba(26,16,50,0.95),rgba(16,10,32,0.98))] p-4">
       {carta.imagem && (
-        <img src={carta.imagem} alt={carta.nome || nome} className="w-[160px] rounded-lg border border-line self-center sm:self-start" />
+        <CartaAmpliavel src={carta.imagem} alt="" className="w-[160px] self-center sm:self-start">
+          <img src={carta.imagem} alt={carta.nome || nome} className="w-full rounded-lg border border-line" />
+        </CartaAmpliavel>
       )}
       <div className="min-w-0">
         <h3 className="m-0 text-lg font-semibold text-text-main">{carta.nome || nome}</h3>
@@ -141,13 +193,15 @@ function CardSide({ cards, porNome }) {
         const carta = porNome.get(card.nome.toLowerCase());
         return (
           <div key={`${card.nome}-${card.quantidade}`} className="w-[110px] text-center">
-            {carta?.imagem ? (
-              <img src={carta.imagem} alt={card.nome} className="w-full rounded-md border border-line" />
-            ) : (
-              <div className="aspect-[5/7] rounded-md border border-line-soft bg-white/[0.04] flex items-center justify-center text-[0.7rem] text-text-muted p-1">
-                {card.nome}
-              </div>
-            )}
+            <CartaAmpliavel src={carta?.imagem} alt="" className="w-full">
+              {carta?.imagem ? (
+                <img src={carta.imagem} alt={card.nome} className="w-full rounded-md border border-line" />
+              ) : (
+                <div className="aspect-[5/7] rounded-md border border-line-soft bg-white/[0.04] flex items-center justify-center text-[0.7rem] text-text-muted p-1">
+                  {card.nome}
+                </div>
+              )}
+            </CartaAmpliavel>
             <p className="m-0 mt-1 text-[0.72rem] text-text-soft">
               {card.quantidade > 1 ? `${card.quantidade}× ` : ""}{card.nome}
             </p>
@@ -191,6 +245,7 @@ function DeckEmbed({ deckRef, formato = "lista", authToken }) {
   const [sideboard, setSideboard] = useState([]);
   const [commander, setCommander] = useState([]);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const ancoraDeckRef = useRef(null);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [imagemUrl, setImagemUrl] = useState("");
@@ -319,18 +374,22 @@ function DeckEmbed({ deckRef, formato = "lista", authToken }) {
       </div>
 
       <div className="relative px-4 py-4">
-        {hoveredCard?.imagem && (
-          <div className="pointer-events-none absolute right-4 top-4 z-20 hidden w-[160px] overflow-hidden rounded-lg border border-line shadow-xl lg:block">
-            <img src={hoveredCard.imagem} alt={hoveredCard.nome} className="block w-full" />
-          </div>
-        )}
+        <PreviewCarta
+          aberto={Boolean(hoveredCard?.imagem)}
+          ancoraRef={ancoraDeckRef}
+          src={hoveredCard?.imagem || ""}
+          alt={hoveredCard?.nome || ""}
+        />
         <DeckTypeBadges grouped={grouped} />
         <div className="mt-4 max-w-xl">
           <DeckGroupedList
             maindeck={maindeck}
             sideboard={sideboard}
             commander={commander}
-            onCardMouseEnter={(card) => (card.imagem ? setHoveredCard(card) : null)}
+            onCardMouseEnter={(card, ancora) => {
+              ancoraDeckRef.current = ancora;
+              setHoveredCard(card.imagem ? card : null);
+            }}
             onCardMouseLeave={() => setHoveredCard(null)}
           />
         </div>

@@ -28,7 +28,6 @@ vi.mock("../services/backendApi", () => ({
   descurtirArtigo: vi.fn(),
   excluirArtigo: vi.fn(),
 }));
-vi.mock("../components/ui/AdSenseUnit", () => ({ AdSenseInArticle: () => null }));
 
 const artigoPendente = {
   id: "artigo-1",

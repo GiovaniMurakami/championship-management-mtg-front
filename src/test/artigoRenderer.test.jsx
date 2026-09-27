@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { ArtigoRenderer } from "../components/blog/ArtigoRenderer";
+import { buscarCartasPorNome } from "../services/scryfallApi";
 
 vi.mock("../services/scryfallApi", () => ({
   buscarCartasPorNome: vi.fn().mockResolvedValue([]),
@@ -45,5 +46,24 @@ describe("ArtigoRenderer tags novas", () => {
       "src",
       "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg",
     );
+  });
+
+  it("amplia a carta no hover", async () => {
+    buscarCartasPorNome.mockResolvedValue([
+      { nome: "Lightning Bolt", imagem: "https://img.test/bolt.jpg" },
+    ]);
+
+    render(
+      <MemoryRouter>
+        <ArtigoRenderer conteudo="Jogue [[Lightning Bolt]] cedo." />
+      </MemoryRouter>,
+    );
+
+    const nome = await screen.findByText("Lightning Bolt");
+    fireEvent.mouseEnter(nome.parentElement);
+    const preview = screen.getByRole("img", { name: "Lightning Bolt" });
+    expect(preview).toHaveAttribute("src", "https://img.test/bolt.jpg");
+    expect(preview.parentElement.className).toContain("carta-ampliar");
+    expect(parseFloat(preview.parentElement.style.width)).toBeGreaterThan(300);
   });
 });

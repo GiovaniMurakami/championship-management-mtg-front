@@ -17,7 +17,6 @@ import {
 } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_DANGER, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
-import { AdSenseInArticle } from "../components/ui/AdSenseUnit";
 
 export function BlogArticlePage() {
   const { id } = useParams();
@@ -178,10 +177,6 @@ export function BlogArticlePage() {
         </div>
 
         <ArtigoAssinatura autor={artigo.autor} />
-
-        <div className="my-8">
-          <AdSenseInArticle />
-        </div>
 
         <ArtigoComentarios artigo={artigo} token={token} onArtigo={setArtigo} />
       </main>
