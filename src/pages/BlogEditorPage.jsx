@@ -11,6 +11,7 @@ import { uploadBannerImage, OG_BANNER_MAX_WIDTH, OG_BANNER_MAX_HEIGHT } from "..
 import { lerArquivoArtigo } from "../utils/artigoArquivo";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_PRIMARY, BTN_SECONDARY, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
+import { artigoPath } from "../utils/artigoUrl";
 
 const CONTEUDO_INICIAL = `Salva galera! Escreva seu artigo aqui.
 
@@ -47,6 +48,7 @@ export function BlogEditorPage() {
   const [carregando, setCarregando] = useState(editando);
   const [enviandoCapa, setEnviandoCapa] = useState(false);
   const [importandoArquivo, setImportandoArquivo] = useState(false);
+  const [artigoId, setArtigoId] = useState(null);
 
   useEffect(() => {
     fetch("/ajuda-formatacao-artigo.txt")
@@ -68,6 +70,7 @@ export function BlogEditorPage() {
         setTags((data.tags || []).join("; "));
         setCapaUrl(data.capaUrl || "");
         setConteudo(data.conteudo || "");
+        setArtigoId(data.id);
       })
       .catch((error) => {
         addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível carregar o artigo."), { type: "error" });
@@ -146,19 +149,19 @@ export function BlogEditorPage() {
         publicarAgora: Boolean(publicarAgora && isAdmin),
       };
       if (editando) {
-        const res = await editarArtigo(id, payload, token);
+        const res = await editarArtigo(artigoId || id, payload, token);
         addToast(
           res.status === "pendente" ? "Edição enviada para aprovação." : "Artigo atualizado.",
           { type: "success" }
         );
-        navigate(`/artigos/${id}`);
+        navigate(artigoPath({ id: res.id || artigoId || id, titulo: res.titulo || titulo }));
       } else {
         const res = await criarArtigo(payload, token);
         addToast(
           res.status === "pendente" ? "Artigo enviado para aprovação." : "Artigo publicado.",
           { type: "success" }
         );
-        navigate(`/artigos/${res.id}`);
+        navigate(artigoPath({ id: res.id, titulo: res.titulo || titulo }));
       }
     } catch (error) {
       addToast(formatApiErrorMessage(error?.response?.data, "Não foi possível salvar."), { type: "error" });

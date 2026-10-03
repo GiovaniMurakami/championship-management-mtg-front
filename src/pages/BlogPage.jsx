@@ -9,6 +9,7 @@ import { PAGE_TITLES } from "../constants/pageTitles";
 import { listarArtigos } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
+import { artigoPath, textoQuantidadeComentarios } from "../utils/artigoUrl";
 
 function formatarData(iso) {
   if (!iso) return "";
@@ -116,7 +117,7 @@ export function BlogPage() {
             {artigos.map((artigo) => (
               <Link
                 key={artigo.id}
-                to={`/artigos/${artigo.id}`}
+                to={artigoPath(artigo)}
                 className="group overflow-hidden rounded-2xl border border-line-soft bg-surface shadow-card transition hover:border-line-strong"
               >
                 {artigo.capaUrl ? (
@@ -134,6 +135,9 @@ export function BlogPage() {
                       <span className="rounded-md bg-amber-500/20 px-2 py-0.5 text-amber-200">{artigo.status}</span>
                     )}
                     <span>{artigo.visualizacoes ?? 0} visualizações</span>
+                    {Number.isFinite(artigo.totalComentarios) && (
+                      <span>{textoQuantidadeComentarios(artigo.totalComentarios)}</span>
+                    )}
                   </div>
                   <h2 className="m-0 mt-2 text-xl font-semibold text-text-main group-hover:text-brand">{artigo.titulo}</h2>
                   {(artigo.chamada || artigo.descricao) && (

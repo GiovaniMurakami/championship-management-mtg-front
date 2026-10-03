@@ -122,7 +122,7 @@ O build gera `dist/` e o deploy está configurado para AWS Amplify em `amplify.y
 
 ### Open Graph dos torneios
 
-Para que `/torneios/:slug` entregue o banner no WhatsApp, configure no Amplify Hosting, em **Rewrites and redirects**, as regras de `amplify-rewrites.example.json`, mantendo `/torneios/<*>` antes do fallback da SPA. O rewrite `200` funciona como proxy reverso: a URL continua no domínio do app, enquanto a Lambda de homologação injeta as metatags no `index.html` e o React inicia normalmente.
+Para que `/torneios/:slug` entregue o banner no WhatsApp, configure no Amplify Hosting, em **Rewrites and redirects**, as regras de `amplify-rewrites.example.json`, mantendo `/torneios/<*>` e `/artigos/<*>` antes do fallback da SPA. O rewrite `200` funciona como proxy reverso: a URL continua no domínio do app, enquanto a Lambda injeta as metatags (banner do torneio ou capa do artigo) no `index.html` e o React inicia normalmente.
 
 ## Licença
 
