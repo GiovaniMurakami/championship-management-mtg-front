@@ -17,7 +17,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
-- **Artigos** (`/artigos`) — markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]` com formato `lista` | `16:9` | `9:16`, `[youtube]`, `[h1]`/`[h2]`/`[h3]` com `center` e cor da borda esquerda, links `[texto](https://…)`). Guia em `public/ajuda-formatacao-artigo.txt` e modelo em `public/modelo-artigo.txt`. Editores com assinatura e aprovação admin
+- **Artigos** (`/artigos/{5 primeiros do id}-{slug}`) — markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]` com formato `lista` | `16:9` | `9:16`, `[youtube]`, `[h1]`/`[h2]`/`[h3]` com `center` e cor da borda esquerda, links `[texto](https://…)`). Guia em `public/ajuda-formatacao-artigo.txt` e modelo em `public/modelo-artigo.txt`. Editores com assinatura e aprovação admin. A capa entra no compartilhamento via rewrite `/artigos/<*>` → API `/artigo/share/<*>` (`amplify-rewrites.example.json`)
 
 **Backend:** API REST própria (não está neste repositório).  
 **Deploy:** AWS Amplify (`amplify.yml` → `dist/`).

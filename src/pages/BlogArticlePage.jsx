@@ -17,6 +17,7 @@ import {
 } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_DANGER, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
+import { artigoPath, textoQuantidadeComentarios } from "../utils/artigoUrl";
 
 export function BlogArticlePage() {
   const { id } = useParams();
@@ -69,7 +70,7 @@ export function BlogArticlePage() {
 
   const aprovar = async (ok) => {
     try {
-      await aprovarArtigo(id, ok, token);
+      await aprovarArtigo(artigo?.id || id, ok, token);
       addToast(ok ? "Artigo publicado." : "Artigo rejeitado.", { type: "success" });
       await carregar();
     } catch (error) {
@@ -80,7 +81,7 @@ export function BlogArticlePage() {
   const excluir = async () => {
     if (!window.confirm("Excluir este artigo?")) return;
     try {
-      await excluirArtigo(id, token);
+      await excluirArtigo(artigo?.id || id, token);
       addToast("Artigo excluído.", { type: "success" });
       navigate("/artigos");
     } catch (error) {
@@ -112,7 +113,7 @@ export function BlogArticlePage() {
           <Link to="/artigos" className="text-sm text-text-soft hover:text-text-main">← Artigos</Link>
           <div className="flex flex-wrap gap-2">
             {podeEditar && (
-              <button type="button" className={BTN_SECONDARY} onClick={() => navigate(`/artigos/${id}/editar`)}>Editar</button>
+              <button type="button" className={BTN_SECONDARY} onClick={() => navigate(artigoPath(artigo, { editar: true }))}>Editar</button>
             )}
             {isAdmin && artigo.status === "pendente" && (
               <>
@@ -167,6 +168,7 @@ export function BlogArticlePage() {
             <span className="text-amber-200">Edição pendente de aprovação</span>
           )}
           <span>{artigo.visualizacoes ?? 0} visualizações</span>
+          <span>{textoQuantidadeComentarios(artigo.comentarios?.length)}</span>
         </div>
         {artigo.tags?.length > 0 && (
           <p className="m-0 mt-2 text-xs text-text-muted">{artigo.tags.join(" · ")}</p>

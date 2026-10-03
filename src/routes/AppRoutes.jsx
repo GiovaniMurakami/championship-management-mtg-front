@@ -166,12 +166,12 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><BlogPendingPage /></ProtectedRoute>
         } />
         <Route path="/artigos/:id/editar" element={
-          <UuidParamGuard param="id">
+          <UuidParamGuard param="id" allowSlug>
             <ProtectedRoute><BlogEditorPage /></ProtectedRoute>
           </UuidParamGuard>
         } />
         <Route path="/artigos/:id" element={
-          <UuidParamGuard param="id"><BlogArticlePage /></UuidParamGuard>
+          <UuidParamGuard param="id" allowSlug><BlogArticlePage /></UuidParamGuard>
         } />
         <Route path="/blog-legado" element={<LandingBlogPage />} />
         <Route path="/sobre-mim" element={<LandingSobreMimPage />} />
