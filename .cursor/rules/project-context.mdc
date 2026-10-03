@@ -6,11 +6,14 @@ alwaysApply: true
 
 Antes de modificar este repositório, leia `AI_CONTEXT.md` na raiz do projeto.
 
+Skills do projeto (`.cursor/skills/`): `championship-mtg-workspace`, `championship-mtg-front`, `championship-mtg-share-og`.
+
 Resumo rápido:
 - SPA React 19 + Vite 7 + Tailwind 4 + JavaScript (sem TypeScript)
-- Gerencia torneios MTG, decks, ligas e times
+- Gerencia torneios MTG, decks, ligas, times, metagame e artigos
 - Backend REST próprio; realtime via Ably; cartas via Scryfall
 - Auth via JWT em `AuthContext`; rotas protegidas com `ProtectedRoute`
 - Endpoints centralizados em `src/services/backendApi.js`
 - Arquivo mais complexo: `src/hooks/useTournamentDetail.js`
+- URLs curtas `{5}-{slug}` para torneios, decks e artigos; OG via Amplify rewrite
 - `README.md` e `DOCUMENTATION.md` podem estar desatualizados — priorize `AI_CONTEXT.md` e o código
