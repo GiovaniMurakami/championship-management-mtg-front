@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ChartPie } from "lucide-react";
 import { useTournamentDetail } from "../hooks/useTournamentDetail";
 import { usePageTitle } from "../hooks/usePageTitle";
 import {
@@ -118,30 +119,40 @@ export function TournamentDetailPage() {
         >
           ← Voltar para torneios
         </button>
-        {(canManage || canEditFinished) && (
-          <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
-            {isAdmin && !isFinished && (
+        <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
+          {isFinished && torneio?.id && (
+            <Link
+              to={`/metagame/breakdown?torneioId=${encodeURIComponent(torneio.id)}`}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium no-underline transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
+            >
+              <ChartPie size={16} aria-hidden="true" /> Metagame breakdown
+            </Link>
+          )}
+          {(canManage || canEditFinished) && (
+            <>
+              {isAdmin && !isFinished && (
+                <button
+                  className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
+                  onClick={() => setShowHostModal(true)}
+                >
+                  {torneio?.anfitriao ? "Alterar anfitrião" : "Definir anfitrião"}
+                </button>
+              )}
               <button
-                className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
-                onClick={() => setShowHostModal(true)}
+                className="px-4 py-2 border border-[#4f46e5] rounded-lg bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:flex-1"
+                onClick={() => setShowEditModal(true)}
               >
-                {torneio?.anfitriao ? "Alterar anfitrião" : "Definir anfitrião"}
+                Editar torneio
               </button>
-            )}
-            <button
-              className="px-4 py-2 border border-[#4f46e5] rounded-lg bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:flex-1"
-              onClick={() => setShowEditModal(true)}
-            >
-              Editar torneio
-            </button>
-            {isRegistrationOpen && <button
-              className="px-4 py-2 border border-[rgba(239,68,68,0.5)] rounded-lg bg-[rgba(239,68,68,0.08)] text-[#fca5a5] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(239,68,68,0.25)] hover:text-white max-md:flex-1"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              Excluir torneio
-            </button>}
-          </div>
-        )}
+              {isRegistrationOpen && <button
+                className="px-4 py-2 border border-[rgba(239,68,68,0.5)] rounded-lg bg-[rgba(239,68,68,0.08)] text-[#fca5a5] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(239,68,68,0.25)] hover:text-white max-md:flex-1"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                Excluir torneio
+              </button>}
+            </>
+          )}
+        </div>
       </div>
 
       {torneio && <TournamentLiveEmbeds linkLive={torneio.linkLive} />}

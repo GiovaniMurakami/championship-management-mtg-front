@@ -1,7 +1,7 @@
 import { DateRangeFilter } from "../components/ui/DateRangeFilter";
 import { useDateRangeParams } from "../hooks/useDateRangeParams";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { buscarMetagame } from "../services/backendApi";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -15,7 +15,7 @@ import { useColecaoScryfall } from "../hooks/useColecaoScryfall";
 import { useCardPreview } from "../hooks/useCardPreview";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { logError } from "../utils/logger";
-import { Grid2X2, Table2 } from "lucide-react";
+import { ChartPie, Grid2X2, Table2 } from "lucide-react";
 import { MetagameMatrix } from "../components/metagame/MetagameMatrix";
 import { BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
 
@@ -195,6 +195,12 @@ export function MetagamePage() {
             {matrix ? <Table2 size={18} aria-hidden="true" /> : <Grid2X2 size={18} aria-hidden="true" />}{label}
           </button>
         ))}
+        <Link
+          to={`/metagame/breakdown?formato=${encodeURIComponent(formato)}&dias=${dias}${dateQuery}`}
+          className={`${BTN_SECONDARY} inline-flex min-h-11 items-center gap-2 no-underline focus-visible:outline-2 focus-visible:outline-brand`}
+        >
+          <ChartPie size={18} aria-hidden="true" /> Breakdown
+        </Link>
       </div>
 
       {loading && <SkeletonMetagame />}

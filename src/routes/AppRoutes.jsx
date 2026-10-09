@@ -49,6 +49,7 @@ const TimeCreatePage      = lazy(() => import("../pages/TimeCreatePage").then(m 
 const ContadorVidaPage    = lazy(() => import("../pages/ContadorVidaPage").then(m => ({ default: m.ContadorVidaPage })));
 const CalculadoraSwissPage = lazy(() => import("../pages/CalculadoraSwissPage").then(m => ({ default: m.CalculadoraSwissPage })));
 const MetagamePage = lazy(() => import("../pages/MetagamePage").then(m => ({ default: m.MetagamePage })));
+const MetagameBreakdownPage = lazy(() => import("../pages/MetagameBreakdownPage").then(m => ({ default: m.MetagameBreakdownPage })));
 const MetagameArquetipoPage = lazy(() => import("../pages/MetagameArquetipoPage").then(m => ({ default: m.MetagameArquetipoPage })));
 const UserProfilePage = lazy(() => import("../pages/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
 const PostsPage = lazy(() => import("../pages/PostsPage").then(m => ({ default: m.PostsPage })));
@@ -133,6 +134,7 @@ export function AppRoutes() {
 
         <Route path="/ligas" element={<LigaPage />} />
         <Route path="/metagame" element={<MetagamePage />} />
+        <Route path="/metagame/breakdown" element={<MetagameBreakdownPage />} />
         <Route path="/metagame/:formato/:slug" element={<MetagameArquetipoPage />} />
         <Route path="/ligas/criar" element={
           <ProtectedRoute requireAdmin><LigaCreatePage editMode={false} /></ProtectedRoute>
