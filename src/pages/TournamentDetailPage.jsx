@@ -82,8 +82,8 @@ export function TournamentDetailPage() {
 
   const isFinished = torneio?.status === "finalizado";
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
-  const isOngoing = torneio?.status === "em_andamento";
-  const canManage = canManageTournament && (isRegistrationOpen || torneio?.status === "em_andamento");
+  const isOngoing = torneio?.status === "em_andamento" || torneio?.status === "pausado";
+  const canManage = canManageTournament && (isRegistrationOpen || isOngoing);
   const canEditFinished = isAdmin && isFinished;
 
   const torneioNome = torneio?.nome || torneio?.torneioNome;

@@ -79,7 +79,7 @@ export function useTournamentDetail() {
       token
       && usuario?.id
       && torneio
-      && (torneio.status === "inscricoes_abertas" || torneio.status === "em_andamento"),
+      && (torneio.status === "inscricoes_abertas" || torneio.status === "em_andamento" || torneio.status === "pausado"),
     );
     const { decks } = useMyDecks(token, usuario?.id, { enabled: needsMyDecks });
     const {
@@ -457,6 +457,7 @@ export function useTournamentDetail() {
                     ...prev,
                     day1Encerrado: true,
                     day1EncerradoEm: data.day1EncerradoEm ?? prev.day1EncerradoEm,
+                    status: data.status || "pausado",
                 } : prev);
                 showToast(
                     `Day 1 encerrado. ${data.classificados ?? ""} avançam ao Day 2; ${data.dropados ?? 0} dropados.`,
@@ -1016,6 +1017,7 @@ export function useTournamentDetail() {
                 ...prev,
                 day1Encerrado: true,
                 day1EncerradoEm: data?.day1EncerradoEm ?? prev.day1EncerradoEm,
+                status: data?.status || "pausado",
             } : prev);
             setSuccessMsg(
                 `Day 1 encerrado. ${data?.classificados ?? ""} avançam; ${data?.dropados ?? 0} dropados.`,

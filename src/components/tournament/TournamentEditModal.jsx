@@ -95,7 +95,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
   if (!isOpen) return null;
 
-  const estruturaBloqueada = torneio?.status === "em_andamento";
+  const estruturaBloqueada = torneio?.status === "em_andamento" || torneio?.status === "pausado";
   const day1Bloqueado = Boolean(torneio?.day1Encerrado);
   const isUploading = uploadingBanner || uploadingStory;
   const isDisabled = loading || isUploading;
@@ -194,7 +194,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       payload.storyFundoTextoRodape = storyFundoTextoRodape;
     }
 
-    if (torneio?.status === "em_andamento") {
+    if (torneio?.status === "em_andamento" || torneio?.status === "pausado") {
       for (const campo of ["formato", "maxJogadores", "maxRodadas", "corteTop"]) delete payload[campo];
     }
     if (day1Bloqueado) {

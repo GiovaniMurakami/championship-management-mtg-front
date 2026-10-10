@@ -333,7 +333,7 @@ Limites de deck (`constants/auth.js`):
 ## 11. Torneio — lógica de negócio
 
 ### Status (`constants/tournament.js`)
-- `inscricoes_abertas`, `em_andamento`, `finalizado`
+- `inscricoes_abertas`, `em_andamento`, `pausado` (intervalo Day 1→Day 2), `finalizado`
 
 ### Formatos
 `standard`, `modern`, `pioneer`, `pauper`, `commander`, `commander500`

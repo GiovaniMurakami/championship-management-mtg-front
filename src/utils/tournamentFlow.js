@@ -100,8 +100,23 @@ export function isSwissLastRound(torneio) {
     return currentRound >= totalRounds;
 }
 
+/** Em jogo ativo (mesas/resultados). */
+export function isTournamentPlayable(torneio) {
+    return torneio?.status === "em_andamento";
+}
+
+/** Intervalo Day 1 → Day 2. */
+export function isTournamentPaused(torneio) {
+    return torneio?.status === "pausado";
+}
+
+/** Em andamento ou pausado (admin / listagens “ao vivo”). */
+export function isTournamentActive(torneio) {
+    return isTournamentPlayable(torneio) || isTournamentPaused(torneio);
+}
+
 export function shouldRequestNextRoundCheckin(torneio) {
-    if (torneio?.status !== "em_andamento") {
+    if (!isTournamentActive(torneio)) {
         return false;
     }
 
@@ -121,7 +136,11 @@ export function needsEncerrarDay1(torneio) {
 }
 
 export function getTournamentNextAction(torneio) {
-    if (torneio?.status !== "em_andamento") {
+    if (isTournamentPaused(torneio)) {
+        return NEXT_ROUND_ACTION.NEXT_SWISS_ROUND;
+    }
+
+    if (!isTournamentPlayable(torneio)) {
         return NEXT_ROUND_ACTION.NONE;
     }
 
@@ -168,10 +187,11 @@ export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
         case NEXT_ROUND_ACTION.NEXT_SWISS_ROUND:
             return {
                 action: nextAction,
-                cta: "Iniciar Próxima Rodada",
-                blockedCta: "Iniciar Próxima Rodada",
-                status:
-                    pendingCount > 0
+                cta: isTournamentPaused(torneio) ? "Iniciar Day 2" : "Iniciar Próxima Rodada",
+                blockedCta: isTournamentPaused(torneio) ? "Iniciar Day 2" : "Iniciar Próxima Rodada",
+                status: isTournamentPaused(torneio)
+                    ? "Day 1 encerrado. Torneio pausado até iniciar o Day 2."
+                    : pendingCount > 0
                         ? `${pendingCount} jogador(es) ainda não confirmaram presença`
                         : "Pronto para gerar a próxima rodada",
             };

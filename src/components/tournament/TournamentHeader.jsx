@@ -16,6 +16,11 @@ const STATUS_CONFIG = {
     dot: "#fbbf24",
     badge: "bg-[rgba(251,191,36,0.14)] text-[#fbbf24] border border-[rgba(251,191,36,0.35)]",
   },
+  pausado: {
+    label: "Pausado",
+    dot: "#cbd5e1",
+    badge: "bg-[rgba(148,163,184,0.14)] text-[#cbd5e1] border border-[rgba(148,163,184,0.35)]",
+  },
   finalizado: {
     label: "Finalizado",
     dot: "#f87171",

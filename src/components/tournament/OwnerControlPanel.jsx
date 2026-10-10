@@ -4,6 +4,9 @@ import { BaseModal } from "../ui/BaseModal";
 import { InlineAlert } from "../ui/InlineAlert";
 import {
   getNextRoundActionLabels,
+  isTournamentActive,
+  isTournamentPaused,
+  isTournamentPlayable,
   needsEncerrarDay1,
   NEXT_ROUND_ACTION,
   shouldRequestNextRoundCheckin,
@@ -167,8 +170,10 @@ export function OwnerControlPanel({
   partidas,
 }) {
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
-  const isOngoing = torneio?.status === "em_andamento";
-  const [activeTab, setActiveTab] = useState(isOngoing ? "mesas" : "jogadores");
+  const isPlayable = isTournamentPlayable(torneio);
+  const isPaused = isTournamentPaused(torneio);
+  const isActive = isTournamentActive(torneio);
+  const [activeTab, setActiveTab] = useState(isPlayable ? "mesas" : "jogadores");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [endDay1ModalOpen, setEndDay1ModalOpen] = useState(false);
   const [joinLinkModal, setJoinLinkModal] = useState(null);
@@ -183,8 +188,8 @@ export function OwnerControlPanel({
   const linkCopiedTimeoutRef = useRef(null);
 
   useEffect(() => {
-    setActiveTab(isOngoing ? "mesas" : "jogadores");
-  }, [isOngoing]);
+    setActiveTab(isPlayable ? "mesas" : "jogadores");
+  }, [isPlayable]);
 
   useEffect(() => {
     return () => {
@@ -224,7 +229,7 @@ export function OwnerControlPanel({
     });
   };
 
-  if (!canManage || (!isRegistrationOpen && !isOngoing)) return null;
+  if (!canManage || (!isRegistrationOpen && !isActive)) return null;
 
   const getPlayerName = (player) =>
     player?.nomeExibicao ||
@@ -269,8 +274,8 @@ export function OwnerControlPanel({
   const isRedoingRound = actionLoading && adminActionKey === "redo-round";
   const isEndingTournament = actionLoading && adminActionKey === "end-tournament";
   const isEndingDay1 = actionLoading && adminActionKey === "end-day1";
-  const canRedoRound = isOngoing && Number(torneio?.rodadaAtual || 0) > 1;
-  const canEncerrarDay1 = isOngoing && needsEncerrarDay1(torneio);
+  const canRedoRound = isPlayable && Number(torneio?.rodadaAtual || 0) > 1;
+  const canEncerrarDay1 = isPlayable && needsEncerrarDay1(torneio);
   const ativosCount = (standings || []).filter((p) => !p?.dropped).length;
   const vagasDay2 = Number(torneio?.vagasDay2 || 0);
   const dropadosDay1Estimate = Math.max(0, ativosCount - vagasDay2);
@@ -286,7 +291,7 @@ export function OwnerControlPanel({
   };
 
   const handleEndTournament = () => {
-    if (!onEncerrarTorneio || !isOngoing || actionLoading) return;
+    if (!onEncerrarTorneio || !isActive || actionLoading) return;
     setEndModalOpen(true);
   };
 
@@ -310,7 +315,11 @@ export function OwnerControlPanel({
       <div className="flex items-start justify-between gap-4 mb-4 flex-wrap max-md:flex-col">
         <div className="min-w-0">
           <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main">Painel do Administrador</h2>
-          {isOngoing ? (
+          {isPaused ? (
+            <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#cbd5e1]">
+              Pausado — Day 1 encerrado. Inicie o Day 2 quando estiver pronto.
+            </p>
+          ) : isActive ? (
             <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
               Rodada {torneio?.rodadaAtual ?? "—"} de {torneio?.totalRodadas ?? "—"}
             </p>
@@ -322,7 +331,7 @@ export function OwnerControlPanel({
         </div>
 
         <div className="flex flex-col items-end gap-[0.4rem] flex-shrink-0 max-md:w-full max-md:items-stretch">
-          {isOngoing && requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
+          {isActive && requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
             <p className="flex items-center gap-[0.3rem] m-0 text-[0.82rem] text-[#fbbf24] max-md:justify-center">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
@@ -332,7 +341,7 @@ export function OwnerControlPanel({
               {pendentesCheckin.length} jogador(es) sem check-in
             </p>
           )}
-          {isOngoing && nextRoundLabels.status && (
+          {isActive && nextRoundLabels.status && (
             <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right max-w-[320px] max-md:max-w-none max-md:text-center">
               {nextRoundLabels.status}
             </p>
@@ -350,24 +359,26 @@ export function OwnerControlPanel({
               {isStartingTournament ? "Iniciando..." : "Iniciar Torneio"}
             </button>
           )}
-          {isOngoing && (
+          {isActive && (
             <div className="flex flex-col gap-2 w-full min-[640px]:flex-row min-[640px]:flex-wrap min-[640px]:justify-end">
-              <button
-                className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)]"
-                type="button"
-                onClick={handleRedoRound}
-                disabled={actionLoading || !canRedoRound}
-                title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponível a partir da rodada 2"}
-              >
-                {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
-              </button>
+              {isPlayable && (
+                <button
+                  className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)]"
+                  type="button"
+                  onClick={handleRedoRound}
+                  disabled={actionLoading || !canRedoRound}
+                  title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponível a partir da rodada 2"}
+                >
+                  {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
+                </button>
+              )}
               <button
                 className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
                 type="button"
                 onClick={() => setReviewModalOpen(true)}
                 disabled={actionLoading}
               >
-                Revisar Rodada
+                {isPaused ? "Iniciar Day 2" : "Revisar Rodada"}
               </button>
               {canEncerrarDay1 && (
                 <button
@@ -419,7 +430,7 @@ export function OwnerControlPanel({
           </svg>
           {linkCopied ? "Link copiado!" : "Copiar link do torneio"}
         </button>
-        {isOngoing && (
+        {isPlayable && (
           <button
             type="button"
             className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center gap-[0.45rem] rounded-lg border border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.08)] px-3 py-[0.5rem] text-[0.82rem] font-semibold text-[#4ade80] transition-all duration-[220ms] disabled:cursor-not-allowed disabled:opacity-50 hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
@@ -503,7 +514,7 @@ export function OwnerControlPanel({
       </div>
 
       <div className="flex gap-1 mb-[0.85rem] border-b border-line pb-0 min-w-0 max-w-full px-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {isOngoing && (
+        {isPlayable && (
           <button
             type="button"
             className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-text-soft border-b-transparent hover:text-text-main"}`}
@@ -515,7 +526,7 @@ export function OwnerControlPanel({
             )}
           </button>
         )}
-        {isOngoing && contestadas.length > 0 && (
+        {isPlayable && contestadas.length > 0 && (
           <button
             type="button"
             className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "contestadas" ? "text-[#f87171] border-b-[#f87171]" : "text-text-soft border-b-transparent hover:text-text-main"}`}

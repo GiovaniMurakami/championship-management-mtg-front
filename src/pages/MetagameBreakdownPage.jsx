@@ -215,13 +215,14 @@ export function MetagameBreakdownPage() {
         <div className="space-y-5 rounded-2xl bg-[#140c1f] p-1">
           <BreakdownKpis kpis={kpis} />
           {(conversaoPorArquetipo.length > 0 || conversaoDay2?.cartasMaisPresentes?.length > 0) && (
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-start">
+            <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
               {conversaoPorArquetipo.length > 0 && (
                 <BreakdownPanel
                   title="Conversão Day 1 → Day 2"
                   description={`${conversaoDay2.jogadoresDay2}/${conversaoDay2.jogadoresDay1} decks avançaram no corte${conversaoDay2.vagasDay2 ? ` (vagas: ${conversaoDay2.vagasDay2})` : ""}.`}
+                  bodyClassName="h-[28rem] overflow-y-auto"
                 >
-                  <ul className="m-0 max-h-[28rem] overflow-y-auto p-0 list-none divide-y divide-line/60">
+                  <ul className="m-0 p-0 list-none divide-y divide-line/60">
                     {conversaoPorArquetipo.map((a) => (
                       <li
                         key={a.slug}
@@ -242,6 +243,7 @@ export function MetagameBreakdownPage() {
                 <BreakdownPanel
                   title="Cartas do Day 2"
                   description={`Mais presentes nos ${conversaoDay2.jogadoresDay2} decks que passaram do Day 1 (maindeck, sem básicos).`}
+                  bodyClassName="h-[28rem] overflow-y-auto"
                 >
                   <BreakdownDay2Cards
                     cartas={conversaoDay2.cartasMaisPresentes}

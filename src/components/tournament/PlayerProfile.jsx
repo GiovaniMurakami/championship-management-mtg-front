@@ -94,11 +94,12 @@ export function PlayerProfile({
   const [confirmDrop, setConfirmDrop] = useState(false);
 
   const canEditDeck = torneio?.status === "inscricoes_abertas";
-  const isOngoing = torneio?.status === "em_andamento";
+  const isPlayable = torneio?.status === "em_andamento";
+  const isOngoing = isPlayable || torneio?.status === "pausado";
   const isFinished = torneio?.status === "finalizado";
   const isFull = torneio?.maxJogadores != null && (torneio?.totalInscritos ?? 0) >= torneio.maxJogadores;
   const missingNick = !usuario?.nickMTGO;
-  const canLateJoin = isOngoing && !currentPlayer && !isFull && Boolean(onInscreverTarde);
+  const canLateJoin = isPlayable && !currentPlayer && !isFull && Boolean(onInscreverTarde);
   const dropped = Boolean(currentPlayer?.dropped);
   const canSelfDrop = Boolean(currentPlayer) && !dropped && !isFinished && Boolean(onSelfDrop);
   const isSelfDropping =

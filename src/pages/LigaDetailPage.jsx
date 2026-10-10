@@ -163,7 +163,7 @@ export function LigaDetailPage() {
                   {torneios.map((torneio) => {
                     const badge = TORNEIO_STATUS_BADGE[torneio.status] ?? "";
                     const label = TORNEIO_STATUS_LABEL[torneio.status] ?? torneio.status;
-                    const isLive = torneio.status === "em_andamento";
+                    const isLive = torneio.status === "em_andamento" || torneio.status === "pausado";
                     return (
                       <div
                         key={torneio.id}
