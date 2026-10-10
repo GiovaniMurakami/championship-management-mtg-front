@@ -17,14 +17,28 @@ export function corArquetipo(index) {
   return CHART_COLORS[index % CHART_COLORS.length];
 }
 
-export function calcularKpisBreakdown(arquetipos = [], totalDecks = 0) {
+export function formatPctConversao(taxa) {
+  const n = Number(taxa);
+  if (!Number.isFinite(n)) return "—";
+  return `${Math.round(n * 1000) / 10}%`;
+}
+
+export function calcularKpisBreakdown(arquetipos = [], totalDecks = 0, conversaoDay2 = null) {
   const lista = Array.isArray(arquetipos) ? arquetipos : [];
   const decks = Number(totalDecks) || lista.reduce((acc, a) => acc + (a.copias || 0), 0);
 
-  return {
+  const kpis = {
     totalDecks: decks,
     totalArquetipos: lista.length,
   };
+
+  if (conversaoDay2 && Number(conversaoDay2.jogadoresDay1) > 0) {
+    kpis.jogadoresDay1 = Number(conversaoDay2.jogadoresDay1) || 0;
+    kpis.jogadoresDay2 = Number(conversaoDay2.jogadoresDay2) || 0;
+    kpis.taxaConversao = formatPctConversao(conversaoDay2.taxaConversao);
+  }
+
+  return kpis;
 }
 
 export function dadosShareChart(arquetipos = [], limite = 8) {

@@ -1,6 +1,7 @@
 export const NEXT_ROUND_ACTION = {
     NONE: "none",
     PUBLISH_ROUND: "publish-round",
+    END_DAY1: "end-day1",
     NEXT_SWISS_ROUND: "next-swiss-round",
     START_TOP_CUT: "start-top-cut",
     ADVANCE_TOP_CUT: "advance-top-cut",
@@ -111,6 +112,14 @@ export function shouldRequestNextRoundCheckin(torneio) {
     return true;
 }
 
+export function needsEncerrarDay1(torneio) {
+    const rodadasDay1 = toPositiveNumber(torneio?.rodadasDay1);
+    const vagasDay2 = toPositiveNumber(torneio?.vagasDay2);
+    if (!rodadasDay1 || !vagasDay2) return false;
+    if (torneio?.day1Encerrado) return false;
+    return toPositiveNumber(torneio?.rodadaAtual) === rodadasDay1;
+}
+
 export function getTournamentNextAction(torneio) {
     if (torneio?.status !== "em_andamento") {
         return NEXT_ROUND_ACTION.NONE;
@@ -118,6 +127,10 @@ export function getTournamentNextAction(torneio) {
 
     if (torneio?.rodadaPublicada === false) {
         return NEXT_ROUND_ACTION.PUBLISH_ROUND;
+    }
+
+    if (needsEncerrarDay1(torneio)) {
+        return NEXT_ROUND_ACTION.END_DAY1;
     }
 
     if (isEliminationPhase(torneio)) {
@@ -144,6 +157,13 @@ export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
                 cta: "Publicar mesas",
                 blockedCta: "Publicar mesas",
                 status: "Pareamentos gerados. Publique quando estiver pronto.",
+            };
+        case NEXT_ROUND_ACTION.END_DAY1:
+            return {
+                action: nextAction,
+                cta: "Encerrar Day 1",
+                blockedCta: "Encerrar Day 1",
+                status: `Última rodada do Day 1. Top ${toPositiveNumber(torneio?.vagasDay2)} avançam ao Day 2; o restante será dropado.`,
             };
         case NEXT_ROUND_ACTION.NEXT_SWISS_ROUND:
             return {

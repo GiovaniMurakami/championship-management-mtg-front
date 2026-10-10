@@ -22,6 +22,7 @@ import {
   dadosShareChart,
   dadosWinrateChart,
   dadosMatchupHeat,
+  formatPctConversao,
 } from "../utils/metagameBreakdown";
 import { BTN_SECONDARY } from "../styles/uiClasses";
 
@@ -107,10 +108,23 @@ export function MetagameBreakdownPage() {
   const arquetipos = data?.arquetipos ?? [];
   const totalDecks = data?.totalDecks ?? 0;
 
-  const kpis = useMemo(() => calcularKpisBreakdown(arquetipos, totalDecks), [arquetipos, totalDecks]);
+  const conversaoDay2 = data?.conversaoDay2 ?? null;
+  const kpis = useMemo(
+    () => calcularKpisBreakdown(arquetipos, totalDecks, conversaoDay2),
+    [arquetipos, totalDecks, conversaoDay2],
+  );
   const share = useMemo(() => dadosShareChart(arquetipos), [arquetipos]);
   const winrates = useMemo(() => dadosWinrateChart(arquetipos), [arquetipos]);
   const heat = useMemo(() => dadosMatchupHeat(arquetipos, 8, filtroSlug), [arquetipos, filtroSlug]);
+  const conversaoPorArquetipo = useMemo(() => {
+    if (!conversaoDay2) return [];
+    return [...arquetipos]
+      .filter((a) => a?.conversaoDay2?.day1 > 0)
+      .sort((a, b) => (b.conversaoDay2?.taxaConversao || 0) - (a.conversaoDay2?.taxaConversao || 0)
+        || (b.conversaoDay2?.day1 || 0) - (a.conversaoDay2?.day1 || 0)
+        || a.nome.localeCompare(b.nome, "pt-BR"))
+      .slice(0, 16);
+  }, [arquetipos, conversaoDay2]);
 
   const titulo = modoTorneio
     ? (data?.torneio?.nome || "Breakdown do torneio")
@@ -122,6 +136,9 @@ export function MetagameBreakdownPage() {
         getTournamentFormatLabel(data.torneio.formato),
         data.torneio.horario ? formatBrasiliaDate(data.torneio.horario) : null,
         `${totalDecks} deck(s)`,
+        data.torneio.day1Encerrado && data.torneio.status !== "finalizado"
+          ? "Day 1 encerrado"
+          : null,
       ].filter(Boolean);
       return partes.join(" · ");
     }
@@ -180,7 +197,7 @@ export function MetagameBreakdownPage() {
           title="Sem dados de metagame"
           description={
             modoTorneio
-              ? "Este torneio ainda não tem decks agregáveis ou não está finalizado."
+              ? "Este torneio ainda não tem decks agregáveis, ou o Day 1 / finalização ainda não liberou o breakdown."
               : "Não há torneios finalizados neste período."
           }
         />
@@ -189,6 +206,28 @@ export function MetagameBreakdownPage() {
       {!loading && !erro && arquetipos.length > 0 && (
         <div className="space-y-5 rounded-2xl bg-[#140c1f] p-1">
           <BreakdownKpis kpis={kpis} />
+          {conversaoPorArquetipo.length > 0 && (
+            <BreakdownPanel
+              title="Conversão Day 1 → Day 2"
+              description="Quantos decks de cada arquétipo avançaram no corte do Day 1."
+            >
+              <ul className="m-0 p-0 list-none divide-y divide-line/60">
+                {conversaoPorArquetipo.map((a) => (
+                  <li
+                    key={a.slug}
+                    className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
+                  >
+                    <span className="font-medium text-text-main">{a.nome}</span>
+                    <span className="tabular-nums text-text-soft">
+                      {a.conversaoDay2.day2}/{a.conversaoDay2.day1}
+                      {" · "}
+                      {formatPctConversao(a.conversaoDay2.taxaConversao)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </BreakdownPanel>
+          )}
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-start">
             <BreakdownPanel
               title="Share do metagame"

@@ -31,6 +31,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     maxJogadores: "",
     maxRodadas: "",
     corteTop: "",
+    rodadasDay1: "",
+    vagasDay2: "",
     linkBanner: "",
     playerPoints: "", tix: "",
   linkLive: "",
@@ -79,6 +81,8 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       maxJogadores: torneio.maxJogadores ?? "",
       maxRodadas: torneio.maxRodadas ?? "",
       corteTop: torneio.corteTop ?? "",
+      rodadasDay1: torneio.rodadasDay1 ?? "",
+      vagasDay2: torneio.vagasDay2 ?? "",
       linkBanner: torneio.linkBanner || "",
       playerPoints: torneio.premio?.playerPoints ?? "", tix: torneio.premio?.tix ?? "",
       linkLive: torneio.linkLive || "",
@@ -92,6 +96,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
   if (!isOpen) return null;
 
   const estruturaBloqueada = torneio?.status === "em_andamento";
+  const day1Bloqueado = Boolean(torneio?.day1Encerrado);
   const isUploading = uploadingBanner || uploadingStory;
   const isDisabled = loading || isUploading;
   const totalCheckin = Number(torneio?.totalCheckin || 0);
@@ -175,6 +180,9 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
       maxRodadas: form.maxRodadas ? Number(form.maxRodadas) : undefined,
       corteTop: form.corteTop ? Number(form.corteTop) : undefined,
+      ...(form.rodadasDay1 && form.vagasDay2
+        ? { rodadasDay1: Number(form.rodadasDay1), vagasDay2: Number(form.vagasDay2) }
+        : {}),
     };
 
     if (bannerUrl || torneio?.bannerUrl) {
@@ -188,6 +196,10 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
 
     if (torneio?.status === "em_andamento") {
       for (const campo of ["formato", "maxJogadores", "maxRodadas", "corteTop"]) delete payload[campo];
+    }
+    if (day1Bloqueado) {
+      delete payload.rodadasDay1;
+      delete payload.vagasDay2;
     }
     onSubmit(payload);
   };
@@ -303,6 +315,47 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
                 label: option.label,
               }))}
             />
+            <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
+              <div className="grid gap-1.5">
+                <label htmlFor="edit-rodadasDay1" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                  Rodadas Day 1 <span className="text-text-soft text-[0.8rem]">(opcional)</span>
+                </label>
+                <input
+                  id="edit-rodadasDay1"
+                  name="rodadasDay1"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={form.rodadasDay1}
+                  onChange={handleChange}
+                  disabled={isDisabled || day1Bloqueado}
+                  className={TOURNAMENT_INPUT_CLASS}
+                  placeholder="Ex: 7"
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <label htmlFor="edit-vagasDay2" className="text-[#e0e0e0] font-medium text-[0.9rem]">
+                  Vagas Day 2 <span className="text-text-soft text-[0.8rem]">(opcional)</span>
+                </label>
+                <input
+                  id="edit-vagasDay2"
+                  name="vagasDay2"
+                  type="number"
+                  min="2"
+                  max="512"
+                  value={form.vagasDay2}
+                  onChange={handleChange}
+                  disabled={isDisabled || day1Bloqueado}
+                  className={TOURNAMENT_INPUT_CLASS}
+                  placeholder="Ex: 64"
+                />
+              </div>
+            </div>
+            <small className="text-[#a3a3a3] text-[0.8rem]">
+              {day1Bloqueado
+                ? "Day 1 já encerrado — configuração bloqueada."
+                : "Preencha os dois campos. Day 2 segue Swiss até o fim ou corte Top."}
+            </small>
           </FormSection>
 
           <FormSection title="Midia">

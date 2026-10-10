@@ -4,8 +4,21 @@ export function BreakdownKpis({ kpis }) {
     { label: "Arquétipos", value: kpis.totalArquetipos },
   ];
 
+  if (kpis.jogadoresDay1 != null) {
+    cards.push(
+      { label: "Day 1", value: kpis.jogadoresDay1 },
+      { label: "Day 2", value: kpis.jogadoresDay2 },
+      { label: "Conversão", value: kpis.taxaConversao },
+    );
+  }
+
+  const cols =
+    cards.length <= 2
+      ? "grid-cols-2 sm:max-w-md"
+      : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5";
+
   return (
-    <div className="grid grid-cols-2 gap-3 mb-6 sm:max-w-md">
+    <div className={`grid gap-3 mb-6 ${cols}`}>
       {cards.map((card) => (
         <div
           key={card.label}

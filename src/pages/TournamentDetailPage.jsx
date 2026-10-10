@@ -59,6 +59,7 @@ export function TournamentDetailPage() {
     handlePublishRound,
     handleRefazerRodada,
     handleEncerrarTorneio,
+    handleEncerrarDay1,
     handleDropPlayersWithoutDeck,
     handleDropPlayersWithoutCheckin,
     handleDropPlayer,
@@ -120,7 +121,7 @@ export function TournamentDetailPage() {
           ← Voltar para torneios
         </button>
         <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
-          {isFinished && torneio?.id && (
+          {(isFinished || torneio?.day1Encerrado) && torneio?.id && (
             <Link
               to={`/metagame/breakdown?torneioId=${encodeURIComponent(torneio.id)}`}
               className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium no-underline transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
@@ -190,6 +191,7 @@ export function TournamentDetailPage() {
           onPublishRound: handlePublishRound,
           onRefazerRodada: handleRefazerRodada,
           onEncerrarTorneio: handleEncerrarTorneio,
+          onEncerrarDay1: handleEncerrarDay1,
           onDropPlayersWithoutDeck: handleDropPlayersWithoutDeck,
           onDropPlayersWithoutCheckin: handleDropPlayersWithoutCheckin,
           onDropPlayer: handleDropPlayer,

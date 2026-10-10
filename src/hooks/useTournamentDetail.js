@@ -16,6 +16,7 @@ import {
     publicarRodada,
     ajustarTotalRodadas,
     encerrarTorneio,
+    encerrarDay1,
     refazerRodada,
     dropJogador,
     dropJogadoresSemDeck,
@@ -434,6 +435,20 @@ export function useTournamentDetail() {
                 loadTournament();
                 loadStandings();
                 loadPartidas();
+            },
+            onDay1Encerrado: (msg) => {
+                const data = msg?.data || {};
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    day1Encerrado: true,
+                    day1EncerradoEm: data.day1EncerradoEm ?? prev.day1EncerradoEm,
+                } : prev);
+                showToast(
+                    `Day 1 encerrado. ${data.classificados ?? ""} avançam ao Day 2; ${data.dropados ?? 0} dropados.`,
+                    "success",
+                );
+                loadTournament();
+                loadStandings();
             },
             onJogadorIngressou: (msg) => {
                 const data = msg?.data || {};
@@ -975,6 +990,35 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleEncerrarDay1 = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("end-day1");
+        setError("");
+        try {
+            const data = await encerrarDay1(torneioId, token);
+            setTorneio((prev) => prev ? {
+                ...prev,
+                day1Encerrado: true,
+                day1EncerradoEm: data?.day1EncerradoEm ?? prev.day1EncerradoEm,
+            } : prev);
+            setSuccessMsg(
+                `Day 1 encerrado. ${data?.classificados ?? ""} avançam; ${data?.dropados ?? 0} dropados.`,
+            );
+            await loadTournament();
+            await loadStandings();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao encerrar Day 1.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
     const handlePublishRound = async () => {
         if (!torneioId || !canManageTournament) return false;
         setActionLoading(true);
@@ -1326,6 +1370,7 @@ export function useTournamentDetail() {
         handlePublishRound: guard(handlePublishRound),
         handleRefazerRodada: guard(handleRefazerRodada),
         handleEncerrarTorneio: guard(handleEncerrarTorneio),
+        handleEncerrarDay1: guard(handleEncerrarDay1),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayersWithoutDeck: guard(handleDropPlayersWithoutDeck),
         handleDropPlayersWithoutCheckin: guard(handleDropPlayersWithoutCheckin),

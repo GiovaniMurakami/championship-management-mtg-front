@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { BaseModal } from "../ui/BaseModal";
 import { InlineAlert } from "../ui/InlineAlert";
-import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
+import {
+  getNextRoundActionLabels,
+  needsEncerrarDay1,
+  NEXT_ROUND_ACTION,
+  shouldRequestNextRoundCheckin,
+} from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { ConfirmationIcon } from "./ConfirmationIcon";
@@ -148,6 +153,7 @@ export function OwnerControlPanel({
   onPublishRound,
   onRefazerRodada,
   onEncerrarTorneio,
+  onEncerrarDay1,
   onDropPlayersWithoutDeck,
   onDropPlayersWithoutCheckin,
   onDropPlayer,
@@ -164,6 +170,7 @@ export function OwnerControlPanel({
   const isOngoing = torneio?.status === "em_andamento";
   const [activeTab, setActiveTab] = useState(isOngoing ? "mesas" : "jogadores");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [endDay1ModalOpen, setEndDay1ModalOpen] = useState(false);
   const [joinLinkModal, setJoinLinkModal] = useState(null);
   const [generatingJoinLink, setGeneratingJoinLink] = useState(false);
   const [joinLinkCopied, setJoinLinkCopied] = useState(false);
@@ -261,7 +268,12 @@ export function OwnerControlPanel({
   const isStartingTournament = actionLoading && adminActionKey === "start-tournament";
   const isRedoingRound = actionLoading && adminActionKey === "redo-round";
   const isEndingTournament = actionLoading && adminActionKey === "end-tournament";
+  const isEndingDay1 = actionLoading && adminActionKey === "end-day1";
   const canRedoRound = isOngoing && Number(torneio?.rodadaAtual || 0) > 1;
+  const canEncerrarDay1 = isOngoing && needsEncerrarDay1(torneio);
+  const ativosCount = (standings || []).filter((p) => !p?.dropped).length;
+  const vagasDay2 = Number(torneio?.vagasDay2 || 0);
+  const dropadosDay1Estimate = Math.max(0, ativosCount - vagasDay2);
 
   const handleRedoRound = () => {
     if (!onRefazerRodada || !canRedoRound || actionLoading) return;
@@ -281,6 +293,16 @@ export function OwnerControlPanel({
   const handleConfirmEndTournament = () => {
     setEndModalOpen(false);
     onEncerrarTorneio?.();
+  };
+
+  const handleEncerrarDay1 = () => {
+    if (!onEncerrarDay1 || !canEncerrarDay1 || actionLoading) return;
+    setEndDay1ModalOpen(true);
+  };
+
+  const handleConfirmEncerrarDay1 = () => {
+    setEndDay1ModalOpen(false);
+    onEncerrarDay1?.();
   };
 
   return (
@@ -347,6 +369,16 @@ export function OwnerControlPanel({
               >
                 Revisar Rodada
               </button>
+              {canEncerrarDay1 && (
+                <button
+                  className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(251,191,36,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fcd34d] bg-[rgba(251,191,36,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.28)] max-md:flex-1"
+                  type="button"
+                  onClick={handleEncerrarDay1}
+                  disabled={actionLoading}
+                >
+                  {isEndingDay1 ? "Encerrando Day 1..." : "Encerrar Day 1"}
+                </button>
+              )}
               <button
                 className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)] max-md:flex-1"
                 type="button"
@@ -724,6 +756,7 @@ export function OwnerControlPanel({
         onDropPlayer={onDropPlayer}
         onNextRound={onNextRound}
         onPublishRound={onPublishRound}
+        onEncerrarDay1={onEncerrarDay1}
         actionLoading={actionLoading}
         droppingPlayerId={droppingPlayerId}
         usuarioId={usuarioId}
@@ -789,6 +822,42 @@ export function OwnerControlPanel({
             disabled={isEndingTournament}
           >
             {isEndingTournament ? "Encerrando..." : "Confirmar encerramento"}
+          </button>
+        </div>
+      </BaseModal>
+
+      <BaseModal
+        isOpen={endDay1ModalOpen}
+        onClose={() => setEndDay1ModalOpen(false)}
+        ariaLabelledBy="encerrar-day1-title"
+        ariaDescribedBy="encerrar-day1-desc"
+      >
+        <h2 id="encerrar-day1-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-text-main">
+          Encerrar Day 1
+        </h2>
+        <p id="encerrar-day1-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
+          Top {vagasDay2 || "—"} jogadores avançam ao Day 2.
+          {dropadosDay1Estimate > 0
+            ? ` ${dropadosDay1Estimate} jogador(es) serão dropados.`
+            : ""}
+          {" "}Após isso o metagame Day 1 fica disponível e você pode gerar a rodada seguinte.
+        </p>
+        <div className="flex gap-3 max-md:flex-col">
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            onClick={() => setEndDay1ModalOpen(false)}
+            disabled={isEndingDay1}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(251,191,36,0.55)] rounded-lg text-[#fde68a] text-[0.9rem] font-semibold bg-[rgba(251,191,36,0.15)] hover:bg-[rgba(251,191,36,0.28)] transition-colors disabled:opacity-50"
+            onClick={handleConfirmEncerrarDay1}
+            disabled={isEndingDay1}
+          >
+            {isEndingDay1 ? "Encerrando..." : "Confirmar Encerrar Day 1"}
           </button>
         </div>
       </BaseModal>

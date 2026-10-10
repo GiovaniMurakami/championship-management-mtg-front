@@ -246,6 +246,11 @@ export const encerrarTorneio = (torneioId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const encerrarDay1 = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/encerrar-day1`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const refazerRodada = (torneioId, token) =>
   httpClient.post(`/torneio/${torneioId}/refazer-rodada`, {}, {
     headers: { Authorization: `Bearer ${token}` },
