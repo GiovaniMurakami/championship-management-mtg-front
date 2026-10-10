@@ -6,6 +6,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { SkeletonMetagame } from "../components/ui/Skeleton";
 import { BreakdownKpis } from "../components/metagame/breakdown/BreakdownKpis";
 import { BreakdownPanel } from "../components/metagame/breakdown/BreakdownPanel";
+import { BreakdownDay2Cards } from "../components/metagame/breakdown/BreakdownDay2Cards";
 import { BreakdownShareChart } from "../components/metagame/breakdown/BreakdownShareChart";
 import { BreakdownWinrateChart } from "../components/metagame/breakdown/BreakdownWinrateChart";
 import { BreakdownMatchupHeat } from "../components/metagame/breakdown/BreakdownMatchupHeat";
@@ -213,27 +214,42 @@ export function MetagameBreakdownPage() {
       {!loading && !erro && arquetipos.length > 0 && (
         <div className="space-y-5 rounded-2xl bg-[#140c1f] p-1">
           <BreakdownKpis kpis={kpis} />
-          {conversaoPorArquetipo.length > 0 && (
-            <BreakdownPanel
-              title="Conversão Day 1 → Day 2"
-              description="Quantos decks de cada arquétipo avançaram no corte do Day 1."
-            >
-              <ul className="m-0 p-0 list-none divide-y divide-line/60">
-                {conversaoPorArquetipo.map((a) => (
-                  <li
-                    key={a.slug}
-                    className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
-                  >
-                    <span className="font-medium text-text-main">{a.nome}</span>
-                    <span className="tabular-nums text-text-soft">
-                      {a.conversaoDay2.day2}/{a.conversaoDay2.day1}
-                      {" · "}
-                      {formatPctConversao(a.conversaoDay2.taxaConversao)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </BreakdownPanel>
+          {(conversaoPorArquetipo.length > 0 || conversaoDay2?.cartasMaisPresentes?.length > 0) && (
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-start">
+              {conversaoPorArquetipo.length > 0 && (
+                <BreakdownPanel
+                  title="Conversão Day 1 → Day 2"
+                  description="Quantos decks de cada arquétipo avançaram no corte do Day 1."
+                >
+                  <ul className="m-0 p-0 list-none divide-y divide-line/60">
+                    {conversaoPorArquetipo.map((a) => (
+                      <li
+                        key={a.slug}
+                        className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
+                      >
+                        <span className="font-medium text-text-main">{a.nome}</span>
+                        <span className="tabular-nums text-text-soft">
+                          {a.conversaoDay2.day2}/{a.conversaoDay2.day1}
+                          {" · "}
+                          {formatPctConversao(a.conversaoDay2.taxaConversao)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </BreakdownPanel>
+              )}
+              {conversaoDay2?.cartasMaisPresentes?.length > 0 && (
+                <BreakdownPanel
+                  title="Cartas do Day 2"
+                  description={`Mais presentes nos ${conversaoDay2.jogadoresDay2} decks que passaram do Day 1 (maindeck, sem básicos).`}
+                >
+                  <BreakdownDay2Cards
+                    cartas={conversaoDay2.cartasMaisPresentes}
+                    totalDecks={conversaoDay2.jogadoresDay2}
+                  />
+                </BreakdownPanel>
+              )}
+            </div>
           )}
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-start">
             <BreakdownPanel
