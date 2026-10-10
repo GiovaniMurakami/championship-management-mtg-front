@@ -49,7 +49,7 @@ import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../util
 import { formatIsoDatesInMessage } from "../utils/brasiliaTime";
 
 export function useTournamentDetail() {
-    const { token, usuario, isAdmin, requireAuth } = useAuth();
+    const { token, usuario, isAdmin, requireAuth, authInitialized } = useAuth();
     const { addToast } = useToast();
     const { id: torneioRouteId } = useParams();
 
@@ -87,7 +87,12 @@ export function useTournamentDetail() {
         standingsQuery,
         matchesQuery,
         teamsQuery,
-    } = useTournamentQueries({ torneioId: torneioRouteId, token });
+    } = useTournamentQueries({
+      torneioId: torneioRouteId,
+      token,
+      // undefined (mocks antigos) → não bloqueia; false → espera restaurar sessão
+      authInitialized: authInitialized !== false,
+    });
     const torneioId = tournamentQuery.data?.id ?? torneioRouteId;
     const guard = useActionGuard(800);
     const isCheckedForNextRound = (player, rodadaAtual) =>
@@ -203,12 +208,22 @@ export function useTournamentDetail() {
     }, [teamsQuery.data]);
 
     useEffect(() => {
-        if (!torneioId) {
+        if (!torneioRouteId) {
             setLoading(false);
             return;
         }
+        if (authInitialized === false) {
+            setLoading(true);
+            return;
+        }
         setLoading(tournamentQuery.isLoading || standingsQuery.isLoading || matchesQuery.isLoading);
-    }, [torneioId, tournamentQuery.isLoading, standingsQuery.isLoading, matchesQuery.isLoading]);
+    }, [
+        torneioRouteId,
+        authInitialized,
+        tournamentQuery.isLoading,
+        standingsQuery.isLoading,
+        matchesQuery.isLoading,
+    ]);
 
     const loadTournament = useCallback(async () => {
         if (!torneioId) return;

@@ -16,7 +16,11 @@ import { getTournamentFormatLabel, TOURNAMENT_FORMATS } from "../constants/tourn
 import { useToast } from "../context/ToastContext";
 import { logError } from "../utils/logger";
 import { formatBrasiliaDate } from "../utils/brasiliaTime";
-import { tournamentPath } from "../utils/tournamentUrl";
+import {
+  isTorneioIdOuSlug,
+  metagameBreakdownPath,
+  tournamentPath,
+} from "../utils/tournamentUrl";
 import {
   calcularKpisBreakdown,
   dadosShareChart,
@@ -29,7 +33,6 @@ import { BTN_SECONDARY } from "../styles/uiClasses";
 const DIAS_OPCOES = [7, 14, 30, 90];
 const DIAS_PADRAO = 30;
 const FORMATO_PADRAO = "pauper";
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function parseDias(valor) {
   const n = Number(valor);
@@ -67,7 +70,7 @@ export function MetagameBreakdownPage() {
 
   useEffect(() => {
     let cancelled = false;
-    if (modoTorneio && !UUID_RE.test(torneioId)) {
+    if (modoTorneio && !isTorneioIdOuSlug(torneioId)) {
       setResult({ key: requestKey, data: null, erro: "ID de torneio inválido." });
       return undefined;
     }
@@ -155,15 +158,19 @@ export function MetagameBreakdownPage() {
     ? tournamentPath(data.torneio)
     : `/metagame?formato=${encodeURIComponent(formato)}&dias=${dias}${dataInicio && dataFim ? `&dataInicio=${dataInicio}&dataFim=${dataFim}` : ""}`;
 
+  const shareHref = modoTorneio && data?.torneio
+    ? `${window.location.origin}${metagameBreakdownPath(data.torneio)}`
+    : window.location.href;
+
   const copiarLink = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareHref);
       addToast("Link copiado.", { type: "success" });
     } catch (err) {
       logError("Falha ao copiar link:", err);
       addToast("Não foi possível copiar o link.", { type: "error" });
     }
-  }, [addToast]);
+  }, [addToast, shareHref]);
 
   return (
     <PageShell>
