@@ -254,7 +254,7 @@ export function TournamentDetailPage() {
           <StandingsTable
             standings={standings}
             isFinished={isFinished}
-            listasAbertas={Boolean(torneio?.listasPublicas) || torneio?.id === "9d8cc51b-425e-47a9-a7a8-3cd3e6657599"}
+            listasAbertas={Boolean(torneio?.listasPublicas)}
             isRegistrationOpen={isRegistrationOpen}
             token={token}
             isOwner={isOwner}
