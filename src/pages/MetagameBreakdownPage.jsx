@@ -124,10 +124,10 @@ export function MetagameBreakdownPage() {
     if (!conversaoDay2) return [];
     return [...arquetipos]
       .filter((a) => a?.conversaoDay2?.day1 > 0)
-      .sort((a, b) => (b.conversaoDay2?.taxaConversao || 0) - (a.conversaoDay2?.taxaConversao || 0)
+      .sort((a, b) => (b.conversaoDay2?.day2 || 0) - (a.conversaoDay2?.day2 || 0)
         || (b.conversaoDay2?.day1 || 0) - (a.conversaoDay2?.day1 || 0)
-        || a.nome.localeCompare(b.nome, "pt-BR"))
-      .slice(0, 16);
+        || (b.conversaoDay2?.taxaConversao || 0) - (a.conversaoDay2?.taxaConversao || 0)
+        || a.nome.localeCompare(b.nome, "pt-BR"));
   }, [arquetipos, conversaoDay2]);
 
   const titulo = modoTorneio
@@ -219,9 +219,9 @@ export function MetagameBreakdownPage() {
               {conversaoPorArquetipo.length > 0 && (
                 <BreakdownPanel
                   title="Conversão Day 1 → Day 2"
-                  description="Quantos decks de cada arquétipo avançaram no corte do Day 1."
+                  description={`${conversaoDay2.jogadoresDay2}/${conversaoDay2.jogadoresDay1} decks avançaram no corte${conversaoDay2.vagasDay2 ? ` (vagas: ${conversaoDay2.vagasDay2})` : ""}.`}
                 >
-                  <ul className="m-0 p-0 list-none divide-y divide-line/60">
+                  <ul className="m-0 max-h-[28rem] overflow-y-auto p-0 list-none divide-y divide-line/60">
                     {conversaoPorArquetipo.map((a) => (
                       <li
                         key={a.slug}
