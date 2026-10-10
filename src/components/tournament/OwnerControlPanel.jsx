@@ -351,9 +351,9 @@ export function OwnerControlPanel({
             </button>
           )}
           {isOngoing && (
-            <div className="flex flex-wrap gap-2 justify-end max-md:w-full">
+            <div className="flex flex-col gap-2 w-full min-[640px]:flex-row min-[640px]:flex-wrap min-[640px]:justify-end">
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)] max-md:flex-1"
+                className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)]"
                 type="button"
                 onClick={handleRedoRound}
                 disabled={actionLoading || !canRedoRound}
@@ -362,7 +362,7 @@ export function OwnerControlPanel({
                 {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
               </button>
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)] max-md:flex-1"
+                className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
                 type="button"
                 onClick={() => setReviewModalOpen(true)}
                 disabled={actionLoading}
@@ -371,7 +371,7 @@ export function OwnerControlPanel({
               </button>
               {canEncerrarDay1 && (
                 <button
-                  className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(251,191,36,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fcd34d] bg-[rgba(251,191,36,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.28)] max-md:flex-1"
+                  className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(251,191,36,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fcd34d] bg-[rgba(251,191,36,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.28)]"
                   type="button"
                   onClick={handleEncerrarDay1}
                   disabled={actionLoading}
@@ -380,7 +380,7 @@ export function OwnerControlPanel({
                 </button>
               )}
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)] max-md:flex-1"
+                className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)]"
                 type="button"
                 onClick={handleEndTournament}
                 disabled={actionLoading}
@@ -393,24 +393,24 @@ export function OwnerControlPanel({
       </div>
 
       {/* Secret tournament warning + links */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="mb-4 flex flex-col gap-2 min-[640px]:flex-row min-[640px]:flex-wrap">
         {torneio?.secreto && (
-          <div className="flex items-center gap-[0.5rem] px-3 py-[0.5rem] rounded-lg border border-[rgba(167,79,255,0.35)] bg-[rgba(167,79,255,0.1)] text-brand text-[0.82rem] font-medium flex-1 min-w-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="flex-shrink-0">
+          <div className="flex min-w-0 items-start gap-2 rounded-lg border border-[rgba(167,79,255,0.35)] bg-[rgba(167,79,255,0.1)] px-3 py-2 text-[0.82rem] font-medium text-brand min-[640px]:max-w-full">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="mt-0.5 flex-shrink-0">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <span>Torneio secreto — não aparece em listagens públicas</span>
+            <span className="min-w-0 leading-snug">Torneio secreto — não aparece em listagens públicas</span>
           </div>
         )}
         {torneio?.listasPublicas && torneio?.status !== "finalizado" && (
-          <div className="flex items-center gap-[0.5rem] px-3 py-[0.5rem] rounded-lg border border-[rgba(74,222,128,0.35)] bg-[rgba(34,197,94,0.1)] text-[#86efac] text-[0.82rem] font-medium flex-1 min-w-0">
-            <span>Listas abertas — decks visíveis nos standings</span>
+          <div className="flex min-w-0 items-start gap-2 rounded-lg border border-[rgba(74,222,128,0.35)] bg-[rgba(34,197,94,0.1)] px-3 py-2 text-[0.82rem] font-medium text-[#86efac]">
+            <span className="min-w-0 leading-snug">Listas abertas — decks visíveis nos standings</span>
           </div>
         )}
         <button
           type="button"
-          className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(217,180,255,0.25)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-soft bg-transparent hover:bg-[rgba(255,255,255,0.06)] hover:text-text-main"
+          className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center gap-[0.45rem] rounded-lg border border-[rgba(217,180,255,0.25)] bg-transparent px-3 py-[0.5rem] text-[0.82rem] font-semibold text-text-soft transition-all duration-[220ms] hover:bg-[rgba(255,255,255,0.06)] hover:text-text-main"
           onClick={handleCopyTournamentLink}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -422,7 +422,7 @@ export function OwnerControlPanel({
         {isOngoing && (
           <button
             type="button"
-            className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(34,197,94,0.4)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.08)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
+            className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center gap-[0.45rem] rounded-lg border border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.08)] px-3 py-[0.5rem] text-[0.82rem] font-semibold text-[#4ade80] transition-all duration-[220ms] disabled:cursor-not-allowed disabled:opacity-50 hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
             onClick={handleGenerateJoinLink}
             disabled={generatingJoinLink}
           >

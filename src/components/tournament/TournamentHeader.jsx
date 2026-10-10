@@ -2,7 +2,7 @@ import mukaLogo from "../../assets/muka.png";
 import { Skeleton } from "../ui/Skeleton";
 import { getTournamentFormatLabel } from "../../constants/tournament";
 import { ExpandableText } from "./ExpandableText";
-import { formatBrasiliaDateTime } from "../../utils/brasiliaTime";
+import { formatBrasiliaDateTimeShort } from "../../utils/brasiliaTime";
 import { formatTournamentRoundLabel } from "../../utils/tournamentFlow";
 
 const STATUS_CONFIG = {
@@ -31,10 +31,14 @@ const DEFAULT_STATUS = {
 
 function StatChip({ icon, label, value, accent }) {
   return (
-    <div className="flex items-center gap-[0.5rem] px-3 py-[0.45rem] rounded-xl bg-surface-soft border border-line-soft min-w-0 max-md:basis-[calc(50%-0.25rem)] max-md:flex-1">
-      <span style={accent ? { color: accent } : undefined} className={`flex-shrink-0 ${accent ? undefined : "text-[#8b7aab]"}`}>{icon}</span>
-      <span className="text-[0.78rem] text-[#8b7aab] font-medium whitespace-nowrap">{label}</span>
-      <span className="text-[0.85rem] font-semibold text-text-main break-words min-w-0">{value}</span>
+    <div className="flex min-w-0 items-center gap-2 rounded-xl border border-line-soft bg-surface-soft px-3 py-2 max-md:basis-[calc(50%-0.25rem)] max-md:flex-col max-md:items-start max-md:gap-1 max-md:py-2.5 md:gap-[0.5rem] md:py-[0.45rem]">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span style={accent ? { color: accent } : undefined} className={`flex-shrink-0 ${accent ? undefined : "text-[#8b7aab]"}`}>{icon}</span>
+        <span className="text-[0.72rem] font-medium whitespace-nowrap text-[#8b7aab] md:text-[0.78rem]">{label}</span>
+      </div>
+      <span className="min-w-0 text-[0.85rem] font-semibold leading-snug break-words text-text-main max-md:w-full">
+        {value}
+      </span>
     </div>
   );
 }
@@ -46,7 +50,7 @@ const IconViews = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const IconDate = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>;
 
 export function TournamentHeader({ torneio, loading, className = "" }) {
-  const formatDate = (dateString) => formatBrasiliaDateTime(dateString);
+  const formatDate = (dateString) => formatBrasiliaDateTimeShort(dateString);
 
   if (loading) {
     return (
