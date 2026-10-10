@@ -215,21 +215,23 @@ export function MetagameBreakdownPage() {
         <div className="space-y-5 rounded-2xl bg-[#140c1f] p-1">
           <BreakdownKpis kpis={kpis} />
           {(conversaoPorArquetipo.length > 0 || conversaoDay2?.cartasMaisPresentes?.length > 0) && (
-            <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+            <div className="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-2">
               {conversaoPorArquetipo.length > 0 && (
                 <BreakdownPanel
                   title="Conversão Day 1 → Day 2"
                   description={`${conversaoDay2.jogadoresDay2}/${conversaoDay2.jogadoresDay1} decks avançaram no corte${conversaoDay2.vagasDay2 ? ` (vagas: ${conversaoDay2.vagasDay2})` : ""}.`}
-                  bodyClassName="max-h-[20rem] overflow-y-auto xl:max-h-none xl:h-[28rem]"
+                  bodyClassName="max-h-[20rem] overflow-x-hidden overflow-y-auto xl:max-h-none xl:h-[28rem]"
                 >
                   <ul className="m-0 p-0 list-none divide-y divide-line/60">
                     {conversaoPorArquetipo.map((a) => (
                       <li
                         key={a.slug}
-                        className="-mx-1.5 flex flex-col gap-0.5 rounded-md px-1.5 py-2.5 text-sm transition-colors hover:bg-[rgba(167,79,255,0.08)] sm:flex-row sm:items-baseline sm:justify-between sm:gap-3"
+                        className="flex min-w-0 flex-col gap-0.5 rounded-md px-1 py-2.5 text-sm transition-colors hover:bg-[rgba(167,79,255,0.08)] sm:flex-row sm:items-baseline sm:justify-between sm:gap-3"
                       >
-                        <span className="min-w-0 font-medium text-text-main">{a.nome}</span>
-                        <span className="text-xs tabular-nums text-text-soft sm:shrink-0 sm:text-sm">
+                        <span className="min-w-0 truncate font-medium text-text-main" title={a.nome}>
+                          {a.nome}
+                        </span>
+                        <span className="shrink-0 text-xs tabular-nums text-text-soft sm:text-sm">
                           {a.conversaoDay2.day2}/{a.conversaoDay2.day1}
                           {" · "}
                           {formatPctConversao(a.conversaoDay2.taxaConversao)}
@@ -243,7 +245,7 @@ export function MetagameBreakdownPage() {
                 <BreakdownPanel
                   title="Cartas do Day 2"
                   description={`Mais presentes nos ${conversaoDay2.jogadoresDay2} decks que passaram do Day 1 (maindeck, sem básicos).`}
-                  bodyClassName="max-h-[20rem] overflow-y-auto xl:max-h-none xl:h-[28rem]"
+                  bodyClassName="max-h-[20rem] overflow-x-hidden overflow-y-auto xl:max-h-none xl:h-[28rem]"
                 >
                   <BreakdownDay2Cards
                     cartas={conversaoDay2.cartasMaisPresentes}
