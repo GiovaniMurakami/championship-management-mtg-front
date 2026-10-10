@@ -371,6 +371,11 @@ export function OwnerControlPanel({
             <span>Torneio secreto — não aparece em listagens públicas</span>
           </div>
         )}
+        {torneio?.listasPublicas && torneio?.status !== "finalizado" && (
+          <div className="flex items-center gap-[0.5rem] px-3 py-[0.5rem] rounded-lg border border-[rgba(74,222,128,0.35)] bg-[rgba(34,197,94,0.1)] text-[#86efac] text-[0.82rem] font-medium flex-1 min-w-0">
+            <span>Listas abertas — decks visíveis nos standings</span>
+          </div>
+        )}
         <button
           type="button"
           className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(217,180,255,0.25)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-soft bg-transparent hover:bg-[rgba(255,255,255,0.06)] hover:text-text-main"

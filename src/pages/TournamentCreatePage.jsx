@@ -32,6 +32,7 @@ export function buildCopyTournamentInitialValues(copyFrom) {
     linkLive: copyFrom.linkLive || "",
     storyFundoUrl: copyFrom.storyFundoUrl || "",
     secreto: Boolean(copyFrom.secreto),
+    listasPublicas: Boolean(copyFrom.listasPublicas),
     exibirNomeJogador: copyFrom.exibirNomeJogador || "nome",
     ligaIds: Array.isArray(copyFrom.ligaIds) ? copyFrom.ligaIds.map(String).filter(Boolean) : [],
   };

@@ -181,6 +181,7 @@ function PlayerHistoryTooltip({ player, partidas, standings, isFinished, childre
 export function StandingsTable({
   standings,
   isFinished = false,
+  listasAbertas = false,
   isRegistrationOpen = false,
   token,
   isOwner = false,
@@ -202,6 +203,7 @@ export function StandingsTable({
 
   const sectionTitle = isRegistrationOpen ? "Jogadores Inscritos" : "Standings";
   const collapseLabel = isRegistrationOpen ? "inscritos" : "standings";
+  const showDeckLists = isFinished || listasAbertas;
 
   if (!standings || standings.length === 0) {
     return (
@@ -512,7 +514,7 @@ export function StandingsTable({
                         {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-text-soft text-[0.82rem] text-center [font-variant-numeric:tabular-nums]">{formatPct(player.gwp)}</td>}
                         {!isRegistrationOpen && <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-text-soft text-[0.82rem] text-center [font-variant-numeric:tabular-nums]">{formatPct(player.ogwp)}</td>}
                         <td className="px-2 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-text-main relative min-w-0">
-                          {isFinished ? (
+                          {showDeckLists ? (
                             <DeckViewButton
                               player={player}
                               token={token}
@@ -648,7 +650,7 @@ export function StandingsTable({
                       </>
                     )}
 
-                    {isFinished && (
+                    {showDeckLists && (
                       <div className="mt-2 pt-2 border-t border-line">
                         <DeckViewButton
                           player={player}

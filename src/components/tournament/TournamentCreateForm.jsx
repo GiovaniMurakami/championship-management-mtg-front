@@ -28,6 +28,7 @@ const INITIAL_FORM = {
   playerPoints: "", tix: "",
   linkLive: "",
   secreto: false,
+  listasPublicas: false,
   exibirNomeJogador: "nome",
   ligaIds: [],
 };
@@ -216,6 +217,14 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 py-1">
+              <Checkbox id="listasPublicas" name="listasPublicas" checked={createForm.listasPublicas} onChange={handleChange} disabled={isSubmitting} />
+              <label htmlFor="listasPublicas" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
+                Listas abertas
+                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Permite ver o deck nos standings como em torneio finalizado.</span>
               </label>
             </div>
 
