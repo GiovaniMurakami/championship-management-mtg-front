@@ -2,6 +2,9 @@ import { getMatchPlayerName, isMatchPlayerExcluido } from "../../utils/matchDisp
 import { getFirstEliminationRound } from "../../utils/tournamentFlow";
 import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
 
+const COLUMN_WIDTH = 250;
+const MATCH_BLOCK = 118; // altura aproximada do card + folga interna do slot
+
 function getRoundLabel(participants) {
   if (participants >= 16) return "Oitavas";
   if (participants === 8) return "Quartas";
@@ -22,15 +25,25 @@ function getWinnerId(partida) {
 
 function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = false }) {
   return (
-    <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
+    <div className={`flex min-w-0 items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 ${
       isWinner
         ? "border-[rgba(250,204,21,0.48)] bg-[rgba(250,204,21,0.12)] text-[#fef3c7]"
         : "border-line-soft bg-[rgba(255,255,255,0.04)] text-[#d8cfee]"
     } ${isBye ? "opacity-55" : ""}`}>
-      <span className="min-w-0 truncate text-sm font-semibold">
-        {isBye ? name : <UsuarioNomeExibicao nome={name} usuarioId={usuarioId} excluido={excluido} />}
+      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+        {isBye
+          ? name
+          : (
+            <UsuarioNomeExibicao
+              nome={name}
+              usuarioId={usuarioId}
+              excluido={excluido}
+              className="block min-w-0 truncate"
+              nameClassName="block min-w-0 truncate"
+            />
+          )}
       </span>
-      <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-text-soft"}`}>
+      <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-text-soft"}`}>
         {score}
       </span>
     </div>
@@ -46,7 +59,7 @@ function BracketMatch({ partida, matchIndex }) {
   const score2 = partida.status === "finalizada" ? Number(partida.vitoriasJogador2 ?? 0) : "-";
 
   return (
-    <article className="relative rounded-lg border border-line-soft bg-[#0b0717] p-3 shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
+    <article className="w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-line-soft bg-[#0b0717] p-2.5 shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-brand">
           Jogo {matchIndex + 1}
@@ -59,7 +72,7 @@ function BracketMatch({ partida, matchIndex }) {
           {partida.status === "finalizada" ? "Finalizada" : "Pendente"}
         </span>
       </div>
-      <div className="grid gap-2">
+      <div className="grid min-w-0 gap-1.5">
         <BracketPlayer
           name={getMatchPlayerName(partida, 1)}
           usuarioId={jogador1Id}
@@ -110,6 +123,8 @@ export function EliminationBracket({ torneio, partidas }) {
       : getMatchPlayerName(finalMatch, 2)
     : null;
 
+  const baseSlots = Math.max(1, rounds[0]?.[1]?.length || Math.ceil(corteTop / 2));
+
   return (
     <section className="overflow-hidden rounded-2xl border border-[rgba(250,204,21,0.22)] bg-[linear-gradient(160deg,rgba(42,29,10,0.78),rgba(14,10,25,0.92))] p-5 shadow-[0_4px_20px_rgba(3,2,8,0.34)] max-md:p-4 max-w-full min-w-0">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3 max-md:flex-col max-md:items-stretch">
@@ -128,12 +143,22 @@ export function EliminationBracket({ torneio, partidas }) {
       </div>
 
       <div className="overflow-x-auto pb-2 [scrollbar-width:thin] [scrollbar-color:rgba(250,204,21,0.28)_transparent]">
-        <div className="flex w-max min-w-full gap-5">
+        <div
+          className="flex w-max items-stretch"
+          style={{ gap: 28, minWidth: "100%" }}
+        >
           {rounds.map(([rodada, matches], roundIndex) => {
             const participants = corteTop / (2 ** roundIndex);
+            const slotSpan = 2 ** roundIndex;
+            const slotHeight = MATCH_BLOCK * slotSpan;
+
             return (
-              <div key={rodada} className="grid w-[240px] shrink-0 content-center gap-3">
-                <div className="flex items-center justify-between gap-2">
+              <div
+                key={rodada}
+                className="flex shrink-0 flex-col"
+                style={{ width: COLUMN_WIDTH, minWidth: COLUMN_WIDTH, maxWidth: COLUMN_WIDTH }}
+              >
+                <div className="mb-3 flex shrink-0 items-center justify-between gap-2">
                   <h3 className="m-0 text-sm font-black uppercase tracking-[0.08em] text-[#fde68a]">
                     {getRoundLabel(participants)}
                   </h3>
@@ -141,9 +166,18 @@ export function EliminationBracket({ torneio, partidas }) {
                     R{rodada}
                   </span>
                 </div>
-                <div className="grid gap-4">
+                <div
+                  className="flex min-w-0 flex-col"
+                  style={{ minHeight: MATCH_BLOCK * baseSlots }}
+                >
                   {matches.map((partida, index) => (
-                    <BracketMatch key={partida.id || `${rodada}-${index}`} partida={partida} matchIndex={index} />
+                    <div
+                      key={partida.id || `${rodada}-${index}`}
+                      className="flex min-w-0 items-center"
+                      style={{ height: slotHeight }}
+                    >
+                      <BracketMatch partida={partida} matchIndex={index} />
+                    </div>
                   ))}
                 </div>
               </div>
