@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 import { InlineAlert } from "../ui/InlineAlert";
-import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
+import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryPlayerName, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
+/** Fração do slot vertical ocupada pelo card — o resto vira gap entre cards. */
+const TOP8_CARD_SLOT_FILL = 0.78;
+const TOP8_NAME_X = 255;
 
 //  Helpers 
 
@@ -19,6 +22,17 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+/** Corta texto com reticências, preferindo quebrar em espaço. */
+function fitCanvasText(ctx, text, maxW) {
+  const raw = String(text || "");
+  if (!raw || ctx.measureText(raw).width <= maxW) return raw;
+  let t = raw;
+  while (t.length > 1 && ctx.measureText(`${t}…`).width > maxW) t = t.slice(0, -1);
+  const space = t.lastIndexOf(" ");
+  if (space > Math.floor(t.length * 0.45)) t = t.slice(0, space);
+  return `${t}…`;
 }
 
 function easeOutQuart(t) {
@@ -63,13 +77,14 @@ function drawStoryHeadline(ctx, { width, y, headline, textoRodape }) {
   ctx.restore();
 }
 
-function storyContentLayout(canvasH, n, nominalCardH) {
+function storyContentLayout(canvasH, n, nominalCardH, { hasHeadline = true } = {}) {
   const headerEndY = Math.round(canvasH * TOP8_CONTENT_START_RATIO);
-  const metaBand = Math.round(canvasH * 0.055);
+  // Sem headline (ex.: data já no fundo), libera altura para os cards.
+  const metaBand = Math.round(canvasH * (hasHeadline ? 0.04 : 0.012));
   const layout = calcLayout(
     canvasH,
     headerEndY + metaBand,
-    Math.round(canvasH * 0.025),
+    Math.round(canvasH * 0.018),
     n,
     nominalCardH,
   );
@@ -88,7 +103,7 @@ function storyContentLayout(canvasH, n, nominalCardH) {
 function calcLayout(canvasH, headerEndY, bottomReserve, n, nominalCardH) {
   const available = canvasH - headerEndY - bottomReserve;
   const maxSlotH = Math.floor(available / n);
-  const cardH = Math.min(nominalCardH, Math.floor(maxSlotH * 0.92));
+  const cardH = Math.min(nominalCardH, Math.floor(maxSlotH * TOP8_CARD_SLOT_FILL));
   const cardGap = maxSlotH - cardH;
   const totalH = n * cardH + Math.max(0, n - 1) * cardGap;
   const startY = headerEndY + Math.max(0, Math.floor((available - totalH) / 2));
@@ -116,14 +131,15 @@ async function renderTop8Canvas(players, tournamentName, { backgroundUrl, headli
   }
 
   const n = players.length;
-  const { cardH, cardGap, startY, headlineY } = storyContentLayout(H, n, 150);
+  const hasHeadline = Boolean(String(headline || "").trim());
+  const { cardH, cardGap, startY, headlineY } = storyContentLayout(H, n, 150, { hasHeadline });
   const fontScale = Math.min(1, cardH / 150);
 
   drawStoryHeadline(ctx, { width: W, y: headlineY, headline, textoRodape });
 
   players.forEach((player, i) => {
     const pos = player.posicao ?? i + 1;
-    const name = player.usuario?.nome || player.nome || "Jogador";
+    const name = formatTop8StoryPlayerName(player.usuario?.nome || player.nome || "Jogador");
     const deck = player.deckNome || "—";
     const record = formatTop8StoryRecord(player);
     const isGold = pos === 1;
@@ -152,31 +168,29 @@ async function renderTop8Canvas(players, tournamentName, { backgroundUrl, headli
     }
 
     const posColor = isGold ? "#FFD700" : isSilver ? "#C0C0C0" : isBronze ? "#CD7F32" : "#9d74e8";
-    const posFs = Math.round((isGold ? 82 : 70) * fontScale);
+    const posFs = Math.round((isGold ? 78 : 66) * fontScale);
     ctx.font = `bold ${posFs}px Arial, sans-serif`;
     ctx.fillStyle = posColor;
     ctx.textAlign = "left";
-    ctx.fillText(`#${pos}`, 100, y + cardH * 0.65);
+    ctx.fillText(`#${pos}`, 96, y + cardH * 0.65);
 
-    const nameFs = Math.round((isGold ? 62 : 56) * fontScale);
-    const deckFs = Math.round(44 * fontScale);
+    const recFs = Math.round((isGold ? 44 : 38) * fontScale);
+    ctx.font = `bold ${recFs}px Arial, sans-serif`;
+    const recordW = ctx.measureText(record).width;
+    const textMaxW = Math.max(280, W - 90 - recordW - 28 - TOP8_NAME_X);
+
+    const nameFs = Math.round((isGold ? 56 : 50) * fontScale);
+    const deckFs = Math.round(40 * fontScale);
     const { nameY, deckY } = top8StoryNameDeckLayout(cardH, nameFs, deckFs);
     ctx.font = `bold ${nameFs}px Arial, sans-serif`;
     ctx.fillStyle = isGold ? "#fff8e0" : "#f0e6ff";
     ctx.textBaseline = "alphabetic";
-    let dName = name;
-    while (ctx.measureText(dName).width > 620 && dName.length > 1) dName = dName.slice(0, -1);
-    if (dName !== name) dName += "…";
-    ctx.fillText(dName, 290, y + nameY);
+    ctx.fillText(fitCanvasText(ctx, name, textMaxW), TOP8_NAME_X, y + nameY);
 
     ctx.font = `${deckFs}px Arial, sans-serif`;
     ctx.fillStyle = isGold ? "#fcd34d" : "#a78bfa";
-    let dDeck = deck;
-    while (ctx.measureText(dDeck).width > 520 && dDeck.length > 1) dDeck = dDeck.slice(0, -1);
-    if (dDeck !== deck) dDeck += "…";
-    ctx.fillText(dDeck, 290, y + deckY);
+    ctx.fillText(fitCanvasText(ctx, deck, textMaxW * 0.92), TOP8_NAME_X, y + deckY);
 
-    const recFs = Math.round((isGold ? 48 : 42) * fontScale);
     ctx.font = `bold ${recFs}px Arial, sans-serif`;
     ctx.fillStyle = isGold ? "#fde68a" : "#e8dfff";
     ctx.textAlign = "right";
@@ -331,23 +345,17 @@ function gifDrawCard(ctx, player, pos, xOffset, flashAlpha, glowAlpha, layout) {
   ctx.textAlign = "left";
   ctx.fillText(`#${pos}`, 44, y + cardH * 0.65);
 
-  const name = player.usuario?.nome || player.nome || "Jogador";
+  const name = formatTop8StoryPlayerName(player.usuario?.nome || player.nome || "Jogador");
   ctx.font = `bold ${nameFs}px Arial, sans-serif`;
   ctx.fillStyle = isGold ? "#fff8e0" : "#f0e6ff";
   ctx.textBaseline = "alphabetic";
   const maxNameW = CARD_W - 155;
-  let dName = name;
-  while (ctx.measureText(dName).width > maxNameW && dName.length > 1) dName = dName.slice(0, -1);
-  if (dName !== name) dName += "…";
-  ctx.fillText(dName, 129, y + nameY);
+  ctx.fillText(fitCanvasText(ctx, name, maxNameW), 129, y + nameY);
 
   const deck = player.deckNome || "—";
   ctx.font = `${deckFs}px Arial, sans-serif`;
   ctx.fillStyle = isGold ? "#fcd34d" : "#a78bfa";
-  let dDeck = deck;
-  while (ctx.measureText(dDeck).width > maxNameW + 10 && dDeck.length > 1) dDeck = dDeck.slice(0, -1);
-  if (dDeck !== deck) dDeck += "…";
-  ctx.fillText(dDeck, 129, y + deckY);
+  ctx.fillText(fitCanvasText(ctx, deck, maxNameW + 10), 129, y + deckY);
 
   const recFs = Math.round((isGold ? 22 : 20) * fontScale);
   ctx.font = `bold ${recFs}px Arial, sans-serif`;
@@ -417,7 +425,9 @@ async function generateAnimatedMp4(players, tournamentName, onProgress, onDone, 
     .map((p, i) => ({ ...p, _pos: p.posicao ?? i + 1 }))
     .reverse();
 
-  const layout = storyContentLayout(GH, n, 66);
+  const layout = storyContentLayout(GH, n, 66, {
+    hasHeadline: Boolean(String(headerMeta.headline || "").trim()),
+  });
 
   // Render at 1080�1920 by scaling the GW/GH coordinate space �2.25
   const OUT_W = 1080, OUT_H = 1920;
@@ -611,9 +621,11 @@ export function Top8StoryModal({
   const [sharingInstagram, setSharingInstagram] = useState(false);
 
   const players = allPlayers.slice(0, topN);
-  const previewLayout = storyContentLayout(1920, Math.max(players.length, 1), 150);
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
   const headline = formatTop8StoryHeadline(torneioHorario, allPlayers.length);
+  const previewLayout = storyContentLayout(1920, Math.max(players.length, 1), 150, {
+    hasHeadline: Boolean(headline),
+  });
   const textTheme = getTop8StoryTextTheme(storyFundoTextoRodape);
   const exportOptions = { backgroundUrl: storyFundoUrl, headline, textoRodape: storyFundoTextoRodape };
 
