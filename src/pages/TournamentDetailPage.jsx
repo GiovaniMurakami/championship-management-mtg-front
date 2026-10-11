@@ -269,12 +269,19 @@ export function TournamentDetailPage() {
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
             totalInscritos={torneio?.totalInscritos}
+            emCorte={Boolean(torneio?.emCorte)}
+            corteTop={torneio?.corteTop}
           />
         );
 
         const matchTablesPanel = (
           <>
-            <EliminationBracket torneio={torneio} partidas={partidas} />
+            <EliminationBracket
+              torneio={torneio}
+              partidas={partidas}
+              standings={standings}
+              canManageTournament={canManageTournament}
+            />
             <MatchTablesPanel
               torneio={torneio}
               partidas={partidas}

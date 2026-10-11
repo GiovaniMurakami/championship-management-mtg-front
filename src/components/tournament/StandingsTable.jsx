@@ -195,6 +195,8 @@ export function StandingsTable({
   partidas = [],
   compact = false,
   totalInscritos,
+  emCorte = false,
+  corteTop,
 }) {
   const [deckNameOverrides, setDeckNameOverrides] = useState({});
   const [showStory, setShowStory] = useState(false);
@@ -272,6 +274,7 @@ export function StandingsTable({
 
   const hasTop8Cut = standings.length > 8 && !search && !isRegistrationOpen;
   const colCount = isRegistrationOpen ? 4 : isFinished ? 11 : 12;
+  const canExportTopStory = canManageTournament && (isFinished || emCorte) && standings.length >= 2;
 
   if (compact) {
     return (
@@ -421,8 +424,8 @@ export function StandingsTable({
               )}
             </div>
           )}
-          {!collapsed && canManageTournament && isFinished && (
-            <Tooltip content="Gerar imagem do Top 8" focusable={false}>
+          {!collapsed && canExportTopStory && (
+            <Tooltip content={emCorte && !isFinished ? "Gerar imagem do Top eliminatório" : "Gerar imagem do Top 8"} focusable={false}>
               <button
                 className="inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.32rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.76rem] font-bold font-['inherit'] cursor-pointer whitespace-nowrap transition-[background,border-color,color] duration-[180ms] tracking-[0.02em] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] hover:text-[#ffe168]"
                 onClick={() => setShowStory(true)}
@@ -687,6 +690,7 @@ export function StandingsTable({
           storyFundoUrl={storyFundoUrl}
           storyFundoTextoRodape={storyFundoTextoRodape}
           deckNameOverrides={deckNameOverrides}
+          initialTopN={corteTop || 8}
           onClose={() => setShowStory(false)}
         />
       )}

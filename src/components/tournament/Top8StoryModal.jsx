@@ -605,6 +605,7 @@ export function Top8StoryModal({
   storyFundoUrl,
   storyFundoTextoRodape = "escuro",
   deckNameOverrides = {},
+  initialTopN,
   onClose,
 }) {
   const allPlayers = (standings || []).map((p) => ({
@@ -613,7 +614,12 @@ export function Top8StoryModal({
   }));
 
   const topNOptions = getTopNOptions(allPlayers.length);
-  const defaultN = topNOptions.includes(8) ? 8 : topNOptions[topNOptions.length - 1] ?? 1;
+  const preferredN = Number(initialTopN);
+  const defaultN = topNOptions.includes(preferredN)
+    ? preferredN
+    : topNOptions.includes(8)
+      ? 8
+      : topNOptions[topNOptions.length - 1] ?? 1;
 
   const [topN, setTopN] = useState(defaultN);
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
