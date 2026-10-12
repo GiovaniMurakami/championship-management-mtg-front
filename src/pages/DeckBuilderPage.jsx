@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { DeckBuilder, HandSimulator, DeckStats } from "../components";
 import { CardPreviewModal } from "../components/deck/CardPreviewModal";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
@@ -16,11 +16,13 @@ import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { normalizeId } from "../utils/normalizeId";
+import { deckPath } from "../utils/deckUrl";
 
 export function DeckBuilderPage({ isEditMode = false }) {
   const { token, usuario, isAdmin } = useAuth();
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const modoVisualizar = Boolean(
     location.state?.readOnly || new URLSearchParams(location.search).get("modo") === "visualizar"
   );
@@ -107,12 +109,13 @@ export function DeckBuilderPage({ isEditMode = false }) {
     return () => closeCardPreview();
   }, [closeCardPreview]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (isEditMode && id) {
-      handleCreateDeck(event, token, originalDeck?.id || id, originalDeck);
-    } else {
-      handleCreateDeck(event, token);
+    const resultado = isEditMode && id
+      ? await handleCreateDeck(event, token, originalDeck?.id || id, originalDeck)
+      : await handleCreateDeck(event, token);
+    if (resultado?.id) {
+      navigate(deckPath({ id: resultado.id, nome: resultado.nome }));
     }
   };
 

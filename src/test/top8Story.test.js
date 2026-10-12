@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TOP8_BACKGROUND_URL } from "../constants/top8";
-import { formatTop8StoryDate, formatTop8StoryHeadline, formatTop8StoryRecord, resolveTop8BackgroundUrl, top8StoryNameDeckLayout, TOP8_STORY_DECK_ASCENT, TOP8_STORY_NAME_DESCENT } from "../utils/top8Story";
+import { formatTop8StoryDate, formatTop8StoryHeadline, formatTop8StoryPlayerName, formatTop8StoryRecord, resolveTop8BackgroundUrl, top8StoryNameDeckLayout, TOP8_STORY_DECK_ASCENT, TOP8_STORY_NAME_DESCENT } from "../utils/top8Story";
 
 describe("top8Story helpers", () => {
   it("usa fundo padrão quando custom está vazio", () => {
@@ -34,6 +34,13 @@ describe("top8Story helpers", () => {
     expect(formatTop8StoryRecord({ vitoriasPartida: 4, derrotasPartida: 0 })).toBe("4-0");
     expect(formatTop8StoryRecord({ vitorias: 3, derrotas: 1 })).toBe("3-1");
     expect(formatTop8StoryRecord({})).toBe("0-0");
+  });
+
+  it("compacta nomes longos para o story", () => {
+    expect(formatTop8StoryPlayerName("Luis Felipe Maccheri de Toledo")).toBe("Luis Felipe Maccheri");
+    expect(formatTop8StoryPlayerName("Agnaldo dos Santos Teixeira Junior")).toBe("Agnaldo Teixeira Jr.");
+    expect(formatTop8StoryPlayerName("Erick Jones")).toBe("Erick Jones");
+    expect(formatTop8StoryPlayerName("Maher Samuel F Silva Mahers")).toBe("Maher Samuel Mahers");
   });
 
   it("separa nome e deck o bastante para descendentes", () => {

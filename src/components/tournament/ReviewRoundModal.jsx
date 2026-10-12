@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
+import {
+  getNextRoundActionLabels,
+  NEXT_ROUND_ACTION,
+  shouldRequestNextRoundCheckin,
+} from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { ConfirmationIcon, ConfirmationSummaryIcon } from "./ConfirmationIcon";
@@ -140,6 +144,7 @@ export function ReviewRoundModal({
   onDropPlayer,
   onNextRound,
   onPublishRound,
+  onEncerrarDay1,
   actionLoading,
   droppingPlayerId,
   usuarioId,
@@ -193,6 +198,11 @@ export function ReviewRoundModal({
         setHideAfterPublish(true);
         onClose();
       }
+      return;
+    }
+    if (nextRoundLabels.action === NEXT_ROUND_ACTION.END_DAY1) {
+      const ok = await onEncerrarDay1?.();
+      if (ok === true) onClose();
       return;
     }
     const result = await onNextRound(rodadaExtra);

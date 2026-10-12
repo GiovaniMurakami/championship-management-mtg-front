@@ -16,6 +16,7 @@ import {
     publicarRodada,
     ajustarTotalRodadas,
     encerrarTorneio,
+    encerrarDay1,
     refazerRodada,
     dropJogador,
     dropJogadoresSemDeck,
@@ -48,7 +49,7 @@ import { isTournamentAblyWindowOpen, msUntilTournamentAblyWindow } from "../util
 import { formatIsoDatesInMessage } from "../utils/brasiliaTime";
 
 export function useTournamentDetail() {
-    const { token, usuario, isAdmin, requireAuth } = useAuth();
+    const { token, usuario, isAdmin, requireAuth, authInitialized } = useAuth();
     const { addToast } = useToast();
     const { id: torneioRouteId } = useParams();
 
@@ -78,7 +79,7 @@ export function useTournamentDetail() {
       token
       && usuario?.id
       && torneio
-      && (torneio.status === "inscricoes_abertas" || torneio.status === "em_andamento"),
+      && (torneio.status === "inscricoes_abertas" || torneio.status === "em_andamento" || torneio.status === "pausado"),
     );
     const { decks } = useMyDecks(token, usuario?.id, { enabled: needsMyDecks });
     const {
@@ -86,7 +87,12 @@ export function useTournamentDetail() {
         standingsQuery,
         matchesQuery,
         teamsQuery,
-    } = useTournamentQueries({ torneioId: torneioRouteId, token });
+    } = useTournamentQueries({
+      torneioId: torneioRouteId,
+      token,
+      // undefined (mocks antigos) → não bloqueia; false → espera restaurar sessão
+      authInitialized: authInitialized !== false,
+    });
     const torneioId = tournamentQuery.data?.id ?? torneioRouteId;
     const guard = useActionGuard(800);
     const isCheckedForNextRound = (player, rodadaAtual) =>
@@ -202,12 +208,22 @@ export function useTournamentDetail() {
     }, [teamsQuery.data]);
 
     useEffect(() => {
-        if (!torneioId) {
+        if (!torneioRouteId) {
             setLoading(false);
             return;
         }
+        if (authInitialized === false) {
+            setLoading(true);
+            return;
+        }
         setLoading(tournamentQuery.isLoading || standingsQuery.isLoading || matchesQuery.isLoading);
-    }, [torneioId, tournamentQuery.isLoading, standingsQuery.isLoading, matchesQuery.isLoading]);
+    }, [
+        torneioRouteId,
+        authInitialized,
+        tournamentQuery.isLoading,
+        standingsQuery.isLoading,
+        matchesQuery.isLoading,
+    ]);
 
     const loadTournament = useCallback(async () => {
         if (!torneioId) return;
@@ -434,6 +450,21 @@ export function useTournamentDetail() {
                 loadTournament();
                 loadStandings();
                 loadPartidas();
+            },
+            onDay1Encerrado: (msg) => {
+                const data = msg?.data || {};
+                setTorneio((prev) => prev ? {
+                    ...prev,
+                    day1Encerrado: true,
+                    day1EncerradoEm: data.day1EncerradoEm ?? prev.day1EncerradoEm,
+                    status: data.status || "pausado",
+                } : prev);
+                showToast(
+                    `Day 1 encerrado. ${data.classificados ?? ""} avançam ao Day 2; ${data.dropados ?? 0} dropados.`,
+                    "success",
+                );
+                loadTournament();
+                loadStandings();
             },
             onJogadorIngressou: (msg) => {
                 const data = msg?.data || {};
@@ -975,6 +1006,36 @@ export function useTournamentDetail() {
         }
     };
 
+    const handleEncerrarDay1 = async () => {
+        if (!torneioId || !canManageTournament) return false;
+        setActionLoading(true);
+        setAdminActionKey("end-day1");
+        setError("");
+        try {
+            const data = await encerrarDay1(torneioId, token);
+            setTorneio((prev) => prev ? {
+                ...prev,
+                day1Encerrado: true,
+                day1EncerradoEm: data?.day1EncerradoEm ?? prev.day1EncerradoEm,
+                status: data?.status || "pausado",
+            } : prev);
+            setSuccessMsg(
+                `Day 1 encerrado. ${data?.classificados ?? ""} avançam; ${data?.dropados ?? 0} dropados.`,
+            );
+            await loadTournament();
+            await loadStandings();
+            clearMessages();
+            return true;
+        } catch (err) {
+            setError(err.message || "Erro ao encerrar Day 1.");
+            clearMessages();
+            return false;
+        } finally {
+            setActionLoading(false);
+            setAdminActionKey("");
+        }
+    };
+
     const handlePublishRound = async () => {
         if (!torneioId || !canManageTournament) return false;
         setActionLoading(true);
@@ -1326,6 +1387,7 @@ export function useTournamentDetail() {
         handlePublishRound: guard(handlePublishRound),
         handleRefazerRodada: guard(handleRefazerRodada),
         handleEncerrarTorneio: guard(handleEncerrarTorneio),
+        handleEncerrarDay1: guard(handleEncerrarDay1),
         handleBulkDropPlayers: guard(handleBulkDropPlayers),
         handleDropPlayersWithoutDeck: guard(handleDropPlayersWithoutDeck),
         handleDropPlayersWithoutCheckin: guard(handleDropPlayersWithoutCheckin),

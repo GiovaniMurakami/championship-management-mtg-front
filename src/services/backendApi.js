@@ -110,8 +110,11 @@ export const listarUsuarios = (token, params = {}) =>
     params,
   });
 
-export const buscarPerfilPublico = (usuarioId, paginaPartidasExternas = 1, periodo = {}) =>
-  httpClient.get(`/usuario/${usuarioId}/perfil`, { params: { paginaPartidasExternas, ...periodo } });
+export const buscarPerfilPublico = (usuarioId, paginaPartidasExternas = 1, periodo = {}, token) =>
+  httpClient.get(`/usuario/${usuarioId}/perfil`, {
+    ...optionalAuthConfig(token),
+    params: { paginaPartidasExternas, ...periodo },
+  });
 
 export const alterarBloqueioTorneios = (usuarioId, payload, token) =>
   httpClient.put(`/usuario/${usuarioId}/bloqueio-torneios`, payload, {
@@ -181,6 +184,16 @@ export const inscreverTorneio = (torneioId, token, payload = {}) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const fixarTorneio = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/fixar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const desfixarTorneio = (torneioId, token) =>
+  httpClient.delete(`/torneio/${torneioId}/fixar`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const escolherDeckTorneio = (torneioId, deckId, token) =>
   httpClient.post(`/torneio/${torneioId}/deck`, { deckId }, {
     headers: { Authorization: `Bearer ${token}` },
@@ -240,6 +253,11 @@ export const ajustarTotalRodadas = (torneioId, totalRodadas, token) =>
 
 export const encerrarTorneio = (torneioId, token) =>
   httpClient.post(`/torneio/${torneioId}/encerrar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const encerrarDay1 = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/encerrar-day1`, {}, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -334,6 +352,16 @@ export const deletarLiga = (ligaId, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const fixarLiga = (ligaId, token) =>
+  httpClient.post(`/liga/${ligaId}/fixar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const desfixarLiga = (ligaId, token) =>
+  httpClient.delete(`/liga/${ligaId}/fixar`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const getRankingLiga = async (ligaId, token, options = {}) => {
   const params = {
     limiteCartas: options.limiteCartas ?? 50,
@@ -352,6 +380,9 @@ export const getRankingLiga = async (ligaId, token, options = {}) => {
 
 export const buscarMetagame = (params) =>
   httpClient.get("/metagame", { params });
+
+export const buscarMetagameTorneio = (torneioId) =>
+  httpClient.get(`/torneio/${encodeURIComponent(torneioId)}/metagame`);
 
 export const buscarArquetipoMetagame = (formato, slug, params) =>
   httpClient.get(`/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(slug)}`, { params });
@@ -508,8 +539,15 @@ export const editarArtigo = (artigoId, payload, token) =>
   httpClient.put(`/artigo/${encodeURIComponent(artigoId)}`, payload, { headers: { Authorization: `Bearer ${token}` } });
 export const aprovarArtigo = (artigoId, aprovar, token) =>
   httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/aprovacao`, { aprovar }, { headers: { Authorization: `Bearer ${token}` } });
-export const comentarArtigo = (artigoId, texto, token) =>
-  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario`, { texto }, { headers: { Authorization: `Bearer ${token}` } });
+export const comentarArtigo = (artigoId, texto, token, comentarioPaiId) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario`, {
+    texto,
+    ...(comentarioPaiId ? { comentarioPaiId } : {}),
+  }, { headers: { Authorization: `Bearer ${token}` } });
+export const curtirComentarioArtigo = (artigoId, comentarioId, token) =>
+  httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/comentario/${encodeURIComponent(comentarioId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
+export const descurtirComentarioArtigo = (artigoId, comentarioId, token) =>
+  httpClient.delete(`/artigo/${encodeURIComponent(artigoId)}/comentario/${encodeURIComponent(comentarioId)}/curtida`, { headers: { Authorization: `Bearer ${token}` } });
 export const curtirArtigo = (artigoId, token) =>
   httpClient.post(`/artigo/${encodeURIComponent(artigoId)}/curtida`, {}, { headers: { Authorization: `Bearer ${token}` } });
 export const descurtirArtigo = (artigoId, token) =>

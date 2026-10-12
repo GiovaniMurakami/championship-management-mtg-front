@@ -11,7 +11,7 @@ function CardRow({ card, muted = false, onCardMouseEnter, onCardMouseLeave }) {
       className={`flex items-center gap-2 px-2 py-[0.28rem] rounded-md hover:bg-[rgba(167,79,255,0.08)] transition-colors duration-100 cursor-default group ${
         muted ? "hover:bg-[rgba(167,79,255,0.06)]" : ""
       }`}
-      onMouseEnter={() => onCardMouseEnter?.(card)}
+      onMouseEnter={(event) => onCardMouseEnter?.(card, event.currentTarget)}
       onMouseLeave={onCardMouseLeave}
     >
       {card.colors?.length > 0 && (

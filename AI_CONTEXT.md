@@ -1,7 +1,7 @@
 # AI Context — championship-management-mtg-front
 
 > Documento de contexto para assistentes de IA. Leia antes de modificar o projeto.
-> Versão do app: **1.2.45** | Idioma da UI e APIs: **português (BR)**
+> Versão do app: **1.2.46** | Idioma da UI e APIs: **português (BR)**
 
 ---
 
@@ -17,7 +17,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
 - Embedding em WordPress via iframe (`postMessage` + query params)
-- **Artigos** (`/artigos`) — artigos com markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]`), editores com assinatura (foto/nome/descrição) e aprovação admin
+- **Artigos** (`/artigos/{5 primeiros do id}-{slug}`) — markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]` com formato `lista` | `16:9` | `9:16`, `[youtube]`, `[h1]`/`[h2]`/`[h3]` com `center` e cor da borda esquerda, links `[texto](https://…)`). Guia em `public/ajuda-formatacao-artigo.txt` e modelo em `public/modelo-artigo.txt`. Editores com assinatura e aprovação admin. A capa entra no compartilhamento via rewrite `/artigos/<*>` → API `/artigo/share/<*>` (`amplify-rewrites.example.json`)
 
 **Backend:** API REST própria (não está neste repositório).  
 **Deploy:** AWS Amplify (`amplify.yml` → `dist/`).
@@ -333,7 +333,7 @@ Limites de deck (`constants/auth.js`):
 ## 11. Torneio — lógica de negócio
 
 ### Status (`constants/tournament.js`)
-- `inscricoes_abertas`, `em_andamento`, `finalizado`
+- `inscricoes_abertas`, `em_andamento`, `pausado` (intervalo Day 1→Day 2), `finalizado`
 
 ### Formatos
 `standard`, `modern`, `pioneer`, `pauper`, `commander`, `commander500`

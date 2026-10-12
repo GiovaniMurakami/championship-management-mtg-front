@@ -1,6 +1,7 @@
 import { useDateRangeParams } from "../../hooks/useDateRangeParams";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { SelectField } from "../ui/SelectField";
 import { BTN_SECONDARY, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 
 function rateClass(rate) {
@@ -51,14 +52,27 @@ export function MetagameMatrix({ arquetipos, formato, dias, restantes = 0, carre
           <input type="search" value={search} onChange={event => setSearch(event.target.value)} className={TOURNAMENT_INPUT_CLASS} placeholder="Nome do deck" />
         </label>
         <label className="grid gap-1 text-sm text-text-soft">Presença mínima no meta
-          <select value={minimum} onChange={event => setMinimum(event.target.value)} className={TOURNAMENT_INPUT_CLASS}>
-            <option value="0">Todos</option><option value="1">1%</option><option value="3">3%</option><option value="5">5%</option>
-          </select>
+          <SelectField
+            value={minimum}
+            onChange={event => setMinimum(event.target.value)}
+            options={[
+              { value: "0", label: "Todos" },
+              { value: "1", label: "1%" },
+              { value: "3", label: "3%" },
+              { value: "5", label: "5%" },
+            ]}
+          />
         </label>
         <label className="grid gap-1 text-sm text-text-soft">Ordenar por
-          <select value={sort} onChange={event => setSort(event.target.value)} className={TOURNAMENT_INPUT_CLASS}>
-            <option value="partidas">Quantidade de partidas</option><option value="winrate">Winrate</option><option value="nome">Nome</option>
-          </select>
+          <SelectField
+            value={sort}
+            onChange={event => setSort(event.target.value)}
+            options={[
+              { value: "partidas", label: "Quantidade de partidas" },
+              { value: "winrate", label: "Winrate" },
+              { value: "nome", label: "Nome" },
+            ]}
+          />
         </label>
       </div>
       <div className="mb-3 flex flex-wrap gap-3 text-xs text-text-soft">

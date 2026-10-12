@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { ReviewRoundModal } from "./ReviewRoundModal";
 import { BaseModal } from "../ui/BaseModal";
 import { InlineAlert } from "../ui/InlineAlert";
-import { getNextRoundActionLabels, shouldRequestNextRoundCheckin } from "../../utils/tournamentFlow";
+import {
+  getNextRoundActionLabels,
+  isTournamentActive,
+  isTournamentPaused,
+  isTournamentPlayable,
+  needsEncerrarDay1,
+  NEXT_ROUND_ACTION,
+  shouldRequestNextRoundCheckin,
+} from "../../utils/tournamentFlow";
 import { normalizeId } from "../../utils/normalizeId";
 import { hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { ConfirmationIcon } from "./ConfirmationIcon";
@@ -148,6 +156,7 @@ export function OwnerControlPanel({
   onPublishRound,
   onRefazerRodada,
   onEncerrarTorneio,
+  onEncerrarDay1,
   onDropPlayersWithoutDeck,
   onDropPlayersWithoutCheckin,
   onDropPlayer,
@@ -161,9 +170,12 @@ export function OwnerControlPanel({
   partidas,
 }) {
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
-  const isOngoing = torneio?.status === "em_andamento";
-  const [activeTab, setActiveTab] = useState(isOngoing ? "mesas" : "jogadores");
+  const isPlayable = isTournamentPlayable(torneio);
+  const isPaused = isTournamentPaused(torneio);
+  const isActive = isTournamentActive(torneio);
+  const [activeTab, setActiveTab] = useState(isPlayable ? "mesas" : "jogadores");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [endDay1ModalOpen, setEndDay1ModalOpen] = useState(false);
   const [joinLinkModal, setJoinLinkModal] = useState(null);
   const [generatingJoinLink, setGeneratingJoinLink] = useState(false);
   const [joinLinkCopied, setJoinLinkCopied] = useState(false);
@@ -176,8 +188,8 @@ export function OwnerControlPanel({
   const linkCopiedTimeoutRef = useRef(null);
 
   useEffect(() => {
-    setActiveTab(isOngoing ? "mesas" : "jogadores");
-  }, [isOngoing]);
+    setActiveTab(isPlayable ? "mesas" : "jogadores");
+  }, [isPlayable]);
 
   useEffect(() => {
     return () => {
@@ -217,7 +229,7 @@ export function OwnerControlPanel({
     });
   };
 
-  if (!canManage || (!isRegistrationOpen && !isOngoing)) return null;
+  if (!canManage || (!isRegistrationOpen && !isActive)) return null;
 
   const getPlayerName = (player) =>
     player?.nomeExibicao ||
@@ -261,7 +273,12 @@ export function OwnerControlPanel({
   const isStartingTournament = actionLoading && adminActionKey === "start-tournament";
   const isRedoingRound = actionLoading && adminActionKey === "redo-round";
   const isEndingTournament = actionLoading && adminActionKey === "end-tournament";
-  const canRedoRound = isOngoing && Number(torneio?.rodadaAtual || 0) > 1;
+  const isEndingDay1 = actionLoading && adminActionKey === "end-day1";
+  const canRedoRound = isPlayable && Number(torneio?.rodadaAtual || 0) > 1;
+  const canEncerrarDay1 = isPlayable && needsEncerrarDay1(torneio);
+  const ativosCount = (standings || []).filter((p) => !p?.dropped).length;
+  const vagasDay2 = Number(torneio?.vagasDay2 || 0);
+  const dropadosDay1Estimate = Math.max(0, ativosCount - vagasDay2);
 
   const handleRedoRound = () => {
     if (!onRefazerRodada || !canRedoRound || actionLoading) return;
@@ -274,7 +291,7 @@ export function OwnerControlPanel({
   };
 
   const handleEndTournament = () => {
-    if (!onEncerrarTorneio || !isOngoing || actionLoading) return;
+    if (!onEncerrarTorneio || !isActive || actionLoading) return;
     setEndModalOpen(true);
   };
 
@@ -283,12 +300,26 @@ export function OwnerControlPanel({
     onEncerrarTorneio?.();
   };
 
+  const handleEncerrarDay1 = () => {
+    if (!onEncerrarDay1 || !canEncerrarDay1 || actionLoading) return;
+    setEndDay1ModalOpen(true);
+  };
+
+  const handleConfirmEncerrarDay1 = () => {
+    setEndDay1ModalOpen(false);
+    onEncerrarDay1?.();
+  };
+
   return (
     <section className="border border-[rgba(251,191,36,0.35)] rounded-2xl p-5 bg-[linear-gradient(155deg,rgba(52,30,5,0.5),rgba(24,14,4,0.85))] shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] max-[640px]:p-3 max-w-full min-w-0 overflow-x-clip">
       <div className="flex items-start justify-between gap-4 mb-4 flex-wrap max-md:flex-col">
         <div className="min-w-0">
           <h2 className="m-0 mb-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main">Painel do Administrador</h2>
-          {isOngoing ? (
+          {isPaused ? (
+            <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#cbd5e1]">
+              Pausado — Day 1 encerrado. Inicie o Day 2 quando estiver pronto.
+            </p>
+          ) : isActive ? (
             <p className="mt-[0.2rem] mb-0 text-[0.8rem] text-[#c6b8a0]">
               Rodada {torneio?.rodadaAtual ?? "—"} de {torneio?.totalRodadas ?? "—"}
             </p>
@@ -300,7 +331,7 @@ export function OwnerControlPanel({
         </div>
 
         <div className="flex flex-col items-end gap-[0.4rem] flex-shrink-0 max-md:w-full max-md:items-stretch">
-          {isOngoing && requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
+          {isActive && requiresNextRoundCheckin && pendentesCheckin.length > 0 && (
             <p className="flex items-center gap-[0.3rem] m-0 text-[0.82rem] text-[#fbbf24] max-md:justify-center">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
@@ -310,7 +341,7 @@ export function OwnerControlPanel({
               {pendentesCheckin.length} jogador(es) sem check-in
             </p>
           )}
-          {isOngoing && nextRoundLabels.status && (
+          {isActive && nextRoundLabels.status && (
             <p className="m-0 text-[0.82rem] text-[#c6b8a0] text-right max-w-[320px] max-md:max-w-none max-md:text-center">
               {nextRoundLabels.status}
             </p>
@@ -328,27 +359,39 @@ export function OwnerControlPanel({
               {isStartingTournament ? "Iniciando..." : "Iniciar Torneio"}
             </button>
           )}
-          {isOngoing && (
-            <div className="flex flex-wrap gap-2 justify-end max-md:w-full">
+          {isActive && (
+            <div className="flex flex-col gap-2 w-full min-[640px]:flex-row min-[640px]:flex-wrap min-[640px]:justify-end">
+              {isPlayable && (
+                <button
+                  className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)]"
+                  type="button"
+                  onClick={handleRedoRound}
+                  disabled={actionLoading || !canRedoRound}
+                  title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponível a partir da rodada 2"}
+                >
+                  {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
+                </button>
+              )}
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fca5a5] bg-[rgba(239,68,68,0.12)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.24)] max-md:flex-1"
-                type="button"
-                onClick={handleRedoRound}
-                disabled={actionLoading || !canRedoRound}
-                title={canRedoRound ? "Remove a rodada atual e volta para a anterior" : "Disponível a partir da rodada 2"}
-              >
-                {isRedoingRound ? "Refazendo..." : "Refazer rodada"}
-              </button>
-              <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)] max-md:flex-1"
+                className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(34,197,94,0.5)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.15)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.3)]"
                 type="button"
                 onClick={() => setReviewModalOpen(true)}
                 disabled={actionLoading}
               >
-                Revisar Rodada
+                {isPaused ? "Iniciar Day 2" : "Revisar Rodada"}
               </button>
+              {canEncerrarDay1 && (
+                <button
+                  className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(251,191,36,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fcd34d] bg-[rgba(251,191,36,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(251,191,36,0.28)]"
+                  type="button"
+                  onClick={handleEncerrarDay1}
+                  disabled={actionLoading}
+                >
+                  {isEndingDay1 ? "Encerrando Day 1..." : "Encerrar Day 1"}
+                </button>
+              )}
               <button
-                className="inline-flex min-h-11 items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)] max-md:flex-1"
+                className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center px-4 py-[0.55rem] border border-[rgba(239,68,68,0.55)] rounded-lg text-[0.88rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#fda4af] bg-[rgba(239,68,68,0.14)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(239,68,68,0.28)]"
                 type="button"
                 onClick={handleEndTournament}
                 disabled={actionLoading}
@@ -361,19 +404,24 @@ export function OwnerControlPanel({
       </div>
 
       {/* Secret tournament warning + links */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="mb-4 flex flex-col gap-2 min-[640px]:flex-row min-[640px]:flex-wrap">
         {torneio?.secreto && (
-          <div className="flex items-center gap-[0.5rem] px-3 py-[0.5rem] rounded-lg border border-[rgba(167,79,255,0.35)] bg-[rgba(167,79,255,0.1)] text-brand text-[0.82rem] font-medium flex-1 min-w-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="flex-shrink-0">
+          <div className="flex min-w-0 items-start gap-2 rounded-lg border border-[rgba(167,79,255,0.35)] bg-[rgba(167,79,255,0.1)] px-3 py-2 text-[0.82rem] font-medium text-brand min-[640px]:max-w-full">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="mt-0.5 flex-shrink-0">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <span>Torneio secreto — não aparece em listagens públicas</span>
+            <span className="min-w-0 leading-snug">Torneio secreto — não aparece em listagens públicas</span>
+          </div>
+        )}
+        {torneio?.listasPublicas && torneio?.status !== "finalizado" && (
+          <div className="flex min-w-0 items-start gap-2 rounded-lg border border-[rgba(74,222,128,0.35)] bg-[rgba(34,197,94,0.1)] px-3 py-2 text-[0.82rem] font-medium text-[#86efac]">
+            <span className="min-w-0 leading-snug">Listas abertas — decks visíveis nos standings</span>
           </div>
         )}
         <button
           type="button"
-          className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(217,180,255,0.25)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-text-soft bg-transparent hover:bg-[rgba(255,255,255,0.06)] hover:text-text-main"
+          className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center gap-[0.45rem] rounded-lg border border-[rgba(217,180,255,0.25)] bg-transparent px-3 py-[0.5rem] text-[0.82rem] font-semibold text-text-soft transition-all duration-[220ms] hover:bg-[rgba(255,255,255,0.06)] hover:text-text-main"
           onClick={handleCopyTournamentLink}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -382,10 +430,10 @@ export function OwnerControlPanel({
           </svg>
           {linkCopied ? "Link copiado!" : "Copiar link do torneio"}
         </button>
-        {isOngoing && (
+        {isPlayable && (
           <button
             type="button"
-            className="inline-flex items-center gap-[0.45rem] px-3 py-[0.5rem] border border-[rgba(34,197,94,0.4)] rounded-lg text-[0.82rem] font-semibold cursor-pointer transition-all duration-[220ms] whitespace-nowrap text-[#4ade80] bg-[rgba(34,197,94,0.08)] disabled:opacity-50 disabled:cursor-not-allowed hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
+            className="inline-flex min-h-11 w-full min-[640px]:w-auto items-center justify-center gap-[0.45rem] rounded-lg border border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.08)] px-3 py-[0.5rem] text-[0.82rem] font-semibold text-[#4ade80] transition-all duration-[220ms] disabled:cursor-not-allowed disabled:opacity-50 hover:not-disabled:bg-[rgba(34,197,94,0.18)]"
             onClick={handleGenerateJoinLink}
             disabled={generatingJoinLink}
           >
@@ -466,7 +514,7 @@ export function OwnerControlPanel({
       </div>
 
       <div className="flex gap-1 mb-[0.85rem] border-b border-line pb-0 min-w-0 max-w-full px-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {isOngoing && (
+        {isPlayable && (
           <button
             type="button"
             className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "mesas" ? "text-[#fbbf24] border-b-[#fbbf24]" : "text-text-soft border-b-transparent hover:text-text-main"}`}
@@ -478,7 +526,7 @@ export function OwnerControlPanel({
             )}
           </button>
         )}
-        {isOngoing && contestadas.length > 0 && (
+        {isPlayable && contestadas.length > 0 && (
           <button
             type="button"
             className={`inline-flex flex-shrink-0 items-center gap-[0.4rem] px-[0.9rem] py-[0.45rem] border-none border-b-2 bg-transparent text-[0.85rem] font-semibold font-['inherit'] cursor-pointer transition-[color,border-color] duration-[180ms] mb-[-1px] ${activeTab === "contestadas" ? "text-[#f87171] border-b-[#f87171]" : "text-text-soft border-b-transparent hover:text-text-main"}`}
@@ -719,6 +767,7 @@ export function OwnerControlPanel({
         onDropPlayer={onDropPlayer}
         onNextRound={onNextRound}
         onPublishRound={onPublishRound}
+        onEncerrarDay1={onEncerrarDay1}
         actionLoading={actionLoading}
         droppingPlayerId={droppingPlayerId}
         usuarioId={usuarioId}
@@ -784,6 +833,42 @@ export function OwnerControlPanel({
             disabled={isEndingTournament}
           >
             {isEndingTournament ? "Encerrando..." : "Confirmar encerramento"}
+          </button>
+        </div>
+      </BaseModal>
+
+      <BaseModal
+        isOpen={endDay1ModalOpen}
+        onClose={() => setEndDay1ModalOpen(false)}
+        ariaLabelledBy="encerrar-day1-title"
+        ariaDescribedBy="encerrar-day1-desc"
+      >
+        <h2 id="encerrar-day1-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-text-main">
+          Encerrar Day 1
+        </h2>
+        <p id="encerrar-day1-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
+          Top {vagasDay2 || "—"} jogadores avançam ao Day 2.
+          {dropadosDay1Estimate > 0
+            ? ` ${dropadosDay1Estimate} jogador(es) serão dropados.`
+            : ""}
+          {" "}Após isso o metagame Day 1 fica disponível e você pode gerar a rodada seguinte.
+        </p>
+        <div className="flex gap-3 max-md:flex-col">
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors"
+            onClick={() => setEndDay1ModalOpen(false)}
+            disabled={isEndingDay1}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(251,191,36,0.55)] rounded-lg text-[#fde68a] text-[0.9rem] font-semibold bg-[rgba(251,191,36,0.15)] hover:bg-[rgba(251,191,36,0.28)] transition-colors disabled:opacity-50"
+            onClick={handleConfirmEncerrarDay1}
+            disabled={isEndingDay1}
+          >
+            {isEndingDay1 ? "Encerrando..." : "Confirmar Encerrar Day 1"}
           </button>
         </div>
       </BaseModal>

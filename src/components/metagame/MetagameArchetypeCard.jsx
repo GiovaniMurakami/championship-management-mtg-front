@@ -1,37 +1,17 @@
 import { useDateRangeParams } from "../../hooks/useDateRangeParams";
 import { formatCardName } from "../../utils/cardName";
-import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useScryfallArt } from "../../hooks/useScryfallArt";
 import { MetagameManaPips } from "./MetagameManaPips";
 
 
-export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, onCardMouseEnter, onCardMouseLeave }) {
+export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colorsLoading, imagem, onCardMouseEnter, onCardMouseLeave }) {
   const { dateQuery } = useDateRangeParams();
-  const cardRef = useRef(null);
-  const [shouldLoadArt, setShouldLoadArt] = useState(() => typeof IntersectionObserver === "undefined");
-  const { imagem, retry } = useScryfallArt(arquetipo.cartaRepresentativa, { enabled: shouldLoadArt });
   const to = `/metagame/${encodeURIComponent(formato)}/${encodeURIComponent(arquetipo.slug)}?dias=${dias}${dateQuery}`;
   const cartasChave = (arquetipo.cartasChave || []).slice(0, 3);
 
-  useEffect(() => {
-    const element = cardRef.current;
-    if (!element || shouldLoadArt || typeof IntersectionObserver === "undefined") return undefined;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
-      setShouldLoadArt(true);
-      observer.disconnect();
-    }, { rootMargin: "200px" });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [shouldLoadArt]);
-
   return (
     <Link
-      ref={cardRef}
       to={to}
-      onMouseEnter={() => { setShouldLoadArt(true); if (!imagem) retry(); }}
-      onFocus={() => setShouldLoadArt(true)}
       className="flex flex-col no-underline text-inherit overflow-hidden rounded-xl border border-line-soft bg-[rgba(18,12,32,0.72)] hover:border-line-strong hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(3,2,8,0.45)] transition-[border-color,transform,box-shadow] duration-200"
     >
       <div
@@ -42,7 +22,7 @@ export function MetagameArchetypeCard({ arquetipo, formato, dias, colors, colors
         onMouseLeave={onCardMouseLeave}
       >
         {imagem ? (
-          <img src={imagem} alt="" loading="lazy" decoding="async" onError={retry} className="w-full h-full object-cover object-top" />
+          <img src={imagem} alt="" decoding="async" className="w-full h-full object-cover object-top" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#3b1d66] to-[#1a102c]" />
         )}

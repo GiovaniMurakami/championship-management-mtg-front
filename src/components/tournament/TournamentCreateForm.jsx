@@ -24,10 +24,13 @@ const INITIAL_FORM = {
   maxJogadores: "",
   maxRodadas: "",
   corteTop: "",
+  rodadasDay1: "",
+  vagasDay2: "",
   linkBanner: "",
   playerPoints: "", tix: "",
   linkLive: "",
   secreto: false,
+  listasPublicas: false,
   exibirNomeJogador: "nome",
   ligaIds: [],
 };
@@ -173,6 +176,12 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
         maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
         maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
         corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
+        ...(createForm.rodadasDay1 && createForm.vagasDay2
+          ? {
+              rodadasDay1: Number(createForm.rodadasDay1),
+              vagasDay2: Number(createForm.vagasDay2),
+            }
+          : {}),
         ligaIds: Array.isArray(createForm.ligaIds) && createForm.ligaIds.length > 0 ? createForm.ligaIds : undefined,
       };
 
@@ -216,6 +225,14 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
               <label htmlFor="secreto" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
                 Torneio Secreto
                 <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Não aparece em listagens públicas; compartilhe o link diretamente.</span>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 py-1">
+              <Checkbox id="listasPublicas" name="listasPublicas" checked={createForm.listasPublicas} onChange={handleChange} disabled={isSubmitting} />
+              <label htmlFor="listasPublicas" className="text-[#e0e0e0] font-medium text-[0.95rem] cursor-pointer select-none">
+                Listas abertas
+                <span className="block text-[0.78rem] font-normal text-[#888] mt-[0.1rem]">Permite ver o deck nos standings como em torneio finalizado.</span>
               </label>
             </div>
 
@@ -334,6 +351,46 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
                 }))}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="rodadasDay1" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                  Rodadas do Day 1 <span className="text-text-soft text-[0.82rem]">(opcional)</span>
+                </label>
+                <input
+                  id="rodadasDay1"
+                  name="rodadasDay1"
+                  type="number"
+                  min="1"
+                  max="30"
+                  placeholder="Ex: 7"
+                  value={createForm.rodadasDay1}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className={TOURNAMENT_INPUT_CLASS}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="vagasDay2" className="text-[#e0e0e0] font-medium text-[0.95rem]">
+                  Vagas Day 2 <span className="text-text-soft text-[0.82rem]">(opcional)</span>
+                </label>
+                <input
+                  id="vagasDay2"
+                  name="vagasDay2"
+                  type="number"
+                  min="2"
+                  max="512"
+                  placeholder="Ex: 64"
+                  value={createForm.vagasDay2}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className={TOURNAMENT_INPUT_CLASS}
+                />
+              </div>
+            </div>
+            <small className="text-[#a3a3a3] text-[0.8rem] -mt-2">
+              Informe os dois campos para Day 1/Day 2. Ao encerrar o Day 1, só o top das vagas segue; o restante é dropado.
+            </small>
           </FormSection>
 
           <FormSection title="Banner">

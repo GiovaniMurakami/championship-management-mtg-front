@@ -1,6 +1,7 @@
 export const NEXT_ROUND_ACTION = {
     NONE: "none",
     PUBLISH_ROUND: "publish-round",
+    END_DAY1: "end-day1",
     NEXT_SWISS_ROUND: "next-swiss-round",
     START_TOP_CUT: "start-top-cut",
     ADVANCE_TOP_CUT: "advance-top-cut",
@@ -99,8 +100,23 @@ export function isSwissLastRound(torneio) {
     return currentRound >= totalRounds;
 }
 
+/** Em jogo ativo (mesas/resultados). */
+export function isTournamentPlayable(torneio) {
+    return torneio?.status === "em_andamento";
+}
+
+/** Intervalo Day 1 → Day 2. */
+export function isTournamentPaused(torneio) {
+    return torneio?.status === "pausado";
+}
+
+/** Em andamento ou pausado (admin / listagens “ao vivo”). */
+export function isTournamentActive(torneio) {
+    return isTournamentPlayable(torneio) || isTournamentPaused(torneio);
+}
+
 export function shouldRequestNextRoundCheckin(torneio) {
-    if (torneio?.status !== "em_andamento") {
+    if (!isTournamentActive(torneio)) {
         return false;
     }
 
@@ -111,13 +127,29 @@ export function shouldRequestNextRoundCheckin(torneio) {
     return true;
 }
 
+export function needsEncerrarDay1(torneio) {
+    const rodadasDay1 = toPositiveNumber(torneio?.rodadasDay1);
+    const vagasDay2 = toPositiveNumber(torneio?.vagasDay2);
+    if (!rodadasDay1 || !vagasDay2) return false;
+    if (torneio?.day1Encerrado) return false;
+    return toPositiveNumber(torneio?.rodadaAtual) === rodadasDay1;
+}
+
 export function getTournamentNextAction(torneio) {
-    if (torneio?.status !== "em_andamento") {
+    if (isTournamentPaused(torneio)) {
+        return NEXT_ROUND_ACTION.NEXT_SWISS_ROUND;
+    }
+
+    if (!isTournamentPlayable(torneio)) {
         return NEXT_ROUND_ACTION.NONE;
     }
 
     if (torneio?.rodadaPublicada === false) {
         return NEXT_ROUND_ACTION.PUBLISH_ROUND;
+    }
+
+    if (needsEncerrarDay1(torneio)) {
+        return NEXT_ROUND_ACTION.END_DAY1;
     }
 
     if (isEliminationPhase(torneio)) {
@@ -145,13 +177,21 @@ export function getNextRoundActionLabels(torneio, pendingCheckinCount = 0) {
                 blockedCta: "Publicar mesas",
                 status: "Pareamentos gerados. Publique quando estiver pronto.",
             };
+        case NEXT_ROUND_ACTION.END_DAY1:
+            return {
+                action: nextAction,
+                cta: "Encerrar Day 1",
+                blockedCta: "Encerrar Day 1",
+                status: `Última rodada do Day 1. Top ${toPositiveNumber(torneio?.vagasDay2)} avançam ao Day 2; o restante será dropado.`,
+            };
         case NEXT_ROUND_ACTION.NEXT_SWISS_ROUND:
             return {
                 action: nextAction,
-                cta: "Iniciar Próxima Rodada",
-                blockedCta: "Iniciar Próxima Rodada",
-                status:
-                    pendingCount > 0
+                cta: isTournamentPaused(torneio) ? "Iniciar Day 2" : "Iniciar Próxima Rodada",
+                blockedCta: isTournamentPaused(torneio) ? "Iniciar Day 2" : "Iniciar Próxima Rodada",
+                status: isTournamentPaused(torneio)
+                    ? "Day 1 encerrado. Torneio pausado até iniciar o Day 2."
+                    : pendingCount > 0
                         ? `${pendingCount} jogador(es) ainda não confirmaram presença`
                         : "Pronto para gerar a próxima rodada",
             };

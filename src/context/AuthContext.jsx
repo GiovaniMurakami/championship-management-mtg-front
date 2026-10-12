@@ -136,7 +136,18 @@ export function AuthProvider({ children }) {
         if (accessToken) {
           const synced = await syncUsuarioDoServidor(accessToken, storedUsuario);
           if (cancelled) return;
-          persistSession(accessToken, synced, parsed.refreshToken || "");
+          // ensureFreshToken já gravou o refresh novo. Não repor o refresh antigo consumido.
+          let refreshAtual = parsed.refreshToken || "";
+          try {
+            const latest = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+            if (latest.refreshToken) refreshAtual = latest.refreshToken;
+            if (latest.token && !isAccessTokenExpiredOrExpiring(latest.token, 0)) {
+              accessToken = latest.token;
+            }
+          } catch {
+            // Mantém o par lido no início da restauração.
+          }
+          persistSession(accessToken, synced, refreshAtual);
         } else {
           setToken("");
           setUsuario(null);

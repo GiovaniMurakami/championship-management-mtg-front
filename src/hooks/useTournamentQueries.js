@@ -43,8 +43,14 @@ export function normalizeMatchesPayload(data) {
   return data?.partidas || data?.matches || data?.rodadaAtualPartidas || [];
 }
 
-export function useTournamentQueries({ torneioId, token, enabled = true }) {
-  const canFetch = Boolean(enabled && torneioId);
+export function useTournamentQueries({
+  torneioId,
+  token,
+  enabled = true,
+  /** Espere a sessão restaurar para não disparar GET anônimo e depois autenticado. */
+  authInitialized = true,
+}) {
+  const canFetch = Boolean(enabled && authInitialized && torneioId);
 
   const tournamentQuery = useQuery({
     queryKey: [...tournamentQueryKeys.detail(torneioId), Boolean(token)],

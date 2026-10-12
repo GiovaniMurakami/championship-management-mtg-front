@@ -8,6 +8,7 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { aprovarArtigo, listarArtigos } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
+import { artigoPath } from "../utils/artigoUrl";
 
 export function BlogPendingPage() {
   const { token, isAdmin } = useAuth();
@@ -64,7 +65,7 @@ export function BlogPendingPage() {
           <ul className="space-y-4 list-none p-0">
             {artigos.map((a) => (
               <li key={a.id} className="rounded-2xl border border-line-soft bg-surface p-4">
-                <Link to={`/artigos/${a.id}`} className="text-lg font-semibold text-[#c4b5fd] hover:text-white">
+                <Link to={artigoPath(a)} className="text-lg font-semibold text-[#c4b5fd] hover:text-white">
                   {a.titulo}
                 </Link>
                 <p className="m-0 mt-1 text-sm text-text-soft">
@@ -101,7 +102,7 @@ export function BlogPendingPage() {
                   >
                     Rejeitar
                   </button>
-                  <Link to={`/artigos/${a.id}`} className={`${BTN_SECONDARY} inline-flex items-center`}>Revisar</Link>
+                  <Link to={artigoPath(a)} className={`${BTN_SECONDARY} inline-flex items-center`}>Revisar</Link>
                 </div>
               </li>
             ))}

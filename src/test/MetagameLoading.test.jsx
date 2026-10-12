@@ -13,11 +13,9 @@ vi.mock("../hooks/useAuth", () => ({ useAuth: () => ({ isAdmin: false }) }));
 vi.mock("../context/ToastContext", () => ({ useToast: () => ({ addToast: vi.fn() }) }));
 vi.mock("../hooks/usePageTitle", () => ({ usePageTitle: vi.fn() }));
 const archetype = { nome: "Burn", slug: "burn", cartaRepresentativa: "Lightning Bolt", cartasChave: ["Lava Spike"], cartasCores: ["Mountain", "Lava Spike"], cores: ["R"], metaPct: 20, copias: 1, winrate: 50 };
-let enterViewport;
 beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal("IntersectionObserver", class {
-    constructor(callback) { enterViewport = callback; }
     observe() {}
     disconnect() {}
   });
@@ -26,28 +24,24 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
-describe("carregamento sob demanda no metagame", () => {
-  it("busca apenas a representativa ao entrar na tela e a outra carta somente no hover", async () => {
+describe("carregamento do metagame", () => {
+  it("busca as artes numa coleção só, sem consulta por carta", async () => {
+    buscarCartasPorNome.mockImplementation(async (nomes) => nomes.map((nome) => ({
+      nome,
+      imagem: `https://example.test/${nome}.jpg`,
+      artCrop: `https://example.test/${nome}-art.jpg`,
+    })));
     render(<MemoryRouter initialEntries={["/metagame?formato=pauper&dias=30"]}><MetagamePage /></MemoryRouter>);
     await screen.findByText("Burn");
+    await waitFor(() => expect(buscarCartasPorNome).toHaveBeenCalledWith(
+      expect.arrayContaining(["Lightning Bolt", "Lava Spike"]),
+      { fallbackIndividual: false },
+    ));
     expect(buscarCartaPorNome).not.toHaveBeenCalled();
-    expect(buscarCartasPorNome).not.toHaveBeenCalled();
-    await waitFor(() => expect(enterViewport).toBeTypeOf("function"));
-    act(() => enterViewport([{ isIntersecting: true }]));
-    await waitFor(() => expect(buscarCartaPorNome).toHaveBeenCalledWith("Lightning Bolt"));
-    expect(buscarCartaPorNome).toHaveBeenCalledTimes(1);
-    const carta = screen.getByText("Lava Spike");
-    fireEvent.mouseEnter(carta);
+    expect(document.querySelector('img[src="https://example.test/Lightning Bolt-art.jpg"]')).toBeTruthy();
+    fireEvent.mouseEnter(screen.getByText("Lava Spike"));
     expect(await screen.findByAltText("Lava Spike")).toHaveAttribute("src", "https://example.test/Lava Spike.jpg");
-    fireEvent.mouseLeave(carta);
-    expect(screen.queryByAltText("Lava Spike")).not.toBeInTheDocument();
-    expect(buscarCartasPorNome).not.toHaveBeenCalled();
-  });
-
-  it("carrega a representativa quando IntersectionObserver não está disponível", async () => {
-    vi.stubGlobal("IntersectionObserver", undefined);
-    render(<MemoryRouter><MetagamePage /></MemoryRouter>);
-    await waitFor(() => expect(buscarCartaPorNome).toHaveBeenCalledWith("Lightning Bolt"));
+    expect(buscarCartaPorNome).not.toHaveBeenCalled();
   });
 
   it("exibe as listas no arquétipo sem buscar imagens de todas as cartas", async () => {

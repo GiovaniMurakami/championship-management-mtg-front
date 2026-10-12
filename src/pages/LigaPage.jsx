@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { listarLigas, deletarLiga } from "../services/backendApi";
+import { listarLigas, deletarLiga, fixarLiga, desfixarLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -11,6 +11,7 @@ import { STATUS_BADGE_CLASS, STATUS_LABEL } from "../constants/tournament";
 import { logError } from "../utils/logger";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
+import { Pin } from "lucide-react";
 
 const LIMITE = 20;
 
@@ -27,6 +28,7 @@ export function LigaPage() {
   const [pagina, setPagina] = useState(Math.max(1, Number(searchParams.get("pagina") || 1)));
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [pinningId, setPinningId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const loadLigas = useCallback(async () => {
@@ -73,6 +75,26 @@ export function LigaPage() {
     }
   };
 
+  const handleTogglePin = async (liga) => {
+    if (!token || !isAdmin) return;
+    setPinningId(liga.id);
+    try {
+      if (liga.fixado) {
+        await desfixarLiga(liga.id, token);
+        addToast("Liga desfixada.", { type: "success" });
+      } else {
+        await fixarLiga(liga.id, token);
+        addToast("Liga fixada no topo.", { type: "success" });
+      }
+      await loadLigas();
+    } catch (err) {
+      logError("Erro ao fixar liga:", err);
+      addToast("Não foi possível atualizar o pin.", { type: "error" });
+    } finally {
+      setPinningId(null);
+    }
+  };
+
   const totalPaginas = Math.ceil(total / LIMITE) || 1;
 
   return (
@@ -113,6 +135,25 @@ export function LigaPage() {
               <div className="relative z-[1] pointer-events-none min-h-24 overflow-hidden border-b border-line-soft bg-[radial-gradient(circle_at_80%_20%,rgba(167,79,255,0.35),transparent_42%),linear-gradient(135deg,rgba(59,29,102,0.8),rgba(18,12,32,0.95))] bg-cover bg-center">
                 {liga.bannerUrl && <img src={liga.bannerUrl} alt={`Banner da liga ${liga.nome}`} className="block h-auto w-full" />}
                 <div className="absolute -right-4 -bottom-8 text-[6rem] font-bold leading-none text-white/[0.035]">L</div>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className={`pointer-events-auto absolute right-2.5 top-2.5 z-[3] inline-flex h-7 w-7 items-center justify-center rounded-md border shadow-[0_4px_12px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-colors disabled:opacity-50 ${
+                      liga.fixado
+                        ? "border-[rgba(250,204,21,0.5)] bg-[rgba(24,16,8,0.72)] text-[#fde68a] hover:bg-[rgba(250,204,21,0.22)]"
+                        : "border-[rgba(217,180,255,0.35)] bg-[rgba(12,8,22,0.65)] text-text-soft hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.2)] hover:text-white"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTogglePin(liga);
+                    }}
+                    disabled={pinningId === liga.id}
+                    aria-label={liga.fixado ? `Desfixar ${liga.nome}` : `Fixar ${liga.nome}`}
+                    title={liga.fixado ? "Desfixar" : "Fixar no topo"}
+                  >
+                    <Pin size={13} aria-hidden="true" />
+                  </button>
+                )}
               </div>
               <div className="relative z-[1] pointer-events-none px-4 pt-4 pb-3 flex-1">
                 <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
@@ -160,9 +201,10 @@ export function LigaPage() {
                   <span className="flex items-center gap-[0.35rem]">◎ {liga.tipo === "times" ? "Por times" : "Individual"}</span>
                 </div>
               </div>
-              <div className="relative z-[2] px-4 py-3 border-t border-line-soft bg-white/[0.015] flex gap-2 flex-wrap">
+              <div className="relative z-[2] flex flex-nowrap items-center gap-2 border-t border-line-soft bg-white/[0.015] px-4 py-3">
                 <button
-                  className="min-h-11 w-full text-left sm:w-auto mr-auto border-0 bg-transparent p-0 text-[0.8rem] font-semibold text-[#d9b4ff] cursor-pointer hover:text-white"
+                  type="button"
+                  className="mr-auto min-h-9 shrink-0 border-0 bg-transparent p-0 text-left text-[0.8rem] font-semibold text-[#d9b4ff] cursor-pointer hover:text-white"
                   onClick={() => navigate(`/ligas/${liga.id}`)}
                 >
                   Ver detalhes →
@@ -170,13 +212,15 @@ export function LigaPage() {
                 {isAdmin && (
                   <>
                     <button
-                      className="min-h-11 flex-1 sm:flex-none px-4 py-[0.45rem] border border-[rgba(217,180,255,0.25)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-transparent text-text-soft transition-all duration-300 hover:border-line-strong hover:text-white"
+                      type="button"
+                      className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-[rgba(217,180,255,0.25)] bg-transparent px-3 text-[0.82rem] font-medium text-text-soft transition-all duration-300 hover:border-line-strong hover:text-white"
                       onClick={() => navigate(`/ligas/${liga.id}/editar`)}
                     >
                       Editar
                     </button>
                     <button
-                      className="min-h-11 flex-1 sm:flex-none px-4 py-[0.45rem] border border-[rgba(239,68,68,0.4)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-[rgba(239,68,68,0.07)] text-[#fca5a5] transition-all duration-300 hover:bg-[rgba(239,68,68,0.2)] hover:text-white"
+                      type="button"
+                      className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-[rgba(239,68,68,0.4)] bg-[rgba(239,68,68,0.07)] px-3 text-[0.82rem] font-medium text-[#fca5a5] transition-all duration-300 hover:bg-[rgba(239,68,68,0.2)] hover:text-white"
                       onClick={() => setConfirmDeleteId(liga.id)}
                     >
                       Excluir

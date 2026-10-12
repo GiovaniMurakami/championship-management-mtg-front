@@ -12,7 +12,7 @@ function parseHorarioMs(horario) {
  */
 export function isTournamentAblyWindowOpen(torneio, now = Date.now()) {
   if (!torneio || torneio.status === "finalizado") return false;
-  if (torneio.status === "em_andamento") return true;
+  if (torneio.status === "em_andamento" || torneio.status === "pausado") return true;
 
   const startMs = parseHorarioMs(torneio.horario);
   if (!Number.isFinite(startMs)) return false;

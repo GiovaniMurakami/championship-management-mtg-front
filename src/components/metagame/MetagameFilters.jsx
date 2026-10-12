@@ -1,3 +1,5 @@
+import { SelectField } from "../ui/SelectField";
+
 export function MetagameFormatNav({ formato, formatos, onFormato }) {
   return (
     <nav
@@ -26,15 +28,15 @@ export function MetagamePeriodoSelect({ dias, diasOpcoes, onDias }) {
   return (
     <label className="flex items-center gap-2 shrink-0">
       <span className="text-[0.8rem] text-text-muted whitespace-nowrap">Decks dos últimos</span>
-      <select
+      <SelectField
+        size="compact"
         value={String(dias)}
         onChange={(e) => onDias(Number(e.target.value))}
-        className="border border-line rounded-lg bg-white/[0.03] text-text-main px-3 py-1.5 text-[0.88rem] [color-scheme:dark] [&_option]:bg-[#1a1129]"
-      >
-        {diasOpcoes.map((d) => (
-          <option key={d} value={d}>{d} dias</option>
-        ))}
-      </select>
+        className="!w-auto min-w-[6.75rem]"
+        wrapperClassName="w-auto"
+        aria-label="Período em dias"
+        options={diasOpcoes.map((d) => ({ value: String(d), label: `${d} dias` }))}
+      />
     </label>
   );
 }

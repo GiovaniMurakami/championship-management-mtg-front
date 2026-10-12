@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { InlineAlert } from "../components/ui/InlineAlert";
@@ -70,6 +70,7 @@ export function DashboardPermissoesPage() {
       try {
         const data = await listarUsuarios(token, {
           nome: debouncedSearch.trim() || undefined,
+          role: filtroRole === "todos" ? undefined : filtroRole,
           limite: LIMITE,
           offset: (pagina - 1) * LIMITE,
         });
@@ -90,17 +91,13 @@ export function DashboardPermissoesPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, debouncedSearch, pagina]);
+  }, [token, debouncedSearch, filtroRole, pagina]);
 
-  const usuariosFiltrados = useMemo(() => {
-    const lista = [...usuarios].sort(
-      (a, b) =>
-        String(a?.nome || "").localeCompare(String(b?.nome || ""), "pt-BR", { sensitivity: "base" })
-        || String(a?.email || "").localeCompare(String(b?.email || ""), "pt-BR", { sensitivity: "base" }),
-    );
-    if (filtroRole === "todos") return lista;
-    return lista.filter((u) => (u.role || "user") === filtroRole);
-  }, [usuarios, filtroRole]);
+  const usuariosOrdenados = [...usuarios].sort(
+    (a, b) =>
+      String(a?.nome || "").localeCompare(String(b?.nome || ""), "pt-BR", { sensitivity: "base" })
+      || String(a?.email || "").localeCompare(String(b?.email || ""), "pt-BR", { sensitivity: "base" }),
+  );
 
   const totalPaginas = Math.max(1, Math.ceil(total / LIMITE));
 
@@ -111,11 +108,14 @@ export function DashboardPermissoesPage() {
     setMutatingId(usuario.id);
     try {
       const resultado = await definirEditor(usuario.id, roleAlvo === "editor", token);
-      setUsuarios((atual) =>
-        atual.map((item) =>
+      const saiuDoFiltro = filtroRole !== "todos" && resultado.role !== filtroRole;
+      setUsuarios((atual) => {
+        if (saiuDoFiltro) return atual.filter((item) => item.id !== usuario.id);
+        return atual.map((item) =>
           item.id === usuario.id ? { ...item, role: resultado.role } : item,
-        ),
-      );
+        );
+      });
+      if (saiuDoFiltro) setTotal((atual) => Math.max(0, atual - 1));
       addToast(
         `${usuario.nome} agora é ${ROLE_LABEL[resultado.role] || resultado.role}.`,
         { type: "success" },
@@ -172,13 +172,13 @@ export function DashboardPermissoesPage() {
           <div className="flex justify-center py-12">
             <Spinner text="Buscando usuários..." />
           </div>
-        ) : usuariosFiltrados.length === 0 ? (
+        ) : usuariosOrdenados.length === 0 ? (
           <p className="m-0 px-4 py-10 text-center text-sm text-text-muted">
             Nenhum usuário encontrado.
           </p>
         ) : (
           <ul className="m-0 list-none divide-y divide-[rgba(217,180,255,0.1)] p-0">
-            {usuariosFiltrados.map((usuario) => {
+            {usuariosOrdenados.map((usuario) => {
               const role = usuario.role || "user";
               const busy = mutatingId === usuario.id;
               const ehAdmin = role === "admin";
@@ -233,7 +233,7 @@ export function DashboardPermissoesPage() {
         )}
       </div>
 
-      {!loading && total > LIMITE && filtroRole === "todos" && (
+      {!loading && total > LIMITE && (
         <nav className="mt-4 flex items-center justify-center gap-3" aria-label="Paginação de usuários">
           <button
             type="button"

@@ -23,7 +23,7 @@ function mount() {
 beforeEach(() => {
   vi.clearAllMocks();
   client = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: false } } });
-  session.current = { token: "token", usuario: { id: "host" }, isAdmin: false };
+  session.current = { token: "token", usuario: { id: "host" }, isAdmin: false, authInitialized: true };
   buscarTorneio.mockResolvedValue(tournament);
   getStandings.mockResolvedValue({ status: "em_andamento", standings: [] });
   listarPartidasTorneio.mockResolvedValue({ partidas: [] });

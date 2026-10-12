@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ChartPie } from "lucide-react";
 import { useTournamentDetail } from "../hooks/useTournamentDetail";
 import { usePageTitle } from "../hooks/usePageTitle";
 import {
@@ -19,6 +20,7 @@ import { SkeletonTournamentDetail } from "../components";
 import { PageShell } from "../components/ui/PageShell";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { metagameBreakdownPath } from "../utils/tournamentUrl";
 
 export function TournamentDetailPage() {
   const navigate = useNavigate();
@@ -58,6 +60,7 @@ export function TournamentDetailPage() {
     handlePublishRound,
     handleRefazerRodada,
     handleEncerrarTorneio,
+    handleEncerrarDay1,
     handleDropPlayersWithoutDeck,
     handleDropPlayersWithoutCheckin,
     handleDropPlayer,
@@ -79,8 +82,8 @@ export function TournamentDetailPage() {
 
   const isFinished = torneio?.status === "finalizado";
   const isRegistrationOpen = torneio?.status === "inscricoes_abertas";
-  const isOngoing = torneio?.status === "em_andamento";
-  const canManage = canManageTournament && (isRegistrationOpen || torneio?.status === "em_andamento");
+  const isOngoing = torneio?.status === "em_andamento" || torneio?.status === "pausado";
+  const canManage = canManageTournament && (isRegistrationOpen || isOngoing);
   const canEditFinished = isAdmin && isFinished;
 
   const torneioNome = torneio?.nome || torneio?.torneioNome;
@@ -118,30 +121,40 @@ export function TournamentDetailPage() {
         >
           ← Voltar para torneios
         </button>
-        {(canManage || canEditFinished) && (
-          <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
-            {isAdmin && !isFinished && (
+        <div className="flex gap-2 max-md:w-full flex-wrap justify-end">
+          {(isFinished || torneio?.day1Encerrado) && torneio?.id && (
+            <Link
+              to={metagameBreakdownPath(torneio)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium no-underline transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
+            >
+              <ChartPie size={16} aria-hidden="true" /> Metagame breakdown
+            </Link>
+          )}
+          {(canManage || canEditFinished) && (
+            <>
+              {isAdmin && !isFinished && (
+                <button
+                  className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
+                  onClick={() => setShowHostModal(true)}
+                >
+                  {torneio?.anfitriao ? "Alterar anfitrião" : "Definir anfitrião"}
+                </button>
+              )}
               <button
-                className="px-4 py-2 border border-[rgba(199,149,255,0.45)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#e9d5ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(167,79,255,0.22)] hover:text-white max-md:flex-1"
-                onClick={() => setShowHostModal(true)}
+                className="px-4 py-2 border border-[#4f46e5] rounded-lg bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:flex-1"
+                onClick={() => setShowEditModal(true)}
               >
-                {torneio?.anfitriao ? "Alterar anfitrião" : "Definir anfitrião"}
+                Editar torneio
               </button>
-            )}
-            <button
-              className="px-4 py-2 border border-[#4f46e5] rounded-lg bg-[rgba(79,70,229,0.12)] text-[#d9d6ff] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[#4f46e5] hover:text-white max-md:flex-1"
-              onClick={() => setShowEditModal(true)}
-            >
-              Editar torneio
-            </button>
-            {isRegistrationOpen && <button
-              className="px-4 py-2 border border-[rgba(239,68,68,0.5)] rounded-lg bg-[rgba(239,68,68,0.08)] text-[#fca5a5] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(239,68,68,0.25)] hover:text-white max-md:flex-1"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              Excluir torneio
-            </button>}
-          </div>
-        )}
+              {isRegistrationOpen && <button
+                className="px-4 py-2 border border-[rgba(239,68,68,0.5)] rounded-lg bg-[rgba(239,68,68,0.08)] text-[#fca5a5] text-[0.88rem] font-medium cursor-pointer transition-all duration-200 hover:bg-[rgba(239,68,68,0.25)] hover:text-white max-md:flex-1"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                Excluir torneio
+              </button>}
+            </>
+          )}
+        </div>
       </div>
 
       {torneio && <TournamentLiveEmbeds linkLive={torneio.linkLive} />}
@@ -179,6 +192,7 @@ export function TournamentDetailPage() {
           onPublishRound: handlePublishRound,
           onRefazerRodada: handleRefazerRodada,
           onEncerrarTorneio: handleEncerrarTorneio,
+          onEncerrarDay1: handleEncerrarDay1,
           onDropPlayersWithoutDeck: handleDropPlayersWithoutDeck,
           onDropPlayersWithoutCheckin: handleDropPlayersWithoutCheckin,
           onDropPlayer: handleDropPlayer,
@@ -240,6 +254,7 @@ export function TournamentDetailPage() {
           <StandingsTable
             standings={standings}
             isFinished={isFinished}
+            listasAbertas={Boolean(torneio?.listasPublicas)}
             isRegistrationOpen={isRegistrationOpen}
             token={token}
             isOwner={isOwner}
@@ -254,43 +269,53 @@ export function TournamentDetailPage() {
             rodadaAtual={torneio?.rodadaAtual ?? 0}
             compact={compact}
             totalInscritos={torneio?.totalInscritos}
+            emCorte={Boolean(torneio?.emCorte)}
+            corteTop={torneio?.corteTop}
+          />
+        );
+
+        const eliminationBracket = (
+          <EliminationBracket
+            torneio={torneio}
+            partidas={partidas}
+            standings={standings}
+            canManageTournament={canManageTournament}
           />
         );
 
         const matchTablesPanel = (
-          <>
-            <EliminationBracket torneio={torneio} partidas={partidas} />
-            <MatchTablesPanel
-              torneio={torneio}
-              partidas={partidas}
-              standings={standings}
-              usuarioId={usuario?.id}
-              isOwner={canManageTournament}
-              token={token}
-              onPartidasUpdate={loadPartidas}
-            />
-          </>
+          <MatchTablesPanel
+            torneio={torneio}
+            partidas={partidas}
+            standings={standings}
+            usuarioId={usuario?.id}
+            isOwner={canManageTournament}
+            token={token}
+            onPartidasUpdate={loadPartidas}
+          />
         );
 
         const shouldShowPlayerProfile = Boolean(usuario?.id) && (Boolean(currentPlayer) || (!isOngoing && !isFinished));
 
-        // ── Ongoing: standings compact sidebar on left, everything else on right ──
+        // ── Ongoing: Top cut (se houver) acima dos standings ───────────────────
         if (isOngoing) {
           return (
             <div className="grid gap-6">
               {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
               {matchPanel}
               {shouldShowPlayerProfile && playerProfile}
+              {eliminationBracket}
               {standingsTable(false)}
               {matchTablesPanel}
             </div>
           );
         }
 
-        // ── Finished: single column, full standings + tables ─────────────────────
+        // ── Finished: Top cut (se houver) acima dos standings ──────────────────
         if (isFinished) {
           return (
             <div className="grid gap-6">
+              {eliminationBracket}
               {standingsTable(false)}
               {matchTablesPanel}
             </div>

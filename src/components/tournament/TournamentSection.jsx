@@ -25,12 +25,14 @@ const getFormatColor = (formato) =>
 const STATUS_LABEL = {
   inscricoes_abertas: "Inscrições Abertas",
   em_andamento: "Em Andamento",
+  pausado: "Pausado",
   finalizado: "Finalizado",
 };
 
 const STATUS_STYLE = {
   inscricoes_abertas: "bg-[rgba(34,197,94,0.15)] text-[#4ade80]",
   em_andamento: "bg-[rgba(251,191,36,0.15)] text-[#fbbf24]",
+  pausado: "bg-[rgba(148,163,184,0.15)] text-[#cbd5e1]",
 };
 
 export function TournamentSection() {

@@ -101,7 +101,8 @@ function MatchCard({ partida, index, usuarioId }) {
 }
 
 export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId, isOwner, token, onPartidasUpdate }) {
-    const isOngoing = torneio?.status === "em_andamento";
+    const isOngoing = torneio?.status === "em_andamento" || torneio?.status === "pausado";
+    const canEditTables = torneio?.status === "em_andamento";
     const isFinished = torneio?.status === "finalizado";
     const isTopCut = isEliminationPhase(torneio);
     const corteTop = Number(torneio?.corteTop || 0);
@@ -344,7 +345,7 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                         </div>
                     )}
 
-                    {isOwner && isOngoing && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
+                    {isOwner && canEditTables && Number(selectedRound) === Number(rodadaAtual) && total > 0 && (
                         <button
                             type="button"
                             className="inline-flex h-9 items-center justify-center gap-2 px-3 rounded-xl border border-[rgba(125,211,252,0.42)] bg-[rgba(56,189,248,0.12)] text-[#bae6fd] text-[0.78rem] font-semibold cursor-pointer transition-all duration-150 hover:bg-[rgba(56,189,248,0.22)] hover:text-white active:scale-[0.98]"

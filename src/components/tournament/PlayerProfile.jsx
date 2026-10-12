@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { buscarDeck } from "../../services/backendApi";
 import { SelectField } from "../ui";
+import { BaseModal } from "../ui/BaseModal";
 import { Tooltip } from "../ui/Tooltip";
 
 const getTotalMembros = (time) =>
@@ -93,11 +94,12 @@ export function PlayerProfile({
   const [confirmDrop, setConfirmDrop] = useState(false);
 
   const canEditDeck = torneio?.status === "inscricoes_abertas";
-  const isOngoing = torneio?.status === "em_andamento";
+  const isPlayable = torneio?.status === "em_andamento";
+  const isOngoing = isPlayable || torneio?.status === "pausado";
   const isFinished = torneio?.status === "finalizado";
   const isFull = torneio?.maxJogadores != null && (torneio?.totalInscritos ?? 0) >= torneio.maxJogadores;
   const missingNick = !usuario?.nickMTGO;
-  const canLateJoin = isOngoing && !currentPlayer && !isFull && Boolean(onInscreverTarde);
+  const canLateJoin = isPlayable && !currentPlayer && !isFull && Boolean(onInscreverTarde);
   const dropped = Boolean(currentPlayer?.dropped);
   const canSelfDrop = Boolean(currentPlayer) && !dropped && !isFinished && Boolean(onSelfDrop);
   const isSelfDropping =
@@ -159,11 +161,21 @@ export function PlayerProfile({
     || (fetchedDeck.id === String(confirmedDeckId) ? fetchedDeck.nome : null)
     || selectedDeck?.nome
     || null;
-  const showDropConfirmation = canSelfDrop && confirmDrop;
+
+  const dropLabel = canEditDeck ? "Cancelar minha inscrição" : "Dropar do torneio";
+  const dropConfirmTitle = canEditDeck ? "Cancelar inscrição" : "Dropar do torneio";
+  const dropConfirmDescription = canEditDeck
+    ? "Ao cancelar, você sai da lista de inscritos deste torneio."
+    : "Ao dropar, você deixa de jogar as próximas rodadas. Partidas pendentes desta rodada são resolvidas por WO para o oponente.";
 
   const selectedTeam = times.find((time) => String(time.id) === String(currentPlayer?.timeId));
   const statusTone = dropped ? "danger" : currentPlayer ? "success" : canLateJoin ? "warning" : "neutral";
   const statusLabel = dropped ? "Dropado" : currentPlayer ? "Inscrito" : canLateJoin ? "Entrada tardia" : "Não inscrito";
+
+  const handleConfirmDrop = () => {
+    setConfirmDrop(false);
+    onSelfDrop?.();
+  };
 
   return (
     <section className="rounded-2xl border border-line bg-[linear-gradient(160deg,rgba(31,18,59,0.86),rgba(11,8,22,0.94))] p-5 shadow-[0_16px_38px_rgba(3,2,8,0.32)] animate-[slide-up_400ms_ease-out] max-md:p-4">
@@ -345,73 +357,71 @@ export function PlayerProfile({
           )}
 
           {canSelfDrop && (
-            <details className="group rounded-lg border border-line-soft bg-black/[0.08]">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[0.8rem] font-bold text-[#a99cbe] transition-colors hover:text-[#e9ddff]">
-                Gerenciar inscrição
-                <span className="text-[1rem] transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
-              </summary>
-              <div className="grid gap-3 border-t border-line-soft p-3.5">
-                <Notice tone="warning">
-                  {canEditDeck
-                    ? "Ao cancelar, você sai da lista de inscritos deste torneio."
-                    : "Ao dropar, você deixa de jogar as próximas rodadas. Partidas pendentes desta rodada são resolvidas por WO para o oponente."}
-                </Notice>
-                {!showDropConfirmation ? (
-                  <button
-                    type="button"
-                    className={`${buttonBase} w-full border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.1)] text-[#fca5a5] hover:not-disabled:bg-[rgba(239,68,68,0.2)] hover:not-disabled:border-[rgba(239,68,68,0.7)]`}
-                    disabled={actionLoading}
-                    onClick={() => setConfirmDrop(true)}
-                  >
-                    {canEditDeck ? "Cancelar minha inscrição" : "Dropar do torneio"}
-                  </button>
-                ) : (
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      className={`${buttonBase} border border-[rgba(239,68,68,0.55)] bg-[rgba(239,68,68,0.22)] text-[#fecaca] hover:not-disabled:bg-[rgba(239,68,68,0.32)]`}
-                      disabled={actionLoading}
-                      onClick={() => {
-                        setConfirmDrop(false);
-                        onSelfDrop?.();
-                      }}
-                    >
-                      {isSelfDropping
-                        ? (canEditDeck ? "Cancelando..." : "Dropando...")
-                        : "Confirmar"}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${buttonBase} border border-[rgba(217,180,255,0.22)] bg-white/[0.05] text-[#e9ddff] hover:not-disabled:bg-white/[0.09]`}
-                      disabled={actionLoading}
-                      onClick={() => setConfirmDrop(false)}
-                    >
-                      Voltar
-                    </button>
-                  </div>
-                )}
-              </div>
-            </details>
+            <button
+              type="button"
+              className={`${buttonBase} w-full border border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.1)] text-[#fca5a5] hover:not-disabled:bg-[rgba(239,68,68,0.2)] hover:not-disabled:border-[rgba(239,68,68,0.7)]`}
+              disabled={actionLoading}
+              onClick={() => setConfirmDrop(true)}
+            >
+              {isSelfDropping
+                ? (canEditDeck ? "Cancelando..." : "Dropando...")
+                : dropLabel}
+            </button>
           )}
 
           {dropped && (
-            <details className="group rounded-lg border border-[rgba(248,113,113,0.25)] bg-[rgba(239,68,68,0.06)]">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[0.8rem] font-bold text-[#fca5a5]">
-                Gerenciar inscrição
-                <span className="text-[1rem] transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
-              </summary>
-              <div className="grid gap-3 border-t border-[rgba(248,113,113,0.15)] p-3.5">
-                <Notice tone="danger">Você dropou deste torneio e não participa mais das rodadas.</Notice>
-                {canSelfUndrop && (
-                  <button type="button" className={`${buttonBase} w-full border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.14)] text-[#86efac] hover:not-disabled:bg-[rgba(34,197,94,0.24)]`} disabled={actionLoading} onClick={onSelfUndrop}>
-                    {isSelfDropping ? "Voltando..." : "Voltar ao torneio"}
-                  </button>
-                )}
-              </div>
-            </details>
+            <div className="grid gap-3">
+              <Notice tone="danger">Você dropou deste torneio e não participa mais das rodadas.</Notice>
+              {canSelfUndrop && (
+                <button
+                  type="button"
+                  className={`${buttonBase} w-full border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.14)] text-[#86efac] hover:not-disabled:bg-[rgba(34,197,94,0.24)]`}
+                  disabled={actionLoading}
+                  onClick={onSelfUndrop}
+                >
+                  {isSelfDropping ? "Voltando..." : "Voltar ao torneio"}
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
+
+      <BaseModal
+        isOpen={confirmDrop}
+        onClose={() => {
+          if (!isSelfDropping) setConfirmDrop(false);
+        }}
+        ariaLabelledBy="self-drop-title"
+        ariaDescribedBy="self-drop-desc"
+      >
+        <h2 id="self-drop-title" className="font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.03em] mt-0 mb-3 text-text-main">
+          {dropConfirmTitle}
+        </h2>
+        <p id="self-drop-desc" className="m-0 mb-5 text-[0.92rem] leading-relaxed text-[#c6b8a0]">
+          {dropConfirmDescription}
+        </p>
+        <div className="flex gap-3 max-md:flex-col">
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(217,180,255,0.25)] rounded-lg text-text-soft text-[0.9rem] font-semibold bg-transparent hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors disabled:opacity-50"
+            onClick={() => setConfirmDrop(false)}
+            disabled={isSelfDropping}
+          >
+            Voltar
+          </button>
+          <button
+            type="button"
+            className="flex-1 px-4 py-2.5 border border-[rgba(239,68,68,0.5)] rounded-lg text-[#fecaca] text-[0.9rem] font-semibold bg-[rgba(239,68,68,0.15)] hover:bg-[rgba(239,68,68,0.25)] transition-colors disabled:opacity-50"
+            onClick={handleConfirmDrop}
+            disabled={isSelfDropping}
+          >
+            {isSelfDropping
+              ? (canEditDeck ? "Cancelando..." : "Dropando...")
+              : "Confirmar"}
+          </button>
+        </div>
+      </BaseModal>
     </section>
   );
 }

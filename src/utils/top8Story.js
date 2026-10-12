@@ -54,6 +54,36 @@ export function formatTop8StoryRecord(player) {
   return `${vitorias}-${derrotas}`;
 }
 
+const TOP8_NAME_PARTICLES = new Set(["de", "da", "do", "dos", "das", "e", "del", "van", "von"]);
+const TOP8_NAME_SUFFIXES = new Set(["junior", "jr", "jr.", "filho", "neto"]);
+
+/**
+ * Compacta nomes longos para o story (ex.: "Luis Felipe Maccheri de Toledo" → "Luis Felipe Maccheri").
+ */
+export function formatTop8StoryPlayerName(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "Jogador";
+  if (parts.length <= 3) return parts.join(" ");
+
+  let end = parts.length - 1;
+  let suffix = "";
+  if (TOP8_NAME_SUFFIXES.has(parts[end].toLowerCase())) {
+    suffix = " Jr.";
+    end -= 1;
+  }
+  if (end >= 2 && TOP8_NAME_PARTICLES.has(parts[end - 1].toLowerCase())) {
+    end -= 2;
+  }
+  const core = parts
+    .slice(0, end + 1)
+    .filter((part, index, arr) => index === 0 || index === arr.length - 1 || part.length > 1);
+  if (core.length <= 3) return `${core.join(" ")}${suffix}`.trim();
+  if (TOP8_NAME_PARTICLES.has(core[1].toLowerCase())) {
+    return `${core[0]} ${core[core.length - 1]}${suffix}`.trim();
+  }
+  return `${core[0]} ${core[1]} ${core[core.length - 1]}${suffix}`.trim();
+}
+
 /** Folga extra abaixo do nome para descendentes (g, j, p, q, y). */
 export const TOP8_STORY_NAME_DESCENT = 0.32;
 export const TOP8_STORY_DECK_ASCENT = 0.78;
