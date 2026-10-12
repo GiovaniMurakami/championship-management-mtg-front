@@ -1,4 +1,4 @@
-import { useMemo, useState, Fragment } from "react";
+import { useEffect, useMemo, useRef, useState, Fragment } from "react";
 import { normalizeId } from "../../utils/normalizeId";
 import { getMatchConfirmationSummary, hasPlayerConfirmedResult } from "../../utils/matchConfirmations";
 import { getDisplaySides, getMatchPlayerName } from "../../utils/matchDisplay";
@@ -129,6 +129,15 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
         }
         return defaultRound;
     }, [defaultRound, roundNumbers, selectedRoundOverride]);
+
+    const selectedRoundTabRef = useRef(null);
+    useEffect(() => {
+        const el = selectedRoundTabRef.current;
+        const scroller = el?.parentElement;
+        if (!el || !scroller) return;
+        const left = el.offsetLeft - (scroller.clientWidth - el.clientWidth) / 2;
+        scroller.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }, [selectedRound]);
 
     const partidasRodada = useMemo(() =>
         (partidas || []).filter((p) => {
@@ -327,21 +336,29 @@ export function MatchTablesPanel({ torneio, partidas, standings = [], usuarioId,
                     )}
                 </div>
 
-                <div className="flex items-center justify-end gap-2 max-md:w-full max-md:flex-col max-md:items-stretch">
+                <div className="flex min-w-0 items-center justify-end gap-2 max-md:w-full max-md:flex-col max-md:items-stretch">
                     {showRoundPicker && (
-                        <div className="inline-flex h-9 items-center overflow-hidden rounded-xl border border-[rgba(125,211,252,0.28)] bg-black/10 max-md:w-full" role="tablist" aria-label="Selecionar rodada">
-                            {roundNumbers.map((r) => (
-                                <button
-                                    key={r}
-                                    type="button"
-                                    role="tab"
-                                    aria-selected={Number(selectedRound) === r}
-                                    className={`h-full min-w-[2.55rem] border-0 border-r border-r-[rgba(125,211,252,0.18)] px-2 text-[0.75rem] font-bold cursor-pointer transition-colors duration-150 last:border-r-0 max-md:flex-1 ${Number(selectedRound) === r ? "bg-[#0ea5e9] text-[#071521]" : "bg-transparent text-[#93c5fd] hover:bg-[rgba(125,211,252,0.12)] hover:text-[#e0f2fe]"}`}
-                                    onClick={() => setSelectedRoundOverride(r)}
-                                >
-                                    R{r}
-                                </button>
-                            ))}
+                        <div
+                            className="flex h-9 w-full min-w-0 max-w-full items-stretch overflow-x-auto overscroll-x-contain rounded-xl border border-[rgba(125,211,252,0.28)] bg-black/10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:w-auto sm:max-w-none"
+                            role="tablist"
+                            aria-label="Selecionar rodada"
+                        >
+                            {roundNumbers.map((r) => {
+                                const fillsRow = roundNumbers.length <= 6;
+                                return (
+                                    <button
+                                        key={r}
+                                        ref={Number(selectedRound) === r ? selectedRoundTabRef : undefined}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={Number(selectedRound) === r}
+                                        className={`h-full border-0 border-r border-r-[rgba(125,211,252,0.18)] px-2.5 text-[0.75rem] font-bold cursor-pointer transition-colors duration-150 last:border-r-0 min-w-[2.4rem] sm:min-w-[2.55rem] ${fillsRow ? "flex-1" : "shrink-0"} ${Number(selectedRound) === r ? "bg-[#0ea5e9] text-[#071521]" : "bg-transparent text-[#93c5fd] hover:bg-[rgba(125,211,252,0.12)] hover:text-[#e0f2fe]"}`}
+                                        onClick={() => setSelectedRoundOverride(r)}
+                                    >
+                                        R{r}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
 
