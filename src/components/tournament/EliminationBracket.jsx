@@ -7,7 +7,8 @@ import { Tooltip } from "../ui/Tooltip";
 import { Top8StoryModal } from "./Top8StoryModal";
 
 const COLUMN_WIDTH = 250;
-const MATCH_BLOCK = 118; // altura aproximada do card + folga interna do slot
+/** Altura de 1 slot na 1ª rodada (= card + folga). Rodadas seguintes usam múltiplos. */
+const MATCH_BLOCK = 152;
 
 function standingPlayerId(player) {
   return player?.usuario?.id || player?.usuarioId || player?.userId || player?.id;
@@ -156,12 +157,12 @@ function getRoundLabel(participants) {
 
 function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = false }) {
   return (
-    <div className={`flex min-w-0 items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 ${
+    <div className={`flex min-w-0 items-center justify-between gap-2 rounded-md border px-2 py-1 ${
       isWinner
         ? "border-[rgba(250,204,21,0.4)] bg-[rgba(250,204,21,0.1)] text-[#fef3c7]"
         : "border-line bg-[rgba(255,255,255,0.03)] text-text-main"
     } ${isBye ? "opacity-55" : ""}`}>
-      <span className="min-w-0 flex-1 truncate text-[0.84rem] font-semibold">
+      <span className="min-w-0 flex-1 truncate text-[0.8rem] font-semibold leading-tight">
         {isBye
           ? name
           : (
@@ -174,7 +175,7 @@ function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = fal
             />
           )}
       </span>
-      <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[0.72rem] font-bold tabular-nums ${isWinner ? "bg-[rgba(250,204,21,0.18)] text-[#fde68a]" : "bg-[rgba(167,79,255,0.1)] text-text-soft"}`}>
+      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[0.7rem] font-bold tabular-nums leading-none ${isWinner ? "bg-[rgba(250,204,21,0.18)] text-[#fde68a]" : "bg-[rgba(167,79,255,0.1)] text-text-soft"}`}>
         {score}
       </span>
     </div>
@@ -190,12 +191,12 @@ function BracketMatch({ partida, matchIndex }) {
   const score2 = partida.status === "finalizada" ? Number(partida.vitoriasJogador2 ?? 0) : "-";
 
   return (
-    <article className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-line bg-[rgba(8,5,18,0.72)] p-2.5 shadow-[0_8px_22px_rgba(0,0,0,0.2)]">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-brand">
+    <article className="w-full min-w-0 max-w-full shrink-0 overflow-hidden rounded-xl border border-line bg-[rgba(8,5,18,0.72)] p-2 shadow-[0_8px_22px_rgba(0,0,0,0.2)]">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-brand">
           Jogo {matchIndex + 1}
         </span>
-        <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.06em] ${
+        <span className={`rounded-full px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.06em] ${
           partida.status === "finalizada"
             ? "border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] text-[#86efac]"
             : "border border-line bg-[rgba(167,79,255,0.1)] text-[#c9bddc]"
@@ -203,7 +204,7 @@ function BracketMatch({ partida, matchIndex }) {
           {partida.status === "finalizada" ? "Finalizada" : "Pendente"}
         </span>
       </div>
-      <div className="grid min-w-0 gap-1.5">
+      <div className="grid min-w-0 gap-1">
         <BracketPlayer
           name={getMatchPlayerName(partida, 1)}
           usuarioId={jogador1Id}
@@ -332,12 +333,12 @@ export function EliminationBracket({
                 </div>
                 <div
                   className="flex min-w-0 flex-col"
-                  style={{ minHeight: MATCH_BLOCK * baseSlots }}
+                  style={{ height: MATCH_BLOCK * baseSlots }}
                 >
                   {matches.map((partida, index) => (
                     <div
                       key={partida.id || `${rodada}-${index}`}
-                      className="flex min-w-0 items-center"
+                      className="flex min-w-0 shrink-0 items-center justify-center px-0.5"
                       style={{ height: slotHeight }}
                     >
                       <BracketMatch partida={partida} matchIndex={index} />
