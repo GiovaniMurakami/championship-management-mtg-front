@@ -274,45 +274,48 @@ export function TournamentDetailPage() {
           />
         );
 
+        const eliminationBracket = (
+          <EliminationBracket
+            torneio={torneio}
+            partidas={partidas}
+            standings={standings}
+            canManageTournament={canManageTournament}
+          />
+        );
+
         const matchTablesPanel = (
-          <>
-            <EliminationBracket
-              torneio={torneio}
-              partidas={partidas}
-              standings={standings}
-              canManageTournament={canManageTournament}
-            />
-            <MatchTablesPanel
-              torneio={torneio}
-              partidas={partidas}
-              standings={standings}
-              usuarioId={usuario?.id}
-              isOwner={canManageTournament}
-              token={token}
-              onPartidasUpdate={loadPartidas}
-            />
-          </>
+          <MatchTablesPanel
+            torneio={torneio}
+            partidas={partidas}
+            standings={standings}
+            usuarioId={usuario?.id}
+            isOwner={canManageTournament}
+            token={token}
+            onPartidasUpdate={loadPartidas}
+          />
         );
 
         const shouldShowPlayerProfile = Boolean(usuario?.id) && (Boolean(currentPlayer) || (!isOngoing && !isFinished));
 
-        // ── Ongoing: standings compact sidebar on left, everything else on right ──
+        // ── Ongoing: Top cut (se houver) acima dos standings ───────────────────
         if (isOngoing) {
           return (
             <div className="grid gap-6">
               {canManageTournament && <OwnerControlPanel {...ownerControlPanelProps} />}
               {matchPanel}
               {shouldShowPlayerProfile && playerProfile}
+              {eliminationBracket}
               {standingsTable(false)}
               {matchTablesPanel}
             </div>
           );
         }
 
-        // ── Finished: single column, full standings + tables ─────────────────────
+        // ── Finished: Top cut (se houver) acima dos standings ──────────────────
         if (isFinished) {
           return (
             <div className="grid gap-6">
+              {eliminationBracket}
               {standingsTable(false)}
               {matchTablesPanel}
             </div>

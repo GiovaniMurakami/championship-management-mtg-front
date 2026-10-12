@@ -156,12 +156,12 @@ function getRoundLabel(participants) {
 
 function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = false }) {
   return (
-    <div className={`flex min-w-0 items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 ${
+    <div className={`flex min-w-0 items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 ${
       isWinner
-        ? "border-[rgba(250,204,21,0.48)] bg-[rgba(250,204,21,0.12)] text-[#fef3c7]"
-        : "border-line-soft bg-[rgba(255,255,255,0.04)] text-[#d8cfee]"
+        ? "border-[rgba(250,204,21,0.4)] bg-[rgba(250,204,21,0.1)] text-[#fef3c7]"
+        : "border-line bg-[rgba(255,255,255,0.03)] text-text-main"
     } ${isBye ? "opacity-55" : ""}`}>
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+      <span className="min-w-0 flex-1 truncate text-[0.84rem] font-semibold">
         {isBye
           ? name
           : (
@@ -174,7 +174,7 @@ function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = fal
             />
           )}
       </span>
-      <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-black ${isWinner ? "bg-[rgba(250,204,21,0.2)] text-[#fde68a]" : "bg-[rgba(217,180,255,0.08)] text-text-soft"}`}>
+      <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[0.72rem] font-bold tabular-nums ${isWinner ? "bg-[rgba(250,204,21,0.18)] text-[#fde68a]" : "bg-[rgba(167,79,255,0.1)] text-text-soft"}`}>
         {score}
       </span>
     </div>
@@ -190,7 +190,7 @@ function BracketMatch({ partida, matchIndex }) {
   const score2 = partida.status === "finalizada" ? Number(partida.vitoriasJogador2 ?? 0) : "-";
 
   return (
-    <article className="w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-line-soft bg-[#0b0717] p-2.5 shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
+    <article className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-line bg-[rgba(8,5,18,0.72)] p-2.5 shadow-[0_8px_22px_rgba(0,0,0,0.2)]">
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em] text-brand">
           Jogo {matchIndex + 1}
@@ -198,7 +198,7 @@ function BracketMatch({ partida, matchIndex }) {
         <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.06em] ${
           partida.status === "finalizada"
             ? "border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] text-[#86efac]"
-            : "border border-[rgba(250,204,21,0.32)] bg-[rgba(250,204,21,0.1)] text-[#fde68a]"
+            : "border border-line bg-[rgba(167,79,255,0.1)] text-[#c9bddc]"
         }`}>
           {partida.status === "finalizada" ? "Finalizada" : "Pendente"}
         </span>
@@ -273,38 +273,40 @@ export function EliminationBracket({
   const canExportStory = canManageTournament && topPlayers.length >= 2;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[rgba(250,204,21,0.22)] bg-[linear-gradient(160deg,rgba(42,29,10,0.78),rgba(14,10,25,0.92))] p-5 shadow-[0_4px_20px_rgba(3,2,8,0.34)] max-md:p-4 max-w-full min-w-0">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3 max-md:flex-col max-md:items-stretch">
-        <div>
-          <p className="m-0 text-xs font-black uppercase tracking-[0.12em] text-[#facc15]">Corte Top {corteTop}</p>
-          <h2 className="m-0 mt-1 font-['Bebas_Neue',sans-serif] text-[1.7rem] tracking-[0.05em] text-text-main max-md:text-[1.45rem]">
-            Chaveamento eliminatório
+    <section className="relative max-w-full min-w-0 overflow-hidden rounded-2xl border border-line bg-[linear-gradient(160deg,rgba(34,19,69,0.6),rgba(15,10,29,0.85))] p-5 shadow-[0_4px_20px_rgba(3,2,8,0.3)] animate-[slide-up_400ms_ease-out] before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-[linear-gradient(90deg,#facc15,#c795ff,#8e39ed,#c795ff,#facc15)] before:bg-[length:200%_100%] max-md:p-4">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+          <h2 className="m-0 font-['Bebas_Neue',sans-serif] text-[1.5rem] tracking-[0.04em] text-text-main max-md:text-[1.35rem]">
+            Top {corteTop}
           </h2>
+          <span className="inline-flex h-8 items-center rounded-full border border-[rgba(250,204,21,0.35)] bg-[rgba(250,204,21,0.1)] px-3 text-[0.72rem] font-semibold text-[#fde68a]">
+            Eliminatória
+          </span>
         </div>
-        <div className="flex flex-wrap items-center gap-2 max-md:w-full max-md:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
           {canExportStory && (
             <Tooltip content={`Gerar imagem do Top ${corteTop} eliminatório`} focusable={false}>
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,215,0,0.45)] bg-[rgba(255,215,0,0.1)] px-3 py-1.5 font-['inherit'] text-[0.76rem] font-bold tracking-[0.02em] text-[#fcd34d] transition-[background,border-color,color] duration-150 hover:border-[rgba(255,215,0,0.65)] hover:bg-[rgba(255,215,0,0.2)] hover:text-[#ffe168]"
+                className="inline-flex h-9 items-center gap-[0.35rem] whitespace-nowrap rounded-full border border-[rgba(255,215,0,0.45)] bg-[rgba(255,215,0,0.1)] px-[0.85rem] font-['inherit'] text-[0.76rem] font-bold tracking-[0.02em] text-[#fcd34d] transition-[background,border-color,color] duration-[180ms] hover:border-[rgba(255,215,0,0.65)] hover:bg-[rgba(255,215,0,0.2)] hover:text-[#ffe168]"
                 onClick={() => setShowStory(true)}
                 aria-label={`Exportar imagem do Top ${corteTop}`}
               >
                 <ImageDown size={14} aria-hidden="true" />
-                Exportar Top {corteTop}
+                Top {corteTop} Story
               </button>
             </Tooltip>
           )}
-          <div className="rounded-lg border border-[rgba(250,204,21,0.28)] bg-[rgba(250,204,21,0.1)] px-3 py-2 text-right max-md:text-left">
-            <span className="block text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#fde68a]">Campeao</span>
-            <strong className="block max-w-[220px] truncate text-sm text-[#fff7cc] max-md:max-w-none">
+          <div className="inline-flex h-9 max-w-[240px] items-center gap-2 rounded-xl border border-line bg-[rgba(167,79,255,0.08)] px-3 max-md:max-w-none">
+            <span className="shrink-0 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-brand">Campeão</span>
+            <strong className="min-w-0 truncate text-[0.82rem] font-semibold text-text-main">
               {championName ? <UsuarioNomeExibicao nome={championName} usuarioId={championId} /> : "A definir"}
             </strong>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-2 [scrollbar-width:thin] [scrollbar-color:rgba(250,204,21,0.28)_transparent]">
+      <div className="overflow-x-auto pb-1 [scrollbar-width:thin] [scrollbar-color:rgba(199,149,255,0.28)_transparent]">
         <div
           className="flex w-max items-stretch"
           style={{ gap: 28, minWidth: "100%" }}
@@ -321,10 +323,10 @@ export function EliminationBracket({
                 style={{ width: COLUMN_WIDTH, minWidth: COLUMN_WIDTH, maxWidth: COLUMN_WIDTH }}
               >
                 <div className="mb-3 flex shrink-0 items-center justify-between gap-2">
-                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.08em] text-[#fde68a]">
+                  <h3 className="m-0 text-[0.75rem] font-bold uppercase tracking-[0.08em] text-brand">
                     {getRoundLabel(participants)}
                   </h3>
-                  <span className="rounded-full border border-[rgba(250,204,21,0.24)] px-2 py-0.5 text-[0.68rem] font-bold text-[#d8cfee]">
+                  <span className="rounded-full border border-line bg-[rgba(167,79,255,0.1)] px-2 py-0.5 text-[0.68rem] font-bold text-[#c9bddc]">
                     R{rodada}
                   </span>
                 </div>

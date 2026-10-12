@@ -49,8 +49,8 @@ describe("EliminationBracket", () => {
       />
     </MemoryRouter>);
 
-    expect(screen.queryByText(/Chaveamento eliminatório/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Corte Top 8/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Top 8$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Eliminatória/i)).not.toBeInTheDocument();
   });
 
   it("mostra a chave depois que o corte começa", () => {
@@ -61,7 +61,8 @@ describe("EliminationBracket", () => {
       />
     </MemoryRouter>);
 
-    expect(screen.getByText(/Chaveamento eliminatório/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Top 8$/i)).toBeInTheDocument();
+    expect(screen.getByText(/Eliminatória/i)).toBeInTheDocument();
     expect(screen.getByText("Alice")).toBeInTheDocument();
   });
 

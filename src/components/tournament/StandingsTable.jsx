@@ -272,9 +272,13 @@ export function StandingsTable({
       )
     : enrichedStandings;
 
-  const hasTop8Cut = standings.length > 8 && !search && !isRegistrationOpen;
+  const cutSize = Number(corteTop) > 0 ? Number(corteTop) : 8;
+  const hasCutLine = standings.length > cutSize && !search && !isRegistrationOpen;
+  const cutLineLabel = `- Corte para Top ${cutSize} -`;
   const colCount = isRegistrationOpen ? 4 : isFinished ? 11 : 12;
-  const canExportTopStory = canManageTournament && (isFinished || emCorte) && standings.length >= 2;
+  // Durante o corte, o story do Top sai do bracket (ordem do mata-mata).
+  // No torneio finalizado, os standings Swiss ainda podem gerar story.
+  const canExportTopStory = canManageTournament && isFinished && standings.length >= 2;
 
   if (compact) {
     return (
@@ -327,18 +331,14 @@ export function StandingsTable({
               const posicao = player.posicao ?? index + 1;
               const pts = player.pontosMesa ?? player.pontos ?? 0;
               const isTop3 = posicao <= 3 && !player.dropped;
-              const isTop8cut = hasTop8Cut && posicao === 8 && !player.dropped;
+              const showCut = hasCutLine && posicao === cutSize && !player.dropped;
+              const inCutZone = hasCutLine && posicao <= cutSize && !player.dropped;
               const rowAccent = isTop3
                 ? posicao === 1 ? "border-l-2 border-l-[rgba(255,215,0,0.5)]" : posicao === 2 ? "border-l-2 border-l-[rgba(192,192,192,0.45)]" : "border-l-2 border-l-[rgba(205,127,50,0.45)]"
-                : posicao <= 8 && !player.dropped ? "border-l-2 border-l-[rgba(167,79,255,0.3)]" : "";
+                : inCutZone ? "border-l-2 border-l-[rgba(167,79,255,0.3)]" : "";
 
               return (
                 <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
-                  {isTop8cut && (
-                    <div className="px-4 py-[0.2rem] border-t border-b border-dashed border-[rgba(167,79,255,0.3)] bg-[rgba(167,79,255,0.04)]">
-                      <span className="block text-center text-[0.63rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">- Corte Top 8 -</span>
-                    </div>
-                  )}
                   <div className={`grid grid-cols-[2rem_1fr_auto] gap-x-2 items-center px-4 py-[0.4rem] border-b border-[rgba(255,255,255,0.04)] transition-colors duration-150 hover:bg-[rgba(167,79,255,0.05)] ${rowAccent}`}>
                     <span className="text-center flex-shrink-0">
                       {isTop3 ? (
@@ -366,10 +366,15 @@ export function StandingsTable({
                       </span>
                       {expressiveBadge(player)}
                     </span>
-                    <span className={`text-[0.82rem] font-bold flex-shrink-0 ${posicao <= 8 && !player.dropped ? "text-[#fde68a]" : "text-text-soft"}`}>
+                    <span className={`text-[0.82rem] font-bold flex-shrink-0 ${inCutZone ? "text-[#fde68a]" : "text-text-soft"}`}>
                       {isRegistrationOpen ? "-" : pts}
                     </span>
                   </div>
+                  {showCut && (
+                    <div className="px-4 py-[0.2rem] border-t border-b border-dashed border-[rgba(167,79,255,0.3)] bg-[rgba(167,79,255,0.04)]">
+                      <span className="block text-center text-[0.63rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">{cutLineLabel}</span>
+                    </div>
+                  )}
                 </Fragment>
               );
             })
@@ -425,13 +430,13 @@ export function StandingsTable({
             </div>
           )}
           {!collapsed && canExportTopStory && (
-            <Tooltip content={emCorte && !isFinished ? "Gerar imagem do Top eliminatório" : "Gerar imagem do Top 8"} focusable={false}>
+            <Tooltip content={`Gerar imagem do Top ${cutSize}`} focusable={false}>
               <button
-                className="inline-flex items-center gap-[0.35rem] px-[0.85rem] py-[0.32rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.76rem] font-bold font-['inherit'] cursor-pointer whitespace-nowrap transition-[background,border-color,color] duration-[180ms] tracking-[0.02em] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] hover:text-[#ffe168]"
+                className="inline-flex h-9 items-center gap-[0.35rem] px-[0.85rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.76rem] font-bold font-['inherit'] cursor-pointer whitespace-nowrap transition-[background,border-color,color] duration-[180ms] tracking-[0.02em] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] hover:text-[#ffe168]"
                 onClick={() => setShowStory(true)}
-                aria-label="Gerar imagem do Top 8"
+                aria-label={`Gerar imagem do Top ${cutSize}`}
               >
-                Top 8 Story
+                Top {cutSize} Story
               </button>
             </Tooltip>
           )}
@@ -468,11 +473,11 @@ export function StandingsTable({
                   const deckId = player.deckId || player.deck?.id;
                   const deckNameOverride = deckId ? deckNameOverrides[deckId] : undefined;
                   const isTop3 = posicao <= 3 && !player.dropped;
-                  const isTop8 = posicao <= 8 && !player.dropped;
-                  const showCut = hasTop8Cut && posicao === 8 && !player.dropped;
+                  const inCutZone = hasCutLine && posicao <= cutSize && !player.dropped;
+                  const showCut = hasCutLine && posicao === cutSize && !player.dropped;
                   const rowBorderClass = isTop3
                     ? posicao === 1 ? "border-l-2 border-l-[rgba(255,215,0,0.5)]" : posicao === 2 ? "border-l-2 border-l-[rgba(192,192,192,0.45)]" : "border-l-2 border-l-[rgba(205,127,50,0.45)]"
-                    : isTop8 ? "border-l-2 border-l-[rgba(167,79,255,0.3)]" : "";
+                    : inCutZone ? "border-l-2 border-l-[rgba(167,79,255,0.3)]" : "";
 
                   return (
                     <Fragment key={player.usuario?.id || player.usuarioId || player.id || index}>
@@ -507,7 +512,7 @@ export function StandingsTable({
                         </td>
                         {!isRegistrationOpen && (
                           <td className="px-1.5 py-[0.55rem] border-t border-[rgba(255,255,255,0.04)] text-text-main text-center">
-                            <span className={isTop8 && !player.dropped ? "text-[#fde68a] font-bold" : undefined}>
+                            <span className={inCutZone ? "text-[#fde68a] font-bold" : undefined}>
                               {player.pontosMesa ?? player.pontos ?? 0}
                             </span>
                           </td>
@@ -554,7 +559,7 @@ export function StandingsTable({
                       {showCut && (
                         <tr>
                           <td colSpan={colCount} className="px-3 py-[0.2rem] bg-[rgba(167,79,255,0.05)] border-t border-dashed border-t-[rgba(167,79,255,0.35)] border-b border-dashed border-b-[rgba(167,79,255,0.35)]">
-                            <span className="block text-center text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">- Corte para Top 8 -</span>
+                            <span className="block text-center text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">{cutLineLabel}</span>
                           </td>
                         </tr>
                       )}
@@ -575,11 +580,11 @@ export function StandingsTable({
               const deckId = player.deckId || player.deck?.id;
               const deckNameOverride = deckId ? deckNameOverrides[deckId] : undefined;
               const isTop3 = posicao <= 3 && !player.dropped;
-              const isTop8 = posicao <= 8 && !player.dropped;
-              const showCut = hasTop8Cut && posicao === 8 && !player.dropped;
+              const inCutZone = hasCutLine && posicao <= cutSize && !player.dropped;
+              const showCut = hasCutLine && posicao === cutSize && !player.dropped;
               const mobileBorderClass = isTop3
                 ? posicao === 1 ? "border-[rgba(255,215,0,0.45)] bg-[rgba(255,215,0,0.04)]" : posicao === 2 ? "border-[rgba(192,192,192,0.4)] bg-[rgba(192,192,192,0.03)]" : "border-[rgba(205,127,50,0.4)] bg-[rgba(205,127,50,0.03)]"
-                : isTop8 ? "border-[rgba(167,79,255,0.3)] bg-[rgba(255,255,255,0.03)]" : "border-line bg-[rgba(255,255,255,0.03)]";
+                : inCutZone ? "border-[rgba(167,79,255,0.3)] bg-[rgba(255,255,255,0.03)]" : "border-line bg-[rgba(255,255,255,0.03)]";
               const mobileRankColor = isTop3
                 ? posicao === 1 ? "text-[#ffd700]" : posicao === 2 ? "text-[#c0c0c0]" : "text-[#cd7f32]"
                 : "text-brand";
@@ -617,7 +622,7 @@ export function StandingsTable({
                         </span>
                       </div>
                       {!isRegistrationOpen && (
-                        <span className={`font-bold text-[0.82rem] flex-shrink-0 ${isTop8 && !player.dropped ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>
+                        <span className={`font-bold text-[0.82rem] flex-shrink-0 ${inCutZone ? "text-[#fbbf24]" : "text-[#fde68a]"}`}>
                           {pontos} pts
                         </span>
                       )}
@@ -672,7 +677,7 @@ export function StandingsTable({
                   </article>
                   {showCut && (
                     <div className="flex items-center justify-center py-[0.3rem]">
-                      <span className="block text-center text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">- Corte para Top 8 -</span>
+                      <span className="block text-center text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[rgba(167,79,255,0.6)]">{cutLineLabel}</span>
                     </div>
                   )}
                 </Fragment>
