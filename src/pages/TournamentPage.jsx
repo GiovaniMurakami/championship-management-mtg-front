@@ -412,11 +412,6 @@ export function TournamentPage() {
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
                     <div className="flex items-center gap-2">
-                      {torneio.fixado && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(250,204,21,0.35)] bg-[rgba(250,204,21,0.12)] px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
-                          <Pin size={11} aria-hidden="true" /> Fixado
-                        </span>
-                      )}
                       <span className={`inline-block px-2.5 py-0.5 rounded-2xl text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
                         {STATUS_LABEL[torneio.status] ?? torneio.status}
                       </span>

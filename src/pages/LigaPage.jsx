@@ -142,11 +142,6 @@ export function LigaPage() {
                     {liga.nome}
                   </h3>
                   <div className="flex flex-wrap items-center gap-2 mt-[0.25rem]">
-                    {liga.fixado && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(250,204,21,0.35)] bg-[rgba(250,204,21,0.12)] px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
-                        <Pin size={11} aria-hidden="true" /> Fixado
-                      </span>
-                    )}
                     {liga.tipo && (
                       <span className="inline-block px-[0.5rem] py-[0.15rem] rounded-full text-[0.67rem] font-semibold uppercase tracking-[0.04em] bg-[rgba(167,79,255,0.12)] text-brand border border-[rgba(167,79,255,0.25)]">
                         {liga.tipo}
@@ -197,17 +192,18 @@ export function LigaPage() {
                 {isAdmin && (
                   <>
                     <button
-                      className={`min-h-11 flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-[0.45rem] border rounded-md text-[0.85rem] font-medium cursor-pointer transition-all duration-300 disabled:opacity-50 ${
+                      type="button"
+                      className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors disabled:opacity-50 ${
                         liga.fixado
-                          ? "border-[rgba(250,204,21,0.45)] bg-[rgba(250,204,21,0.12)] text-[#fde68a] hover:bg-[rgba(250,204,21,0.2)]"
-                          : "border-[rgba(217,180,255,0.25)] bg-transparent text-text-soft hover:border-line-strong hover:text-white"
+                          ? "border-[rgba(250,204,21,0.45)] bg-[rgba(250,204,21,0.14)] text-[#fde68a] hover:bg-[rgba(250,204,21,0.22)]"
+                          : "border-[rgba(217,180,255,0.25)] bg-transparent text-text-soft hover:border-line-strong hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
                       }`}
                       onClick={() => handleTogglePin(liga)}
                       disabled={pinningId === liga.id}
                       aria-label={liga.fixado ? `Desfixar ${liga.nome}` : `Fixar ${liga.nome}`}
+                      title={liga.fixado ? "Desfixar" : "Fixar no topo"}
                     >
                       <Pin size={14} aria-hidden="true" />
-                      {liga.fixado ? "Desfixar" : "Fixar"}
                     </button>
                     <button
                       className="min-h-11 flex-1 sm:flex-none px-4 py-[0.45rem] border border-[rgba(217,180,255,0.25)] rounded-md text-[0.85rem] font-medium cursor-pointer bg-transparent text-text-soft transition-all duration-300 hover:border-line-strong hover:text-white"
