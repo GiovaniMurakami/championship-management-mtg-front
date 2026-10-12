@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { normalizeId } from "../utils/normalizeId";
-import { listarTorneios, inscreverTorneio } from "../services/backendApi";
+import { listarTorneios, inscreverTorneio, fixarTorneio, desfixarTorneio } from "../services/backendApi";
+import { Pin } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useActionGuard } from "../hooks/useActionGuard";
 import { useToast } from "../context/ToastContext";
@@ -75,6 +76,7 @@ export function TournamentPage() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [enrollingId, setEnrollingId] = useState(null);
+  const [pinningId, setPinningId] = useState(null);
   const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
   const [abaAtiva, setAbaAtiva] = useState(() => resolveAba(searchParams));
@@ -278,6 +280,32 @@ export function TournamentPage() {
 
   const handleViewTournament = (torneio) => navigate(tournamentPath(torneio));
 
+  const handleTogglePin = guard(async (torneio) => {
+    if (!token || !isAdmin) return;
+    setPinningId(torneio.id);
+    try {
+      if (torneio.fixado) {
+        await desfixarTorneio(torneio.id, token);
+        setTorneios((prev) => prev.map((t) => (t.id === torneio.id ? { ...t, fixado: false } : t)));
+        addToast("Torneio desfixado.", { type: "success" });
+      } else {
+        await fixarTorneio(torneio.id, token);
+        setTorneios((prev) => {
+          const next = prev.map((t) => (t.id === torneio.id ? { ...t, fixado: true } : t));
+          return [...next].sort((a, b) => Number(Boolean(b.fixado)) - Number(Boolean(a.fixado)));
+        });
+        addToast("Torneio fixado no topo.", { type: "success" });
+      }
+      // Recarrega para respeitar a ordenação do servidor entre páginas.
+      loadTorneios();
+    } catch (err) {
+      logError("Erro ao fixar torneio:", err);
+      addToast("Não foi possível atualizar o pin.", { type: "error" });
+    } finally {
+      setPinningId(null);
+    }
+  });
+
   const formatDate = (dateString) => formatBrasiliaDateTime(dateString);
 
   const isInscrito = (torneio) => {
@@ -384,22 +412,43 @@ export function TournamentPage() {
                       {getTournamentFormatLabel(torneio.formato).toUpperCase()}
                     </span>
                     <div className="flex items-center gap-2">
+                      {torneio.fixado && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(250,204,21,0.35)] bg-[rgba(250,204,21,0.12)] px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.06em] text-[#fde68a]">
+                          <Pin size={11} aria-hidden="true" /> Fixado
+                        </span>
+                      )}
                       <span className={`inline-block px-2.5 py-0.5 rounded-2xl text-[0.7rem] font-medium uppercase tracking-[0.5px] text-center ${STATUS_BADGE_CLASS[torneio.status] ?? ""}`}>
                         {STATUS_LABEL[torneio.status] ?? torneio.status}
                       </span>
                       {isAdmin && (
-                        <button
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
-                          type="button"
-                          onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
-                          aria-label={`Copiar ${torneio.nome}`}
-                          title="Copiar torneio"
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                            <rect x="9" y="9" width="13" height="13" rx="2" />
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                          </svg>
-                        </button>
+                        <>
+                          <button
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-50 ${
+                              torneio.fixado
+                                ? "border-[rgba(250,204,21,0.45)] bg-[rgba(250,204,21,0.14)] text-[#fde68a] hover:bg-[rgba(250,204,21,0.22)]"
+                                : "border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                            }`}
+                            type="button"
+                            onClick={() => handleTogglePin(torneio)}
+                            disabled={pinningId === torneio.id}
+                            aria-label={torneio.fixado ? `Desfixar ${torneio.nome}` : `Fixar ${torneio.nome}`}
+                            title={torneio.fixado ? "Desfixar" : "Fixar no topo"}
+                          >
+                            <Pin size={13} aria-hidden="true" />
+                          </button>
+                          <button
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                            type="button"
+                            onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
+                            aria-label={`Copiar ${torneio.nome}`}
+                            title="Copiar torneio"
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                              <rect x="9" y="9" width="13" height="13" rx="2" />
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

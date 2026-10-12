@@ -7,7 +7,6 @@ import { SkeletonMetagame } from "../components/ui/Skeleton";
 import { BreakdownKpis } from "../components/metagame/breakdown/BreakdownKpis";
 import { BreakdownPanel } from "../components/metagame/breakdown/BreakdownPanel";
 import { BreakdownDay2Cards } from "../components/metagame/breakdown/BreakdownDay2Cards";
-import { BreakdownDay2Highlights } from "../components/metagame/breakdown/BreakdownDay2Highlights";
 import { BreakdownShareChart } from "../components/metagame/breakdown/BreakdownShareChart";
 import { BreakdownWinrateChart } from "../components/metagame/breakdown/BreakdownWinrateChart";
 import { BreakdownMatchupHeat } from "../components/metagame/breakdown/BreakdownMatchupHeat";
@@ -114,7 +113,6 @@ export function MetagameBreakdownPage() {
   const totalDecks = data?.totalDecks ?? 0;
 
   const conversaoDay2 = data?.conversaoDay2 ?? null;
-  const destaquesDay2 = data?.destaquesDay2 ?? null;
   const kpis = useMemo(
     () => calcularKpisBreakdown(arquetipos, totalDecks, conversaoDay2),
     [arquetipos, totalDecks, conversaoDay2],
@@ -216,19 +214,6 @@ export function MetagameBreakdownPage() {
       {!loading && !erro && arquetipos.length > 0 && (
         <div className="space-y-5 rounded-2xl bg-[#140c1f] p-1">
           <BreakdownKpis kpis={kpis} />
-          {destaquesDay2 && (
-            <BreakdownPanel
-              title="Destaques do Day 2"
-              description="Meta do campo classificado, melhor desempenho no Swiss Day 2 e resultados do corte."
-            >
-              <BreakdownDay2Highlights
-                destaques={destaquesDay2}
-                corteTop={data?.torneio?.corteTop}
-                totalRodadas={data?.torneio?.totalRodadas}
-                rodadasDay1={data?.torneio?.rodadasDay1}
-              />
-            </BreakdownPanel>
-          )}
           {(conversaoPorArquetipo.length > 0 || conversaoDay2?.cartasMaisPresentes?.length > 0) && (
             <div className="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-2">
               {conversaoPorArquetipo.length > 0 && (

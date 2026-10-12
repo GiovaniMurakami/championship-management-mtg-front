@@ -184,6 +184,16 @@ export const inscreverTorneio = (torneioId, token, payload = {}) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const fixarTorneio = (torneioId, token) =>
+  httpClient.post(`/torneio/${torneioId}/fixar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const desfixarTorneio = (torneioId, token) =>
+  httpClient.delete(`/torneio/${torneioId}/fixar`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const escolherDeckTorneio = (torneioId, deckId, token) =>
   httpClient.post(`/torneio/${torneioId}/deck`, { deckId }, {
     headers: { Authorization: `Bearer ${token}` },
@@ -339,6 +349,16 @@ export const atualizarLiga = (ligaId, payload, token) =>
 
 export const deletarLiga = (ligaId, token) =>
   httpClient.delete(`/liga/${ligaId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const fixarLiga = (ligaId, token) =>
+  httpClient.post(`/liga/${ligaId}/fixar`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const desfixarLiga = (ligaId, token) =>
+  httpClient.delete(`/liga/${ligaId}/fixar`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

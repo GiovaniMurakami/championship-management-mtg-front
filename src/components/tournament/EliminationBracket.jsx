@@ -13,8 +13,40 @@ function standingPlayerId(player) {
   return player?.usuario?.id || player?.usuarioId || player?.userId || player?.id;
 }
 
-/** Monta a lista do Top N na ordem do chaveamento (1ª rodada do corte). */
-export function buildEliminationTopPlayers(partidas, firstCutRound, standings = []) {
+function getWinnerId(partida) {
+  if (!partida || partida.status !== "finalizada") return null;
+  if (!partida.jogador2Id && !partida.jogador2) return partida.jogador1Id || partida.jogador1?.id;
+  const v1 = Number(partida.vitoriasJogador1 ?? 0);
+  const v2 = Number(partida.vitoriasJogador2 ?? 0);
+  if (v1 > v2) return partida.jogador1Id || partida.jogador1?.id;
+  if (v2 > v1) return partida.jogador2Id || partida.jogador2?.id;
+  return null;
+}
+
+function fallbackPlayer(partida, side, id) {
+  return {
+    usuarioId: id,
+    usuario: {
+      id,
+      nome: getMatchPlayerName(partida, side),
+      excluido: isMatchPlayerExcluido(partida, side),
+    },
+    nome: getMatchPlayerName(partida, side),
+    deckNome: "—",
+  };
+}
+
+/**
+ * Monta o Top N do mata-mata na ordem de colocação:
+ * campeão → finalista → eliminados nas semis → quartas → …
+ * Empates na mesma rodada usam a posição Swiss como desempate.
+ */
+export function buildEliminationTopPlayers(
+  partidas,
+  firstCutRound,
+  standings = [],
+  { totalRodadas } = {},
+) {
   if (!firstCutRound) return [];
   const byId = new Map(
     (standings || [])
@@ -25,33 +57,93 @@ export function buildEliminationTopPlayers(partidas, firstCutRound, standings = 
     .filter((partida) => Number(partida?.rodada) === Number(firstCutRound))
     .sort((a, b) => Number(a?.mesa ?? 0) - Number(b?.mesa ?? 0));
 
-  const players = [];
-  const seen = new Set();
+  const meta = new Map();
   for (const partida of firstRound) {
     for (const side of [1, 2]) {
       const id = side === 1
         ? (partida.jogador1Id || partida.jogador1?.id)
         : (partida.jogador2Id || partida.jogador2?.id);
-      if (!id || seen.has(id)) continue;
-      seen.add(id);
+      if (!id || meta.has(id)) continue;
       const standing = byId.get(id);
-      if (standing) {
-        players.push(standing);
-        continue;
-      }
-      players.push({
-        usuarioId: id,
-        usuario: {
-          id,
-          nome: getMatchPlayerName(partida, side),
-          excluido: isMatchPlayerExcluido(partida, side),
-        },
-        nome: getMatchPlayerName(partida, side),
-        deckNome: "—",
+      meta.set(id, {
+        player: standing || fallbackPlayer(partida, side, id),
+        wonFinal: false,
+        eliminatedRound: null,
+        maxRound: Number(firstCutRound),
+        mesa: Number(partida.mesa ?? 0),
+        swissPos: Number(standing?.posicao ?? 9999),
       });
     }
   }
-  return players;
+
+  if (meta.size === 0) return [];
+
+  const cutMatches = (partidas || [])
+    .filter((partida) => Number(partida?.rodada) >= Number(firstCutRound))
+    .sort(
+      (a, b) =>
+        Number(a?.rodada ?? 0) - Number(b?.rodada ?? 0)
+        || Number(a?.mesa ?? 0) - Number(b?.mesa ?? 0),
+    );
+
+  const finalRound = Number(totalRodadas || 0)
+    || Math.max(...cutMatches.map((p) => Number(p.rodada || 0)), Number(firstCutRound));
+
+  for (const partida of cutMatches) {
+    const rodada = Number(partida.rodada || 0);
+    const winnerId = getWinnerId(partida);
+    for (const side of [1, 2]) {
+      const id = side === 1
+        ? (partida.jogador1Id || partida.jogador1?.id)
+        : (partida.jogador2Id || partida.jogador2?.id);
+      if (!id) continue;
+      let entry = meta.get(id);
+      if (!entry) {
+        const standing = byId.get(id);
+        entry = {
+          player: standing || fallbackPlayer(partida, side, id),
+          wonFinal: false,
+          eliminatedRound: null,
+          maxRound: rodada,
+          mesa: Number(partida.mesa ?? 0),
+          swissPos: Number(standing?.posicao ?? 9999),
+        };
+        meta.set(id, entry);
+      }
+      entry.maxRound = Math.max(entry.maxRound, rodada);
+      entry.mesa = Number(partida.mesa ?? entry.mesa ?? 0);
+      if (partida.status === "finalizada" && winnerId && id !== winnerId) {
+        entry.eliminatedRound = rodada;
+      }
+      if (partida.status === "finalizada" && winnerId === id && rodada === finalRound) {
+        entry.wonFinal = true;
+      }
+    }
+  }
+
+  const ranked = [...meta.values()].sort((a, b) => {
+    if (a.wonFinal !== b.wonFinal) return a.wonFinal ? -1 : 1;
+
+    const aAlive = a.eliminatedRound == null;
+    const bAlive = b.eliminatedRound == null;
+    if (aAlive !== bAlive) return aAlive ? -1 : 1;
+
+    if (!aAlive && !bAlive && a.eliminatedRound !== b.eliminatedRound) {
+      return b.eliminatedRound - a.eliminatedRound; // perdeu mais tarde = melhor
+    }
+
+    if (aAlive && bAlive && a.maxRound !== b.maxRound) {
+      return b.maxRound - a.maxRound;
+    }
+
+    if (a.swissPos !== b.swissPos) return a.swissPos - b.swissPos;
+    return a.mesa - b.mesa;
+  });
+
+  return ranked.map((entry, index) => ({
+    ...entry.player,
+    posicao: index + 1,
+  }));
 }
 
 function getRoundLabel(participants) {
@@ -60,16 +152,6 @@ function getRoundLabel(participants) {
   if (participants === 4) return "Semifinal";
   if (participants === 2) return "Final";
   return "Corte";
-}
-
-function getWinnerId(partida) {
-  if (!partida || partida.status !== "finalizada") return null;
-  if (!partida.jogador2Id && !partida.jogador2) return partida.jogador1Id || partida.jogador1?.id;
-  const v1 = Number(partida.vitoriasJogador1 ?? 0);
-  const v2 = Number(partida.vitoriasJogador2 ?? 0);
-  if (v1 > v2) return partida.jogador1Id || partida.jogador1?.id;
-  if (v2 > v1) return partida.jogador2Id || partida.jogador2?.id;
-  return null;
 }
 
 function BracketPlayer({ name, usuarioId, score, isWinner, isBye, excluido = false }) {
@@ -160,8 +242,10 @@ export function EliminationBracket({
   }, [corteTop, firstCutRound, partidas]);
 
   const topPlayers = useMemo(
-    () => buildEliminationTopPlayers(partidas, firstCutRound, standings),
-    [partidas, firstCutRound, standings],
+    () => buildEliminationTopPlayers(partidas, firstCutRound, standings, {
+      totalRodadas: torneio?.totalRodadas,
+    }),
+    [partidas, firstCutRound, standings, torneio?.totalRodadas],
   );
 
   if (!corteTop || !firstCutRound || cutMatches.length === 0) return null;
