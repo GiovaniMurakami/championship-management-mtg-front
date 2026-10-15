@@ -236,7 +236,6 @@ export function GaleriaPage() {
     setIndiceAberto(null);
     setSelecionadas(new Set());
     setPagina(destino);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
