@@ -9,7 +9,6 @@ import { useToast } from "../context/ToastContext";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { SOCIAL_LINKS } from "../constants/site";
 import {
-  buscarEstatisticasGaleria,
   excluirFotosGaleriaLote,
   listarFotosGaleria,
   registrarVisualizacaoGaleria,
@@ -196,39 +195,22 @@ export function GaleriaPage() {
     }
   }, [addToast]);
 
-  const carregarEstatisticas = useCallback(async () => {
-    if (!isAdmin || !token) {
-      setVisualizacoes(null);
-      return;
-    }
-    try {
-      const data = await buscarEstatisticasGaleria(token);
-      setVisualizacoes(Number(data?.visualizacoes) || 0);
-    } catch {
-      setVisualizacoes(null);
-    }
-  }, [isAdmin, token]);
-
   useEffect(() => {
     carregar();
   }, [carregar]);
 
   useEffect(() => {
-    carregarEstatisticas();
-  }, [carregarEstatisticas]);
-
-  useEffect(() => {
     let ativo = true;
     registrarVisualizacaoGaleria()
       .then((data) => {
-        if (!ativo || !isAdmin) return;
+        if (!ativo) return;
         if (data?.visualizacoes != null) setVisualizacoes(Number(data.visualizacoes) || 0);
       })
       .catch(() => {});
     return () => {
       ativo = false;
     };
-  }, [isAdmin]);
+  }, []);
 
   useEffect(() => {
     if (!isAdmin && modoSelecao) {

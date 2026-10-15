@@ -601,8 +601,33 @@ export const excluirStoryFundo = (id, token) =>
 // Galeria de fotos
 export const listarFotosGaleria = () => httpClient.get("/galeria");
 
-export const registrarVisualizacaoGaleria = () =>
-  httpClient.post("/galeria/visualizacao");
+/** Evita POST duplo (StrictMode / remount rápido). */
+let visualizacaoGaleriaInflight = null;
+let visualizacaoGaleriaCache = null;
+let visualizacaoGaleriaCacheEm = 0;
+const VISUALIZACAO_GALERIA_DEDUPE_MS = 2500;
+
+export const registrarVisualizacaoGaleria = () => {
+  if (visualizacaoGaleriaInflight) return visualizacaoGaleriaInflight;
+  if (
+    visualizacaoGaleriaCache &&
+    Date.now() - visualizacaoGaleriaCacheEm < VISUALIZACAO_GALERIA_DEDUPE_MS
+  ) {
+    return Promise.resolve(visualizacaoGaleriaCache);
+  }
+
+  visualizacaoGaleriaInflight = httpClient
+    .post("/galeria/visualizacao")
+    .then((data) => {
+      visualizacaoGaleriaCache = data;
+      visualizacaoGaleriaCacheEm = Date.now();
+      return data;
+    })
+    .finally(() => {
+      visualizacaoGaleriaInflight = null;
+    });
+  return visualizacaoGaleriaInflight;
+};
 
 export const buscarEstatisticasGaleria = (token) =>
   httpClient.get("/galeria/estatisticas", {
