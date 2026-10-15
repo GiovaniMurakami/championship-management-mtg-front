@@ -189,7 +189,7 @@ export function GaleriaPage() {
   const { addToast } = useToast();
   const inputRef = useRef(null);
 
-  const LIMITE = 20;
+  const LIMITE = 24;
   const [fotos, setFotos] = useState([]);
   const [total, setTotal] = useState(0);
   const [pagina, setPagina] = useState(1);
