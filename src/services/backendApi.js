@@ -601,6 +601,14 @@ export const excluirStoryFundo = (id, token) =>
 // Galeria de fotos
 export const listarFotosGaleria = () => httpClient.get("/galeria");
 
+export const registrarVisualizacaoGaleria = () =>
+  httpClient.post("/galeria/visualizacao");
+
+export const buscarEstatisticasGaleria = (token) =>
+  httpClient.get("/galeria/estatisticas", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const cadastrarFotoGaleria = (payload, token) =>
   httpClient.post("/galeria", payload, {
     headers: { Authorization: `Bearer ${token}` },

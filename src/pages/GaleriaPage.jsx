@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Download, Trash2, Upload, X, ChevronLeft, ChevronRight, Images, CheckSquare } from "lucide-react";
+import { Check, Download, Trash2, Upload, X, ChevronLeft, ChevronRight, Images, CheckSquare, Eye } from "lucide-react";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
 import { BaseModal } from "../components/ui/BaseModal";
@@ -7,7 +7,13 @@ import { useAuth } from "../hooks/useAuth";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useToast } from "../context/ToastContext";
 import { PAGE_TITLES } from "../constants/pageTitles";
-import { excluirFotosGaleriaLote, listarFotosGaleria } from "../services/backendApi";
+import { SOCIAL_LINKS } from "../constants/site";
+import {
+  buscarEstatisticasGaleria,
+  excluirFotosGaleriaLote,
+  listarFotosGaleria,
+  registrarVisualizacaoGaleria,
+} from "../services/backendApi";
 import { uploadFotosGaleriaEmLote, validateGaleriaImageFile } from "../utils/galeriaUpload";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
@@ -172,6 +178,7 @@ export function GaleriaPage() {
   const [selecionadas, setSelecionadas] = useState(() => new Set());
   const [idsParaExcluir, setIdsParaExcluir] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
+  const [visualizacoes, setVisualizacoes] = useState(null);
 
   const totalSelecionadas = selecionadas.size;
   const todasSelecionadas = fotos.length > 0 && totalSelecionadas === fotos.length;
@@ -189,9 +196,39 @@ export function GaleriaPage() {
     }
   }, [addToast]);
 
+  const carregarEstatisticas = useCallback(async () => {
+    if (!isAdmin || !token) {
+      setVisualizacoes(null);
+      return;
+    }
+    try {
+      const data = await buscarEstatisticasGaleria(token);
+      setVisualizacoes(Number(data?.visualizacoes) || 0);
+    } catch {
+      setVisualizacoes(null);
+    }
+  }, [isAdmin, token]);
+
   useEffect(() => {
     carregar();
   }, [carregar]);
+
+  useEffect(() => {
+    carregarEstatisticas();
+  }, [carregarEstatisticas]);
+
+  useEffect(() => {
+    let ativo = true;
+    registrarVisualizacaoGaleria()
+      .then((data) => {
+        if (!ativo || !isAdmin) return;
+        if (data?.visualizacoes != null) setVisualizacoes(Number(data.visualizacoes) || 0);
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!isAdmin && modoSelecao) {
@@ -313,13 +350,45 @@ export function GaleriaPage() {
       }`}
     >
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="m-0 font-display text-3xl tracking-wide text-text-main sm:text-4xl">Galeria</h1>
-          <p className="mt-1 mb-0 text-sm text-text-muted">
-            {modoSelecao
-              ? "Toque nas fotos para selecionar."
-              : "Fotos do campeonato. Toque para ampliar e baixar."}
-          </p>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="m-0 font-display text-3xl tracking-wide text-text-main sm:text-4xl">Galeria</h1>
+            {isAdmin && visualizacoes != null && (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-soft px-2.5 py-1 text-xs font-semibold text-text-soft"
+                title="Quantidade de vezes que a página da galeria foi aberta"
+              >
+                <Eye className="h-3.5 w-3.5 text-brand" aria-hidden="true" />
+                {visualizacoes.toLocaleString("pt-BR")} visualizaç{visualizacoes === 1 ? "ão" : "ões"}
+              </span>
+            )}
+          </div>
+          {modoSelecao ? (
+            <p className="mt-1 mb-0 text-sm text-text-muted">Toque nas fotos para selecionar.</p>
+          ) : (
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+              <p className="m-0 text-sm text-text-muted">
+                Ao postar, lembre de marcar <span className="font-semibold text-brand">@tiagofuguete</span>.
+              </p>
+              <div className="flex flex-wrap items-center gap-2" aria-label="Redes sociais do Tiago Fuguete">
+                {SOCIAL_LINKS.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-soft text-brand transition-all duration-150 hover:border-line-strong hover:bg-brand-soft active:scale-95"
+                    aria-label={`${s.label} ${s.handle}`}
+                    title={`${s.label} ${s.handle}`}
+                  >
+                    <svg className="h-3.5 w-3.5 fill-current" viewBox={s.vb} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d={s.icon} />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         {isAdmin && (
           <div className="flex flex-wrap items-center gap-2">
