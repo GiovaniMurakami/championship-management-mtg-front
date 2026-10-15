@@ -1,4 +1,7 @@
-import { obterPresignedUrl, uploadParaS3 } from "../services/backendApi";
+import { cadastrarFotoGaleria, obterPresignedUrl, uploadParaS3 } from "../services/backendApi";
+
+/** Concorrência padrão: paralelo sem saturar o navegador (limite típico ~6 por host). */
+export const GALERIA_UPLOAD_CONCURRENCY = 10;
 
 export const ACCEPTED_GALERIA_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 export const MAX_GALERIA_IMAGE_SIZE = 8 * 1024 * 1024;
@@ -162,4 +165,61 @@ export async function uploadFotoGaleria(file, token, onProgress) {
     }
     throw normalizeUploadError(error, "upload");
   }
+}
+
+async function mapWithConcurrency(items, concurrency, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runWorker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await worker(items[index], index);
+    }
+  }
+
+  const poolSize = Math.max(1, Math.min(concurrency, items.length || 1));
+  await Promise.all(Array.from({ length: poolSize }, () => runWorker()));
+  return results;
+}
+
+/**
+ * Valida, otimiza, sobe e cadastra várias fotos em paralelo.
+ * @param {File[]} files
+ * @param {string} token
+ * @param {{ concurrency?: number, onProgress?: (done: number, total: number) => void }} [options]
+ * @returns {Promise<{ enviadas: number, falhas: Array<{ nome: string, erro: Error }> }>}
+ */
+export async function uploadFotosGaleriaEmLote(files, token, options = {}) {
+  const lista = Array.from(files || []);
+  const total = lista.length;
+  const concurrency = options.concurrency ?? GALERIA_UPLOAD_CONCURRENCY;
+  const onProgress = options.onProgress;
+
+  for (const arquivo of lista) {
+    const erro = validateGaleriaImageFile(arquivo);
+    if (erro) throw erro;
+  }
+
+  let concluidas = 0;
+  const falhas = [];
+
+  await mapWithConcurrency(lista, concurrency, async (arquivo) => {
+    try {
+      const url = await uploadFotoGaleria(arquivo, token);
+      const titulo = String(arquivo.name || "").replace(/\.[^.]+$/, "").slice(0, 200);
+      await cadastrarFotoGaleria({ url, titulo }, token);
+    } catch (error) {
+      falhas.push({
+        nome: arquivo.name || "foto",
+        erro: error instanceof Error ? error : new Error(String(error?.message || error)),
+      });
+    } finally {
+      concluidas += 1;
+      onProgress?.(concluidas, total);
+    }
+  });
+
+  return { enviadas: total - falhas.length, falhas };
 }

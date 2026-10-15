@@ -7,8 +7,8 @@ import { useAuth } from "../hooks/useAuth";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useToast } from "../context/ToastContext";
 import { PAGE_TITLES } from "../constants/pageTitles";
-import { cadastrarFotoGaleria, excluirFotosGaleriaLote, listarFotosGaleria } from "../services/backendApi";
-import { uploadFotoGaleria, validateGaleriaImageFile } from "../utils/galeriaUpload";
+import { excluirFotosGaleriaLote, listarFotosGaleria } from "../services/backendApi";
+import { uploadFotosGaleriaEmLote, validateGaleriaImageFile } from "../utils/galeriaUpload";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
 
@@ -236,29 +236,34 @@ export function GaleriaPage() {
     }
 
     setEnviando(true);
-    let enviadas = 0;
+    setProgresso(`Enviando 0/${arquivos.length}…`);
     try {
-      for (let i = 0; i < arquivos.length; i += 1) {
-        const arquivo = arquivos[i];
-        setProgresso(`Otimizando e enviando ${i + 1}/${arquivos.length}…`);
-        const url = await uploadFotoGaleria(arquivo, token, (percent) => {
-          setProgresso(`Enviando ${i + 1}/${arquivos.length} (${percent}%)…`);
-        });
-        const titulo = String(arquivo.name || "").replace(/\.[^.]+$/, "").slice(0, 200);
-        await cadastrarFotoGaleria({ url, titulo }, token);
-        enviadas += 1;
+      const { enviadas, falhas } = await uploadFotosGaleriaEmLote(arquivos, token, {
+        onProgress: (done, total) => setProgresso(`Enviando ${done}/${total}…`),
+      });
+
+      if (enviadas > 0) {
+        addToast(
+          enviadas === 1 ? "Foto adicionada à galeria." : `${enviadas} fotos adicionadas à galeria.`,
+          { type: "success" },
+        );
+        await carregar();
       }
-      addToast(
-        enviadas === 1 ? "Foto adicionada à galeria." : `${enviadas} fotos adicionadas à galeria.`,
-        { type: "success" },
-      );
-      await carregar();
+
+      if (falhas.length > 0) {
+        const amostra = falhas.slice(0, 3).map((f) => f.nome).join(", ");
+        addToast(
+          falhas.length === 1
+            ? `Falha ao enviar ${amostra}.`
+            : `${falhas.length} fotos falharam (${amostra}${falhas.length > 3 ? "…" : ""}).`,
+          { type: "error" },
+        );
+      }
     } catch (error) {
       addToast(
         error?.userMessage || formatApiErrorMessage(error, "Falha ao enviar foto(s)."),
         { type: "error" },
       );
-      if (enviadas > 0) await carregar();
     } finally {
       setEnviando(false);
       setProgresso("");
