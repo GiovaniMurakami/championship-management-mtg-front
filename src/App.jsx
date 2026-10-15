@@ -177,7 +177,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col text-text-main overflow-x-clip">
+    <div className="flex min-h-screen min-h-dvh flex-col overflow-x-clip text-text-main">
       <RateLimitBridge />
       <ExternalRouteSync />
       <WordpressRouteBridge />

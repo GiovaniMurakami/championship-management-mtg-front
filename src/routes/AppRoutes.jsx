@@ -54,6 +54,7 @@ const MetagameArquetipoPage = lazy(() => import("../pages/MetagameArquetipoPage"
 const UserProfilePage = lazy(() => import("../pages/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
 const PostsPage = lazy(() => import("../pages/PostsPage").then(m => ({ default: m.PostsPage })));
 const PostDetailPage = lazy(() => import("../pages/PostDetailPage").then(m => ({ default: m.PostDetailPage })));
+const GaleriaPage = lazy(() => import("../pages/GaleriaPage").then(m => ({ default: m.GaleriaPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 const LegacyPostRedirect = () => {
@@ -73,6 +74,7 @@ export function AppRoutes() {
         <Route path="/comunidade/:id" element={<UuidParamGuard param="id"><PostDetailPage /></UuidParamGuard>} />
         <Route path="/posts" element={<Navigate to="/comunidade" replace />} />
         <Route path="/posts/:id" element={<LegacyPostRedirect />} />
+        <Route path="/galeria" element={<GaleriaPage />} />
         <Route path="/usuarios/:id" element={
           <UuidParamGuard param="id">
             <UserProfilePage />

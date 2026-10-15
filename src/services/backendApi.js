@@ -598,6 +598,26 @@ export const excluirStoryFundo = (id, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+// Galeria de fotos
+export const listarFotosGaleria = () => httpClient.get("/galeria");
+
+export const cadastrarFotoGaleria = (payload, token) =>
+  httpClient.post("/galeria", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirFotoGaleria = (id, token) =>
+  httpClient.delete(`/galeria/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirFotosGaleriaLote = (ids, token) =>
+  httpClient.post(
+    "/galeria/excluir-lote",
+    { ids },
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+
 // Imagens
 export const obterPresignedUrl = (payload, token) =>
   httpClient.post("/imagem/upload-url", payload, {

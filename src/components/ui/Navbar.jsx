@@ -242,6 +242,9 @@ export function Navbar({
               <NavLink role="menuitem" to="/comunidade" className={dropdownItemClass} onClick={close}>
                 Posts
               </NavLink>
+              <NavLink role="menuitem" to="/galeria" className={dropdownItemClass} onClick={close}>
+                Galeria
+              </NavLink>
               <p className={sectionLabelClass}>Competição</p>
               <NavLink role="menuitem" to="/ligas" className={dropdownItemClass} onClick={close}>
                 Ligas
@@ -399,6 +402,10 @@ export function Navbar({
             <NavLink to="/comunidade" className={mobileLinkClass} onClick={close}>
               <IconCommunity />
               <span>Posts</span>
+            </NavLink>
+            <NavLink to="/galeria" className={mobileLinkClass} onClick={close}>
+              <IconCommunity />
+              <span>Galeria</span>
             </NavLink>
             <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
               <IconLiga />
