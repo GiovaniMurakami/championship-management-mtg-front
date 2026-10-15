@@ -4,7 +4,10 @@ import { cadastrarFotoGaleria, obterPresignedUrl, uploadParaS3 } from "../servic
 export const GALERIA_UPLOAD_CONCURRENCY = 10;
 
 export const ACCEPTED_GALERIA_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-export const MAX_GALERIA_IMAGE_SIZE = 8 * 1024 * 1024;
+/** Teto do arquivo original (admin); o envio ao S3 usa a versão otimizada em WebP. */
+export const MAX_GALERIA_IMAGE_SIZE = 50 * 1024 * 1024;
+/** Limite do arquivo otimizado (alinhado ao teto admin da API). */
+export const MAX_GALERIA_UPLOAD_BYTES = 25 * 1024 * 1024;
 export const GALERIA_MAX_EDGE = 2560;
 export const GALERIA_TARGET_BYTES = 1.5 * 1024 * 1024;
 export const GALERIA_INITIAL_QUALITY = 0.84;
@@ -12,7 +15,7 @@ export const GALERIA_MIN_QUALITY = 0.55;
 
 const UPLOAD_MESSAGES = {
   "invalid-file-type": "Arquivo inválido. Envie uma imagem JPEG, PNG, GIF ou WebP.",
-  "file-too-large": "Arquivo acima do limite de 8 MB.",
+  "file-too-large": "Arquivo acima do limite de 50 MB.",
   "presigned-url-error": "Não foi possível gerar a URL de upload da imagem.",
   "s3-upload-cors": "O navegador bloqueou o envio da imagem. Verifique sua conexão e tente novamente.",
   "s3-upload-expired": "A URL assinada do upload expirou. Tente novamente.",
@@ -106,8 +109,11 @@ export async function otimizarFotoGaleriaParaWebp(file) {
     blob = await canvasToBlob(canvas, "image/webp", quality);
   }
 
-  if (blob.size > MAX_GALERIA_IMAGE_SIZE) {
-    throw createUploadError("file-too-large");
+  if (blob.size > MAX_GALERIA_UPLOAD_BYTES) {
+    throw createUploadError(
+      "file-too-large",
+      "A imagem otimizada ainda excede o limite permitido. Tente outra foto.",
+    );
   }
 
   const baseName = String(file.name || "foto").replace(/\.[^.]+$/, "") || "foto";

@@ -102,6 +102,7 @@ export function BlogEditorPage() {
         crop: true,
         targetWidth: OG_BANNER_MAX_WIDTH,
         targetHeight: OG_BANNER_MAX_HEIGHT,
+        isAdmin,
       });
       setCapaUrl(url);
       addToast("Capa enviada.", { type: "success" });

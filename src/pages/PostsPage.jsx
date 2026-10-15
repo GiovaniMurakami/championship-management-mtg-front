@@ -90,7 +90,7 @@ function CriadorPost({ token, onCriado }) {
   useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
   const selecionar = (event) => {
     const selecionados = Array.from(event.target.files || []);
-    const erro = selecionados.map(validateBannerImageFile).find(Boolean);
+    const erro = selecionados.map((arquivo) => validateBannerImageFile(arquivo, { isAdmin: true })).find(Boolean);
     if (erro) { addToast(erro.userMessage, { type: "error" }); return; }
     setArquivos(selecionados);
     setPreviewIndice(0);
@@ -104,7 +104,7 @@ function CriadorPost({ token, onCriado }) {
     setEnviando(true);
     try {
       const imagens = [];
-      for (const arquivo of arquivos) imagens.push(await uploadBannerImage(arquivo, token, undefined, { optimize: false }));
+      for (const arquivo of arquivos) imagens.push(await uploadBannerImage(arquivo, token, undefined, { optimize: true, profile: "foto", isAdmin: true }));
       await criarPost({ legenda: legenda.trim(), imagens }, token);
       setLegenda(""); setArquivos([]); setPreviewIndice(0); if (inputRef.current) inputRef.current.value = "";
       addToast("Post publicado.", { type: "success" }); await onCriado();

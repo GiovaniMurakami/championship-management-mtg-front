@@ -31,6 +31,16 @@ describe("validateBannerImageFile", () => {
         const file = new File([new Uint8Array(10)], "b.pdf", { type: "application/pdf" });
         expect(validateBannerImageFile(file)?.code).toBe("invalid-file-type");
     });
+
+    it("rejeita arquivo > 5 MB para usuário comum", () => {
+        const file = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "big.jpg", { type: "image/jpeg" });
+        expect(validateBannerImageFile(file)?.code).toBe("file-too-large");
+    });
+
+    it("aceita arquivo grande para admin (até 50 MB)", () => {
+        const file = new File([new Uint8Array(6 * 1024 * 1024)], "big.jpg", { type: "image/jpeg" });
+        expect(validateBannerImageFile(file, { isAdmin: true })).toBeNull();
+    });
 });
 
 describe("otimizarBannerParaUpload", () => {

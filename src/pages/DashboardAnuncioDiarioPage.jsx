@@ -29,7 +29,7 @@ function criarAnuncioVazio(ordem = 0) {
 }
 
 export function DashboardAnuncioDiarioPage() {
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   usePageTitle(PAGE_TITLES.dashboardAnuncioDiario);
 
@@ -84,7 +84,7 @@ export function DashboardAnuncioDiarioPage() {
   };
 
   const handleUpload = async (index, file) => {
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setError(validationError.userMessage || validationError.message);
       return;
@@ -95,7 +95,7 @@ export function DashboardAnuncioDiarioPage() {
     try {
       const url = await uploadBannerImage(file, token, (progress) => {
         setUploadProgress(progress);
-      });
+      }, { isAdmin });
       atualizarAnuncio(index, { imagemUrl: url });
       setMessage("Imagem enviada.");
     } catch (err) {

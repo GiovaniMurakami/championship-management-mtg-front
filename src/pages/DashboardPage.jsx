@@ -187,7 +187,7 @@ function DashboardAdsPreview({ ads }) {
 }
 
 export function DashboardPage() {
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
 
   usePageTitle(PAGE_TITLES.dashboard);
 
@@ -283,7 +283,7 @@ export function DashboardPage() {
   };
 
   const uploadImage = async (ad, file) => {
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setMessage(validationError.userMessage || validationError.message);
       return;
@@ -295,7 +295,7 @@ export function DashboardPage() {
     try {
       const imageUrl = await uploadBannerImage(file, token, (progress) => {
         setUploading((current) => ({ ...current, [ad.id]: { loading: true, progress } }));
-      });
+      }, { isAdmin });
       updateAd(ad.id, { imagemUrl: imageUrl });
       setMessage("Imagem enviada. Salve para publicar a alteracao.");
     } catch (error) {

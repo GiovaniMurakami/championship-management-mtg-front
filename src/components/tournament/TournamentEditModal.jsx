@@ -4,6 +4,7 @@ import { calculateAutomaticSwissRounds, calculateSwissRounds } from "../../utils
 import { sanitizeText } from "../../utils/sanitize";
 import { toDatetimeLocalBrasilia } from "../../utils/brasiliaTime";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
+import { useAuth } from "../../hooks/useAuth";
 import { BTN_GHOST, BTN_PRIMARY, FORM_COUNTER_CLASS, FORM_TEXTAREA_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 import { Checkbox, FormFeedback, FormSection, SelectField } from "../ui";
 import { StoryFundoPicker } from "./StoryFundoPicker";
@@ -22,6 +23,7 @@ const optionalTrimmed = (value) => {
 };
 
 export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loading, token }) {
+  const { isAdmin } = useAuth();
   const [form, setForm] = useState({
     nome: "",
     horario: "",
@@ -112,7 +114,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
     const file = event.target.files?.[0];
     if (!file) return;
     setBannerError("");
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setBannerError(validationError.userMessage);
       if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -143,7 +145,7 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       setUploadingBanner(true);
       setUploadProgress(0);
       try {
-        bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
+        bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress, { isAdmin });
       } catch (err) {
         setBannerError(err.userMessage || err.message || "Falha ao enviar o banner.");
         setUploadingBanner(false);

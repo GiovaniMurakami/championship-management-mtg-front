@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { cadastrarStoryFundo, listarStoryFundos } from "../../services/backendApi";
 import { uploadStoryFundoImage, validateBannerImageFile } from "../../utils/bannerUpload";
+import { useAuth } from "../../hooks/useAuth";
 import { FormFeedback, SelectField } from "../ui";
 import { FORM_LABEL_CLASS, TOURNAMENT_INPUT_CLASS } from "../../styles/uiClasses";
 
@@ -24,6 +25,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
   },
   ref,
 ) {
+  const { isAdmin } = useAuth();
   const [fundos, setFundos] = useState([]);
   const [loading, setLoading] = useState(() => Boolean(token));
   const [selectedId, setSelectedId] = useState(() => (valueUrl ? MODE_EXISTING : MODE_DEFAULT));
@@ -128,7 +130,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
         throw err;
       }
 
-      const url = await uploadStoryFundoImage(file, token, onProgress);
+      const url = await uploadStoryFundoImage(file, token, onProgress, { isAdmin });
       const criado = await cadastrarStoryFundo({ nome, url, textoRodape }, token);
       const criadoData = criado?.data ?? criado;
       setFundos((prev) => {
@@ -171,7 +173,7 @@ export const StoryFundoPicker = forwardRef(function StoryFundoPicker(
     const file = event.target.files?.[0];
     if (!file) return;
     setLocalError("");
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setLocalError(validationError.userMessage);
       if (fileRef.current) fileRef.current.value = "";

@@ -23,6 +23,11 @@ describe("validateGaleriaImageFile", () => {
   it("aceita jpeg", () => {
     expect(validateGaleriaImageFile(new File(["x"], "a.jpg", { type: "image/jpeg" }))).toBeNull();
   });
+
+  it("aceita originais grandes (otimização reduz antes do S3)", () => {
+    const grande = new File([new Uint8Array(12 * 1024 * 1024)], "evento.jpg", { type: "image/jpeg" });
+    expect(validateGaleriaImageFile(grande)).toBeNull();
+  });
 });
 
 describe("otimizarFotoGaleriaParaWebp", () => {

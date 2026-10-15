@@ -28,7 +28,7 @@ const buildTorneiosParams = ({ dataInicio, dataFim }) => {
 
 export function LigaCreatePage({ editMode = false }) {
   const { id: ligaId } = useParams();
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
   const bannerInputRef = useRef(null);
@@ -107,7 +107,7 @@ export function LigaCreatePage({ editMode = false }) {
   const handleBannerChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setError(validationError.userMessage);
       return;
@@ -200,7 +200,7 @@ export function LigaCreatePage({ editMode = false }) {
     setError("");
     try {
       let bannerUrl;
-      if (bannerFile) bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
+      if (bannerFile) bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress, { isAdmin });
       const payload = {
         ...form,
         torneioIds: torneiosSelecionados,

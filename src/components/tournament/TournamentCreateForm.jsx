@@ -3,6 +3,7 @@ import { criarTorneio, listarLigas } from "../../services/backendApi";
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { sanitizeText } from "../../utils/sanitize";
 import { TOURNAMENT_FORMATS, TOP_CUT_OPTIONS } from "../../constants/tournament";
+import { useAuth } from "../../hooks/useAuth";
 import { Button, Checkbox, SelectField, FormFeedback, FormSection, MultiSelectDropdown } from "../ui";
 import { StoryFundoPicker } from "./StoryFundoPicker";
 import { Top8StoryPreview } from "./Top8StoryPreview";
@@ -53,6 +54,7 @@ function FieldLabel({ htmlFor, children, hint }) {
 }
 
 export function TournamentCreateForm({ token, onTournamentCreated, initialValues }) {
+  const { isAdmin } = useAuth();
   const {
     storyFundoUrl: initialStoryFundoUrl = "",
     storyFundoTextoRodape: initialStoryFundoTextoRodape = "claro",
@@ -114,7 +116,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
     const file = event.target.files?.[0];
     if (!file) return;
     setBannerError("");
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setBannerError(validationError.userMessage);
       if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -151,7 +153,7 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       if (bannerFile) {
         setUploadingBanner(true);
         setUploadProgress(0);
-        bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress);
+        bannerUrl = await uploadBannerImage(bannerFile, token, setUploadProgress, { isAdmin });
         setUploadingBanner(false);
       }
 

@@ -11,7 +11,7 @@ import { PAGE_TITLES } from "../constants/pageTitles";
 
 export function TimeCreatePage({ editMode = false }) {
   const { id: timeId } = useParams();
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -53,7 +53,7 @@ export function TimeCreatePage({ editMode = false }) {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const validationError = validateBannerImageFile(file);
+    const validationError = validateBannerImageFile(file, { isAdmin });
     if (validationError) {
       setError(validationError.userMessage);
       return;
@@ -76,7 +76,7 @@ export function TimeCreatePage({ editMode = false }) {
     try {
       let imagemUrl;
       if (imagemFile) {
-        imagemUrl = await uploadBannerImage(imagemFile, token, setUploadProgress);
+        imagemUrl = await uploadBannerImage(imagemFile, token, setUploadProgress, { isAdmin });
       }
       const payload = { ...form, ...(imagemUrl ? { imagemUrl } : {}) };
       if (editMode && timeId) {
