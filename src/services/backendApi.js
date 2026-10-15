@@ -599,7 +599,8 @@ export const excluirStoryFundo = (id, token) =>
   });
 
 // Galeria de fotos
-export const listarFotosGaleria = () => httpClient.get("/galeria");
+export const listarFotosGaleria = (params = {}) =>
+  httpClient.get("/galeria", { params });
 
 /** Evita POST duplo (StrictMode / remount rápido). */
 let visualizacaoGaleriaInflight = null;

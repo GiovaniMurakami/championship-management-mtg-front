@@ -168,7 +168,10 @@ export function GaleriaPage() {
   const { addToast } = useToast();
   const inputRef = useRef(null);
 
+  const LIMITE = 50;
   const [fotos, setFotos] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [pagina, setPagina] = useState(1);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [progresso, setProgresso] = useState("");
@@ -181,23 +184,39 @@ export function GaleriaPage() {
 
   const totalSelecionadas = selecionadas.size;
   const todasSelecionadas = fotos.length > 0 && totalSelecionadas === fotos.length;
+  const totalPaginas = Math.max(1, Math.ceil(total / LIMITE));
 
   const carregar = useCallback(async () => {
     setCarregando(true);
     try {
-      const data = await listarFotosGaleria();
-      setFotos(Array.isArray(data?.fotos) ? data.fotos : []);
+      const data = await listarFotosGaleria({ limite: LIMITE, offset: (pagina - 1) * LIMITE });
+      const itens = Array.isArray(data?.fotos) ? data.fotos : [];
+      setFotos(itens);
+      setTotal(Number(data?.total) || itens.length);
+      if (itens.length === 0 && pagina > 1) {
+        setPagina((atual) => Math.max(1, atual - 1));
+      }
     } catch (error) {
       addToast(formatApiErrorMessage(error, "Não foi possível carregar a galeria."), { type: "error" });
       setFotos([]);
+      setTotal(0);
     } finally {
       setCarregando(false);
     }
-  }, [addToast]);
+  }, [addToast, pagina]);
 
   useEffect(() => {
     carregar();
   }, [carregar]);
+
+  const mudarPagina = (novaPagina) => {
+    const destino = Math.min(totalPaginas, Math.max(1, novaPagina));
+    if (destino === pagina) return;
+    setIndiceAberto(null);
+    setSelecionadas(new Set());
+    setPagina(destino);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     let ativo = true;
@@ -266,7 +285,8 @@ export function GaleriaPage() {
           enviadas === 1 ? "Foto adicionada à galeria." : `${enviadas} fotos adicionadas à galeria.`,
           { type: "success" },
         );
-        await carregar();
+        if (pagina === 1) await carregar();
+        else setPagina(1);
       }
 
       if (falhas.length > 0) {
@@ -294,28 +314,16 @@ export function GaleriaPage() {
     setExcluindo(true);
     try {
       const resultado = await excluirFotosGaleriaLote(idsParaExcluir, token);
-      const excluidos = new Set(resultado?.excluidos || idsParaExcluir);
-      setFotos((atual) => {
-        const restante = atual.filter((f) => !excluidos.has(f.id));
-        setIndiceAberto((indiceAtual) => {
-          if (indiceAtual == null) return null;
-          if (!restante.length) return null;
-          return Math.min(indiceAtual, restante.length - 1);
-        });
-        return restante;
-      });
-      setSelecionadas((atual) => {
-        const proximo = new Set(atual);
-        for (const id of excluidos) proximo.delete(id);
-        return proximo;
-      });
-      const total = resultado?.total || excluidos.size;
+      const totalExcluidos = resultado?.total || (resultado?.excluidos || idsParaExcluir).length;
       addToast(
-        total === 1 ? "Foto removida da galeria." : `${total} fotos removidas da galeria.`,
+        totalExcluidos === 1 ? "Foto removida da galeria." : `${totalExcluidos} fotos removidas da galeria.`,
         { type: "success" },
       );
       setIdsParaExcluir(null);
-      if (modoSelecao && totalSelecionadas <= total) sairModoSelecao();
+      setIndiceAberto(null);
+      setSelecionadas(new Set());
+      if (modoSelecao) sairModoSelecao();
+      await carregar();
     } catch (error) {
       addToast(formatApiErrorMessage(error, "Não foi possível excluir a(s) foto(s)."), { type: "error" });
     } finally {
@@ -450,6 +458,7 @@ export function GaleriaPage() {
           />
         </div>
       ) : (
+        <>
         <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
           {fotos.map((foto, indice) => {
             const selecionada = selecionadas.has(foto.id);
@@ -493,6 +502,47 @@ export function GaleriaPage() {
             );
           })}
         </div>
+        {totalPaginas > 1 && (
+          <nav
+            className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line-soft bg-surface p-3 shadow-card"
+            aria-label="Paginação da galeria"
+          >
+            <button
+              type="button"
+              className={BTN_SECONDARY}
+              disabled={pagina === 1 || carregando}
+              onClick={() => mudarPagina(pagina - 1)}
+            >
+              ← Anterior
+            </button>
+            <span className="text-sm font-semibold text-text-soft">
+              Página {pagina} de {totalPaginas}
+              <span className="ml-2 font-normal text-text-muted">
+                ({total.toLocaleString("pt-BR")} foto{total === 1 ? "" : "s"})
+              </span>
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className={BTN_SECONDARY}
+                disabled={pagina === totalPaginas || carregando}
+                onClick={() => mudarPagina(pagina + 1)}
+              >
+                Próxima →
+              </button>
+              <button
+                type="button"
+                className={BTN_GHOST}
+                disabled={pagina === totalPaginas || carregando}
+                onClick={() => mudarPagina(totalPaginas)}
+                title="Ir para a última página"
+              >
+                Última
+              </button>
+            </div>
+          </nav>
+        )}
+        </>
       )}
       </div>
 
