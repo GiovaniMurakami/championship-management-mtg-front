@@ -481,9 +481,12 @@ export function GaleriaPage() {
                 aria-pressed={modoSelecao ? selecionada : undefined}
               >
                 <img
-                  src={foto.url}
+                  src={foto.urlThumb || foto.url}
                   alt={foto.titulo || `Foto ${indice + 1}`}
                   loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
+                  sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 160px"
                   className={`h-full w-full object-cover transition-[transform,opacity] duration-200 motion-reduce:transition-none ${modoSelecao && selecionada ? "opacity-80" : "group-hover:scale-[1.03]"}`}
                 />
                 {modoSelecao && (

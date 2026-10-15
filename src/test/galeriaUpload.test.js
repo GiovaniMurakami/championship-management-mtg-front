@@ -73,21 +73,30 @@ describe("otimizarFotoGaleriaParaWebp", () => {
     vi.restoreAllMocks();
   });
 
-  it("converte PNG para WebP otimizado", async () => {
+  it("converte PNG para WebP full + thumb", async () => {
     const png = new File([new Uint8Array(2_000_000)], "foto.png", { type: "image/png" });
     const out = await otimizarFotoGaleriaParaWebp(png);
 
-    expect(out.type).toBe("image/webp");
-    expect(out.name).toMatch(/\.webp$/);
-    expect(out.size).toBeLessThanOrEqual(GALERIA_TARGET_BYTES * 1.2);
+    expect(out.full.type).toBe("image/webp");
+    expect(out.full.name).toMatch(/\.webp$/);
+    expect(out.full.size).toBeLessThanOrEqual(GALERIA_TARGET_BYTES * 1.2);
+    expect(out.thumb.type).toBe("image/webp");
+    expect(out.thumb.name).toMatch(/-thumb\.webp$/);
   });
 });
 
 describe("uploadFotosGaleriaEmLote", () => {
   beforeEach(() => {
-    vi.mocked(obterPresignedUrl).mockResolvedValue({
-      uploadUrl: "https://s3.example/upload",
-      urlPublica: "https://s3.example/foto.webp",
+    let presignN = 0;
+    vi.mocked(obterPresignedUrl).mockImplementation(async () => {
+      presignN += 1;
+      return {
+        uploadUrl: "https://s3.example/upload",
+        urlPublica:
+          presignN % 2 === 1
+            ? `https://s3.example/foto-${presignN}.webp`
+            : `https://s3.example/foto-${presignN}-thumb.webp`,
+      };
     });
     vi.mocked(uploadParaS3).mockResolvedValue(undefined);
     vi.mocked(cadastrarFotoGaleria).mockResolvedValue({ id: "1" });
@@ -140,6 +149,9 @@ describe("uploadFotosGaleriaEmLote", () => {
     expect(resultado.enviadas).toBe(3);
     expect(resultado.falhas).toHaveLength(0);
     expect(cadastrarFotoGaleria).toHaveBeenCalledTimes(3);
+    expect(cadastrarFotoGaleria.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ url: expect.any(String), urlThumb: expect.any(String) }),
+    );
     expect(progressos.at(-1)).toEqual([3, 3]);
   });
 });

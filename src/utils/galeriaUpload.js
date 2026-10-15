@@ -8,10 +8,25 @@ export const ACCEPTED_GALERIA_IMAGE_TYPES = ["image/jpeg", "image/png", "image/g
 export const MAX_GALERIA_IMAGE_SIZE = 50 * 1024 * 1024;
 /** Limite do arquivo otimizado (alinhado ao teto admin da API). */
 export const MAX_GALERIA_UPLOAD_BYTES = 25 * 1024 * 1024;
-export const GALERIA_MAX_EDGE = 2560;
-export const GALERIA_TARGET_BYTES = 1.5 * 1024 * 1024;
-export const GALERIA_INITIAL_QUALITY = 0.84;
-export const GALERIA_MIN_QUALITY = 0.55;
+
+export const GALERIA_FULL_MAX_EDGE = 2560;
+export const GALERIA_FULL_TARGET_BYTES = 1.5 * 1024 * 1024;
+export const GALERIA_FULL_INITIAL_QUALITY = 0.84;
+export const GALERIA_FULL_MIN_QUALITY = 0.55;
+
+export const GALERIA_THUMB_MAX_EDGE = 560;
+export const GALERIA_THUMB_TARGET_BYTES = 80 * 1024;
+export const GALERIA_THUMB_INITIAL_QUALITY = 0.78;
+export const GALERIA_THUMB_MIN_QUALITY = 0.5;
+
+/** @deprecated use GALERIA_FULL_* */
+export const GALERIA_MAX_EDGE = GALERIA_FULL_MAX_EDGE;
+/** @deprecated use GALERIA_FULL_* */
+export const GALERIA_TARGET_BYTES = GALERIA_FULL_TARGET_BYTES;
+/** @deprecated use GALERIA_FULL_* */
+export const GALERIA_INITIAL_QUALITY = GALERIA_FULL_INITIAL_QUALITY;
+/** @deprecated use GALERIA_FULL_* */
+export const GALERIA_MIN_QUALITY = GALERIA_FULL_MIN_QUALITY;
 
 const UPLOAD_MESSAGES = {
   "invalid-file-type": "Arquivo inválido. Envie uma imagem JPEG, PNG, GIF ou WebP.",
@@ -73,22 +88,14 @@ function canvasToBlob(canvas, type, quality) {
   });
 }
 
-/**
- * Converte a imagem para WebP, redimensionando o maior lado até GALERIA_MAX_EDGE.
- */
-export async function otimizarFotoGaleriaParaWebp(file) {
-  if (!file || typeof document === "undefined") {
-    throw createUploadError("optimize-failed");
-  }
-
-  const img = await loadImageElement(file);
+async function encodeWebpFromImage(img, { maxEdge, targetBytes, initialQuality, minQuality, suffix }) {
   const srcW = img.naturalWidth || img.width;
   const srcH = img.naturalHeight || img.height;
   if (!srcW || !srcH) {
     throw createUploadError("optimize-failed");
   }
 
-  const scale = Math.min(1, GALERIA_MAX_EDGE / Math.max(srcW, srcH));
+  const scale = Math.min(1, maxEdge / Math.max(srcW, srcH));
   const width = Math.max(1, Math.round(srcW * scale));
   const height = Math.max(1, Math.round(srcH * scale));
 
@@ -101,11 +108,11 @@ export async function otimizarFotoGaleriaParaWebp(file) {
   }
   ctx.drawImage(img, 0, 0, width, height);
 
-  let quality = GALERIA_INITIAL_QUALITY;
+  let quality = initialQuality;
   let blob = await canvasToBlob(canvas, "image/webp", quality);
 
-  while (blob.size > GALERIA_TARGET_BYTES && quality > GALERIA_MIN_QUALITY) {
-    quality = Math.max(GALERIA_MIN_QUALITY, quality - 0.08);
+  while (blob.size > targetBytes && quality > minQuality) {
+    quality = Math.max(minQuality, quality - 0.08);
     blob = await canvasToBlob(canvas, "image/webp", quality);
   }
 
@@ -116,11 +123,43 @@ export async function otimizarFotoGaleriaParaWebp(file) {
     );
   }
 
-  const baseName = String(file.name || "foto").replace(/\.[^.]+$/, "") || "foto";
-  return new File([blob], `${baseName}.webp`, {
+  const baseName = String(img.__sourceName || "foto").replace(/\.[^.]+$/, "") || "foto";
+  return new File([blob], `${baseName}${suffix}.webp`, {
     type: "image/webp",
     lastModified: Date.now(),
   });
+}
+
+/**
+ * Gera full (até 2560px) e thumb (até 560px) em WebP a partir do arquivo original.
+ * @returns {Promise<{ full: File, thumb: File }>}
+ */
+export async function otimizarFotoGaleriaParaWebp(file) {
+  if (!file || typeof document === "undefined") {
+    throw createUploadError("optimize-failed");
+  }
+
+  const img = await loadImageElement(file);
+  img.__sourceName = file.name || "foto";
+
+  const [full, thumb] = await Promise.all([
+    encodeWebpFromImage(img, {
+      maxEdge: GALERIA_FULL_MAX_EDGE,
+      targetBytes: GALERIA_FULL_TARGET_BYTES,
+      initialQuality: GALERIA_FULL_INITIAL_QUALITY,
+      minQuality: GALERIA_FULL_MIN_QUALITY,
+      suffix: "",
+    }),
+    encodeWebpFromImage(img, {
+      maxEdge: GALERIA_THUMB_MAX_EDGE,
+      targetBytes: GALERIA_THUMB_TARGET_BYTES,
+      initialQuality: GALERIA_THUMB_INITIAL_QUALITY,
+      minQuality: GALERIA_THUMB_MIN_QUALITY,
+      suffix: "-thumb",
+    }),
+  ]);
+
+  return { full, thumb };
 }
 
 function normalizeUploadError(error, stage) {
@@ -150,27 +189,35 @@ async function requestPresignedUrl(file, token) {
   }
 }
 
+async function uploadArquivoS3(file, token, onProgress) {
+  const initialUpload = await requestPresignedUrl(file, token);
+  try {
+    await uploadParaS3(initialUpload.uploadUrl, file, onProgress);
+    return initialUpload.urlPublica;
+  } catch (error) {
+    if (error?.code === "s3-upload-expired") {
+      const retryUpload = await requestPresignedUrl(file, token);
+      await uploadParaS3(retryUpload.uploadUrl, file, onProgress);
+      return retryUpload.urlPublica;
+    }
+    throw normalizeUploadError(error, "upload");
+  }
+}
+
 /**
- * Otimiza para WebP e envia ao S3. Retorna a URL pública.
+ * Otimiza full+thumb e envia ao S3. Retorna as URLs públicas.
+ * @returns {Promise<{ url: string, urlThumb: string }>}
  */
 export async function uploadFotoGaleria(file, token, onProgress) {
   const validationError = validateGaleriaImageFile(file);
   if (validationError) throw validationError;
 
-  const fileParaUpload = await otimizarFotoGaleriaParaWebp(file);
-  const initialUpload = await requestPresignedUrl(fileParaUpload, token);
-
-  try {
-    await uploadParaS3(initialUpload.uploadUrl, fileParaUpload, onProgress);
-    return initialUpload.urlPublica;
-  } catch (error) {
-    if (error?.code === "s3-upload-expired") {
-      const retryUpload = await requestPresignedUrl(fileParaUpload, token);
-      await uploadParaS3(retryUpload.uploadUrl, fileParaUpload, onProgress);
-      return retryUpload.urlPublica;
-    }
-    throw normalizeUploadError(error, "upload");
-  }
+  const { full, thumb } = await otimizarFotoGaleriaParaWebp(file);
+  const [url, urlThumb] = await Promise.all([
+    uploadArquivoS3(full, token, onProgress),
+    uploadArquivoS3(thumb, token),
+  ]);
+  return { url, urlThumb };
 }
 
 async function mapWithConcurrency(items, concurrency, worker) {
@@ -213,9 +260,9 @@ export async function uploadFotosGaleriaEmLote(files, token, options = {}) {
 
   await mapWithConcurrency(lista, concurrency, async (arquivo) => {
     try {
-      const url = await uploadFotoGaleria(arquivo, token);
+      const { url, urlThumb } = await uploadFotoGaleria(arquivo, token);
       const titulo = String(arquivo.name || "").replace(/\.[^.]+$/, "").slice(0, 200);
-      await cadastrarFotoGaleria({ url, titulo }, token);
+      await cadastrarFotoGaleria({ url, urlThumb, titulo }, token);
     } catch (error) {
       falhas.push({
         nome: arquivo.name || "foto",
