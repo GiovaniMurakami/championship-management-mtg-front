@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Download, Trash2, Upload, X, ChevronLeft, ChevronRight, Images, CheckSquare, Eye } from "lucide-react";
+import { Check, Download, Trash2, Upload, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Images, CheckSquare, Eye } from "lucide-react";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
 import { BaseModal } from "../components/ui/BaseModal";
@@ -130,13 +130,13 @@ function Visualizador({ fotos, indice, onFechar, onMudar, isAdmin, onExcluir }) 
         </div>
       </div>
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pb-6">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pb-20 sm:pb-6">
         {fotos.length > 1 && (
           <>
             <button
               type="button"
               aria-label="Foto anterior"
-              className="absolute left-2 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white hover:bg-black/70 sm:inline-flex"
+              className="absolute left-1 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white hover:bg-black/70 sm:left-2 sm:inline-flex"
               onClick={() => onMudar((indice - 1 + fotos.length) % fotos.length)}
             >
               <ChevronLeft className="h-6 w-6" />
@@ -144,7 +144,7 @@ function Visualizador({ fotos, indice, onFechar, onMudar, isAdmin, onExcluir }) 
             <button
               type="button"
               aria-label="Próxima foto"
-              className="absolute right-2 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white hover:bg-black/70 sm:inline-flex"
+              className="absolute right-1 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white hover:bg-black/70 sm:right-2 sm:inline-flex"
               onClick={() => onMudar((indice + 1) % fotos.length)}
             >
               <ChevronRight className="h-6 w-6" />
@@ -158,6 +158,27 @@ function Visualizador({ fotos, indice, onFechar, onMudar, isAdmin, onExcluir }) 
           draggable={false}
         />
       </div>
+
+      {fotos.length > 1 && (
+        <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-4 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:hidden">
+          <button
+            type="button"
+            aria-label="Foto anterior"
+            className="inline-flex h-12 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white active:bg-white/20"
+            onClick={() => onMudar((indice - 1 + fotos.length) % fotos.length)}
+          >
+            <ChevronLeft className="h-7 w-7" />
+          </button>
+          <button
+            type="button"
+            aria-label="Próxima foto"
+            className="inline-flex h-12 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white active:bg-white/20"
+            onClick={() => onMudar((indice + 1) % fotos.length)}
+          >
+            <ChevronRight className="h-7 w-7" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -507,40 +528,62 @@ export function GaleriaPage() {
         </div>
         {totalPaginas > 1 && (
           <nav
-            className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line-soft bg-surface p-3 shadow-card"
+            className="sticky bottom-2 z-20 mt-4 mx-1 flex items-center justify-between gap-2 rounded-2xl border border-line bg-[rgba(12,8,22,0.92)] px-2 py-2 shadow-card backdrop-blur-md sm:static sm:mx-auto sm:mt-6 sm:w-auto sm:justify-center sm:gap-3 sm:bg-surface sm:px-3 sm:py-2.5"
             aria-label="Paginação da galeria"
           >
-            <button
-              type="button"
-              className={BTN_SECONDARY}
-              disabled={pagina === 1 || carregando}
-              onClick={() => mudarPagina(pagina - 1)}
-            >
-              ← Anterior
-            </button>
-            <span className="text-sm font-semibold text-text-soft">
-              Página {pagina} de {totalPaginas}
-              <span className="ml-2 font-normal text-text-muted">
-                ({total.toLocaleString("pt-BR")} foto{total === 1 ? "" : "s"})
-              </span>
-            </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                className={BTN_SECONDARY}
-                disabled={pagina === totalPaginas || carregando}
-                onClick={() => mudarPagina(pagina + 1)}
+                className={`${BTN_SECONDARY} inline-flex h-11 w-11 items-center justify-center !rounded-xl !px-0`}
+                disabled={pagina === 1 || carregando}
+                onClick={() => mudarPagina(1)}
+                aria-label="Primeira página"
+                title="Primeira"
               >
-                Próxima →
+                <ChevronsLeft className="h-5 w-5" />
               </button>
               <button
                 type="button"
-                className={BTN_GHOST}
+                className={`${BTN_SECONDARY} inline-flex h-11 min-w-11 items-center justify-center gap-1 !rounded-xl !px-2.5 sm:!px-3.5`}
+                disabled={pagina === 1 || carregando}
+                onClick={() => mudarPagina(pagina - 1)}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="hidden sm:inline">Anterior</span>
+              </button>
+            </div>
+
+            <p className="m-0 min-w-0 flex-1 px-1 text-center text-xs tabular-nums leading-tight text-text-soft sm:flex-none sm:px-3 sm:text-sm">
+              <span className="font-semibold text-text-main">
+                {pagina}
+                <span className="font-normal text-text-muted">/{totalPaginas}</span>
+              </span>
+              <span className="mt-0.5 block text-[0.7rem] text-text-muted sm:mt-0 sm:ml-2 sm:inline sm:text-xs">
+                {total.toLocaleString("pt-BR")} foto{total === 1 ? "" : "s"}
+              </span>
+            </p>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className={`${BTN_SECONDARY} inline-flex h-11 min-w-11 items-center justify-center gap-1 !rounded-xl !px-2.5 sm:!px-3.5`}
+                disabled={pagina === totalPaginas || carregando}
+                onClick={() => mudarPagina(pagina + 1)}
+                aria-label="Próxima página"
+              >
+                <span className="hidden sm:inline">Próxima</span>
+                <ChevronRight className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                className={`${BTN_SECONDARY} inline-flex h-11 w-11 items-center justify-center !rounded-xl !px-0`}
                 disabled={pagina === totalPaginas || carregando}
                 onClick={() => mudarPagina(totalPaginas)}
-                title="Ir para a última página"
+                aria-label="Última página"
+                title="Última"
               >
-                Última
+                <ChevronsRight className="h-5 w-5" />
               </button>
             </div>
           </nav>
