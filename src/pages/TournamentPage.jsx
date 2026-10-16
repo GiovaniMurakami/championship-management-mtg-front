@@ -72,7 +72,6 @@ export function TournamentPage() {
   const [torneios, setTorneios] = useState([]);
   const [total, setTotal] = useState(0);
   const [tabTotals, setTabTotals] = useState({ disponiveis: null, encerrados: null });
-  const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [enrollingId, setEnrollingId] = useState(null);
@@ -80,17 +79,32 @@ export function TournamentPage() {
   const guard = useActionGuard();
   const [searchParams, setSearchParams] = useSearchParams();
   const [abaAtiva, setAbaAtiva] = useState(() => resolveAba(searchParams));
+  const pagina = Math.max(1, Math.floor(Number(searchParams.get("pagina") || 1)) || 1);
   const [ablyWindowTick, setAblyWindowTick] = useState(0);
   const channelsRef = useRef({});
   const navigate = useNavigate();
 
+  const aplicarRota = useCallback(
+    ({ aba = abaAtiva, pagina: nextPagina = pagina } = {}) => {
+      const nextParams = new URLSearchParams(searchParams);
+      if (aba === "encerrados") nextParams.set("aba", "encerrados");
+      else nextParams.delete("aba");
+      if (nextPagina > 1) nextParams.set("pagina", String(nextPagina));
+      else nextParams.delete("pagina");
+      if (nextParams.toString() !== searchParams.toString()) {
+        setSearchParams(nextParams, { replace: true });
+      }
+    },
+    [abaAtiva, pagina, searchParams, setSearchParams],
+  );
+
   const handleAbaChange = useCallback((nextAba) => {
     setAbaAtiva(nextAba);
-    setPagina(1);
     setTorneios([]);
     setTotal(0);
     setLoadError("");
-  }, []);
+    aplicarRota({ aba: nextAba, pagina: 1 });
+  }, [aplicarRota]);
 
   const loadTorneios = useCallback(async () => {
     const request = listRequest();
@@ -151,13 +165,8 @@ export function TournamentPage() {
   }, [token]);
 
   useEffect(() => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (abaAtiva === "encerrados") nextParams.set("aba", "encerrados");
-    else nextParams.delete("aba");
-    if (nextParams.toString() !== searchParams.toString()) {
-      setSearchParams(nextParams, { replace: true });
-    }
-  }, [abaAtiva, searchParams, setSearchParams]);
+    aplicarRota({ aba: abaAtiva, pagina });
+  }, [abaAtiva, pagina, aplicarRota]);
 
   const handleRodadaIniciada = useCallback(() => {
     loadTorneios();
@@ -530,7 +539,7 @@ export function TournamentPage() {
           <nav className="flex items-center justify-center gap-3 mb-8" aria-label="Paginação de torneios">
             <button
               type="button"
-              onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              onClick={() => aplicarRota({ pagina: Math.max(1, pagina - 1) })}
               disabled={pagina === 1}
               aria-label="Página anterior"
               className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"
@@ -542,7 +551,7 @@ export function TournamentPage() {
             </span>
             <button
               type="button"
-              onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              onClick={() => aplicarRota({ pagina: Math.min(totalPaginas, pagina + 1) })}
               disabled={pagina === totalPaginas}
               aria-label="Próxima página"
               className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] disabled:opacity-40 hover:border-[rgba(199,149,255,0.4)] hover:text-white transition-colors"

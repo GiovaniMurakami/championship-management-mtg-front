@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { buscarLiga, getRankingLiga } from "../services/backendApi";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
@@ -18,19 +18,40 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
 import { formatBrasiliaDate } from "../utils/brasiliaTime";
 
+const ABAS_LIGA = new Set(["ranking", "torneios"]);
+
+function resolveAbaLiga(searchParams) {
+  const aba = searchParams.get("aba");
+  return ABAS_LIGA.has(aba) ? aba : "ranking";
+}
+
 export function LigaDetailPage() {
   const LIMITE_RANKING_TIMES = 50;
   const { id: ligaId } = useParams();
   const { token, isAdmin, usuario } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [liga, setLiga] = useState(null);
   const [ranking, setRanking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingError, setRankingError] = useState("");
-  const [abaAtiva, setAbaAtiva] = useState("ranking");
+  const abaAtiva = resolveAbaLiga(searchParams);
+
+  const setAbaAtiva = useCallback(
+    (nextAba) => {
+      const destino = ABAS_LIGA.has(nextAba) ? nextAba : "ranking";
+      const nextParams = new URLSearchParams(searchParams);
+      if (destino === "ranking") nextParams.delete("aba");
+      else nextParams.set("aba", destino);
+      if (nextParams.toString() !== searchParams.toString()) {
+        setSearchParams(nextParams, { replace: true });
+      }
+    },
+    [searchParams, setSearchParams],
+  );
 
   usePageTitle(liga?.nome, { loading, fallback: "Liga" });
 

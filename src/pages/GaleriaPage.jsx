@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Check, Download, Trash2, Upload, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Images, CheckSquare, Eye } from "lucide-react";
 import { PageShell } from "../components/ui/PageShell";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -16,6 +17,13 @@ import {
 import { uploadFotosGaleriaEmLote, validateGaleriaImageFile } from "../utils/galeriaUpload";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_DANGER, BTN_GHOST, BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
+
+const LIMITE = 24;
+
+function lerPaginaDaUrl(searchParams) {
+  const n = Number(searchParams.get("pagina") || 1);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+}
 
 function nomeArquivoDownload(foto) {
   const base = (foto?.titulo || `foto-${String(foto?.id || "").slice(0, 8)}` || "foto")
@@ -188,11 +196,11 @@ export function GaleriaPage() {
   const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
   const inputRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pagina = lerPaginaDaUrl(searchParams);
 
-  const LIMITE = 24;
   const [fotos, setFotos] = useState([]);
   const [total, setTotal] = useState(0);
-  const [pagina, setPagina] = useState(1);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [progresso, setProgresso] = useState("");
@@ -207,6 +215,19 @@ export function GaleriaPage() {
   const todasSelecionadas = fotos.length > 0 && totalSelecionadas === fotos.length;
   const totalPaginas = Math.max(1, Math.ceil(total / LIMITE));
 
+  const aplicarPaginaNaUrl = useCallback(
+    (novaPagina, { replace = true } = {}) => {
+      const destino = Math.max(1, Math.floor(Number(novaPagina) || 1));
+      const nextParams = new URLSearchParams(searchParams);
+      if (destino > 1) nextParams.set("pagina", String(destino));
+      else nextParams.delete("pagina");
+      if (nextParams.toString() !== searchParams.toString()) {
+        setSearchParams(nextParams, { replace });
+      }
+    },
+    [searchParams, setSearchParams],
+  );
+
   const carregar = useCallback(async () => {
     setCarregando(true);
     try {
@@ -215,7 +236,7 @@ export function GaleriaPage() {
       setFotos(itens);
       setTotal(Number(data?.total) || itens.length);
       if (itens.length === 0 && pagina > 1) {
-        setPagina((atual) => Math.max(1, atual - 1));
+        aplicarPaginaNaUrl(pagina - 1);
       }
     } catch (error) {
       addToast(formatApiErrorMessage(error, "Não foi possível carregar a galeria."), { type: "error" });
@@ -224,7 +245,7 @@ export function GaleriaPage() {
     } finally {
       setCarregando(false);
     }
-  }, [addToast, pagina]);
+  }, [addToast, pagina, aplicarPaginaNaUrl]);
 
   useEffect(() => {
     carregar();
@@ -235,7 +256,7 @@ export function GaleriaPage() {
     if (destino === pagina) return;
     setIndiceAberto(null);
     setSelecionadas(new Set());
-    setPagina(destino);
+    aplicarPaginaNaUrl(destino);
   };
 
   useEffect(() => {
@@ -306,7 +327,7 @@ export function GaleriaPage() {
           { type: "success" },
         );
         if (pagina === 1) await carregar();
-        else setPagina(1);
+        else aplicarPaginaNaUrl(1);
       }
 
       if (falhas.length > 0) {
