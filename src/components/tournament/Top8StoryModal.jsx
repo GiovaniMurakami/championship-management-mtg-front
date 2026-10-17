@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 import { InlineAlert } from "../ui/InlineAlert";
+import { useAuth } from "../../hooks/useAuth";
+import { cadastrarHallDaFama } from "../../services/backendApi";
+import { uploadBannerImage } from "../../utils/bannerUpload";
 import { resolveTop8BackgroundUrl, formatTop8StoryHeadline, formatTop8StoryPlayerName, formatTop8StoryRecord, getTop8StoryTextTheme, loadTop8BackgroundImage, top8StoryNameDeckLayout } from "../../utils/top8Story";
 
 const TOP8_CONTENT_START_RATIO = 0.28;
@@ -600,6 +603,7 @@ function pxToPercent(value, total) {
 
 export function Top8StoryModal({
   standings,
+  torneioId,
   torneioNome,
   torneioHorario,
   storyFundoUrl,
@@ -608,6 +612,9 @@ export function Top8StoryModal({
   initialTopN,
   onClose,
 }) {
+  const auth = useAuth();
+  const token = auth?.token;
+  const isAdmin = Boolean(auth?.isAdmin);
   const allPlayers = (standings || []).map((p) => ({
     ...p,
     deckNome: deckNameOverrides[p.deckId] || p.deckNome || p.deck?.nome || "—",
@@ -625,6 +632,8 @@ export function Top8StoryModal({
   const [videoProgress, setVideoProgress] = useState(null); // null = idle
   const [exportError, setExportError] = useState("");
   const [sharingInstagram, setSharingInstagram] = useState(false);
+  const [publishingHall, setPublishingHall] = useState(false);
+  const [hallPublished, setHallPublished] = useState(false);
 
   const players = allPlayers.slice(0, topN);
   const backgroundUrl = resolveTop8BackgroundUrl(storyFundoUrl);
@@ -661,6 +670,34 @@ export function Top8StoryModal({
       setExportError(error?.message || "Não foi possível compartilhar no Instagram.");
     } finally {
       setSharingInstagram(false);
+    }
+  };
+
+  const handlePublishHall = async () => {
+    if (!isAdmin || !token || !torneioId || publishingHall || hallPublished || videoProgress !== null) return;
+    setExportError("");
+    setPublishingHall(true);
+    try {
+      const { canvas } = await renderTop8Canvas(players, torneioNome, exportOptions);
+      const blob = await canvasToBlob(canvas, "image/png");
+      const file = new File([blob], `hall-top8-${torneioId.slice(0, 8)}.png`, {
+        type: "image/png",
+        lastModified: Date.now(),
+      });
+      const imagemUrl = await uploadBannerImage(file, token, undefined, {
+        isAdmin: true,
+        profile: "foto",
+        optimize: true,
+      });
+      await cadastrarHallDaFama(
+        { torneioId, imagemUrl, torneioNome: torneioNome || "" },
+        token,
+      );
+      setHallPublished(true);
+    } catch (error) {
+      setExportError(error?.userMessage || error?.message || "Não foi possível publicar no Hall da Fama.");
+    } finally {
+      setPublishingHall(false);
     }
   };
 
@@ -715,10 +752,23 @@ export function Top8StoryModal({
             <button
               className="inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(255,215,0,0.45)] rounded-full bg-[rgba(255,215,0,0.1)] text-[#fcd34d] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color] duration-[160ms] hover:bg-[rgba(255,215,0,0.2)] hover:border-[rgba(255,215,0,0.65)] disabled:cursor-not-allowed"
               onClick={() => downloadTop8Canvas(players, torneioNome, exportOptions)}
-              disabled={videoProgress !== null || sharingInstagram}
+              disabled={videoProgress !== null || sharingInstagram || publishingHall}
             >
               ↓ PNG
             </button>
+
+            {isAdmin && torneioId ? (
+              <Tooltip content="Envia esta imagem para /hall-da-fama" placement="bottom" focusable={false}>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 px-[0.9rem] py-[0.38rem] border border-[rgba(167,79,255,0.55)] rounded-full bg-[rgba(167,79,255,0.14)] text-[#c4b5fd] text-[0.78rem] font-bold font-[inherit] cursor-pointer transition-[background,border-color,opacity] duration-[160ms] hover:bg-[rgba(167,79,255,0.24)] disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={handlePublishHall}
+                  disabled={videoProgress !== null || sharingInstagram || publishingHall || hallPublished}
+                >
+                  {hallPublished ? "No Hall ✓" : publishingHall ? "Publicando…" : "Publicar no Hall"}
+                </button>
+              </Tooltip>
+            ) : null}
 
             <Tooltip content="Compartilhar a imagem como story no Instagram" placement="bottom" focusable={false}>
             <button

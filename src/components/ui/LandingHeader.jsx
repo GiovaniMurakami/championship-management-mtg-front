@@ -1,143 +1,191 @@
-import { useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { flushSync } from "react-dom";
-import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
+import { BRAND_LOGO_URL } from "../../constants/site";
+import { useAuth } from "../../hooks/useAuth";
+import { ADMIN_LINKS, NavUserMenu, NavUserMenuMobile } from "./NavUserMenu";
 
 const NAV_LINKS = [
-    { label: "Home", href: MAIN_SITE_URL, external: true },
-    { label: "Torneios", href: "/torneio" },
-    { label: "Artigos", href: "/artigos" },
-    { label: "Sobre mim", href: "/sobre-mim" },
-    { label: "Parceiros", href: "/parceiros" },
+  { label: "Home", href: "/" },
+  { label: "Torneios", href: "/torneios" },
+  { label: "Hall da Fama", href: "/hall-da-fama" },
+  { label: "Decks", href: "/decks-fuguete" },
+  { label: "Artigos", href: "/artigos" },
+  { label: "Sobre mim", href: "/sobre-mim" },
+  { label: "Parceiros", href: "/parceiros" },
 ];
 
-const IconStar = () => (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </svg>
-);
+const desktopLinkClass = ({ isActive }) =>
+  `no-underline font-semibold text-[0.9rem] cursor-pointer bg-none border-none p-0 transition-colors duration-200 ${isActive
+    ? "text-text-main"
+    : "text-text-muted hover:text-text-main"
+  }`;
 
+const mobileLinkClass = ({ isActive }) =>
+  `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.5rem] rounded-lg no-underline font-semibold text-[0.9rem] transition-all duration-[180ms] ${isActive
+    ? "bg-[rgba(167,79,255,0.18)] text-text-main"
+    : "text-text-soft hover:bg-[rgba(167,79,255,0.1)] hover:text-text-main"
+  }`;
+
+/** Header institucional — mesmo chrome e menu de usuário do Navbar de torneios. */
 export function LandingHeader() {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const headerRef = useRef(null);
-    const { pathname } = useLocation();
-    const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const headerRef = useRef(null);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const {
+    usuario,
+    isAuthenticated,
+    openAuth,
+    clearAuth,
+    openEditProfileModal,
+    loggingOut,
+  } = useAuth() || {};
 
-    const transitionTo = (href) => (e) => {
-        e.preventDefault();
-        close();
-        if (!document.startViewTransition) { navigate(href); return; }
-        document.startViewTransition(() => flushSync(() => navigate(href)));
+  const close = () => setMenuOpen(false);
+
+  const isLinkActive = (href) => (
+    href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(`${href}/`)
+  );
+
+  const transitionTo = (href) => (e) => {
+    e.preventDefault();
+    close();
+    if (!document.startViewTransition) {
+      navigate(href);
+      return;
+    }
+    document.startViewTransition(() => flushSync(() => navigate(href)));
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (headerRef.current && !headerRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
-    const close = () => setMenuOpen(false);
-
-    const linkClass = (href) => {
-        const isActive = href === "/"
-            ? pathname === href
-            : pathname === href || pathname.startsWith(href + "/");
-        return `no-underline font-semibold text-[0.9rem] cursor-pointer transition-colors duration-200 ${isActive
-            ? "text-white [text-shadow:0_0_18px_rgba(167,79,255,0.6)]"
-            : "text-text-soft hover:text-white"
-            }`;
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
     };
+  }, [menuOpen]);
 
-    const mobileLinkClass = (href) => {
-        const isActive = href === "/"
-            ? pathname === href
-            : pathname === href || pathname.startsWith(href + "/");
-        return `flex items-center gap-[0.65rem] px-[0.75rem] py-[0.65rem] rounded-lg no-underline font-semibold text-[0.92rem] transition-all duration-[180ms] ${isActive
-            ? "bg-[rgba(167,79,255,0.18)] text-text-main"
-            : "text-text-soft hover:bg-[rgba(167,79,255,0.1)] hover:text-text-main"
-            }`;
-    };
+  const isAdmin = usuario?.role === "admin";
 
-    return (
-        <header
-            ref={headerRef}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex w-[min(1100px,calc(100vw-2rem))] items-center justify-between gap-4 rounded-full border border-line bg-[rgba(14,9,28,0.75)] backdrop-blur-2xl px-4 py-[0.7rem] shadow-[0_12px_30px_rgba(3,2,8,0.5)]"
-            style={{ position: "fixed" }}
+  return (
+    <header
+      ref={headerRef}
+      className="fixed top-3 left-1/2 z-40 flex w-[min(1040px,calc(100vw-1.5rem))] -translate-x-1/2 items-center justify-between gap-3 rounded-[1.35rem] border border-line-soft bg-[color-mix(in_srgb,var(--color-surface)_78%,transparent)] px-4 py-[0.65rem] shadow-card backdrop-blur-2xl max-nav:top-2 max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:row-gap-[0.6rem]"
+    >
+      <NavLink
+        to="/"
+        className="shrink-0 cursor-pointer opacity-80 transition-opacity hover:opacity-100"
+        onClick={close}
+      >
+        <img
+          src={BRAND_LOGO_URL}
+          alt="Tiago Fuguete"
+          className="h-7 object-contain"
+          style={{ viewTransitionName: "brand-logo" }}
+        />
+      </NavLink>
+
+      <nav className="flex items-center gap-5 max-nav:hidden" aria-label="Navegação principal">
+        {NAV_LINKS.map((l) => (
+          <a
+            key={l.label}
+            href={l.href}
+            className={desktopLinkClass({ isActive: isLinkActive(l.href) })}
+            onClick={transitionTo(l.href)}
+          >
+            {l.label}
+          </a>
+        ))}
+      </nav>
+
+      <NavUserMenu
+        usuario={isAuthenticated ? usuario : null}
+        onOpenAuth={openAuth}
+        onLogout={clearAuth}
+        onOpenEditProfile={openEditProfileModal}
+        loggingOut={loggingOut}
+        onNavigate={close}
+        desktopClassName="flex items-center gap-[0.6rem] max-nav:hidden"
+      />
+
+      <button
+        className="ml-auto hidden h-[2.35rem] w-[2.35rem] cursor-pointer items-center justify-center rounded-xl border border-line bg-[rgba(167,79,255,0.22)] transition-all duration-[180ms] hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.32)] active:bg-[rgba(167,79,255,0.4)] max-nav:relative max-nav:inline-flex"
+        type="button"
+        aria-expanded={menuOpen}
+        aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+        onClick={() => setMenuOpen((p) => !p)}
+      >
+        <span
+          className="absolute h-[2px] w-[1.1rem] rounded-full bg-[#f5edff] transition-all duration-[220ms]"
+          style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-5px)" }}
+        />
+        <span
+          className="absolute h-[2px] w-[1.1rem] rounded-full bg-[#f5edff] transition-opacity duration-[180ms]"
+          style={{ opacity: menuOpen ? 0 : 1 }}
+        />
+        <span
+          className="absolute h-[2px] w-[1.1rem] rounded-full bg-[#f5edff] transition-all duration-[220ms]"
+          style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(5px)" }}
+        />
+      </button>
+
+      {menuOpen ? (
+        <div
+          className="absolute top-[calc(100%+0.5rem)] right-0 left-0 z-50 flex max-h-[min(78dvh,calc(100dvh-4.75rem))] max-nav:col-span-full flex-col overflow-hidden animate-[mobile-panel-in_220ms_cubic-bezier(0.4,0,0.2,1)] rounded-2xl border border-line bg-[rgba(14,9,28,0.97)] shadow-[0_16px_40px_rgba(3,2,8,0.6)] backdrop-blur-2xl"
+          role="dialog"
+          aria-label="Menu de navegação"
         >
-            {/* Logo */}
-            <a href={MAIN_SITE_URL} target="_top" rel="noopener noreferrer" className="shrink-0 cursor-pointer">
-                <img src={BRAND_LOGO_URL} alt="Tiago Fuguete" className="h-7 object-contain" style={{ viewTransitionName: "brand-logo" }} />
-            </a>
-
-            {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-5" aria-label="Navegação principal">
-                {NAV_LINKS.map((l) => (
-                    <a
-                        key={l.label}
-                        href={l.href}
-                        className={linkClass(l.href)}
-                        onClick={l.external ? close : transitionTo(l.href)}
-                        target={l.external ? "_top" : undefined}
-                        rel={l.external ? "noopener noreferrer" : undefined}
-                    >
-                        {l.label}
-                    </a>
+          <nav className="flex min-h-0 flex-1 flex-col gap-[0.1rem] overflow-y-auto overscroll-contain px-3 pt-3 pb-2 [-webkit-overflow-scrolling:touch]">
+            {NAV_LINKS.map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                className={mobileLinkClass({ isActive: isLinkActive(l.href) })}
+                onClick={transitionTo(l.href)}
+              >
+                {l.label}
+              </a>
+            ))}
+            {isAuthenticated && isAdmin ? (
+              <div className="mt-2 flex flex-col gap-0.5 rounded-xl border border-line bg-white/[0.02] p-1.5">
+                <p className="m-0 px-[0.75rem] py-[0.35rem] text-[0.72rem] font-bold uppercase tracking-[0.08em] text-text-subtle">
+                  Administração
+                </p>
+                {ADMIN_LINKS.map((link) => (
+                  <NavLink key={link.to} to={link.to} className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[0.5rem]">{link.label}</span>
+                  </NavLink>
                 ))}
-            </nav>
+              </div>
+            ) : null}
+          </nav>
 
-            {/* CTA */}
-            <a
-                href="https://apoia.se/tiagofuguete"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden md:inline-flex items-center gap-2 border border-[rgba(199,149,255,0.5)] rounded-xl px-4 py-[0.5rem] font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white text-[0.85rem] transition-all duration-200 hover:shadow-[0_4px_20px_rgba(142,57,237,0.45)] hover:-translate-y-[1px] active:translate-y-0 shrink-0"
-            >
-                <IconStar />
-                Apoiar
-            </a>
-
-            {/* Hamburger */}
-            <button
-                className="md:hidden relative inline-flex items-center justify-center w-[2.35rem] h-[2.35rem] border border-line rounded-xl bg-[rgba(167,79,255,0.22)] cursor-pointer transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.32)]"
-                type="button"
-                aria-expanded={menuOpen}
-                aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-                onClick={() => setMenuOpen((p) => !p)}
-            >
-                <span className="absolute w-[1.1rem] h-[2px] rounded-full bg-[#f5edff] transition-all duration-[220ms]" style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-5px)" }} />
-                <span className="absolute w-[1.1rem] h-[2px] rounded-full bg-[#f5edff] transition-opacity duration-[180ms]" style={{ opacity: menuOpen ? 0 : 1 }} />
-                <span className="absolute w-[1.1rem] h-[2px] rounded-full bg-[#f5edff] transition-all duration-[220ms]" style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(5px)" }} />
-            </button>
-
-            {/* Mobile panel */}
-            {menuOpen && (
-                <div
-                    className="absolute top-[calc(100%+0.5rem)] left-0 right-0 z-50 border border-line rounded-2xl bg-[rgba(14,9,28,0.97)] backdrop-blur-2xl p-4 shadow-[0_16px_40px_rgba(3,2,8,0.6)]"
-                    role="dialog"
-                    aria-label="Menu de navegação"
-                >
-                    <nav className="flex flex-col gap-[0.2rem]">
-                        {NAV_LINKS.map((l) => (
-                            <a
-                                key={l.label}
-                                href={l.href}
-                                className={mobileLinkClass(l.href)}
-                                onClick={l.external ? close : transitionTo(l.href)}
-                                target={l.external ? "_top" : undefined}
-                                rel={l.external ? "noopener noreferrer" : undefined}
-                            >
-                                {l.label}
-                            </a>
-                        ))}
-                    </nav>
-                    <div className="mt-3 pt-3 border-t border-line-soft">
-                        <a
-                            href="https://apoia.se/tiagofuguete"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full px-4 py-[0.65rem] rounded-xl border border-[rgba(199,149,255,0.5)] bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white font-bold text-[0.9rem] transition-all"
-                            onClick={close}
-                        >
-                            <IconStar />
-                            Conteúdo Exclusivo
-                        </a>
-                    </div>
-                </div>
-            )}
-        </header>
-    );
+          <div className="shrink-0 border-t border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.98)] px-3 py-3">
+            <NavUserMenuMobile
+              usuario={isAuthenticated ? usuario : null}
+              onOpenAuth={openAuth}
+              onLogout={clearAuth}
+              onOpenEditProfile={openEditProfileModal}
+              loggingOut={loggingOut}
+              onNavigate={close}
+            />
+          </div>
+        </div>
+      ) : null}
+    </header>
+  );
 }

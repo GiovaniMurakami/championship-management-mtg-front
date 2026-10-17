@@ -1,19 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { BRAND_LOGO_URL, MAIN_SITE_URL } from "../../constants/site";
-import { Tooltip } from "./Tooltip";
-
-function NavAvatar({ nome, fotoUrl }) {
-  const initial = (nome?.[0] ?? "?").toUpperCase();
-  return (
-    <span
-      className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[rgba(167,79,255,0.35)] border border-[rgba(199,149,255,0.4)] text-[0.78rem] font-bold text-text-main shrink-0 select-none"
-      aria-hidden="true"
-    >
-      {fotoUrl ? <img src={fotoUrl} alt="" className="h-full w-full rounded-full object-cover" /> : initial}
-    </span>
-  );
-}
+import { BRAND_LOGO_URL } from "../../constants/site";
+import { ADMIN_LINKS, NavUserMenu, NavUserMenuMobile } from "./NavUserMenu";
 
 const IconTrophy = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
@@ -72,34 +60,6 @@ const IconTools = () => (
   </svg>
 );
 
-const IconBlog = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-  </svg>
-);
-
-const IconCommunity = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-
-const IconEdit = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
-
-const IconLogout = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
-
 const Chevron = () => (
   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
     <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -137,16 +97,13 @@ export function Navbar({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [maisOpen, setMaisOpen] = useState(false);
-  const [dashboardOpen, setDashboardOpen] = useState(false);
   const navRef = useRef(null);
   const maisRef = useRef(null);
-  const dashboardRef = useRef(null);
   const isAdmin = usuario?.role === "admin";
 
   const close = () => {
     setMenuOpen(false);
     setMaisOpen(false);
-    setDashboardOpen(false);
   };
 
   useEffect(() => {
@@ -156,9 +113,6 @@ export function Navbar({
       }
       if (maisRef.current && !maisRef.current.contains(e.target)) {
         setMaisOpen(false);
-      }
-      if (dashboardRef.current && !dashboardRef.current.contains(e.target)) {
-        setDashboardOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -187,11 +141,10 @@ export function Navbar({
       ref={navRef}
       className="fixed top-3 left-1/2 z-40 flex w-[min(1040px,calc(100vw-1.5rem))] -translate-x-1/2 items-center justify-between gap-3 rounded-[1.35rem] border border-line-soft bg-[color-mix(in_srgb,var(--color-surface)_78%,transparent)] px-4 py-[0.65rem] shadow-card backdrop-blur-2xl max-nav:top-2 max-nav:grid max-nav:grid-cols-[minmax(0,1fr)_auto] max-nav:row-gap-[0.6rem]"
     >
-      <a
-        href={MAIN_SITE_URL}
-        target="_top"
-        rel="noopener noreferrer"
+      <NavLink
+        to="/"
         className="shrink-0 cursor-pointer opacity-80 transition-opacity hover:opacity-100"
+        onClick={close}
       >
         <img
           src={BRAND_LOGO_URL}
@@ -209,10 +162,10 @@ export function Navbar({
         >
           MTG Champion
         </span>
-      </a>
+      </NavLink>
 
       <nav className="flex items-center gap-5 max-nav:hidden" aria-label="Navegação principal">
-        <NavLink to="/" className={desktopLinkClass} onClick={close}>
+        <NavLink to="/torneios" className={desktopLinkClass} onClick={close}>
           Torneios
         </NavLink>
         <NavLink to="/decks" className={desktopLinkClass} onClick={close}>
@@ -220,9 +173,6 @@ export function Navbar({
         </NavLink>
         <NavLink to="/metagame" className={desktopLinkClass} onClick={close}>
           Metagame
-        </NavLink>
-        <NavLink to="/artigos" className={desktopLinkClass} onClick={close}>
-          Artigos
         </NavLink>
 
         <div className="relative" ref={maisRef}>
@@ -238,13 +188,6 @@ export function Navbar({
           </button>
           {maisOpen && (
             <div role="menu" className={dropdownPanelClass}>
-              <p className={sectionLabelClass}>Comunidade</p>
-              <NavLink role="menuitem" to="/comunidade" className={dropdownItemClass} onClick={close}>
-                Posts
-              </NavLink>
-              <NavLink role="menuitem" to="/galeria" className={dropdownItemClass} onClick={close}>
-                Galeria
-              </NavLink>
               <p className={sectionLabelClass}>Competição</p>
               <NavLink role="menuitem" to="/ligas" className={dropdownItemClass} onClick={close}>
                 Ligas
@@ -264,92 +207,14 @@ export function Navbar({
         </div>
       </nav>
 
-      <div className="flex items-center gap-[0.6rem] max-nav:hidden">
-        {usuario ? (
-          <div className="relative" ref={dashboardRef}>
-            <Tooltip content="Menu do usuário" placement="bottom" focusable={false}>
-              <button
-                className="inline-flex items-center gap-2 border border-line rounded-xl bg-[rgba(167,79,255,0.18)] px-[0.7rem] py-[0.45rem] text-[0.85rem] text-text-main cursor-pointer"
-                type="button"
-                onClick={() => setDashboardOpen((open) => !open)}
-                aria-label="Abrir menu do usuário"
-                aria-expanded={dashboardOpen}
-                aria-haspopup="menu"
-              >
-                <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
-                <span className="max-w-[7.5rem] truncate text-[0.84rem] font-semibold text-text-main">{usuario.nome}</span>
-                <Chevron />
-              </button>
-            </Tooltip>
-            {dashboardOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 top-[calc(100%+0.7rem)] z-50 min-w-[230px] rounded-xl border border-[rgba(217,180,255,0.22)] bg-[rgba(18,12,32,0.97)] p-1.5 shadow-[0_12px_28px_rgba(3,2,8,0.55)]"
-              >
-                <NavLink role="menuitem" to={`/usuarios/${usuario.id}`} className={dropdownItemClass} onClick={close}>
-                  Meu perfil
-                </NavLink>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-[rgba(167,79,255,0.14)] hover:text-text-main"
-                  onClick={() => { onOpenEditProfile(); close(); }}
-                >
-                  <IconEdit />
-                  Editar perfil
-                </button>
-                {isAdmin && (
-                  <>
-                    <p className={`${sectionLabelClass} border-t border-line pt-2`}>Administração</p>
-                    <NavLink role="menuitem" to="/dashboard" className={dropdownItemClass} onClick={close}>
-                      Anúncios
-                    </NavLink>
-                    <NavLink role="menuitem" to="/dashboard/anuncio-diario" className={dropdownItemClass} onClick={close}>
-                      Anúncio diário
-                    </NavLink>
-                    <NavLink role="menuitem" to="/dashboard/newsletter" className={dropdownItemClass} onClick={close}>
-                      Newsletter
-                    </NavLink>
-                    <NavLink role="menuitem" to="/dashboard/permissoes" className={dropdownItemClass} onClick={close}>
-                      Permissões
-                    </NavLink>
-                    <NavLink role="menuitem" to="/dashboard/bloqueios" className={dropdownItemClass} onClick={close}>
-                      Bloqueio de usuários
-                    </NavLink>
-                  </>
-                )}
-                <button
-                  type="button"
-                  role="menuitem"
-                  disabled={loggingOut}
-                  className="mt-1 flex w-full items-center gap-2 border-x-0 border-b-0 border-t border-line bg-transparent px-3 py-2.5 text-left text-[0.88rem] font-semibold text-text-soft hover:bg-danger/10 hover:text-red-300 disabled:cursor-wait disabled:opacity-60"
-                  onClick={() => { onLogout(); close(); }}
-                >
-                  <IconLogout />
-                  {loggingOut ? "Saindo..." : "Sair"}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <button
-              className="cursor-pointer rounded-xl border border-line bg-transparent px-4 py-[0.6rem] font-bold text-text-soft transition-all duration-200 hover:border-line-strong hover:bg-[rgba(167,79,255,0.08)] hover:text-text-main"
-              type="button"
-              onClick={() => { onOpenAuth("register"); close(); }}
-            >
-              Cadastro
-            </button>
-            <button
-              className="cursor-pointer rounded-xl border border-[rgba(199,149,255,0.5)] bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] px-4 py-[0.6rem] font-bold text-white transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_20px_rgba(142,57,237,0.45)] active:translate-y-0"
-              type="button"
-              onClick={() => { onOpenAuth("login"); close(); }}
-            >
-              Entrar
-            </button>
-          </>
-        )}
-      </div>
+      <NavUserMenu
+        usuario={usuario}
+        onOpenAuth={onOpenAuth}
+        onLogout={onLogout}
+        onOpenEditProfile={onOpenEditProfile}
+        loggingOut={loggingOut}
+        onNavigate={close}
+      />
 
       <button
         className="ml-auto hidden h-[2.35rem] w-[2.35rem] cursor-pointer items-center justify-center rounded-xl border border-line bg-[rgba(167,79,255,0.22)] transition-all duration-[180ms] hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.32)] active:bg-[rgba(167,79,255,0.4)] max-nav:relative max-nav:inline-flex"
@@ -379,7 +244,7 @@ export function Navbar({
           aria-label="Menu de navegação"
         >
           <nav className="flex min-h-0 flex-1 flex-col gap-[0.1rem] overflow-y-auto overscroll-contain px-3 pt-3 pb-2 [-webkit-overflow-scrolling:touch]">
-            <NavLink to="/" className={mobileLinkClass} onClick={close}>
+            <NavLink to="/torneios" className={mobileLinkClass} onClick={close}>
               <IconTrophy />
               <span>Torneios</span>
             </NavLink>
@@ -391,22 +256,10 @@ export function Navbar({
               <IconMetagame />
               <span>Metagame</span>
             </NavLink>
-            <NavLink to="/artigos" className={mobileLinkClass} onClick={close}>
-              <IconBlog />
-              <span>Artigos</span>
-            </NavLink>
 
             <p className="mb-0.5 mt-2 px-[0.75rem] text-[0.68rem] font-bold uppercase tracking-[0.1em] text-text-subtle">
               Mais
             </p>
-            <NavLink to="/comunidade" className={mobileLinkClass} onClick={close}>
-              <IconCommunity />
-              <span>Posts</span>
-            </NavLink>
-            <NavLink to="/galeria" className={mobileLinkClass} onClick={close}>
-              <IconCommunity />
-              <span>Galeria</span>
-            </NavLink>
             <NavLink to="/ligas" className={mobileLinkClass} onClick={close}>
               <IconLiga />
               <span>Ligas</span>
@@ -430,68 +283,24 @@ export function Navbar({
                   <IconDashboard />
                   <span>Administração</span>
                 </p>
-                <NavLink to="/dashboard" className={mobileLinkClass} onClick={close}>
-                  <span className="pl-[1.4rem]">Anúncios</span>
-                </NavLink>
-                  <NavLink to="/dashboard/anuncio-diario" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Anúncio diário</span>
+                {ADMIN_LINKS.map((link) => (
+                  <NavLink key={link.to} to={link.to} className={mobileLinkClass} onClick={close}>
+                    <span className="pl-[1.4rem]">{link.label}</span>
                   </NavLink>
-                  <NavLink to="/dashboard/newsletter" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Newsletter</span>
-                  </NavLink>
-                  <NavLink to="/dashboard/permissoes" className={mobileLinkClass} onClick={close}>
-                    <span className="pl-[1.4rem]">Permissões</span>
-                  </NavLink>
-                <NavLink to="/dashboard/bloqueios" className={mobileLinkClass} onClick={close}>
-                  <span className="pl-[1.4rem]">Bloqueio de usuários</span>
-                </NavLink>
+                ))}
               </div>
             )}
           </nav>
 
           <div className="shrink-0 border-t border-[rgba(217,180,255,0.2)] bg-[rgba(14,9,28,0.98)] px-3 py-3">
-            {usuario ? (
-              <div className="flex flex-col gap-2">
-                <button
-                  className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-line bg-[rgba(167,79,255,0.1)] px-[0.75rem] py-[0.55rem] text-left text-text-main transition-all duration-[180ms] hover:bg-[rgba(167,79,255,0.2)]"
-                  type="button"
-                  onClick={() => { onOpenEditProfile(); close(); }}
-                >
-                  <NavAvatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} />
-                  <div className="flex min-w-0 flex-1 flex-col gap-[0.1rem]">
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.9rem] font-semibold text-text-main">{usuario.nome}</span>
-                    <span className="text-[0.74rem] text-text-soft">Editar perfil</span>
-                  </div>
-                  <IconEdit />
-                </button>
-                <button
-                  className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-[rgba(255,255,255,0.03)] px-4 py-[0.55rem] font-bold text-text-main disabled:cursor-wait disabled:opacity-60"
-                  type="button"
-                  disabled={loggingOut}
-                  onClick={() => { onLogout(); close(); }}
-                >
-                  <IconLogout />
-                  {loggingOut ? "Saindo..." : "Sair"}
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  className="min-h-[44px] cursor-pointer rounded-xl border border-line bg-transparent px-4 py-[0.65rem] font-bold text-text-soft transition-all duration-200 hover:border-line-strong hover:bg-[rgba(167,79,255,0.08)] hover:text-text-main"
-                  type="button"
-                  onClick={() => { onOpenAuth("register"); close(); }}
-                >
-                  Cadastro
-                </button>
-                <button
-                  className="min-h-[44px] cursor-pointer rounded-xl border border-[rgba(199,149,255,0.5)] bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] px-4 py-[0.65rem] font-bold text-white transition-all duration-200 hover:shadow-[0_4px_16px_rgba(142,57,237,0.4)]"
-                  type="button"
-                  onClick={() => { onOpenAuth("login"); close(); }}
-                >
-                  Entrar
-                </button>
-              </div>
-            )}
+            <NavUserMenuMobile
+              usuario={usuario}
+              onOpenAuth={onOpenAuth}
+              onLogout={onLogout}
+              onOpenEditProfile={onOpenEditProfile}
+              loggingOut={loggingOut}
+              onNavigate={close}
+            />
           </div>
         </div>
       )}

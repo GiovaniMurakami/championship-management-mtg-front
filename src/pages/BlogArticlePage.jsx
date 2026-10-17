@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Footer, CookieConsentBanner } from "../components";
+import { LandingHeader } from "../components/ui/LandingHeader";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { ArtigoRenderer } from "../components/blog/ArtigoRenderer";
@@ -90,25 +92,39 @@ export function BlogArticlePage() {
   };
 
   if (carregando) {
-    return <PageShell><div className="flex justify-center py-20"><Spinner /></div></PageShell>;
+    return (
+      <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]">
+        <LandingHeader />
+        <PageShell>
+          <div className="flex justify-center py-28"><Spinner /></div>
+        </PageShell>
+      </div>
+    );
   }
 
   if (!artigo) {
     return (
-      <PageShell>
-        <main className="mx-auto max-w-3xl px-4 py-12 text-center">
-          <h1>Artigo não encontrado</h1>
-          <button type="button" className={`${BTN_SECONDARY} mt-4`} onClick={() => navigate("/artigos")}>Voltar aos artigos</button>
-        </main>
-      </PageShell>
+      <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]">
+        <LandingHeader />
+        <PageShell>
+          <main className="mx-auto max-w-3xl px-4 py-28 text-center">
+            <h1>Artigo não encontrado</h1>
+            <button type="button" className={`${BTN_SECONDARY} mt-4`} onClick={() => navigate("/artigos")}>Voltar aos artigos</button>
+          </main>
+        </PageShell>
+        <Footer />
+        <CookieConsentBanner />
+      </div>
     );
   }
 
   const podeEditar = isAdmin || (podeEditarBlog && artigo.autor?.id === usuario?.id);
 
   return (
+    <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]">
+      <LandingHeader />
     <PageShell>
-      <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-2">
+      <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-28">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link to="/artigos" className="text-sm text-text-soft hover:text-text-main">← Artigos</Link>
           <div className="flex flex-wrap gap-2">
@@ -183,5 +199,8 @@ export function BlogArticlePage() {
         <ArtigoComentarios artigo={artigo} token={token} onArtigo={setArtigo} />
       </main>
     </PageShell>
+      <Footer />
+      <CookieConsentBanner />
+    </div>
   );
 }

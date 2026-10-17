@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Footer, CookieConsentBanner } from "../components";
+import { LandingHeader } from "../components/ui/LandingHeader";
 import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
@@ -45,8 +47,10 @@ export function BlogPage() {
   }, [token, addToast]);
 
   return (
+    <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]">
+      <LandingHeader />
     <PageShell>
-      <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-2">
+      <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-28">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-brand">Tiago Fuguete</p>
@@ -153,5 +157,8 @@ export function BlogPage() {
         )}
       </main>
     </PageShell>
+      <Footer />
+      <CookieConsentBanner />
+    </div>
   );
 }

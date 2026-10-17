@@ -1,7 +1,9 @@
 export const SITE_TITLE = "Tiago Fuguete";
 
 export const PAGE_TITLES = {
+  home: "Home",
   torneios: "Torneios",
+  hallDaFama: "Hall da Fama",
   posts: "Posts",
   galeria: "Galeria",
   criarTorneio: "Criar Torneio",
@@ -15,6 +17,9 @@ export const PAGE_TITLES = {
   dashboardPermissoes: "Permissões de usuários",
   dashboardAnuncioDiario: "Anúncio diário",
   dashboardNewsletter: "Newsletter de metagame",
+  dashboardSlidesHome: "Slides da home",
+  dashboardParceiros: "Parceiros",
+  dashboardHallDaFama: "Hall da Fama",
   times: "Times",
   criarTime: "Criar Time",
   editarTime: "Editar Time",
@@ -27,6 +32,7 @@ export const PAGE_TITLES = {
   privacidade: "Política de Privacidade",
   blog: "Artigos",
   decks: "Decks",
+  decksFuguete: "Decks do Fuguete",
   sobreMim: "Sobre mim",
   parceiros: "Parceiros",
   ferramentas: "Ferramentas",

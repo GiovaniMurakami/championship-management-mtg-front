@@ -82,7 +82,7 @@ export function TournamentJoinPage() {
         if (torneioId) {
             navigate(`/torneios/${torneioId}`);
         } else {
-            navigate("/");
+            navigate("/torneios");
         }
     };
 
@@ -249,7 +249,7 @@ export function TournamentJoinPage() {
                                         <button
                                             type="button"
                                             className={`mt-3 w-full ${BTN_SECONDARY}`}
-                                            onClick={() => navigate("/")}
+                                            onClick={() => navigate("/torneios")}
                                         >
                                             Voltar para torneios
                                         </button>
@@ -306,7 +306,7 @@ export function TournamentJoinPage() {
                                 <FormFeedback message={errorMsg} variant="error" className="mb-5 text-left" />
                                 <Button
                                     variant="secondary"
-                                    onClick={() => navigate("/")}
+                                    onClick={() => navigate("/torneios")}
                                 >
                                     Ver torneios
                                 </Button>

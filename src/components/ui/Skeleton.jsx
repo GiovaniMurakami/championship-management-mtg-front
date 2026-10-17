@@ -486,3 +486,109 @@ export function SkeletonDashboard() {
     </div>
   );
 }
+
+export function SkeletonHallDaFama({ count = 6 }) {
+  return (
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      aria-busy="true"
+      aria-label="Carregando Hall da Fama"
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-xl border border-line-soft bg-[rgba(167,79,255,0.08)]"
+        >
+          <div className="aspect-[9/16] w-full">
+            <Skeleton width="100%" height="100%" radius="0" />
+          </div>
+          <div className="flex flex-col gap-2 p-3">
+            <Skeleton width={`${58 + (index % 3) * 10}%`} height="0.95rem" />
+            <Skeleton width="5.5rem" height="0.7rem" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonParceirosGrid({ count = 10 }) {
+  return (
+    <div
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
+      aria-busy="true"
+      aria-label="Carregando parceiros"
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="flex aspect-square flex-col items-center justify-center gap-3 rounded-xl border border-line-soft bg-[rgba(167,79,255,0.08)] p-4"
+        >
+          <Skeleton width="4.5rem" height="4.5rem" radius="0.75rem" />
+          <Skeleton width="70%" height="0.65rem" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonSobreMim() {
+  return (
+    <div className="animate-[fade-in_300ms_ease-out]" aria-busy="true" aria-label="Carregando Sobre mim">
+      <section className="max-w-5xl mx-auto px-4 pt-28 pb-12">
+        <div className="mb-10 flex justify-center">
+          <Skeleton width="min(70%, 22rem)" height="2.25rem" />
+        </div>
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          <Skeleton width="100%" height="20rem" radius="1rem" className="md:!w-80 shrink-0" />
+          <div className="flex-1 w-full space-y-3">
+            <Skeleton width="100%" height="0.95rem" />
+            <Skeleton width="95%" height="0.95rem" />
+            <Skeleton width="88%" height="0.95rem" />
+            <Skeleton width="92%" height="0.95rem" />
+            <Skeleton width="70%" height="0.95rem" />
+            <Skeleton width="100%" height="0.95rem" className="mt-4" />
+            <Skeleton width="86%" height="0.95rem" />
+            <Skeleton width="78%" height="0.95rem" />
+          </div>
+        </div>
+      </section>
+      <section className="bg-[#080514] py-12 border-y border-line-soft">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 w-full space-y-3">
+            <Skeleton width="14rem" height="1.75rem" />
+            <Skeleton width="90%" height="0.9rem" />
+            <Skeleton width="75%" height="0.9rem" />
+            <Skeleton width="10rem" height="2.75rem" radius="0.75rem" className="mt-2" />
+          </div>
+          <Skeleton width="100%" height="12rem" radius="0.75rem" className="md:!w-80 shrink-0" />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function SkeletonDecksGrid({ count = 6 }) {
+  return (
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      aria-busy="true"
+      aria-label="Carregando decks"
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-xl border border-line-soft bg-[rgba(167,79,255,0.08)]"
+        >
+          <div className="aspect-[16/9] w-full">
+            <Skeleton width="100%" height="100%" radius="0" />
+          </div>
+          <div className="flex flex-col gap-2 p-4">
+            <Skeleton width={`${62 + (index % 3) * 8}%`} height="1rem" />
+            <Skeleton width="4.5rem" height="0.7rem" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

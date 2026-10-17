@@ -108,7 +108,7 @@ export function TournamentDetailPage() {
     const ok = await handleDeleteTorneio();
     if (ok) {
       closeModal();
-      navigate("/");
+      navigate("/torneios");
     }
   };
 
@@ -117,7 +117,7 @@ export function TournamentDetailPage() {
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap max-md:flex-col max-md:items-stretch">
         <button
           className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-line rounded-xl bg-white/[0.03] text-text-soft text-[0.9rem] font-medium cursor-pointer transition-all duration-200 hover:text-white hover:border-line-strong hover:bg-white/[0.06] max-md:w-full max-md:justify-center"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/torneios")}
         >
           ← Voltar para torneios
         </button>

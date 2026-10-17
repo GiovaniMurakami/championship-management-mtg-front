@@ -49,7 +49,7 @@ export function TournamentCreatePage() {
   const initialValues = buildCopyTournamentInitialValues(copyFrom);
 
   const handleTournamentCreated = () => {
-    navigate("/");
+    navigate("/torneios");
   };
 
   return (
@@ -57,7 +57,7 @@ export function TournamentCreatePage() {
       <button
         className="inline-flex items-center gap-[0.4rem] px-4 py-2 border border-line rounded-xl bg-white/[0.03] text-text-soft text-[0.9rem] font-medium cursor-pointer transition-all duration-200 mb-6 hover:text-white hover:border-line-strong hover:bg-white/[0.06]"
         type="button"
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/torneios")}
       >
         ← Voltar para torneios
       </button>

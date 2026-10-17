@@ -196,9 +196,10 @@ export function resolveExternalNavigationTarget(locationLike) {
   deleteParams(searchParams, ROUTE_KEYS);
 
   switch (route) {
-    case "torneios":
     case "home":
       return withSearch("/", searchParams);
+    case "torneios":
+      return withSearch("/torneios", searchParams);
     case "criar-torneio":
       return withSearch("/torneios/criar", searchParams);
     case "decks":

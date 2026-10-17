@@ -354,6 +354,7 @@ export function EliminationBracket({
       {showStory && (
         <Top8StoryModal
           standings={topPlayers}
+          torneioId={torneio?.id || ""}
           torneioNome={torneio?.nome || ""}
           torneioHorario={torneio?.horario || ""}
           storyFundoUrl={torneio?.storyFundoUrl || torneio?.storyFundo?.url || ""}

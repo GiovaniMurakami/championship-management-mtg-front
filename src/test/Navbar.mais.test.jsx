@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Navbar } from "../components/ui/Navbar";
 
 describe("Navbar — dropdown Mais", () => {
-  it("abre o dropdown e lista comunidade, competição e ferramentas", () => {
+  it("abre o dropdown e lista competição e ferramentas", () => {
     render(
       <MemoryRouter>
         <Navbar
@@ -18,7 +18,8 @@ describe("Navbar — dropdown Mais", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Mais/i }));
-    expect(screen.getByRole("menuitem", { name: /Posts/i })).toHaveAttribute("href", "/comunidade");
+    expect(screen.queryByRole("menuitem", { name: /Posts/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: /Galeria/i })).not.toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /Ligas/i })).toHaveAttribute("href", "/ligas");
     expect(screen.getByRole("menuitem", { name: /Times/i })).toHaveAttribute("href", "/times");
     expect(screen.getByRole("menuitem", { name: /Contador de vida/i })).toHaveAttribute(

@@ -518,6 +518,66 @@ export const registrarVisualizacaoAnuncioDiario = (anuncioId) =>
 export const registrarCliqueAnuncioDiario = (anuncioId) =>
   httpClient.post("/site/anuncio-diario/clique", { anuncioId });
 
+export const buscarSlidesHome = () =>
+  httpClient.get("/site/home-slides");
+
+export const buscarSlidesHomeAdmin = (token) =>
+  httpClient.get("/site/home-slides/admin", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const salvarSlidesHome = (slides, token) =>
+  httpClient.put("/site/home-slides", { slides }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarParceiros = () =>
+  httpClient.get("/site/parceiros");
+
+export const buscarParceirosAdmin = (token) =>
+  httpClient.get("/site/parceiros/admin", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const salvarParceiros = (payload, token) =>
+  httpClient.put("/site/parceiros", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarSobreMim = () =>
+  httpClient.get("/site/sobre-mim");
+
+export const salvarSobreMim = (payload, token) =>
+  httpClient.put("/site/sobre-mim", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const buscarConteudoHome = () =>
+  httpClient.get("/site/home-conteudo");
+
+export const salvarConteudoHome = (payload, token) =>
+  httpClient.put("/site/home-conteudo", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const listarHallDaFama = (params = {}) =>
+  httpClient.get("/hall-da-fama", { params });
+
+export const cadastrarHallDaFama = (payload, token) =>
+  httpClient.post("/hall-da-fama", payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const atualizarHallDaFama = (id, payload, token) =>
+  httpClient.patch(`/hall-da-fama/${encodeURIComponent(id)}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const excluirHallDaFama = (id, token) =>
+  httpClient.delete(`/hall-da-fama/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 // Posts
 export const listarPosts = (token, params = {}) => httpClient.get("/post", { ...optionalAuthConfig(token), params });
 export const buscarPost = (postId, token) => httpClient.get(`/post/${encodeURIComponent(postId)}`, optionalAuthConfig(token));

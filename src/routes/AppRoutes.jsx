@@ -55,6 +55,11 @@ const UserProfilePage = lazy(() => import("../pages/UserProfilePage").then(m => 
 const PostsPage = lazy(() => import("../pages/PostsPage").then(m => ({ default: m.PostsPage })));
 const PostDetailPage = lazy(() => import("../pages/PostDetailPage").then(m => ({ default: m.PostDetailPage })));
 const GaleriaPage = lazy(() => import("../pages/GaleriaPage").then(m => ({ default: m.GaleriaPage })));
+const HallDaFamaPage = lazy(() => import("../pages/HallDaFamaPage").then(m => ({ default: m.HallDaFamaPage })));
+const LandingDecksFuguetePage = lazy(() => import("../pages/LandingDecksFuguetePage").then(m => ({ default: m.LandingDecksFuguetePage })));
+const DashboardSlidesHomePage = lazy(() => import("../pages/DashboardSlidesHomePage").then(m => ({ default: m.DashboardSlidesHomePage })));
+const DashboardParceirosPage = lazy(() => import("../pages/DashboardParceirosPage").then(m => ({ default: m.DashboardParceirosPage })));
+const DashboardHallDaFamaPage = lazy(() => import("../pages/DashboardHallDaFamaPage").then(m => ({ default: m.DashboardHallDaFamaPage })));
 
 const PageLoader = () => <Spinner text="Carregando..." />;
 const LegacyPostRedirect = () => {
@@ -66,8 +71,10 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<TournamentPage />} />
-        <Route path="/torneio" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/torneio" element={<Navigate to="/torneios" replace />} />
+        <Route path="/hall-da-fama" element={<HallDaFamaPage />} />
+        <Route path="/decks-fuguete" element={<LandingDecksFuguetePage />} />
 
         <Route path="/decks" element={<MyDecksPage />} />
         <Route path="/comunidade" element={<PostsPage />} />
@@ -89,7 +96,7 @@ export function AppRoutes() {
           </UuidParamGuard>
         } />
 
-        <Route path="/torneios" element={<Navigate to="/" replace />} />
+        <Route path="/torneios" element={<TournamentPage />} />
         <Route path="/torneios/criar" element={
           <ProtectedRoute requireAdmin><TournamentCreatePage /></ProtectedRoute>
         } />
@@ -103,6 +110,15 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin><DashboardPage /></ProtectedRoute>
         } />
         <Route path="/dashboard/anuncios" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard/slides-home" element={
+          <ProtectedRoute requireAdmin><DashboardSlidesHomePage /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/parceiros" element={
+          <ProtectedRoute requireAdmin><DashboardParceirosPage /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/hall-da-fama" element={
+          <ProtectedRoute requireAdmin><DashboardHallDaFamaPage /></ProtectedRoute>
+        } />
         <Route path="/dashboard/bloqueios" element={
           <ProtectedRoute requireAdmin><DashboardBloqueiosPage /></ProtectedRoute>
         } />
@@ -191,6 +207,7 @@ export function AppRoutes() {
         <Route path="/landing-page/blog" element={<Navigate to="/artigos" replace />} />
         <Route path="/landing-page/sobre-mim" element={<Navigate to="/sobre-mim" replace />} />
         <Route path="/landing-page/parceiros" element={<Navigate to="/parceiros" replace />} />
+        <Route path="/landing" element={<Navigate to="/" replace />} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

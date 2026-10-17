@@ -21,7 +21,7 @@ export { ScrollToTop } from "./ScrollToTop";
 export { PageShell } from "./PageShell";
 export { SelectField } from "./SelectField";
 export { MultiSelectDropdown } from "./MultiSelectDropdown";
-export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonCollection, SkeletonTeamCollection, SkeletonMetagame, SkeletonMetagameArchetype, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard, SkeletonUserProfile } from "./Skeleton";
+export { Skeleton, SkeletonCard, SkeletonTorneioCard, SkeletonBannerCard, SkeletonCollection, SkeletonTeamCollection, SkeletonMetagame, SkeletonMetagameArchetype, SkeletonTournamentDetail, SkeletonSponsorSection, SkeletonDashboard, SkeletonUserProfile, SkeletonHallDaFama, SkeletonParceirosGrid, SkeletonSobreMim, SkeletonDecksGrid } from "./Skeleton";
 export { Spinner } from "./Spinner";
 export { Switch } from "./Switch";
 export { SponsorSection } from "./SponsorSection";

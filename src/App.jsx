@@ -13,8 +13,7 @@ import {
   resolveExternalNavigationTarget,
   WORDPRESS_EMBED_URL,
 } from "./utils/externalNavigation";
-
-const BARE_ROUTES = ["/sobre-mim", "/parceiros"];
+import { isLandingShellRoute } from "./utils/landingShell";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -162,16 +161,47 @@ function AppContent() {
   } = useAuth();
 
   const { pathname } = useLocation();
-  const isBare = BARE_ROUTES.includes(pathname);
+  const isBare = isLandingShellRoute(pathname);
   const isPublicAuthRoute = pathname === "/esqueci-senha"
     || pathname === "/reset-senha";
 
   if (isBare) {
     return (
       <>
+        <RateLimitBridge />
         <ExternalRouteSync />
         <WordpressRouteBridge />
         <AppRoutes />
+        <AuthModal
+          isOpen={showAuthModal && !isPublicAuthRoute}
+          onClose={closeAuth}
+          activeTab={authTab}
+          onTabChange={setAuthTab}
+          isLoading={authLoading}
+          message={authMessage}
+          loginForm={loginForm}
+          onLoginFormChange={setLoginForm}
+          registerForm={registerForm}
+          onRegisterFormChange={setRegisterForm}
+          onLoginSubmit={handleLogin}
+          onRegisterSubmit={handleRegister}
+          loginLockout={loginLockout}
+        />
+        <EditProfileModal
+          isOpen={showEditProfileModal}
+          onClose={closeEditProfileModal}
+          isLoading={authLoading}
+          message={authMessage}
+          form={editProfileForm}
+          onFormChange={setEditProfileForm}
+          onSubmit={handleUpdateProfile}
+          usuarioNome={usuario?.nome || ""}
+          onDeleteAccount={handleDeleteAccount}
+          deleteLoading={deleteAccountLoading}
+          deleteError={deleteAccountError}
+          podeEditarAssinatura={Boolean(podeEditarBlog)}
+        />
+        <LogoutOverlay open={loggingOut} />
       </>
     );
   }
