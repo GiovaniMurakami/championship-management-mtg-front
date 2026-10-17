@@ -10,11 +10,23 @@ const getBaseURL = getApiBaseUrl;
 const httpClient = axios.create({
   baseURL: getBaseURL(),
   timeout: 30000,
+  withCredentials: true,
 });
 
 /** Refresh pode coincidir com cold start da Lambda — precisa de mais folga que o timeout padrão. */
 const REFRESH_TIMEOUT_MS = 25000;
 const REFRESH_MARGIN_MS = 5 * 60 * 1000;
+
+/** Access token só em memória (não vai para localStorage). */
+let memoryAccessToken = "";
+
+export function getMemoryAccessToken() {
+  return memoryAccessToken || "";
+}
+
+export function setMemoryAccessToken(token) {
+  memoryAccessToken = typeof token === "string" ? token : "";
+}
 
 /** Deduplica GETs idênticos em voo (ex.: React StrictMode em dev). */
 const inflightGetRequests = new Map();
@@ -94,6 +106,33 @@ const readStoredAuth = () => {
   }
 };
 
+/** Persiste só o perfil; tokens não vão para localStorage. */
+export const persistUsuarioSession = (usuario) => {
+  try {
+    if (!usuario) {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ usuario }));
+  } catch {
+    // localStorage indisponível
+  }
+};
+
+const stripLegacyTokensFromStorage = () => {
+  const saved = readStoredAuth();
+  if (!saved.usuario && !saved.refreshToken && !saved.token) return;
+  if (saved.usuario) {
+    persistUsuarioSession(saved.usuario);
+  } else {
+    try {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+};
+
 const getErrorStatus = (error) =>
   error?.status
   ?? error?.response?.status
@@ -109,71 +148,51 @@ const isDefinitiveAuthFailure = (error) => {
   return getErrorStatus(error) === 401;
 };
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const forceLogout = (tokenAnterior) => {
-  const latest = readStoredAuth();
+  const current = getMemoryAccessToken();
   if (
     tokenAnterior
-    && latest.token
-    && latest.token !== tokenAnterior
-    && !isAccessTokenExpiredOrExpiring(latest.token, 0)
+    && current
+    && current !== tokenAnterior
+    && !isAccessTokenExpiredOrExpiring(current, 0)
   ) {
-    window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: latest.token } }));
+    window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: current } }));
     return;
   }
-  window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  setMemoryAccessToken("");
+  try {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
   window.dispatchEvent(new CustomEvent("auth:logout"));
 };
 
 const doRefresh = async () => {
   const savedAuth = readStoredAuth();
-  const currentRefreshToken = savedAuth.refreshToken;
-  if (!currentRefreshToken || typeof currentRefreshToken !== "string") {
-    const err = new Error("no_refresh_token");
-    err.status = 401;
-    throw err;
-  }
+  const legacyRefresh = typeof savedAuth.refreshToken === "string" ? savedAuth.refreshToken : "";
+  const body = legacyRefresh ? { refreshToken: legacyRefresh } : {};
 
   try {
     const data = await httpClient.post(
       "/usuario/refresh-token",
-      { refreshToken: currentRefreshToken },
-      { timeout: REFRESH_TIMEOUT_MS },
+      body,
+      { timeout: REFRESH_TIMEOUT_MS, withCredentials: true },
     );
     const newToken = data?.token;
-    const newRefreshToken = data?.refreshToken;
     if (!newToken || typeof newToken !== "string") {
       const err = new Error("invalid_refresh_response");
       err.status = 401;
       throw err;
     }
-    const updatedAuth = {
-      ...savedAuth,
-      token: newToken,
-      refreshToken: newRefreshToken ?? currentRefreshToken,
-    };
-    try {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedAuth));
-    } catch {
-      // localStorage cheio — ignora, token em memória ainda válido
+    setMemoryAccessToken(newToken);
+    stripLegacyTokensFromStorage();
+    if (savedAuth.usuario) {
+      persistUsuarioSession(savedAuth.usuario);
     }
     window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: newToken } }));
     return newToken;
   } catch (error) {
-    // Corrida entre abas: a outra consome o refresh e grava os tokens novos um instante depois.
-    for (let tentativa = 0; tentativa < 8; tentativa += 1) {
-      const latest = readStoredAuth();
-      if (
-        latest.token
-        && latest.token !== savedAuth.token
-        && !isAccessTokenExpiredOrExpiring(latest.token, 0)
-      ) {
-        window.dispatchEvent(new CustomEvent("auth:tokenRefreshed", { detail: { token: latest.token } }));
-        return latest.token;
-      }
-      await wait(80);
-    }
     throw error;
   }
 };
@@ -183,24 +202,22 @@ const doRefresh = async () => {
  * @returns {Promise<string|null>} token fresco, ou null se não há sessão
  */
 export const ensureFreshToken = async ({ forceRefresh = false, rejectedToken } = {}) => {
+  const memoryToken = getMemoryAccessToken();
   const savedAuth = readStoredAuth();
-  if (!savedAuth.token && !savedAuth.refreshToken) return null;
+  const hasLegacyRefresh = Boolean(savedAuth.refreshToken);
+  const hasUsuario = Boolean(savedAuth.usuario);
 
-  // Após 401, só reutiliza um token diferente daquele rejeitado pelo servidor.
-  // Isso também evita renovar novamente quando outra requisição/aba já renovou.
   if (
-    savedAuth.token
-    && !isAccessTokenExpiredOrExpiring(savedAuth.token)
-    && (!forceRefresh || (rejectedToken && savedAuth.token !== rejectedToken))
+    memoryToken
+    && !isAccessTokenExpiredOrExpiring(memoryToken)
+    && (!forceRefresh || (rejectedToken && memoryToken !== rejectedToken))
   ) {
-    return savedAuth.token;
+    return memoryToken;
   }
 
-  if (!savedAuth.refreshToken) {
-    forceLogout(savedAuth.token);
-    const err = new Error("no_refresh_token");
-    err.status = 401;
-    throw err;
+  // Sem cookie/legado e sem usuário persistido → sem sessão
+  if (!memoryToken && !hasLegacyRefresh && !hasUsuario && !forceRefresh) {
+    return null;
   }
 
   if (isRefreshing) {
@@ -218,7 +235,7 @@ export const ensureFreshToken = async ({ forceRefresh = false, rejectedToken } =
   } catch (error) {
     rejectPending(error);
     if (isDefinitiveAuthFailure(error)) {
-      forceLogout(savedAuth.token);
+      forceLogout(memoryToken || rejectedToken);
     }
     throw error;
   } finally {
@@ -257,7 +274,6 @@ httpClient.interceptors.request.use(
       if (isDefinitiveAuthFailure(error)) {
         throw new Error("Sessão expirada. Faça login novamente.");
       }
-      // Erro transitório: não apaga sessão; falha só esta request
       throw error;
     }
   },
@@ -302,14 +318,12 @@ httpClient.interceptors.response.use(
       }
     }
 
-    // Global 429 rate-limit handling
     if (error.response?.status === 429) {
       const msg429 = error.response?.data?.mensagem || error.response?.data?.message || "Muitas requisições. Aguarde um momento e tente novamente.";
       window.dispatchEvent(new CustomEvent("auth:rateLimited", { detail: { message: msg429 } }));
       throw new Error(msg429);
     }
 
-    // Handle validation errors (erros[] / errors[] — strings or Zod objects)
     const validationMessages = extractValidationMessages(error.response?.data);
     if (validationMessages.length > 0) {
       const normalizedError = new Error(validationMessages.join("; "));

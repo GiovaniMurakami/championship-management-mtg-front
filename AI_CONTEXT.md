@@ -154,7 +154,8 @@ BrowserRouter
 
 ### AuthContext (`src/context/AuthContext.jsx`)
 - `token`, `usuario`, `isAuthenticated`, `isAdmin` (`usuario.role === "admin"`)
-- Sessão em `localStorage` chave `cmmtg.auth` (`AUTH_STORAGE_KEY`)
+- Access token só em memória; refresh via cookie HttpOnly (`withCredentials`)
+- `localStorage` chave `cmmtg.auth` (`AUTH_STORAGE_KEY`) guarda só `{ usuario }` (migração: ainda envia `refreshToken` legado no body uma vez)
 - Eventos customizados do `httpClient`:
   - `auth:logout` — token expirado
   - `auth:tokenRefreshed` — refresh bem-sucedido

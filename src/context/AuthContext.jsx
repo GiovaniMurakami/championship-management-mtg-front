@@ -12,8 +12,12 @@ import {
 import { AUTH_STORAGE_KEY } from "../constants/auth";
 import {
   ensureFreshToken,
+  getMemoryAccessToken,
   isAccessTokenExpiredOrExpiring,
+  persistUsuarioSession,
+  setMemoryAccessToken,
 } from "../services/httpClient";
+import { refreshToken as refreshTokenApi } from "../services/backendApi";
 
 import { AuthContext } from "./authContextStore";
 
@@ -79,55 +83,64 @@ export function AuthProvider({ children }) {
       }
     };
 
-    const persistSession = (accessToken, nextUsuario, refreshToken = "") => {
-      let previous = {};
-      try {
-        previous = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
-      } catch {
-        previous = {};
-      }
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
-        token: accessToken,
-        refreshToken: refreshToken || previous.refreshToken || "",
-        usuario: nextUsuario,
-      }));
-      setToken(accessToken);
-      setUsuario(nextUsuario);
+    const persistSession = (accessToken, nextUsuario) => {
+      setMemoryAccessToken(accessToken || "");
+      setToken(accessToken || "");
+      setUsuario(nextUsuario || null);
+      persistUsuarioSession(nextUsuario || null);
     };
 
     const restoreSession = async () => {
-      const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
-      if (!savedAuth) {
-        if (!cancelled) setAuthInitialized(true);
+      let storedUsuario = null;
+      let legacyRefresh = "";
+      try {
+        const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (savedAuth) {
+          const parsed = JSON.parse(savedAuth);
+          storedUsuario = parsed.usuario || null;
+          legacyRefresh = typeof parsed.refreshToken === "string" ? parsed.refreshToken : "";
+          // Descarta access legado do localStorage (agora só em memória).
+          if (parsed.token || parsed.refreshToken) {
+            persistUsuarioSession(storedUsuario);
+          }
+        }
+      } catch {
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+
+      if (!storedUsuario && !legacyRefresh) {
+        // Ainda pode haver cookie HttpOnly — tenta refresh silencioso
+        try {
+          const data = await refreshTokenApi();
+          if (cancelled) return;
+          if (data?.token) {
+            const synced = await syncUsuarioDoServidor(data.token, null);
+            if (cancelled) return;
+            if (synced?.id) persistSession(data.token, synced);
+          }
+        } catch {
+          /* sem sessão */
+        } finally {
+          if (!cancelled) setAuthInitialized(true);
+        }
         return;
       }
 
       try {
-        const parsed = JSON.parse(savedAuth);
-        let accessToken = parsed.token || "";
-        let storedUsuario = parsed.usuario || null;
-
-        if (accessToken && parsed.refreshToken && isAccessTokenExpiredOrExpiring(accessToken)) {
+        let accessToken = "";
+        // Migração: um refresh com body legado se ainda existir no storage
+        if (legacyRefresh) {
           try {
-            const freshToken = await ensureFreshToken();
-            if (cancelled) return;
-            accessToken = freshToken || "";
+            const data = await refreshTokenApi(legacyRefresh);
+            accessToken = data?.token || "";
           } catch {
-            if (cancelled) return;
-            const latest = window.localStorage.getItem(AUTH_STORAGE_KEY);
-            if (latest) {
-              try {
-                const reparsed = JSON.parse(latest);
-                accessToken = reparsed.token || "";
-                storedUsuario = reparsed.usuario || null;
-              } catch {
-                accessToken = "";
-                storedUsuario = null;
-              }
-            } else {
-              accessToken = "";
-              storedUsuario = null;
-            }
+            accessToken = "";
+          }
+        } else {
+          try {
+            accessToken = (await ensureFreshToken({ forceRefresh: true })) || "";
+          } catch {
+            accessToken = getMemoryAccessToken() || "";
           }
         }
 
@@ -136,24 +149,12 @@ export function AuthProvider({ children }) {
         if (accessToken) {
           const synced = await syncUsuarioDoServidor(accessToken, storedUsuario);
           if (cancelled) return;
-          // ensureFreshToken já gravou o refresh novo. Não repor o refresh antigo consumido.
-          let refreshAtual = parsed.refreshToken || "";
-          try {
-            const latest = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
-            if (latest.refreshToken) refreshAtual = latest.refreshToken;
-            if (latest.token && !isAccessTokenExpiredOrExpiring(latest.token, 0)) {
-              accessToken = latest.token;
-            }
-          } catch {
-            // Mantém o par lido no início da restauração.
-          }
-          persistSession(accessToken, synced, refreshAtual);
+          persistSession(accessToken, synced);
         } else {
-          setToken("");
-          setUsuario(null);
+          persistSession("", null);
         }
       } catch {
-        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+        persistSession("", null);
       } finally {
         if (!cancelled) setAuthInitialized(true);
       }
@@ -174,16 +175,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const refreshIfNeeded = () => {
       if (document.visibilityState !== "visible") return;
-      const savedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
-      if (!savedAuth) return;
+      const access = getMemoryAccessToken();
+      let hasUsuario = false;
       try {
-        const parsed = JSON.parse(savedAuth);
-        if (!parsed.refreshToken || !parsed.token) return;
-        if (!isAccessTokenExpiredOrExpiring(parsed.token)) return;
-        ensureFreshToken().catch(() => { /* transitório: mantém sessão */ });
+        const parsed = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+        hasUsuario = Boolean(parsed.usuario);
       } catch {
-        // ignore
+        hasUsuario = false;
       }
+      if (!access && !hasUsuario) return;
+      if (access && !isAccessTokenExpiredOrExpiring(access)) return;
+      ensureFreshToken().catch(() => { /* transitório: mantém sessão */ });
     };
 
     document.addEventListener("visibilitychange", refreshIfNeeded);
@@ -196,14 +198,22 @@ export function AuthProvider({ children }) {
 
   // Logout forçado pelo interceptor (refresh definitivamente inválido)
   useEffect(() => {
-    const handle = () => { setToken(""); setUsuario(null); };
+    const handle = () => {
+      setMemoryAccessToken("");
+      setToken("");
+      setUsuario(null);
+    };
     window.addEventListener("auth:logout", handle);
     return () => window.removeEventListener("auth:logout", handle);
   }, []);
 
   // Token renovado pelo refresh do interceptor / ensureFreshToken
   useEffect(() => {
-    const handle = (e) => setToken(e.detail.token);
+    const handle = (e) => {
+      const next = e.detail?.token || "";
+      setMemoryAccessToken(next);
+      setToken(next);
+    };
     window.addEventListener("auth:tokenRefreshed", handle);
     return () => window.removeEventListener("auth:tokenRefreshed", handle);
   }, []);
@@ -230,27 +240,24 @@ export function AuthProvider({ children }) {
   }, []);
 
   const saveAuth = (authData) => {
-    let previousAuth = {};
+    let previousUsuario = usuario;
     try {
-      previousAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+      const previousAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+      previousUsuario = previousAuth.usuario || usuario;
     } catch {
-      previousAuth = {};
+      /* ignore */
     }
 
     const nextUsuario = {
-      ...(previousAuth.usuario || {}),
+      ...(previousUsuario || {}),
       ...(authData.usuario || {}),
     };
+    const accessToken = authData.token || getMemoryAccessToken() || token || "";
 
-    const nextAuth = {
-      token: authData.token,
-      refreshToken: authData.refreshToken ?? previousAuth.refreshToken ?? "",
-      usuario: nextUsuario,
-    };
-
-    setToken(nextAuth.token);
+    setMemoryAccessToken(accessToken);
+    setToken(accessToken);
     setUsuario(nextUsuario);
-    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
+    persistUsuarioSession(nextUsuario);
 
     if (nextUsuario && nextUsuario.newsletterMetagame == null) {
       setShowNewsletterOptIn(true);
@@ -259,18 +266,18 @@ export function AuthProvider({ children }) {
 
   const marcarNewsletterDescadastrada = (usuarioId) => {
     if (!usuarioId) return;
-    let previousAuth = {};
+    let previousUsuario = usuario;
     try {
-      previousAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+      const previousAuth = JSON.parse(window.localStorage.getItem(AUTH_STORAGE_KEY) || "{}");
+      previousUsuario = previousAuth.usuario || usuario;
     } catch {
-      previousAuth = {};
+      /* ignore */
     }
-    const atual = previousAuth.usuario || usuario;
+    const atual = previousUsuario;
     if (!atual?.id || atual.id !== usuarioId) return;
 
     saveAuth({
-      token: previousAuth.token || token,
-      refreshToken: previousAuth.refreshToken,
+      token: getMemoryAccessToken() || token,
       usuario: {
         ...atual,
         newsletterMetagame: false,
@@ -315,15 +322,17 @@ export function AuthProvider({ children }) {
     loggingOutRef.current = true;
     setLoggingOut(true);
     const startedAt = Date.now();
+    const access = getMemoryAccessToken() || token;
     try {
-      if (token) await logoutUsuario(token);
+      if (access) await logoutUsuario(access);
     } catch {
       /* ignora */
     }
+    setMemoryAccessToken("");
     setToken("");
     setUsuario(null);
     setShowNewsletterOptIn(false);
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    persistUsuarioSession(null);
     const elapsed = Date.now() - startedAt;
     const minVisibleMs = 650;
     if (elapsed < minVisibleMs) {
@@ -542,7 +551,8 @@ export function AuthProvider({ children }) {
     setDeleteAccountError("");
     try {
       await excluirConta({ confirmacao: confirmName }, token);
-      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      setMemoryAccessToken("");
+      persistUsuarioSession(null);
       setToken("");
       setUsuario(null);
       setShowEditProfileModal(false);

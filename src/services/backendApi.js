@@ -65,12 +65,18 @@ export const solicitarResetSenha = (email) =>
 export const confirmarResetSenha = (token, novaSenha) =>
   httpClient.post("/usuario/reset-senha/confirmar", { token, novaSenha });
 
+/** Renova access via cookie HttpOnly (body legado opcional). */
 export const refreshToken = (refreshTokenValue) =>
-  httpClient.post("/usuario/refresh-token", { refreshToken: refreshTokenValue });
+  httpClient.post(
+    "/usuario/refresh-token",
+    refreshTokenValue ? { refreshToken: refreshTokenValue } : {},
+    { withCredentials: true },
+  );
 
 export const logoutUsuario = (token) =>
   httpClient.post("/usuario/logout", {}, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    withCredentials: true,
   });
 
 // Decks

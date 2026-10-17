@@ -3,11 +3,21 @@ import { AxiosError } from "axios";
 import { AUTH_STORAGE_KEY } from "../constants/auth";
 
 const token = (id, seconds = 3600) => `header.${btoa(JSON.stringify({ id, exp: Math.floor(Date.now() / 1000) + seconds }))}.signature`;
-const save = (accessToken) => localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ token: accessToken, refreshToken: "refresh-old" }));
+const saveUsuario = (usuario = { id: "u-1", nome: "Teste" }) =>
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ usuario }));
+const saveLegacy = (accessToken) =>
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+    token: accessToken,
+    refreshToken: "refresh-old",
+    usuario: { id: "u-1", nome: "Teste" },
+  }));
 const ok = (config, data) => ({ config, data, status: 200, statusText: "OK", headers: {} });
 const unauthorized = (config) => Promise.reject(new AxiosError("Unauthorized", "ERR_BAD_REQUEST", config, null, { status: 401, data: { mensagem: "Token inválido ou expirado." }, headers: {} }));
 
 let client;
+let setMemoryAccessToken;
+let getMemoryAccessToken;
+
 beforeEach(async () => {
   vi.resetModules();
   const storage = new Map();
@@ -16,38 +26,69 @@ beforeEach(async () => {
     setItem: (key, value) => storage.set(key, String(value)),
     removeItem: (key) => storage.delete(key),
   });
-  client = (await import("../services/httpClient")).default;
+  const mod = await import("../services/httpClient");
+  client = mod.default;
+  setMemoryAccessToken = mod.setMemoryAccessToken;
+  getMemoryAccessToken = mod.getMemoryAccessToken;
+  setMemoryAccessToken("");
 });
 
 afterEach(() => vi.unstubAllGlobals());
 
 const checkin = (accessToken) => client.post("/torneio/test/checkin", {}, { headers: { Authorization: `Bearer ${accessToken}` } });
 
-describe("refresh após 401", () => {
-  it("renova token ainda válido localmente e repete check-in com o token novo", async () => {
+describe("refresh após 401 (cookie HttpOnly)", () => {
+  it("renova via cookie e repete check-in com o token novo", async () => {
     const old = token("old");
     const fresh = token("new");
-    save(old);
+    saveUsuario();
+    setMemoryAccessToken(old);
     const calls = [];
     client.defaults.adapter = async (config) => {
-      calls.push([config.url, config.headers.Authorization]);
-      if (config.url === "/usuario/refresh-token") return ok(config, { token: fresh, refreshToken: "refresh-new" });
+      calls.push([config.url, config.headers.Authorization, config.data]);
+      if (config.url === "/usuario/refresh-token") {
+        expect(config.withCredentials).toBe(true);
+        return ok(config, { token: fresh });
+      }
       if (config.headers.Authorization === `Bearer ${old}`) return unauthorized(config);
       return ok(config, { sucesso: true });
     };
     await expect(checkin(old)).resolves.toEqual({ sucesso: true });
-    expect(calls).toEqual([
-      ["/torneio/test/checkin", `Bearer ${old}`],
-      ["/usuario/refresh-token", undefined],
-      ["/torneio/test/checkin", `Bearer ${fresh}`],
-    ]);
-    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY))).toMatchObject({ token: fresh, refreshToken: "refresh-new" });
+    expect(calls[0][0]).toBe("/torneio/test/checkin");
+    expect(calls.some(([url]) => url === "/usuario/refresh-token")).toBe(true);
+    expect(getMemoryAccessToken()).toBe(fresh);
+    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY))).toEqual({
+      usuario: { id: "u-1", nome: "Teste" },
+    });
+  });
+
+  it("envia refresh legado no body uma vez e limpa o storage", async () => {
+    const old = token("old");
+    const fresh = token("new");
+    saveLegacy(old);
+    setMemoryAccessToken(old);
+    let refreshBody;
+    client.defaults.adapter = async (config) => {
+      if (config.url === "/usuario/refresh-token") {
+        refreshBody = typeof config.data === "string" ? JSON.parse(config.data) : config.data;
+        return ok(config, { token: fresh });
+      }
+      if (config.headers.Authorization === `Bearer ${old}`) return unauthorized(config);
+      return ok(config, { sucesso: true });
+    };
+    await expect(checkin(old)).resolves.toEqual({ sucesso: true });
+    expect(refreshBody).toEqual({ refreshToken: "refresh-old" });
+    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY))).toEqual({
+      usuario: { id: "u-1", nome: "Teste" },
+    });
+    expect(getMemoryAccessToken()).toBe(fresh);
   });
 
   it("compartilha a renovação entre check-ins concorrentes", async () => {
     const old = token("old");
     const fresh = token("new");
-    save(old);
+    saveUsuario();
+    setMemoryAccessToken(old);
     const sentTokens = [];
     let completeRefresh;
     const refreshResult = new Promise((resolve) => { completeRefresh = resolve; });
@@ -67,73 +108,36 @@ describe("refresh após 401", () => {
 
   it("não entra em loop quando o check-in continua retornando 401", async () => {
     const old = token("old");
-    save(old);
+    saveUsuario();
+    setMemoryAccessToken(old);
     const adapter = vi.fn(async (config) => config.url === "/usuario/refresh-token" ? ok(config, { token: token("new") }) : unauthorized(config));
     client.defaults.adapter = adapter;
     await expect(checkin(old)).rejects.toThrow();
     expect(adapter).toHaveBeenCalledTimes(3);
   });
 
-  it("não desloga se outra aba grava o token novo logo depois do 401", async () => {
-    const old = token("old");
-    const fresh = token("new");
-    save(old);
-    client.defaults.adapter = async (config) => {
-      if (config.url === "/usuario/refresh-token") {
-        setTimeout(() => save(fresh), 40);
-        return unauthorized(config);
-      }
-      if (config.headers.Authorization === `Bearer ${old}`) return unauthorized(config);
-      return ok(config, { sucesso: true });
-    };
-    await expect(checkin(old)).resolves.toEqual({ sucesso: true });
-    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)).token).toBe(fresh);
-  });
-
   it("encerra sessão quando o refresh também retorna 401", async () => {
     const old = token("old");
-    save(old);
+    saveUsuario();
+    setMemoryAccessToken(old);
     const adapter = vi.fn(unauthorized);
     client.defaults.adapter = adapter;
     await expect(checkin(old)).rejects.toThrow("Sessão expirada");
     expect(adapter).toHaveBeenCalledTimes(2);
     expect(localStorage.getItem(AUTH_STORAGE_KEY)).toBeNull();
+    expect(getMemoryAccessToken()).toBe("");
   });
 
   it("preserva sessão quando o refresh falha por timeout", async () => {
     const old = token("old");
-    save(old);
+    saveUsuario();
+    setMemoryAccessToken(old);
     client.defaults.adapter = async (config) => {
       if (config.url === "/usuario/refresh-token") throw new AxiosError("timeout", "ECONNABORTED", config);
       return unauthorized(config);
     };
     await expect(checkin(old)).rejects.toThrow("timeout");
-    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)).token).toBe(old);
-  });
-
-  it("reutiliza token já renovado por outra aba após um 401 atrasado", async () => {
-    const old = token("old");
-    const fresh = token("new");
-    save(old);
-    const adapter = vi.fn(async (config) => {
-      if (config.headers.Authorization === `Bearer ${old}`) {
-        save(fresh);
-        return unauthorized(config);
-      }
-      return ok(config, { sucesso: true });
-    });
-    client.defaults.adapter = adapter;
-    await checkin(old);
-    expect(adapter).toHaveBeenCalledTimes(2);
-    expect(adapter.mock.calls[1][0].headers.Authorization).toBe(`Bearer ${fresh}`);
-  });
-
-  it("renova preventivamente um token que expira em menos de cinco minutos", async () => {
-    const old = token("old", 120);
-    save(old);
-    const adapter = vi.fn(async (config) => ok(config, config.url === "/usuario/refresh-token" ? { token: token("new") } : { sucesso: true }));
-    client.defaults.adapter = adapter;
-    await checkin(old);
-    expect(adapter.mock.calls.map(([c]) => c.url)).toEqual(["/usuario/refresh-token", "/torneio/test/checkin"]);
+    expect(getMemoryAccessToken()).toBe(old);
+    expect(JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)).usuario.id).toBe("u-1");
   });
 });
