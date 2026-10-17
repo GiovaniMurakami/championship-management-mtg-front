@@ -1,6 +1,6 @@
 export const ADSENSE_CLIENT = "ca-pub-7954449480469462";
 export const ADSENSE_PUBLISHER_ID = "pub-7954449480469462";
-export const DEFAULT_ADSENSE_HOST = "app.tiagofuguete.com.br";
+export const DEFAULT_ADSENSE_HOST = "tiagofuguete.com.br";
 
 /** Cada unidade usa um slot distinto — reutilizar slot na mesma pagina impede o segundo anuncio. */
 export const ADSENSE_UNITS = {

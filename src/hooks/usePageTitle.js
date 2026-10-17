@@ -5,11 +5,22 @@ import { applyDocumentTitle } from "../utils/documentTitle";
 /**
  * Define o título da aba (e metas opcionais) conforme a página atual.
  * @param {string|null|undefined} pageTitle - Título da página sem o sufixo do site.
- * @param {{ seo?: boolean, image?: string, loading?: boolean, fallback?: string }} options
+ * @param {{
+ *   seo?: boolean,
+ *   image?: string,
+ *   description?: string,
+ *   path?: string,
+ *   type?: string,
+ *   loading?: boolean,
+ *   fallback?: string,
+ * }} options
  */
 export function usePageTitle(pageTitle, {
   seo = false,
   image = "",
+  description = "",
+  path = "",
+  type = "website",
   loading = false,
   fallback = PAGE_TITLES.carregando,
 } = {}) {
@@ -18,6 +29,6 @@ export function usePageTitle(pageTitle, {
     : (String(pageTitle ?? "").trim() || fallback);
 
   useEffect(() => {
-    applyDocumentTitle(resolvedTitle, { seo, image });
-  }, [resolvedTitle, seo, image]);
+    applyDocumentTitle(resolvedTitle, { seo, image, description, path, type });
+  }, [resolvedTitle, seo, image, description, path, type]);
 }

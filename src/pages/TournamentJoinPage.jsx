@@ -4,8 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { AuthFeedback } from "../components/auth/AuthFeedback";
 import { JoinFlowSteps } from "../components/auth/JoinFlowSteps";
 import { TermsAcceptanceField } from "../components/auth/TermsAcceptanceField";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { ingressarComToken } from "../services/backendApi";
 import { useMyDecks } from "../hooks/useMyDecks";
 import { Spinner } from "../components/ui/Spinner";
@@ -42,7 +41,7 @@ export function TournamentJoinPage() {
 
     const { decks } = useMyDecks(authToken, usuario?.id);
 
-    usePageTitle(PAGE_TITLES.ingressarTorneio);
+    useLandingSeo("ingressarTorneio");
 
     const handleJoin = async () => {
         if (!joinToken || !authToken) return;

@@ -62,7 +62,7 @@ VITE_USE_LOCALHOST=true
 VITE_BACKEND_DEV_URL=http://localhost:3000
 ```
 
-Consulte [.env.example](./.env.example) para Ably, YouTube, URL pública, WordPress e AdSense. Variáveis `VITE_*` são incorporadas ao bundle; não coloque segredos privados nelas.
+Consulte [.env.example](./.env.example) para Ably, YouTube, URL pública e AdSense. Variáveis `VITE_*` são incorporadas ao bundle; não coloque segredos privados nelas.
 
 ## Scripts
 

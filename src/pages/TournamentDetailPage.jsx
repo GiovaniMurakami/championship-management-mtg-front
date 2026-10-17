@@ -20,7 +20,7 @@ import { SkeletonTournamentDetail } from "../components";
 import { PageShell } from "../components/ui/PageShell";
 import { InlineAlert } from "../components/ui/InlineAlert";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
-import { metagameBreakdownPath } from "../utils/tournamentUrl";
+import { metagameBreakdownPath, tournamentPath } from "../utils/tournamentUrl";
 
 export function TournamentDetailPage() {
   const navigate = useNavigate();
@@ -89,7 +89,9 @@ export function TournamentDetailPage() {
   const torneioNome = torneio?.nome || torneio?.torneioNome;
   usePageTitle(torneioNome, {
     seo: true,
+    description: torneio?.descricao || "Acompanhe inscrições, rodadas e resultados deste torneio.",
     image: torneio?.bannerUrl || "",
+    path: torneio ? tournamentPath(torneio) : "",
     loading: loading && !torneio,
     fallback: "Torneio",
   });

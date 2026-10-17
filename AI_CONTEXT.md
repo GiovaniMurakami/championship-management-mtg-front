@@ -16,7 +16,6 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 - Metagame público por formato (arquétipos, matchups, listas)
 - Times (convites, solicitações de entrada)
 - Dashboard admin, anúncios patrocinadores, upload de imagens (S3 presigned)
-- Embedding em WordPress via iframe (`postMessage` + query params)
 - **Artigos** (`/artigos/{5 primeiros do id}-{slug}`) — markup Scryfall (`[[carta]]`, `[cardinfo]`, `[cardside]`, `[deck]` com formato `lista` | `16:9` | `9:16`, `[youtube]`, `[h1]`/`[h2]`/`[h3]` com `center` e cor da borda esquerda, links `[texto](https://…)`). Guia em `public/ajuda-formatacao-artigo.txt` e modelo em `public/modelo-artigo.txt`. Editores com assinatura e aprovação admin. A capa entra no compartilhamento via rewrite `/artigos/<*>` → API `/artigo/share/<*>` (`amplify-rewrites.example.json`)
 
 **Backend:** API REST própria (não está neste repositório).  
@@ -48,7 +47,7 @@ SPA React para **gerenciamento de torneios de Magic: The Gathering**, incluindo:
 
 ```
 src/
-├── App.jsx                 # Shell: providers, Navbar, modais, bridges WordPress
+├── App.jsx                 # Shell: providers, Navbar, modais
 ├── main.jsx                # Entry point
 ├── index.css               # Reset + fontes + tokens Tailwind
 ├── routes/
@@ -223,7 +222,7 @@ Definidas em `src/routes/AppRoutes.jsx`. Todas lazy-loaded com `<Suspense>`.
 | Metagame | `pages/Metagame*.jsx`, `components/metagame/`, `GET /metagame` em `backendApi.js` (admin define `cartaRepresentativa` do arquétipo via `PUT .../carta-representativa`) |
 | Times | `pages/Time*.jsx`, endpoints `/time/*` em `backendApi.js` |
 | Site | `pages/DashboardPage.jsx`, anúncio diário, newsletter opt-in no login |
-| WordPress embed | `utils/externalNavigation.js`, bridges em `App.jsx` |
+| Links públicos / deep links | `utils/externalNavigation.js`, `ExternalRouteSync` em `App.jsx` |
 | HTTP/errors | `services/httpClient.js` |
 | Todos endpoints REST | `services/backendApi.js` |
 | Classes UI compartilhadas | `styles/uiClasses.js` |
@@ -370,20 +369,26 @@ Limites de deck (`constants/auth.js`):
 
 ---
 
-## 12. WordPress / navegação externa
+## 12. Domínios / navegação externa
 
 Arquitetura:
-- **WordPress** (`tiagofuguete.com.br`) — site principal; embute o app em iframe
-- **Este front** (`app.tiagofuguete.com.br`) — SPA React deste repositório
+- **Prod** (`tiagofuguete.com.br`) — SPA neste repositório (Amplify prod)
+- **Homolog** (`homolog.tiagofuguete.com.br`) — Amplify branch homolog
+- **API** — `api.tiagofuguete.com.br` / `homologapi.tiagofuguete.com.br`
 
 `src/utils/externalNavigation.js`:
-- `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados e acesso direto ao app
-- `WORDPRESS_EMBED_URL` (`VITE_WORDPRESS_EMBED_URL`) — página WordPress com iframe (default `tiagofuguete.com.br/torneios`)
-- Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.)
-- `App.jsx` sincroniza rotas com o parent WordPress via `postMessage` (`APP_ROUTE_CHANGED`, `APP_NAVIGATE`, etc.)
+- `APP_PUBLIC_URL` (`VITE_APP_URL`) — links compartilhados (default apex)
+- Query params na `/` ainda são resolvidos para rotas internas (`?torneioId=`, `?ligaId=`, `?appPath=`, etc.) — deep links legados de e-mail
 - `ScrollToTop` em `App.jsx` volta o scroll ao topo a cada mudança de `pathname`
 
 Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalNavigationTarget()`.
+
+### SEO / share / analytics
+
+- Landing: `useLandingSeo` + `constants/seo.js` (description, canonical, `og:image` default `/images/seo/og-default.jpg`)
+- `index.html` já traz OG da home para crawlers no fallback SPA
+- Crawlers em rotas institucionais: Amplify rewrite → API `GET /site/share/:pagina` (ver `amplify-rewrites.example.json` e skill `championship-mtg-share-og`)
+- Analytics (GTM `GTM-K3QJVXGB`, GA4 `G-BN7JN9ET38`, Google Tag `GT-T5JV5Q7T`): `components/ui/Analytics.jsx`, só após consentimento de marketing
 
 ---
 
@@ -393,14 +398,16 @@ Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalN
 VITE_ENVIRONMENT=development|production
 VITE_USE_LOCALHOST=true|false
 VITE_BACKEND_DEV_URL=http://localhost:3000
-VITE_BACKEND_PROD_URL=https://api...
+VITE_BACKEND_PROD_URL=https://api.tiagofuguete.com.br
 VITE_ABLY_AUTH_URL=...          # preferido em prod
 VITE_ABLY_API_KEY=...           # dev fallback
 VITE_YOUTUBE_CHANNEL_ID=...
 VITE_YOUTUBE_API_KEY=...
 VITE_SITE_PASSWORD=...          # gate opcional
-VITE_APP_URL=...                # URL publica do front (default app.tiagofuguete.com.br)
-VITE_WORDPRESS_EMBED_URL=...    # pagina WordPress com iframe (default tiagofuguete.com.br/torneios)
+VITE_APP_URL=...                # URL publica do front (default tiagofuguete.com.br)
+VITE_GTM_ID=GTM-K3QJVXGB
+VITE_GA_MEASUREMENT_ID=G-BN7JN9ET38
+VITE_GOOGLE_TAG_ID=GT-T5JV5Q7T
 ```
 
 Copiar de `.env.example`. **Nunca commitar `.env`.**
@@ -459,7 +466,7 @@ npm run preview
 1. Ler código adjacente antes de escrever — seguir convenções existentes
 2. Mudança mínima necessária — não refatorar código não relacionado
 3. Nova API → adicionar em `backendApi.js`, usar via hook ou página
-4. Nova rota → `AppRoutes.jsx` + page + considerar `externalNavigation.js`
+4. Nova rota → `AppRoutes.jsx` + page (+ `externalNavigation.js` se deep link na `/`)
 5. Feedback ao usuário → `useToast` ou padrão existente na página
 6. Testes → só adicionar se solicitado ou se cobrem comportamento real
 

@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer, CookieConsentBanner } from "../components";
 import { SkeletonDecksGrid } from "../components/ui/Skeleton";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { buscarConteudoHome, listarDecks } from "../services/backendApi";
 import { deckPath } from "../utils/deckUrl";
 import { buscarCartasPorNome } from "../services/scryfallApi";
@@ -12,7 +11,7 @@ import { buscarCartasPorNome } from "../services/scryfallApi";
 const ENV_FUGUETE_ID = String(import.meta.env.VITE_FUGUETE_USER_ID || "").trim();
 
 export function LandingDecksFuguetePage() {
-  usePageTitle(PAGE_TITLES.decksFuguete);
+  useLandingSeo("decksFuguete");
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

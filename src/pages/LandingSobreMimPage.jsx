@@ -3,8 +3,7 @@ import { LandingHeader } from "../components/ui/LandingHeader";
 import { LandingEditButton, LandingSobreMimModal } from "../components/ui/LandingSectionEdit";
 import { Footer } from "../components";
 import { SkeletonSobreMim } from "../components/ui/Skeleton";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { buscarSobreMim } from "../services/backendApi";
 
 function paragrafos(texto) {
@@ -15,7 +14,7 @@ function paragrafos(texto) {
 }
 
 export function LandingSobreMimPage() {
-  usePageTitle(PAGE_TITLES.sobreMim);
+  useLandingSeo("sobreMim");
   const [conteudo, setConteudo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);

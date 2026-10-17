@@ -33,7 +33,7 @@ pages (thin) → hooks (state/effects) → services (API) / utils (pure)
 - `SelectField` stays native — no custom select without explicit a11y/mobile work
 ## Routes
 
-Lazy routes in `AppRoutes.jsx`. New routes: add page + consider `externalNavigation.js` for WordPress iframe.
+Lazy routes in `AppRoutes.jsx`. New routes: add page + consider `externalNavigation.js` if deep-link query params on `/` are needed.
 
 Short ids:
 

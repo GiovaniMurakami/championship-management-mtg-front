@@ -63,9 +63,11 @@ export function CookieConsentBanner() {
         </p>
         <p id="cookie-consent-text" className="m-0 text-[0.88rem] leading-relaxed text-[#e8dfff]">
           Usamos cookies e armazenamento local para login, segurança e funcionamento da plataforma.
-          Exibimos anúncios do Google AdSense para manter o serviço. Se você aceitar todos os cookies,
-          os anúncios podem ser personalizados. Se escolher somente os necessários, os anúncios
-          continuam, porém sem personalização. Não vendemos seus dados.{" "}
+          Exibimos anúncios do Google AdSense e, com o seu consentimento, usamos Google Analytics /
+          Tag Manager para entender o uso do site. Se você aceitar todos os cookies, os anúncios
+          podem ser personalizados e as métricas são ativadas. Se escolher somente os necessários,
+          os anúncios continuam sem personalização e sem analytics de marketing. Não vendemos seus
+          dados.{" "}
           <Link to="/privacidade" className="text-brand font-semibold underline underline-offset-2 hover:text-white">
             Política de Privacidade
           </Link>
@@ -94,6 +96,10 @@ export function CookieConsentBanner() {
               <strong className="text-text-main">Anúncios</strong> — Google AdSense. Com “Aceitar todos”,
               podem ser personalizados. Com “Somente necessários”, mostramos anúncios não personalizados
               (NPA), sem perfil publicitário.
+            </li>
+            <li>
+              <strong className="text-text-main">Analytics</strong> — Google Tag Manager, Google Analytics
+              (GA4) e Google Tag, só após “Aceitar todos”.
             </li>
           </ul>
         )}

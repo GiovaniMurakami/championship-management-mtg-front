@@ -5,12 +5,12 @@ describe("getLiveEmbeds", () => {
   it("mostra youtube do linkLive e twitch padrao, ambos mutados", () => {
     const result = getLiveEmbeds("https://youtube.com/watch?v=abc123XYZ", {
       twitchParent: "localhost",
-      youtubeOrigin: "https://app.tiagofuguete.com.br",
+      youtubeOrigin: "https://tiagofuguete.com.br",
     });
 
     expect(result.youtubeSrc).toContain("youtube.com/embed/abc123XYZ");
     expect(result.youtubeSrc).toContain("mute=1");
-    expect(result.youtubeSrc).toContain("origin=https%3A%2F%2Fapp.tiagofuguete.com.br");
+    expect(result.youtubeSrc).toContain("origin=https%3A%2F%2Ftiagofuguete.com.br");
     expect(result.twitchSrc).toContain("channel=tiagofuguete");
     expect(result.twitchSrc).toContain("muted=true");
     expect(result.twitchSrc).toContain("parent=localhost");

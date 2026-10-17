@@ -21,8 +21,7 @@ import { ExpandableText } from "../components/tournament";
 import { logError } from "../utils/logger";
 import { formatBrasiliaDateTime } from "../utils/brasiliaTime";
 import { useSiteEstatisticas, formatSiteStatValue } from "../hooks/useSiteEstatisticas";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { tournamentPath } from "../utils/tournamentUrl";
 
 const LIMITE = 12;
@@ -67,7 +66,7 @@ export function TournamentPage() {
   const { addToast } = useToast();
   const listRequest = useRequestSequence();
 
-  usePageTitle(PAGE_TITLES.torneios);
+  useLandingSeo("torneios");
 
   const [torneios, setTorneios] = useState([]);
   const [total, setTotal] = useState(0);

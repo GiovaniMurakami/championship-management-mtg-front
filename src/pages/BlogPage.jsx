@@ -6,8 +6,7 @@ import { PageShell } from "../components/ui/PageShell";
 import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { listarArtigos } from "../services/backendApi";
 import { formatApiErrorMessage } from "../utils/apiError";
 import { BTN_PRIMARY, BTN_SECONDARY } from "../styles/uiClasses";
@@ -26,7 +25,7 @@ export function BlogPage() {
   const { token, isAdmin, podeEditarBlog } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
-  usePageTitle(PAGE_TITLES.blog);
+  useLandingSeo("artigos");
 
   const [artigos, setArtigos] = useState([]);
   const [carregando, setCarregando] = useState(true);

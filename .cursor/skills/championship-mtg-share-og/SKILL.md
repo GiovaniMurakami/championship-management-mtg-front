@@ -12,10 +12,13 @@ Crawlers (WhatsApp, etc.) do **not** run the SPA. They need HTML meta tags from 
 
 ## Correct pipeline
 
-1. User shares `https://app.tiagofuguete.com.br/torneios/{5}-{slug}` or `/artigos/{5}-{slug}`
+1. User shares `https://tiagofuguete.com.br/torneios/{5}-{slug}`, `/artigos/{5}-{slug}`, or landing (`/`, `/sobre-mim`, `/parceiros`, `/hall-da-fama`, `/decks-fuguete`, `/artigos`)
 2. **Amplify rewrite 200** proxies to API share route (URL bar stays on app domain)
 3. API builds HTML with `og:title`, `og:image`, `twitter:card=summary_large_image`, SPA bootstrap script
 4. Browser loads React; crawler keeps the meta tags
+
+Landing share: `GET /site/share` or `/site/share/:pagina` (image default `/images/seo/og-default.jpg`), including lista `/torneios`.
+Tournament detail without banner also falls back to the same default OG image.
 
 ## Amplify rules (Hosting → Rewrites)
 
@@ -61,7 +64,7 @@ aws amplify update-app --app-id d32mjk9mbam2cb --custom-rules '...'
 
 Images: tournament `bannerUrl`; article `capaUrl`. Shared HTML helper: `montarHtmlCompartilhamento` in the tournament share route file.
 
-When Amplify proxies, `Host` / `X-Forwarded-Host` is `app.tiagofuguete.com.br` → canonical URLs use that host. Direct API calls without that host fall back to `FRONTEND_URL` (may be wrong for OG URL — proxy is required for production shares).
+When Amplify proxies, `Host` / `X-Forwarded-Host` is the public front host (`tiagofuguete.com.br` / `homolog.tiagofuguete.com.br`) → canonical URLs use that host. Direct API calls without that host fall back to `FRONTEND_URL` (may be wrong for OG URL — proxy is required for production shares).
 
 ## Diagnose missing cover
 

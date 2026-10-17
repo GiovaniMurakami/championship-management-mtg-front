@@ -7,7 +7,7 @@ describe("adsense", () => {
 
   beforeEach(() => {
     vi.stubEnv("VITE_ADSENSE_ENABLED", "true");
-    vi.stubEnv("VITE_APP_URL", "https://app.tiagofuguete.com.br");
+    vi.stubEnv("VITE_APP_URL", "https://tiagofuguete.com.br");
     Object.defineProperty(window, "parent", { value: window, configurable: true });
   });
 
@@ -21,7 +21,7 @@ describe("adsense", () => {
   });
 
   it("resolve o host do AdSense a partir de VITE_APP_URL", () => {
-    expect(getConfiguredAdSenseHost()).toBe("app.tiagofuguete.com.br");
+    expect(getConfiguredAdSenseHost()).toBe("tiagofuguete.com.br");
   });
 
   it("retorna false quando VITE_ADSENSE_ENABLED é false", () => {

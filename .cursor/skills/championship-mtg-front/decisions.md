@@ -11,9 +11,9 @@
 ## ADR-F03 — Home = lista de torneios
 
 **Decisão:** `/` é `TournamentPage`. Landings bare (sem Navbar/Footer) são só `/sobre-mim` e `/parceiros`. **`/artigos` usa o shell normal.** `/blog/*` redireciona para `/artigos/*`.
-## ADR-F04 — WordPress embed
+## ADR-F04 — Domínio público = apex
 
-**Decisão:** Site WP embute o SPA; `externalNavigation.js` + `postMessage` sincronizam rotas. Links públicos usam `APP_PUBLIC_URL` (`app.tiagofuguete.com.br`).
+**Decisão:** SPA no apex `tiagofuguete.com.br` (prod) e `homolog.tiagofuguete.com.br` (homolog). Sem iframe WordPress. Links públicos usam `APP_PUBLIC_URL` (`VITE_APP_URL`).
 
 ## ADR-F05 — Slugs curtos
 

@@ -1,66 +1,11 @@
-const DEFAULT_APP_PUBLIC_URL = "https://app.tiagofuguete.com.br";
-const DEFAULT_WORDPRESS_EMBED_URL = "https://tiagofuguete.com.br/torneios";
+const DEFAULT_APP_PUBLIC_URL = "https://tiagofuguete.com.br";
 
 const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
 
-const resolveLegacyWordpressAppUrl = () => {
-  const legacy = import.meta.env.VITE_WORDPRESS_APP_URL;
-  if (!legacy) return null;
-
-  try {
-    const hostname = new URL(legacy).hostname;
-    if (hostname.startsWith("app.")) return { app: legacy };
-    return { embed: legacy };
-  } catch {
-    return null;
-  }
-};
-
-const legacyWordpressAppUrl = resolveLegacyWordpressAppUrl();
-
-/** URL publica deste front (SPA em app.tiagofuguete.com.br). */
+/** URL publica deste front (SPA no apex). */
 export const APP_PUBLIC_URL = normalizeBaseUrl(
-  import.meta.env.VITE_APP_URL || legacyWordpressAppUrl?.app || DEFAULT_APP_PUBLIC_URL,
+  import.meta.env.VITE_APP_URL || DEFAULT_APP_PUBLIC_URL,
 );
-
-/** Pagina WordPress que embute o app em iframe (tiagofuguete.com.br). */
-export const WORDPRESS_EMBED_URL = normalizeBaseUrl(
-  import.meta.env.VITE_WORDPRESS_EMBED_URL
-    || legacyWordpressAppUrl?.embed
-    || DEFAULT_WORDPRESS_EMBED_URL,
-);
-
-/** @deprecated Use APP_PUBLIC_URL ou WORDPRESS_EMBED_URL conforme o caso. */
-export const WORDPRESS_APP_URL = APP_PUBLIC_URL;
-
-const addOriginWithWwwVariants = (origins, value) => {
-  try {
-    const url = new URL(value);
-    origins.add(url.origin);
-
-    const { protocol, hostname } = url;
-    if (hostname.startsWith("www.")) {
-      origins.add(`${protocol}//${hostname.slice(4)}`);
-      return;
-    }
-
-    origins.add(`${protocol}//www.${hostname}`);
-  } catch {
-    // URL invalida ou ausente.
-  }
-};
-
-export function getWordpressEmbedOrigins() {
-  const origins = new Set();
-
-  addOriginWithWwwVariants(origins, WORDPRESS_EMBED_URL);
-
-  if (document.referrer) {
-    addOriginWithWwwVariants(origins, document.referrer);
-  }
-
-  return origins;
-}
 
 const trimValue = (value) => {
   if (typeof value !== "string") return "";
@@ -116,20 +61,7 @@ const withMergedSearch = (target, searchParams) => {
   return withSearch(target.pathname, mergedSearchParams);
 };
 
-const buildWordpressEmbedUrl = (query = {}) => {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(query).forEach(([key, value]) => {
-    if (value == null) return;
-    const normalizedValue = trimValue(String(value));
-    if (!normalizedValue) return;
-    searchParams.set(key, normalizedValue);
-  });
-
-  const search = searchParams.toString();
-  return search ? `${WORDPRESS_EMBED_URL}?${search}` : WORDPRESS_EMBED_URL;
-};
-
+/** Resolve deep links legados na home (`?appPath=`, `?torneioId=`, `?rota=`). */
 export function resolveExternalNavigationTarget(locationLike) {
   const pathname = locationLike?.pathname || "/";
   const search = locationLike?.search || "";
@@ -242,12 +174,6 @@ export function buildExternalAppUrlForPath(path) {
   const target = parseInternalPath(path);
   if (!target || (target.pathname === "/" && !target.search)) return APP_PUBLIC_URL;
   return `${APP_PUBLIC_URL}${target.pathname}${target.search}`;
-}
-
-export function buildWordpressEmbedUrlForPath(path) {
-  const target = parseInternalPath(path);
-  if (!target || (target.pathname === "/" && !target.search)) return WORDPRESS_EMBED_URL;
-  return buildWordpressEmbedUrl({ appPath: `${target.pathname}${target.search}` });
 }
 
 export function buildTournamentExternalUrl(torneio) {

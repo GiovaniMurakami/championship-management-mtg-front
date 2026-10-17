@@ -4,8 +4,7 @@ import { LandingEditButton, LandingParceirosModal } from "../components/ui/Landi
 import { Footer, CookieConsentBanner } from "../components";
 import { Tooltip } from "../components/ui/Tooltip";
 import { SkeletonParceirosGrid } from "../components/ui/Skeleton";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { buscarParceiros } from "../services/backendApi";
 
 const FALLBACK = {
@@ -18,7 +17,7 @@ const FALLBACK = {
 };
 
 export function LandingParceirosPage() {
-  usePageTitle(PAGE_TITLES.parceiros);
+  useLandingSeo("parceiros");
   const [parceiros, setParceiros] = useState([]);
   const [meta, setMeta] = useState(FALLBACK);
   const [loading, setLoading] = useState(true);

@@ -4,15 +4,14 @@ import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer, CookieConsentBanner } from "../components";
 import { SkeletonHallDaFama } from "../components/ui/Skeleton";
 import { AdSenseUnit } from "../components/ui/AdSenseUnit";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import { listarHallDaFama } from "../services/backendApi";
 import { tournamentPath } from "../utils/tournamentUrl";
 
 const PAGE_SIZE = 24;
 
 export function HallDaFamaPage() {
-  usePageTitle(PAGE_TITLES.hallDaFama);
+  useLandingSeo("hallDaFama");
   const [itens, setItens] = useState([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);

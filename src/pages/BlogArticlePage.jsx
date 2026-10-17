@@ -30,7 +30,14 @@ export function BlogArticlePage() {
   const [carregando, setCarregando] = useState(true);
   const [ocupado, setOcupado] = useState(false);
 
-  usePageTitle(artigo?.titulo || "Artigo");
+  usePageTitle(artigo?.titulo || "Artigo", {
+    seo: true,
+    description: artigo?.resumo || artigo?.descricao || "",
+    image: artigo?.capaUrl || "",
+    path: artigo ? artigoPath(artigo) : `/artigos/${id || ""}`,
+    type: "article",
+    loading: carregando && !artigo,
+  });
 
   const pedidoRef = useRef(0);
 

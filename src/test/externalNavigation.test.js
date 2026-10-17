@@ -101,12 +101,12 @@ describe("resolveExternalNavigationTarget", () => {
   it("redireciona appPath para uma rota interna preservando parametros extras", () => {
     const target = resolveExternalNavigationTarget({
       pathname: "/",
-      search: "?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas&origem=wordpress",
+      search: "?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas&origem=email",
     });
 
     expect(target).toEqual({
       pathname: "/torneios/abc-123",
-      search: "?aba=mesas&origem=wordpress",
+      search: "?aba=mesas&origem=email",
     });
   });
 
@@ -122,8 +122,6 @@ describe("resolveExternalNavigationTarget", () => {
 
 async function loadExternalNavigationWithDefaults() {
   vi.stubEnv("VITE_APP_URL", "");
-  vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "");
-  vi.stubEnv("VITE_WORDPRESS_APP_URL", "");
   vi.resetModules();
   return import("../utils/externalNavigation");
 }
@@ -136,72 +134,42 @@ describe("build public app urls", () => {
   it("gera url publica para torneio", async () => {
     const { buildTournamentExternalUrl } = await loadExternalNavigationWithDefaults();
     expect(buildTournamentExternalUrl("abc-123")).toBe(
-      "https://app.tiagofuguete.com.br/torneios/abc-123",
+      "https://tiagofuguete.com.br/torneios/abc-123",
     );
   });
 
   it("gera url publica para ingresso em torneio", async () => {
     const { buildTournamentJoinExternalUrl } = await loadExternalNavigationWithDefaults();
     expect(buildTournamentJoinExternalUrl("join-555")).toBe(
-      "https://app.tiagofuguete.com.br/torneio/ingressar/join-555",
+      "https://tiagofuguete.com.br/torneio/ingressar/join-555",
     );
   });
 
   it("gera url publica para convite de time", async () => {
     const { buildTeamInviteExternalUrl } = await loadExternalNavigationWithDefaults();
     expect(buildTeamInviteExternalUrl("invite-22")).toBe(
-      "https://app.tiagofuguete.com.br/times?convite=invite-22",
+      "https://tiagofuguete.com.br/times?convite=invite-22",
     );
   });
 
   it("gera url publica dinamica para a rota atual do app", async () => {
     const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
     expect(buildExternalAppUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
-      "https://app.tiagofuguete.com.br/torneios/abc-123?aba=mesas",
+      "https://tiagofuguete.com.br/torneios/abc-123?aba=mesas",
     );
   });
 
   it("gera url publica para termos de uso", async () => {
     const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
     expect(buildExternalAppUrlForPath("/termos-de-uso")).toBe(
-      "https://app.tiagofuguete.com.br/termos-de-uso",
+      "https://tiagofuguete.com.br/termos-de-uso",
     );
   });
 
   it("gera url publica para privacidade", async () => {
     const { buildExternalAppUrlForPath } = await loadExternalNavigationWithDefaults();
     expect(buildExternalAppUrlForPath("/privacidade")).toBe(
-      "https://app.tiagofuguete.com.br/privacidade",
-    );
-  });
-});
-
-describe("getWordpressEmbedOrigins", () => {
-  beforeEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it("inclui variantes com e sem www do WordPress", async () => {
-    vi.stubEnv("VITE_WORDPRESS_EMBED_URL", "https://www.tiagofuguete.com.br/torneios");
-    vi.resetModules();
-
-    const { getWordpressEmbedOrigins } = await import("../utils/externalNavigation");
-    const origins = getWordpressEmbedOrigins();
-
-    expect(origins.has("https://www.tiagofuguete.com.br")).toBe(true);
-    expect(origins.has("https://tiagofuguete.com.br")).toBe(true);
-  });
-});
-
-describe("build wordpress embed urls", () => {
-  beforeEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it("gera url do embed WordPress para sincronizar rota com o parent", async () => {
-    const { buildWordpressEmbedUrlForPath } = await loadExternalNavigationWithDefaults();
-    expect(buildWordpressEmbedUrlForPath("/torneios/abc-123?aba=mesas")).toBe(
-      "https://tiagofuguete.com.br/torneios?appPath=%2Ftorneios%2Fabc-123%3Faba%3Dmesas",
+      "https://tiagofuguete.com.br/privacidade",
     );
   });
 });

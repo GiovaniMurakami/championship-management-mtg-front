@@ -4,15 +4,10 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop, CookieConsentBanner, AnuncioDiarioModal, LogoutOverlay, NewsletterOptInModal } from "./components";
+import { Navbar, AuthModal, EditProfileModal, Footer, AdSenseLayout, ScrollToTop, CookieConsentBanner, Analytics, AnuncioDiarioModal, LogoutOverlay, NewsletterOptInModal } from "./components";
 import { AppRoutes } from "./routes";
 import { useEffect } from "react";
-import {
-  buildWordpressEmbedUrlForPath,
-  getWordpressEmbedOrigins,
-  resolveExternalNavigationTarget,
-  WORDPRESS_EMBED_URL,
-} from "./utils/externalNavigation";
+import { resolveExternalNavigationTarget } from "./utils/externalNavigation";
 import { isLandingShellRoute } from "./utils/landingShell";
 
 const queryClient = new QueryClient({
@@ -55,98 +50,6 @@ function ExternalRouteSync() {
   return null;
 }
 
-function getNavigationValueFromMessage(data) {
-  if (!data) return "";
-  if (typeof data === "string") return data;
-  if (typeof data !== "object") return "";
-
-  return data.appPath || data.path || data.pathname || data.href || data.url || "";
-}
-
-function resolveWordpressMessageTarget(data) {
-  const navigationValue = getNavigationValueFromMessage(data);
-  if (!navigationValue) return null;
-
-  try {
-    const wordpressUrl = new URL(WORDPRESS_EMBED_URL);
-    const nextUrl = new URL(navigationValue, wordpressUrl.origin);
-
-    if (nextUrl.pathname === wordpressUrl.pathname) {
-      return resolveExternalNavigationTarget({ pathname: "/", search: nextUrl.search });
-    }
-  } catch {
-    // Plain internal paths are handled below.
-  }
-
-  const target = resolveExternalNavigationTarget({
-    pathname: "/",
-    search: `?appPath=${encodeURIComponent(navigationValue)}`,
-  });
-
-  return target;
-}
-
-function WordpressRouteBridge() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (window.parent === window) return;
-
-    const allowedOrigins = getWordpressEmbedOrigins();
-    if (allowedOrigins.size === 0) return;
-
-    const handleMessage = (event) => {
-      if (event.source !== window.parent) return;
-      if (!allowedOrigins.has(event.origin)) return;
-
-      const data = event.data;
-      const messageType = typeof data === "object" && data ? data.type : "";
-      const acceptsImplicitNavigation = !messageType && getNavigationValueFromMessage(data);
-      const acceptsTypedNavigation = [
-        "APP_NAVIGATE",
-        "WORDPRESS_NAVIGATE",
-        "WORDPRESS_ROUTE_CHANGED",
-      ].includes(messageType);
-
-      if (!acceptsImplicitNavigation && !acceptsTypedNavigation) return;
-
-      const target = resolveWordpressMessageTarget(data);
-      if (!target) return;
-
-      const nextUrl = `${target.pathname}${target.search}`;
-      const currentUrl = `${window.location.pathname}${window.location.search}`;
-      if (nextUrl !== currentUrl) navigate(nextUrl, { replace: false });
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [navigate]);
-
-  useEffect(() => {
-    if (window.parent === window) return;
-
-    const allowedOrigins = getWordpressEmbedOrigins();
-    if (allowedOrigins.size === 0) return;
-
-    const path = `${location.pathname}${location.search}`;
-    const url = buildWordpressEmbedUrlForPath(path);
-    const message = {
-      type: "APP_ROUTE_CHANGED",
-      source: "championship-management-mtg-front",
-      path,
-      href: path,
-      url,
-    };
-
-    allowedOrigins.forEach((origin) => {
-      window.parent.postMessage(message, origin);
-    });
-  }, [location.pathname, location.search]);
-
-  return null;
-}
-
 function AppContent() {
   const {
     usuario, openAuth, clearAuth, isAuthenticated, openEditProfileModal,
@@ -169,8 +72,8 @@ function AppContent() {
     return (
       <>
         <RateLimitBridge />
+        <Analytics />
         <ExternalRouteSync />
-        <WordpressRouteBridge />
         <AppRoutes />
         <AuthModal
           isOpen={showAuthModal && !isPublicAuthRoute}
@@ -209,8 +112,8 @@ function AppContent() {
   return (
     <div className="flex min-h-screen min-h-dvh flex-col overflow-x-clip text-text-main">
       <RateLimitBridge />
+      <Analytics />
       <ExternalRouteSync />
-      <WordpressRouteBridge />
 
       <Navbar
         usuario={usuario}

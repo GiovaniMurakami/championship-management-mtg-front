@@ -10,8 +10,7 @@ import {
     LandingSlidesModal,
 } from "../components/ui/LandingSectionEdit";
 import { useYouTubeVideos } from "../hooks/useYouTubeVideos";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { PAGE_TITLES } from "../constants/pageTitles";
+import { useLandingSeo } from "../hooks/useLandingSeo";
 import {
     buscarConteudoHome,
     buscarParceiros,
@@ -223,7 +222,7 @@ function twitchParent() {
 }
 
 export function LandingPage() {
-    usePageTitle(PAGE_TITLES.home);
+    useLandingSeo("home");
     const [slides, setSlides] = useState([]);
     const [parceiros, setParceiros] = useState([]);
     const [artigos, setArtigos] = useState([]);

@@ -1,12 +1,42 @@
 [
   {
+    "source": "/torneios",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/torneios?v=1",
+    "status": "200"
+  },
+  {
     "source": "/torneios/<*>",
-    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/torneio/share/<*>",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/torneio/share/<*>?v=2",
     "status": "200"
   },
   {
     "source": "/artigos/<*>",
-    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/artigo/share/<*>",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/artigo/share/<*>?v=2",
+    "status": "200"
+  },
+  {
+    "source": "/sobre-mim",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/sobre-mim?v=1",
+    "status": "200"
+  },
+  {
+    "source": "/parceiros",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/parceiros?v=1",
+    "status": "200"
+  },
+  {
+    "source": "/hall-da-fama",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/hall-da-fama?v=1",
+    "status": "200"
+  },
+  {
+    "source": "/decks-fuguete",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/decks-fuguete?v=1",
+    "status": "200"
+  },
+  {
+    "source": "/artigos",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/artigos?v=1",
     "status": "200"
   },
   {
