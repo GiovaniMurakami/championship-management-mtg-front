@@ -566,8 +566,8 @@ export const salvarConteudoHome = (payload, token) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const listarHallDaFama = (params = {}) =>
-  httpClient.get("/hall-da-fama", { params });
+export const listarHallDaFama = (params = {}, token) =>
+  httpClient.get("/hall-da-fama", { ...optionalAuthConfig(token), params });
 
 export const cadastrarHallDaFama = (payload, token) =>
   httpClient.post("/hall-da-fama", payload, {

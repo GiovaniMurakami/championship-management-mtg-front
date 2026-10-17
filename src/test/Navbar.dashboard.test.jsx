@@ -23,18 +23,9 @@ describe("Navbar — dropdown do usuário", () => {
 
     expect(screen.getByRole("menuitem", { name: /Editar perfil/i })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /Anúncios/i })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("menuitem", { name: /Slides da home/i })).toHaveAttribute(
-      "href",
-      "/dashboard/slides-home",
-    );
-    expect(screen.getByRole("menuitem", { name: /^Parceiros$/i })).toHaveAttribute(
-      "href",
-      "/dashboard/parceiros",
-    );
-    expect(screen.getByRole("menuitem", { name: /Hall da Fama/i })).toHaveAttribute(
-      "href",
-      "/dashboard/hall-da-fama",
-    );
+    expect(screen.queryByRole("menuitem", { name: /Slides da home/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: /^Parceiros$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: /Hall da Fama/i })).not.toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /Anúncio diário/i })).toHaveAttribute(
       "href",
       "/dashboard/anuncio-diario",

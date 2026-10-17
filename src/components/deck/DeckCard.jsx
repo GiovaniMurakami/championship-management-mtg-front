@@ -1,0 +1,198 @@
+import { Tooltip } from "../ui/Tooltip";
+import { UsuarioNomeExibicao } from "../ui/UsuarioExcluidoTag";
+
+const FORMAT_META = {
+  standard: { label: "Standard", color: "#93c5fd", bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.45)" },
+  modern: { label: "Modern", color: "#fdba74", bg: "rgba(234,88,12,0.18)", border: "rgba(234,88,12,0.45)" },
+  pioneer: { label: "Pioneer", color: "#6ee7b7", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.45)" },
+  legacy: { label: "Legacy", color: "#c4b5fd", bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.45)" },
+  commander: { label: "Commander", color: "#fcd34d", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
+  commander500: { label: "Commander 500", color: "#f59e0b", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.45)" },
+  pauper: { label: "Pauper", color: "#cbd5e1", bg: "rgba(148,163,184,0.18)", border: "rgba(148,163,184,0.45)" },
+};
+
+function calcularTotalCartas(cartas) {
+  return cartas?.reduce((total, carta) => total + (carta.quantidade || 1), 0) || 0;
+}
+
+function FormatBadge({ formato }) {
+  const meta = FORMAT_META[formato] ?? {
+    label: formato,
+    color: "#beafd7",
+    bg: "rgba(190,175,215,0.15)",
+    border: "rgba(190,175,215,0.4)",
+  };
+  return (
+    <span
+      className="px-[0.65rem] py-[0.22rem] rounded-full text-[0.7rem] font-bold tracking-[0.06em] uppercase border border-solid backdrop-blur-sm"
+      style={{ color: meta.color, background: meta.bg, borderColor: meta.border }}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
+const PRIMARY_BTN =
+  "flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(199,149,255,0.6)] rounded-xl cursor-pointer font-bold bg-gradient-to-br from-[#8e39ed] to-[#5f23b3] text-white shadow-[0_4px_12px_rgba(167,79,255,0.25)] transition-all duration-[220ms] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(167,79,255,0.4)]";
+
+/**
+ * Card de deck — mesmo visual de /decks.
+ */
+export function DeckCard({
+  deck,
+  imageUrl,
+  isOwner = false,
+  shared = false,
+  onShare,
+  onOwnerClick,
+  onEdit,
+  onDelete,
+  onView,
+  onGenerateImage,
+}) {
+  return (
+    <div className="border border-line-soft rounded-2xl overflow-hidden bg-surface/80 shadow-card flex flex-col h-full transition-[transform,box-shadow,border-color] duration-[260ms] ease-[ease] hover:-translate-y-1 hover:shadow-overlay hover:border-line-strong">
+      <div
+        className="relative h-40 overflow-hidden bg-[radial-gradient(circle_at_70%_40%,rgba(87,20,166,0.5),transparent_60%),linear-gradient(135deg,#1a0d36,#0d071e)] bg-cover bg-[center_top]"
+        style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(8,6,15,0.15)] to-[rgba(8,6,15,0.65)]" />
+        <div className="absolute top-[0.7rem] left-[0.75rem] right-[0.75rem] flex items-start justify-between gap-2">
+          <FormatBadge formato={deck.formato} />
+          {deck.usuario?.nome ? (
+            <button
+              type="button"
+              className={`text-[0.72rem] bg-[rgba(14,9,28,0.65)] px-[0.55rem] py-[0.22rem] rounded-full border border-line backdrop-blur-sm max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer hover:border-line-strong hover:text-white ${isOwner ? "text-brand" : "text-text-soft"}`}
+              onClick={onOwnerClick}
+              aria-label={`Ver perfil de ${deck.usuario.nome}`}
+            >
+              {isOwner ? "Meu deck" : (
+                <UsuarioNomeExibicao
+                  nome={deck.usuario.nome}
+                  excluido={deck.usuario.excluido}
+                />
+              )}
+            </button>
+          ) : null}
+        </div>
+        {onShare ? (
+          <Tooltip
+            content={shared ? "Link copiado!" : "Compartilhar deck"}
+            placement="right"
+            focusable={false}
+            className="!absolute left-[0.75rem] bottom-[0.75rem]"
+          >
+            <button
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md cursor-pointer transition-all duration-[180ms] shadow-[0_8px_18px_rgba(0,0,0,0.35)] ${
+                shared
+                  ? "border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.2)] text-[#86efac]"
+                  : "border-[rgba(96,165,250,0.45)] bg-[rgba(10,18,38,0.55)] text-[#dbeafe] hover:bg-[rgba(59,130,246,0.28)] hover:border-[rgba(96,165,250,0.75)] hover:text-white"
+              }`}
+              type="button"
+              aria-label={shared ? "Link copiado!" : "Compartilhar deck"}
+              onClick={onShare}
+            >
+              {shared ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.59 13.51 15.42 17.49" />
+                  <path d="M15.41 6.51 8.59 10.49" />
+                </svg>
+              )}
+            </button>
+          </Tooltip>
+        ) : null}
+      </div>
+
+      <div className="p-[1rem_1.1rem_1.1rem] flex flex-col flex-1">
+        <h3 className="mt-0 mb-[0.65rem] text-[1rem] font-bold text-text-main leading-[1.3]">
+          {deck.nome}
+        </h3>
+
+        <div className="flex flex-wrap gap-[0.4rem] mb-[0.85rem]">
+          <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="M8 4v16M16 4v16" />
+            </svg>
+            <span>{calcularTotalCartas(deck.maindeck)} main</span>
+          </div>
+          <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <polyline points="16 3 21 3 21 8" />
+              <line x1="4" y1="20" x2="21" y2="3" />
+              <polyline points="21 16 21 21 16 21" />
+              <line x1="15" y1="15" x2="21" y2="21" />
+            </svg>
+            <span>{calcularTotalCartas(deck.sideboard)} side</span>
+          </div>
+          {deck.criadoEm ? (
+            <div className="inline-flex items-center gap-[0.3rem] px-[0.55rem] py-[0.2rem] rounded-full border border-line bg-white/[0.03] text-[0.76rem] text-text-soft ml-auto">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span>{new Date(deck.criadoEm).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</span>
+            </div>
+          ) : null}
+        </div>
+
+        {deck.visualizacoes != null ? (
+          <div className="flex items-center gap-[0.4rem] mb-[0.85rem] text-[0.78rem] text-text-soft">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>{deck.visualizacoes} visualizações</span>
+          </div>
+        ) : null}
+
+        <div className="flex gap-2 mt-auto pt-3">
+          {isOwner ? (
+            <>
+              <button className={PRIMARY_BTN} type="button" onClick={onEdit}>
+                Editar
+              </button>
+              <button
+                className="flex-1 text-[0.85rem] px-3 py-2 border border-[rgba(252,88,119,0.4)] rounded-xl cursor-pointer font-bold bg-[rgba(252,88,119,0.15)] text-[#ffc8d4] transition-all duration-[220ms] hover:bg-[rgba(252,88,119,0.28)] hover:border-[rgba(252,88,119,0.7)] hover:text-white"
+                type="button"
+                onClick={onDelete}
+              >
+                Excluir
+              </button>
+            </>
+          ) : (
+            <button className={PRIMARY_BTN} type="button" onClick={onView}>
+              Visualizar
+            </button>
+          )}
+          {onGenerateImage ? (
+            <Tooltip content="Gerar imagem do deck para compartilhar" focusable={false}>
+              <button
+                className="inline-flex items-center gap-[0.3rem] text-[0.78rem] px-[0.65rem] py-[0.42rem] border border-[rgba(167,79,255,0.4)] rounded-lg bg-[rgba(167,79,255,0.1)] text-[#c4b5fd] cursor-pointer transition-[background,border-color,color] duration-[160ms] hover:bg-[rgba(167,79,255,0.22)] hover:border-[rgba(167,79,255,0.65)] hover:text-[#e9d5ff] whitespace-nowrap"
+                type="button"
+                aria-label="Gerar imagem do deck para compartilhar"
+                onClick={onGenerateImage}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                Imagem
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}

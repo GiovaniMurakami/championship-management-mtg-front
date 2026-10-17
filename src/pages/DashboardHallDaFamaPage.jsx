@@ -23,7 +23,7 @@ export function DashboardHallDaFamaPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await listarHallDaFama({ limite: 100, offset: 0 });
+      const data = await listarHallDaFama({ limite: 100, offset: 0, incluirInativos: true }, token);
       setItens(Array.isArray(data?.itens) ? data.itens : []);
     } catch (err) {
       setError(err.message || "Não foi possível carregar o Hall da Fama.");
@@ -36,15 +36,15 @@ export function DashboardHallDaFamaPage() {
     carregar();
   }, []);
 
-  const ocultar = async (id) => {
+  const definirAtivo = async (id, ativo) => {
     if (!token) return;
     setBusyId(id);
     try {
-      await atualizarHallDaFama(id, { ativo: false }, token);
-      setItens((prev) => prev.filter((item) => item.id !== id));
-      addToast("Item ocultado do Hall.", { type: "success" });
+      await atualizarHallDaFama(id, { ativo }, token);
+      setItens((prev) => prev.map((item) => (item.id === id ? { ...item, ativo } : item)));
+      addToast(ativo ? "Item visível novamente no Hall." : "Item ocultado do Hall.", { type: "success" });
     } catch (err) {
-      addToast(err.message || "Falha ao ocultar.", { type: "error" });
+      addToast(err.message || (ativo ? "Falha ao desocultar." : "Falha ao ocultar."), { type: "error" });
     } finally {
       setBusyId(null);
     }
@@ -82,42 +82,53 @@ export function DashboardHallDaFamaPage() {
       {loading ? (
         <SkeletonHallDaFama />
       ) : itens.length === 0 ? (
-        <p className="text-text-muted">Nenhum item ativo no Hall.</p>
+        <p className="text-text-muted">Nenhum item no Hall.</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {itens.map((item) => (
-            <article key={item.id} className="overflow-hidden rounded-xl border border-line-soft bg-surface/60">
-              <img src={item.imagemUrl} alt={item.torneioNome || "Top 8"} className="aspect-[9/16] w-full object-cover object-top" />
-              <div className="space-y-3 p-3">
-                <div>
-                  <p className="m-0 font-semibold text-sm">{item.torneioNome || "Torneio"}</p>
-                  {(item.dataTorneio || item.criadoEm) ? (
-                    <p className="m-0 mt-1 text-xs text-text-muted">
-                      {new Date(item.dataTorneio || item.criadoEm).toLocaleString("pt-BR")}
+          {itens.map((item) => {
+            const oculto = item.ativo === false;
+            return (
+              <article
+                key={item.id}
+                className={`overflow-hidden rounded-xl border bg-surface/60 ${
+                  oculto ? "border-dashed border-[rgba(148,163,184,0.45)] opacity-80" : "border-line-soft"
+                }`}
+              >
+                <img src={item.imagemUrl} alt={item.torneioNome || "Top 8"} className="aspect-[9/16] w-full object-cover object-top" />
+                <div className="space-y-3 p-3">
+                  <div>
+                    <p className="m-0 font-semibold text-sm">
+                      {item.torneioNome || "Torneio"}
+                      {oculto ? <span className="ml-2 text-xs text-text-muted">(oculto)</span> : null}
                     </p>
-                  ) : null}
+                    {(item.dataTorneio || item.criadoEm) ? (
+                      <p className="m-0 mt-1 text-xs text-text-muted">
+                        {new Date(item.dataTorneio || item.criadoEm).toLocaleString("pt-BR")}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className={BTN_SECONDARY}
+                      disabled={busyId === item.id}
+                      onClick={() => definirAtivo(item.id, oculto)}
+                    >
+                      {oculto ? "Desocultar" : "Ocultar"}
+                    </button>
+                    <button
+                      type="button"
+                      className={BTN_DANGER}
+                      disabled={busyId === item.id}
+                      onClick={() => excluir(item.id)}
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className={BTN_SECONDARY}
-                    disabled={busyId === item.id}
-                    onClick={() => ocultar(item.id)}
-                  >
-                    Ocultar
-                  </button>
-                  <button
-                    type="button"
-                    className={BTN_DANGER}
-                    disabled={busyId === item.id}
-                    onClick={() => excluir(item.id)}
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </PageShell>

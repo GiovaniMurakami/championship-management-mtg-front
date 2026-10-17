@@ -43,9 +43,6 @@ const sectionLabelClass =
 
 const ADMIN_LINKS = [
   { to: "/dashboard", label: "Anúncios" },
-  { to: "/dashboard/slides-home", label: "Slides da home" },
-  { to: "/dashboard/parceiros", label: "Parceiros" },
-  { to: "/dashboard/hall-da-fama", label: "Hall da Fama" },
   { to: "/dashboard/anuncio-diario", label: "Anúncio diário" },
   { to: "/dashboard/newsletter", label: "Newsletter" },
   { to: "/dashboard/permissoes", label: "Permissões" },

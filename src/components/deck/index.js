@@ -1,6 +1,7 @@
 export { CardPreviewModal } from "./CardPreviewModal";
 export { CardSearch } from "./CardSearch";
 export { DeckBuilder } from "./DeckBuilder";
+export { DeckCard } from "./DeckCard";
 export { DeckImageModal } from "./DeckImageModal";
 export { DeckList } from "./DeckList";
 export { DeckGroupedList, DeckTypeBadges } from "./DeckGroupedList";

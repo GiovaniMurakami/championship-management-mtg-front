@@ -12,23 +12,56 @@ import { BTN_PRIMARY, BTN_SECONDARY, FORM_LABEL_CLASS, MODAL_INPUT_CLASS } from 
 const WIDE_MODAL = "!w-[min(920px,calc(100vw-1.4rem))] !max-h-[min(88vh,900px)] !overflow-y-auto p-5";
 
 
-/** Botão “Editar” — só para admin. Abaixo do header fixo (top-24) para não ficar inacessível. */
+const EDIT_BTN_CLASS =
+  "inline-flex items-center gap-1.5 rounded-lg border border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.88)] px-2.5 py-1.5 text-xs font-semibold text-[#c4b5fd] shadow-[0_4px_16px_rgba(3,2,8,0.35)] backdrop-blur-md transition hover:bg-[rgba(167,79,255,0.28)] hover:text-white";
+
+/** Botão “Editar” — só para admin. Use `static`/`absolute` via className; default é fluxo normal. */
 export function LandingEditButton({ onClick, label = "Editar", className = "" }) {
   const { isAdmin } = useAuth();
   if (!isAdmin) return null;
-  const position = className.includes("absolute") || className.includes("static") || className.includes("relative")
-    ? ""
-    : "absolute top-24 right-4 z-30";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`${position} inline-flex items-center gap-1.5 rounded-lg border border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.85)] px-2.5 py-1.5 text-xs font-semibold text-[#c4b5fd] backdrop-blur-md transition hover:bg-[rgba(167,79,255,0.25)] hover:text-white ${className}`}
+      className={`${EDIT_BTN_CLASS} ${className}`}
       aria-label={label}
     >
       <Pencil size={14} aria-hidden />
       {label}
     </button>
+  );
+}
+
+/**
+ * Cabeçalho de seção com título centralizado e ações de edição à direita,
+ * sem sobrepor o texto (toolbar acima no mobile; canto no desktop com padding no título).
+ */
+export function LandingSectionHeading({
+  title,
+  subtitle,
+  onEdit,
+  editLabel = "Editar seção",
+  editActions,
+  as: TitleTag = "h2",
+  className = "",
+  titleClassName = "text-2xl md:text-3xl font-bold text-center mb-2",
+  subtitleClassName = "text-center text-[#9b8dc0] mb-0 max-w-2xl mx-auto",
+}) {
+  const actions = editActions || (onEdit
+    ? <LandingEditButton onClick={onEdit} label={editLabel} />
+    : null);
+  const titlePad = actions ? "md:px-36" : "";
+
+  return (
+    <div className={`relative mb-8 ${className}`}>
+      {actions ? (
+        <div className="mb-3 flex justify-end md:absolute md:right-0 md:top-0 md:mb-0 md:z-20">
+          <div className="flex flex-wrap justify-end gap-2">{actions}</div>
+        </div>
+      ) : null}
+      <TitleTag className={`${titleClassName} ${titlePad}`.trim()}>{title}</TitleTag>
+      {subtitle ? <div className={subtitleClassName}>{subtitle}</div> : null}
+    </div>
   );
 }
 

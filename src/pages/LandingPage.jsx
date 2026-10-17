@@ -7,6 +7,7 @@ import {
     LandingEditButton,
     LandingParceirosModal,
     LandingSecaoTextoModal,
+    LandingSectionHeading,
     LandingSlidesModal,
 } from "../components/ui/LandingSectionEdit";
 import { useYouTubeVideos } from "../hooks/useYouTubeVideos";
@@ -36,9 +37,7 @@ function YouTubeSection({ titulo, texto, onEdit }) {
 
     return (
         <section className="relative max-w-7xl mx-auto px-4 py-12">
-            <LandingEditButton onClick={onEdit} label="Editar seção" />
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">{titulo}</h2>
-            <p className="text-center text-[#9b8dc0] mb-8 max-w-2xl mx-auto">{texto}</p>
+            <LandingSectionHeading title={titulo} subtitle={texto} onEdit={onEdit} />
 
             {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -109,7 +108,9 @@ function HeroCarousel({ slides, onEdit }) {
 
     return (
         <section className="relative w-full h-[420px] md:h-[500px] overflow-hidden select-none">
-            <LandingEditButton onClick={onEdit} label="Editar slides" />
+            <div className="absolute top-3 right-3 z-30 md:top-4 md:right-4">
+                <LandingEditButton onClick={onEdit} label="Editar slides" />
+            </div>
             {lista.map((s, i) => (
                 <div
                     key={s.id || i}
@@ -277,14 +278,12 @@ export function LandingPage() {
             </div>
 
             <section className="relative bg-[#080514] py-12">
-                <LandingEditButton onClick={() => setEditKey("twitch")} label="Editar seção" />
                 <div className="max-w-5xl mx-auto px-4">
-                    <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">
-                        {conteudo.twitch?.titulo}
-                    </h2>
-                    <p className="text-center text-[#9b8dc0] mb-8 max-w-2xl mx-auto">
-                        {conteudo.twitch?.texto}
-                    </p>
+                    <LandingSectionHeading
+                        title={conteudo.twitch?.titulo}
+                        subtitle={conteudo.twitch?.texto}
+                        onEdit={() => setEditKey("twitch")}
+                    />
                     <div className="rounded-xl overflow-hidden aspect-video">
                         <iframe
                             src={`https://player.twitch.tv/?channel=tiagofuguete&parent=${encodeURIComponent(twitchParent())}&muted=true`}
@@ -297,9 +296,12 @@ export function LandingPage() {
             </section>
 
             <section className="relative max-w-7xl mx-auto px-4 py-12">
-                <LandingEditButton onClick={() => setEditKey("artigos")} label="Editar seção" />
-                <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">{conteudo.artigos?.titulo}</h2>
-                <p className="text-center text-[#9b8dc0] mb-8 max-w-3xl mx-auto">{conteudo.artigos?.texto}</p>
+                <LandingSectionHeading
+                    title={conteudo.artigos?.titulo}
+                    subtitle={conteudo.artigos?.texto}
+                    onEdit={() => setEditKey("artigos")}
+                    subtitleClassName="text-center text-[#9b8dc0] mb-0 max-w-3xl mx-auto"
+                />
                 {artigos.length === 0 ? (
                     <p className="text-center text-[#9b8dc0]">
                         <Link to="/artigos" className="text-brand hover:underline">Ver artigos</Link>
@@ -345,25 +347,28 @@ export function LandingPage() {
             </section>
 
             <section className="relative bg-[#080514] py-12 border-t border-line-soft">
-                <div className="absolute top-4 right-4 z-30 flex flex-wrap justify-end gap-2">
-                    <LandingEditButton
-                        className="static"
-                        onClick={() => setEditKey("parceirosTexto")}
-                        label="Editar texto"
-                    />
-                    <LandingEditButton
-                        className="static"
-                        onClick={() => setEditKey("parceirosLogos")}
-                        label="Editar logos"
-                    />
-                </div>
                 <div className="max-w-6xl mx-auto px-4">
-                    <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">{conteudo.parceiros?.titulo}</h2>
-                    <p className="text-center mb-8">
-                        <Link to="/parceiros" className="text-brand hover:text-[#e8dfff] transition-colors">
-                            {conteudo.parceiros?.texto}
-                        </Link>
-                    </p>
+                    <LandingSectionHeading
+                        title={conteudo.parceiros?.titulo}
+                        editActions={(
+                            <>
+                                <LandingEditButton
+                                    onClick={() => setEditKey("parceirosTexto")}
+                                    label="Editar texto"
+                                />
+                                <LandingEditButton
+                                    onClick={() => setEditKey("parceirosLogos")}
+                                    label="Editar logos"
+                                />
+                            </>
+                        )}
+                        subtitle={(
+                            <Link to="/parceiros" className="text-brand hover:text-[#e8dfff] transition-colors">
+                                {conteudo.parceiros?.texto}
+                            </Link>
+                        )}
+                        subtitleClassName="text-center mb-0"
+                    />
                     <PartnersCarousel parceiros={parceiros} />
                 </div>
             </section>

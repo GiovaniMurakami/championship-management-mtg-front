@@ -25,6 +25,12 @@ vi.mock("../components/ui/LandingHeader", () => ({
 vi.mock("../components/ui/LandingSectionEdit", () => ({
   LandingEditButton: () => null,
   LandingParceirosModal: () => null,
+  LandingSectionHeading: ({ as: Tag = "h2", title, subtitle }) => (
+    <div>
+      <Tag>{title}</Tag>
+      {subtitle ? <div>{subtitle}</div> : null}
+    </div>
+  ),
 }));
 
 vi.mock("../components", () => ({

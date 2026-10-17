@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { LandingHeader } from "../components/ui/LandingHeader";
-import { LandingEditButton, LandingParceirosModal } from "../components/ui/LandingSectionEdit";
+import { LandingSectionHeading, LandingParceirosModal } from "../components/ui/LandingSectionEdit";
 import { Footer, CookieConsentBanner } from "../components";
 import { Tooltip } from "../components/ui/Tooltip";
 import { SkeletonParceirosGrid } from "../components/ui/Skeleton";
@@ -56,9 +56,16 @@ export function LandingParceirosPage() {
       <LandingHeader />
 
       <section className="relative max-w-4xl mx-auto px-4 pt-28 pb-12 text-center">
-        <LandingEditButton onClick={() => setEditOpen(true)} label="Editar página" className="absolute top-24 right-4 z-30" />
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">{meta.paginaTitulo}</h1>
-        <p className="text-[#9b8dc0] max-w-2xl mx-auto">{meta.paginaTexto}</p>
+        <LandingSectionHeading
+          as="h1"
+          title={meta.paginaTitulo}
+          subtitle={meta.paginaTexto}
+          onEdit={() => setEditOpen(true)}
+          editLabel="Editar página"
+          titleClassName="text-3xl md:text-4xl font-bold text-center mb-4"
+          subtitleClassName="text-[#9b8dc0] max-w-2xl mx-auto mb-0"
+          className="mb-0"
+        />
       </section>
 
       {meta.cupomGlobal ? (

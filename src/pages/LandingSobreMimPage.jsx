@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { LandingHeader } from "../components/ui/LandingHeader";
-import { LandingEditButton, LandingSobreMimModal } from "../components/ui/LandingSectionEdit";
+import { LandingSectionHeading, LandingSobreMimModal } from "../components/ui/LandingSectionEdit";
 import { Footer } from "../components";
 import { SkeletonSobreMim } from "../components/ui/Skeleton";
 import { useLandingSeo } from "../hooks/useLandingSeo";
@@ -48,14 +48,14 @@ export function LandingSobreMimPage() {
       ) : (
         <>
           <section className="relative max-w-5xl mx-auto px-4 pt-28 pb-12">
-            <LandingEditButton
-              onClick={() => setEditOpen(true)}
-              label="Editar página"
-              className="absolute top-28 right-4 z-30"
+            <LandingSectionHeading
+              as="h1"
+              title={conteudo?.tituloHistoria || "Minha história no Magic"}
+              onEdit={() => setEditOpen(true)}
+              editLabel="Editar página"
+              titleClassName="text-3xl md:text-4xl font-bold text-center mb-0"
+              className="mb-10"
             />
-            <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
-              {conteudo?.tituloHistoria || "Minha história no Magic"}
-            </h1>
 
             <div className="flex flex-col md:flex-row gap-8 items-start">
               {conteudo?.fotoUrl ? (
