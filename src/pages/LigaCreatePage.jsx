@@ -28,7 +28,7 @@ const buildTorneiosParams = ({ dataInicio, dataFim }) => {
 
 export function LigaCreatePage({ editMode = false }) {
   const { id: ligaId } = useParams();
-  const { token, isAdmin } = useAuth();
+  const { token, usuario, isAdmin } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
   const bannerInputRef = useRef(null);
@@ -57,19 +57,24 @@ export function LigaCreatePage({ editMode = false }) {
     { loading: editMode && loadingData && !form.nome },
   );
 
+  const filtrarTorneiosParaHost = useCallback((torneios) => {
+    if (isAdmin || !usuario?.id) return torneios;
+    return (torneios || []).filter((t) => String(t.donoId) === String(usuario.id));
+  }, [isAdmin, usuario?.id]);
+
   const carregarTorneios = useCallback(async (params) => {
     if (!token) return;
     setLoadingTorneios(true);
     try {
       const torneiosData = await listarTorneios(token, params);
-      setTorneiosDisponiveis(torneiosData.torneios || []);
+      setTorneiosDisponiveis(filtrarTorneiosParaHost(torneiosData.torneios || []));
     } catch (err) {
       logError("Erro ao carregar torneios:", err);
       setError("Erro ao carregar torneios.");
     } finally {
       setLoadingTorneios(false);
     }
-  }, [token]);
+  }, [token, filtrarTorneiosParaHost]);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -79,7 +84,7 @@ export function LigaCreatePage({ editMode = false }) {
         listarTorneios(token, torneiosParams),
         editMode && ligaId ? buscarLiga(ligaId, token) : Promise.resolve(null),
       ]);
-      setTorneiosDisponiveis(torneiosData.torneios || []);
+      setTorneiosDisponiveis(filtrarTorneiosParaHost(torneiosData.torneios || []));
       if (ligaData) {
         const liga = ligaData.liga || ligaData;
         setForm({ nome: liga.nome || "", descricao: liga.descricao || "", tipo: liga.tipo || "individual" });
@@ -93,7 +98,7 @@ export function LigaCreatePage({ editMode = false }) {
     } finally {
       setLoadingData(false);
     }
-  }, [token, editMode, ligaId]);
+  }, [token, editMode, ligaId, filtrarTorneiosParaHost]);
 
   useEffect(() => {
     loadData();

@@ -5,6 +5,7 @@ import { LandingHeader } from "../components/ui/LandingHeader";
 import { Footer, CookieConsentBanner } from "../components";
 import { SkeletonHallDaFama } from "../components/ui/Skeleton";
 import { AdSenseUnit } from "../components/ui/AdSenseUnit";
+import { Tooltip } from "../components/ui/Tooltip";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { useLandingSeo } from "../hooks/useLandingSeo";
@@ -17,8 +18,8 @@ import { tournamentPath } from "../utils/tournamentUrl";
 
 const PAGE_SIZE = 24;
 
-const ADMIN_ACTION_CLASS =
-  "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md transition disabled:cursor-wait disabled:opacity-60";
+const ADMIN_ICON_BTN =
+  "inline-flex h-9 w-9 items-center justify-center rounded-lg border backdrop-blur-md transition disabled:cursor-wait disabled:opacity-60";
 
 export function HallDaFamaPage() {
   useLandingSeo("hallDaFama");
@@ -110,53 +111,79 @@ export function HallDaFamaPage() {
   const paginaAtual = Math.floor(offset / PAGE_SIZE) + 1;
   const totalPaginas = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const renderAdminActions = (item) => {
+  const renderAdminActions = (item, { labeled = false } = {}) => {
     if (!isAdmin) return null;
     const oculto = item.ativo === false;
-    return (
-      <div className="flex flex-wrap justify-end gap-1.5">
-        {oculto ? (
-          <button
-            type="button"
-            className={`${ADMIN_ACTION_CLASS} border-[rgba(34,197,94,0.45)] bg-[rgba(10,40,20,0.88)] text-[#86efac] hover:bg-green-700/70 hover:text-white`}
-            disabled={busyId === item.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              desocultar(item.id);
-            }}
-            aria-label={`Desocultar ${item.torneioNome || "item"}`}
-          >
-            <Eye size={14} aria-hidden />
-            Desocultar
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={`${ADMIN_ACTION_CLASS} border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.88)] text-[#c4b5fd] hover:bg-[rgba(167,79,255,0.28)] hover:text-white`}
-            disabled={busyId === item.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              ocultar(item.id);
-            }}
-            aria-label={`Ocultar ${item.torneioNome || "item"}`}
-          >
-            <EyeOff size={14} aria-hidden />
-            Ocultar
-          </button>
-        )}
+    const nome = item.torneioNome || "item";
+
+    const hideBtn = oculto ? (
+      <Tooltip content="Desocultar" placement="bottom" focusable={false}>
         <button
           type="button"
-          className={`${ADMIN_ACTION_CLASS} border-red-400/50 bg-[rgba(80,10,20,0.88)] text-red-200 hover:bg-red-700/80 hover:text-white`}
+          className={
+            labeled
+              ? `${ADMIN_ICON_BTN} w-auto gap-1.5 px-2.5 border-[rgba(34,197,94,0.45)] bg-[rgba(10,40,20,0.88)] text-[#86efac] hover:bg-green-700/70 hover:text-white`
+              : `${ADMIN_ICON_BTN} border-[rgba(34,197,94,0.45)] bg-[rgba(10,40,20,0.88)] text-[#86efac] hover:bg-green-700/70 hover:text-white`
+          }
+          disabled={busyId === item.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            desocultar(item.id);
+          }}
+          aria-label={`Desocultar ${nome}`}
+        >
+          <Eye size={15} aria-hidden />
+          {labeled ? <span className="text-xs font-semibold">Desocultar</span> : null}
+        </button>
+      </Tooltip>
+    ) : (
+      <Tooltip content="Ocultar" placement="bottom" focusable={false}>
+        <button
+          type="button"
+          className={
+            labeled
+              ? `${ADMIN_ICON_BTN} w-auto gap-1.5 px-2.5 border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.88)] text-[#c4b5fd] hover:bg-[rgba(167,79,255,0.28)] hover:text-white`
+              : `${ADMIN_ICON_BTN} border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.88)] text-[#c4b5fd] hover:bg-[rgba(167,79,255,0.28)] hover:text-white`
+          }
+          disabled={busyId === item.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            ocultar(item.id);
+          }}
+          aria-label={`Ocultar ${nome}`}
+        >
+          <EyeOff size={15} aria-hidden />
+          {labeled ? <span className="text-xs font-semibold">Ocultar</span> : null}
+        </button>
+      </Tooltip>
+    );
+
+    const deleteBtn = (
+      <Tooltip content="Excluir" placement="bottom" focusable={false}>
+        <button
+          type="button"
+          className={
+            labeled
+              ? `${ADMIN_ICON_BTN} w-auto gap-1.5 px-2.5 border-red-400/50 bg-[rgba(80,10,20,0.88)] text-red-200 hover:bg-red-700/80 hover:text-white`
+              : `${ADMIN_ICON_BTN} border-red-400/50 bg-[rgba(80,10,20,0.88)] text-red-200 hover:bg-red-700/80 hover:text-white`
+          }
           disabled={busyId === item.id}
           onClick={(e) => {
             e.stopPropagation();
             excluir(item.id);
           }}
-          aria-label={`Excluir ${item.torneioNome || "item"}`}
+          aria-label={`Excluir ${nome}`}
         >
-          <Trash2 size={14} aria-hidden />
-          Excluir
+          <Trash2 size={15} aria-hidden />
+          {labeled ? <span className="text-xs font-semibold">Excluir</span> : null}
         </button>
+      </Tooltip>
+    );
+
+    return (
+      <div className="flex flex-wrap justify-end gap-1.5">
+        {hideBtn}
+        {deleteBtn}
       </div>
     );
   };
@@ -201,16 +228,16 @@ export function HallDaFamaPage() {
                       : "border-line-soft bg-[rgba(167,79,255,0.08)] hover:border-[rgba(199,149,255,0.4)]"
                   }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setLightbox(item)}
-                    className="block w-full text-left cursor-pointer"
-                  >
-                    <div className="relative">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setLightbox(item)}
+                      className="block w-full cursor-pointer text-left"
+                    >
                       <img
                         src={item.imagemUrl}
                         alt={item.torneioNome || "Top 8"}
-                        className={`w-full aspect-[9/16] object-cover object-top group-hover:scale-[1.02] transition-transform duration-300 ${oculto ? "grayscale-[0.35]" : ""}`}
+                        className={`w-full aspect-[9/16] object-cover object-top transition-transform duration-300 group-hover:scale-[1.02] ${oculto ? "grayscale-[0.35]" : ""}`}
                         loading="lazy"
                       />
                       {oculto ? (
@@ -218,22 +245,26 @@ export function HallDaFamaPage() {
                           Oculto
                         </span>
                       ) : null}
-                    </div>
-                    <div className="p-3">
-                      <p className="m-0 font-semibold text-sm line-clamp-2">{item.torneioNome || "Torneio"}</p>
-                      {(item.dataTorneio || item.criadoEm) ? (
-                        <p className="m-0 mt-1 text-xs text-[#9b8dc0]">
-                          {new Date(item.dataTorneio || item.criadoEm).toLocaleDateString("pt-BR")}
-                        </p>
-                      ) : null}
-                    </div>
+                    </button>
+                    {/* Mobile: barra sob a imagem; desktop: ícones no canto */}
+                    {isAdmin ? (
+                      <div className="flex justify-end gap-1.5 border-t border-line-soft/60 bg-[rgba(8,5,20,0.55)] px-2 py-2 sm:absolute sm:top-2 sm:right-2 sm:z-10 sm:border-0 sm:bg-transparent sm:p-0">
+                        {renderAdminActions(item)}
+                      </div>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(item)}
+                    className="block w-full cursor-pointer p-3 text-left"
+                  >
+                    <p className="m-0 font-semibold text-sm line-clamp-2">{item.torneioNome || "Torneio"}</p>
+                    {(item.dataTorneio || item.criadoEm) ? (
+                      <p className="m-0 mt-1 text-xs text-[#9b8dc0]">
+                        {new Date(item.dataTorneio || item.criadoEm).toLocaleDateString("pt-BR")}
+                      </p>
+                    ) : null}
                   </button>
-
-                  {isAdmin ? (
-                    <div className="absolute top-2 right-2 z-10">
-                      {renderAdminActions(item)}
-                    </div>
-                  ) : null}
                 </article>
               );
             })}
@@ -297,7 +328,7 @@ export function HallDaFamaPage() {
             </div>
             {isAdmin ? (
               <div className="mt-3">
-                {renderAdminActions(lightbox)}
+                {renderAdminActions(lightbox, { labeled: true })}
               </div>
             ) : null}
             <button

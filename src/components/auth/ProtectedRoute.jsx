@@ -5,12 +5,17 @@ import { Spinner } from "../ui/Spinner";
 
 const PUBLIC_AUTH_PATHS = ["/esqueci-senha", "/reset-senha"];
 
-export function ProtectedRoute({ requireAdmin = false, children }) {
+export function ProtectedRoute({
+  requireAdmin = false,
+  requireHostOuAdmin = false,
+  children,
+}) {
   const {
     isAuthenticated,
     authInitialized,
     authRefreshing,
     isAdmin,
+    podeCriarTorneioOuLiga,
     openAuth,
     showAuthModal,
   } = useAuth();
@@ -49,6 +54,21 @@ export function ProtectedRoute({ requireAdmin = false, children }) {
           </h2>
           <p className="m-0 text-[0.95rem] text-text-soft">
             Esta área está disponível apenas para administradores.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requireHostOuAdmin && !podeCriarTorneioOuLiga) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="max-w-md text-center text-text-main">
+          <h2 className="m-0 mb-2 font-['Bebas_Neue',sans-serif] text-[1.8rem] tracking-[0.04em]">
+            Acesso restrito
+          </h2>
+          <p className="m-0 text-[0.95rem] text-text-soft">
+            Esta área está disponível para administradores ou hosts de torneios.
           </p>
         </div>
       </div>

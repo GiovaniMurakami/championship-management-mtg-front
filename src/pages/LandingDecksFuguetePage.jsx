@@ -5,12 +5,14 @@ import { Footer, CookieConsentBanner, SkeletonCollection } from "../components";
 import { DeckCard } from "../components/deck/DeckCard";
 import { DeckImageModal } from "../components/deck/DeckImageModal";
 import { DeleteConfirmModal } from "../components/ui/DeleteConfirmModal";
+import { Button } from "../components/ui/Button";
 import { useAuth } from "../hooks/useAuth";
 import { useLandingSeo } from "../hooks/useLandingSeo";
 import { buscarConteudoHome, deletarDeck, listarDecks } from "../services/backendApi";
 import { buscarCartasPorNome } from "../services/scryfallApi";
 import { buildDeckExternalUrl } from "../utils/externalNavigation";
 import { deckPath } from "../utils/deckUrl";
+import { TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
 const ENV_FUGUETE_ID = String(import.meta.env.VITE_FUGUETE_USER_ID || "").trim();
 const LIMITE = 18;
@@ -22,7 +24,9 @@ export function LandingDecksFuguetePage() {
   const [decks, setDecks] = useState([]);
   const [total, setTotal] = useState(0);
   const [pagina, setPagina] = useState(1);
-  const [filtro, setFiltro] = useState(null);
+  const [filtroBase, setFiltroBase] = useState(null);
+  const [buscaInput, setBuscaInput] = useState("");
+  const [busca, setBusca] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [images, setImages] = useState({});
@@ -45,7 +49,7 @@ export function LandingDecksFuguetePage() {
         }
       }
       if (!ativo) return;
-      setFiltro(
+      setFiltroBase(
         usuarioId
           ? { usuarioId }
           : { jogador: "Tiago Fuguete" },
@@ -55,16 +59,19 @@ export function LandingDecksFuguetePage() {
   }, []);
 
   useEffect(() => {
-    if (!filtro) return undefined;
+    if (!filtroBase) return undefined;
     let ativo = true;
     setLoading(true);
     setError("");
 
-    listarDecks(null, {
-      ...filtro,
+    const params = {
+      ...filtroBase,
       limite: LIMITE,
       offset: (pagina - 1) * LIMITE,
-    })
+    };
+    if (busca.trim()) params.nome = busca.trim();
+
+    listarDecks(null, params)
       .then((data) => {
         if (!ativo) return;
         setDecks(Array.isArray(data?.decks) ? data.decks : []);
@@ -81,7 +88,7 @@ export function LandingDecksFuguetePage() {
       });
 
     return () => { ativo = false; };
-  }, [filtro, pagina]);
+  }, [filtroBase, pagina, busca]);
 
   useEffect(() => {
     if (decks.length === 0) return undefined;
@@ -100,9 +107,22 @@ export function LandingDecksFuguetePage() {
   }, [decks]);
 
   const totalPaginas = Math.ceil(total / LIMITE) || 1;
+  const temBusca = Boolean(busca.trim());
 
   const isOwner = (deck) =>
     String(deck.usuario?.id ?? deck.usuarioId) === String(usuario?.id);
+
+  const handleBusca = (e) => {
+    e.preventDefault();
+    setPagina(1);
+    setBusca(buscaInput);
+  };
+
+  const handleLimparBusca = () => {
+    setBuscaInput("");
+    setBusca("");
+    setPagina(1);
+  };
 
   const handleShareDeck = async (deck) => {
     const url = buildDeckExternalUrl(deck);
@@ -156,26 +176,59 @@ export function LandingDecksFuguetePage() {
     <div className="min-h-screen bg-[#0e091c] text-[#e8dfff]">
       <LandingHeader />
 
-      <section className="max-w-4xl mx-auto px-4 pt-28 pb-8 text-center">
+      <section className="max-w-4xl mx-auto px-4 pt-28 pb-6 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">Decks do Tiago Fuguete</h1>
         <p className="text-[#9b8dc0] max-w-2xl mx-auto">
           Listas públicas do canal — explore e inspire-se para os torneios Pauper.
         </p>
-        {!loading && total > 0 ? (
-          <p className="mt-3 m-0 text-[0.85rem] text-[#9b8dc0]">
-            {total} deck{total !== 1 ? "s" : ""}
-          </p>
-        ) : null}
       </section>
 
       <section className="max-w-6xl mx-auto px-4 pb-16">
+        <form onSubmit={handleBusca} className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            type="search"
+            placeholder="Buscar deck por nome..."
+            value={buscaInput}
+            onChange={(e) => setBuscaInput(e.target.value)}
+            className={`${TOURNAMENT_INPUT_CLASS} flex-1`}
+            aria-label="Buscar deck por nome"
+          />
+          <div className="flex gap-2">
+            <Button type="submit" variant="secondary" className="flex-1 sm:flex-none whitespace-nowrap">
+              Buscar
+            </Button>
+            {temBusca ? (
+              <button
+                type="button"
+                onClick={handleLimparBusca}
+                className="px-3 py-2 border border-line rounded-lg text-text-soft text-[0.85rem] hover:text-white hover:border-[rgba(199,149,255,0.4)] transition-colors whitespace-nowrap"
+              >
+                Limpar
+              </button>
+            ) : null}
+          </div>
+        </form>
+
+        {!loading && total > 0 ? (
+          <p className="m-0 mb-4 text-center text-[0.85rem] text-[#9b8dc0] sm:text-left">
+            {total} deck{total !== 1 ? "s" : ""}
+            {temBusca ? ` para “${busca.trim()}”` : ""}
+          </p>
+        ) : null}
+
         {loading ? (
           <SkeletonCollection count={6} />
         ) : error ? (
           <p className="text-center text-red-300">{error}</p>
         ) : decks.length === 0 ? (
           <p className="text-center text-[#9b8dc0]">
-            Nenhum deck público encontrado. Configure <code className="text-brand">VITE_FUGUETE_USER_ID</code> ou o ID no conteúdo da home.
+            {temBusca
+              ? "Nenhum deck encontrado com esse nome. Tente outro termo."
+              : (
+                <>
+                  Nenhum deck público encontrado. Configure <code className="text-brand">VITE_FUGUETE_USER_ID</code> ou o ID no conteúdo da home.
+                </>
+              )}
           </p>
         ) : (
           <>

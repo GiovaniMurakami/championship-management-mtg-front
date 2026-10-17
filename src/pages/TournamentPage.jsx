@@ -62,7 +62,7 @@ function PlatformStats() {
 }
 
 export function TournamentPage() {
-  const { token, usuario, isAdmin, requireAuth } = useAuth();
+  const { token, usuario, isAdmin, podeCriarTorneioOuLiga, requireAuth } = useAuth();
   const { addToast } = useToast();
   const listRequest = useRequestSequence();
 
@@ -334,7 +334,7 @@ export function TournamentPage() {
         <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-md:text-[1.75rem]">
           Torneios
         </h1>
-        {isAdmin && (
+        {podeCriarTorneioOuLiga && (
           <Button
             className="max-md:w-full"
             onClick={() => navigate("/torneios/criar")}
@@ -384,7 +384,7 @@ export function TournamentPage() {
           <EmptyState
             title={abaAtiva === "disponiveis" ? "Nenhum torneio disponível" : "Nenhum torneio encerrado encontrado"}
             description={abaAtiva === "disponiveis" ? "Quando houver torneios abertos ou em andamento, eles aparecerão aqui." : "Torneios finalizados ficarão disponíveis nesta aba."}
-            action={isAdmin && abaAtiva === "disponiveis" && (
+            action={podeCriarTorneioOuLiga && abaAtiva === "disponiveis" && (
               <Button onClick={() => navigate("/torneios/criar")}>
                 Criar torneio
               </Button>
@@ -424,34 +424,34 @@ export function TournamentPage() {
                         {STATUS_LABEL[torneio.status] ?? torneio.status}
                       </span>
                       {isAdmin && (
-                        <>
-                          <button
-                            className={`inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-50 ${
-                              torneio.fixado
-                                ? "border-[rgba(250,204,21,0.45)] bg-[rgba(250,204,21,0.14)] text-[#fde68a] hover:bg-[rgba(250,204,21,0.22)]"
-                                : "border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
-                            }`}
-                            type="button"
-                            onClick={() => handleTogglePin(torneio)}
-                            disabled={pinningId === torneio.id}
-                            aria-label={torneio.fixado ? `Desfixar ${torneio.nome}` : `Fixar ${torneio.nome}`}
-                            title={torneio.fixado ? "Desfixar" : "Fixar no topo"}
-                          >
-                            <Pin size={13} aria-hidden="true" />
-                          </button>
-                          <button
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
-                            type="button"
-                            onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
-                            aria-label={`Copiar ${torneio.nome}`}
-                            title="Copiar torneio"
-                          >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                              <rect x="9" y="9" width="13" height="13" rx="2" />
-                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                            </svg>
-                          </button>
-                        </>
+                        <button
+                          className={`inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-50 ${
+                            torneio.fixado
+                              ? "border-[rgba(250,204,21,0.45)] bg-[rgba(250,204,21,0.14)] text-[#fde68a] hover:bg-[rgba(250,204,21,0.22)]"
+                              : "border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                          }`}
+                          type="button"
+                          onClick={() => handleTogglePin(torneio)}
+                          disabled={pinningId === torneio.id}
+                          aria-label={torneio.fixado ? `Desfixar ${torneio.nome}` : `Fixar ${torneio.nome}`}
+                          title={torneio.fixado ? "Desfixar" : "Fixar no topo"}
+                        >
+                          <Pin size={13} aria-hidden="true" />
+                        </button>
+                      )}
+                      {podeCriarTorneioOuLiga && (
+                        <button
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(199,149,255,0.28)] bg-transparent text-text-soft transition-colors hover:border-[rgba(199,149,255,0.55)] hover:bg-[rgba(167,79,255,0.14)] hover:text-white"
+                          type="button"
+                          onClick={() => navigate("/torneios/criar", { state: { copyFrom: torneio } })}
+                          aria-label={`Copiar ${torneio.nome}`}
+                          title="Copiar torneio"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                          </svg>
+                        </button>
                       )}
                     </div>
                   </div>

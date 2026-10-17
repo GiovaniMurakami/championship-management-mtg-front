@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormFeedback } from "../ui/FormFeedback";
 import { Switch } from "../ui/Switch";
 import { Spinner } from "../ui/Spinner";
@@ -8,9 +8,13 @@ import { buscarParceirosAdmin, salvarParceiros } from "../../services/backendApi
 import { uploadBannerImage, validateBannerImageFile } from "../../utils/bannerUpload";
 import { BTN_PRIMARY, BTN_SECONDARY, BTN_DANGER, MODAL_INPUT_CLASS, FORM_LABEL_CLASS } from "../../styles/uiClasses";
 
+let parceiroLocalSeq = 0;
+
 function parceiroVazio(ordem = 0) {
+  parceiroLocalSeq += 1;
   return {
     id: undefined,
+    _localKey: `novo-${parceiroLocalSeq}`,
     nome: "",
     logoUrl: "",
     linkUrl: "",
@@ -24,8 +28,10 @@ function parceiroVazio(ordem = 0) {
 export function ParceirosEditor({ onSaved, showHeader = false }) {
   const { token, isAdmin } = useAuth();
   const { addToast } = useToast();
+  const novoParceiroRef = useRef(null);
 
   const [parceiros, setParceiros] = useState([parceiroVazio(0)]);
+  const [destaqueKey, setDestaqueKey] = useState(null);
   const [cupomGlobal, setCupomGlobal] = useState("FUGUETE05");
   const [paginaTitulo, setPaginaTitulo] = useState("");
   const [paginaTexto, setPaginaTexto] = useState("");
@@ -71,8 +77,24 @@ export function ParceirosEditor({ onSaved, showHeader = false }) {
     return () => { cancelled = true; };
   }, [token]);
 
+  useEffect(() => {
+    if (!destaqueKey) return;
+    const card = novoParceiroRef.current;
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const nomeInput = card.querySelector('input[data-parceiro-nome="1"]');
+    window.requestAnimationFrame(() => nomeInput?.focus());
+  }, [destaqueKey, parceiros]);
+
   const atualizar = (index, patch) => {
     setParceiros((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  };
+
+  const adicionarParceiro = () => {
+    const novo = parceiroVazio(0);
+    setDestaqueKey(novo._localKey);
+    // Insere no topo da lista (logo abaixo do botão), sem forçar scroll até o fim.
+    setParceiros((prev) => [novo, ...prev]);
   };
 
   const handleUpload = async (index, file) => {
@@ -129,6 +151,7 @@ export function ParceirosEditor({ onSaved, showHeader = false }) {
         ativo: p.ativo !== false,
         ordem: Number.isFinite(p.ordem) ? p.ordem : i,
       })));
+      setDestaqueKey(null);
       setCupomGlobal(response?.cupomGlobal || "");
       setPaginaTitulo(response?.paginaTitulo || "");
       setPaginaTexto(response?.paginaTexto || "");
@@ -197,7 +220,7 @@ export function ParceirosEditor({ onSaved, showHeader = false }) {
         <button
           type="button"
           className={BTN_SECONDARY}
-          onClick={() => setParceiros((prev) => [...prev, parceiroVazio(prev.length)])}
+          onClick={adicionarParceiro}
         >
           + Adicionar parceiro
         </button>
@@ -205,14 +228,23 @@ export function ParceirosEditor({ onSaved, showHeader = false }) {
 
       {parceiros.map((parceiro, index) => {
         const uploading = uploadingIndex === index;
+        const itemKey = parceiro.id || parceiro._localKey || `idx-${index}`;
+        const emDestaque = destaqueKey && itemKey === destaqueKey;
         return (
           <div
-            key={parceiro.id || `novo-${index}`}
-            className="grid gap-4 rounded-2xl border border-line-soft bg-surface/60 p-4 lg:grid-cols-[1.1fr_0.9fr]"
+            key={itemKey}
+            ref={emDestaque ? novoParceiroRef : undefined}
+            className={`grid gap-4 rounded-2xl border bg-surface/60 p-4 lg:grid-cols-[1.1fr_0.9fr] ${
+              emDestaque
+                ? "border-[rgba(199,149,255,0.55)] ring-1 ring-[rgba(167,79,255,0.25)]"
+                : "border-line-soft"
+            }`}
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-4">
-                <h3 className="m-0 text-base font-bold text-text-main">Parceiro {index + 1}</h3>
+                <h3 className="m-0 text-base font-bold text-text-main">
+                  {emDestaque ? "Novo parceiro" : `Parceiro ${index + 1}`}
+                </h3>
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={Boolean(parceiro.ativo)}
@@ -223,7 +255,10 @@ export function ParceirosEditor({ onSaved, showHeader = false }) {
                     <button
                       type="button"
                       className={BTN_DANGER}
-                      onClick={() => setParceiros((prev) => prev.filter((_, i) => i !== index))}
+                      onClick={() => {
+                        if (emDestaque) setDestaqueKey(null);
+                        setParceiros((prev) => prev.filter((_, i) => i !== index));
+                      }}
                     >
                       Remover
                     </button>
@@ -247,6 +282,7 @@ export function ParceirosEditor({ onSaved, showHeader = false }) {
                       onChange={(e) => atualizar(index, { [field]: e.target.value })}
                       className={`${MODAL_INPUT_CLASS} ${field === "logoUrl" ? "min-w-0 flex-1" : ""}`}
                       required={field === "nome"}
+                      data-parceiro-nome={field === "nome" ? "1" : undefined}
                     />
                     {field === "logoUrl" ? (
                       <>

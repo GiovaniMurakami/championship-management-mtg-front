@@ -567,6 +567,8 @@ export function AuthProvider({ children }) {
   const isAuthenticated = Boolean(token && usuario);
   const isAdmin = (usuario?.role ?? "user") === "admin";
   const isEditor = (usuario?.role ?? "user") === "editor";
+  const isHostTorneios = Boolean(usuario?.hostTorneios) || isAdmin;
+  const podeCriarTorneioOuLiga = isAdmin || Boolean(usuario?.hostTorneios);
   const podeEditarBlog = isAdmin || isEditor;
 
   const value = {
@@ -583,6 +585,8 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     isAdmin,
     isEditor,
+    isHostTorneios,
+    podeCriarTorneioOuLiga,
     podeEditarBlog,
     showEditProfileModal,
     editProfileForm,

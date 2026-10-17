@@ -171,18 +171,23 @@ export function TournamentEditModal({ torneio, isOpen, onClose, onSubmit, loadin
       setUploadingStory(false);
     }
 
+    const day1Completo = Boolean(form.rodadasDay1 && form.vagasDay2);
     const payload = {
-      ...form,
       nome: sanitizeText(form.nome),
+      horario: form.horario,
+      formato: form.formato,
       descricao: optionalTrimmed(sanitizeText(form.descricao)),
       regras: optionalTrimmed(sanitizeText(form.regras)),
       linkBanner: optionalTrimmed(form.linkBanner),
       premio: { playerPoints: Number(form.playerPoints || 0), tix: Number(form.tix || 0) },
       linkLive: form.linkLive.trim(),
-      maxJogadores: form.maxJogadores ? Number(form.maxJogadores) : undefined,
-      maxRodadas: form.maxRodadas ? Number(form.maxRodadas) : undefined,
-      corteTop: form.corteTop ? Number(form.corteTop) : undefined,
-      ...(form.rodadasDay1 && form.vagasDay2
+      secreto: Boolean(form.secreto),
+      listasPublicas: Boolean(form.listasPublicas),
+      exibirNomeJogador: form.exibirNomeJogador,
+      ...(form.maxJogadores ? { maxJogadores: Number(form.maxJogadores) } : {}),
+      ...(form.maxRodadas ? { maxRodadas: Number(form.maxRodadas) } : {}),
+      ...(form.corteTop ? { corteTop: Number(form.corteTop) } : {}),
+      ...(day1Completo
         ? { rodadasDay1: Number(form.rodadasDay1), vagasDay2: Number(form.vagasDay2) }
         : {}),
     };

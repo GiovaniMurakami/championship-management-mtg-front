@@ -164,27 +164,34 @@ export function TournamentCreateForm({ token, onTournamentCreated, initialValues
       storyFundoTextoRodape = storyResult?.textoRodape || "escuro";
       setUploadingStory(false);
 
+      const day1Completo = Boolean(createForm.rodadasDay1 && createForm.vagasDay2);
       const payload = {
-        ...createForm,
         nome: sanitizeText(createForm.nome),
+        horario: createForm.horario,
+        formato: createForm.formato,
         descricao: optionalTrimmed(sanitizeText(createForm.descricao)),
         regras: optionalTrimmed(sanitizeText(createForm.regras)),
         linkBanner: optionalTrimmed(createForm.linkBanner),
         premio: { playerPoints: Number(createForm.playerPoints || 0), tix: Number(createForm.tix || 0) },
-      linkLive: optionalTrimmed(createForm.linkLive),
+        linkLive: optionalTrimmed(createForm.linkLive),
+        secreto: Boolean(createForm.secreto),
+        listasPublicas: Boolean(createForm.listasPublicas),
+        exibirNomeJogador: createForm.exibirNomeJogador,
         ...(bannerUrl ? { bannerUrl } : {}),
         ...(storyFundoUrl ? { storyFundoUrl } : {}),
         storyFundoTextoRodape,
-        maxJogadores: createForm.maxJogadores ? Number(createForm.maxJogadores) : undefined,
-        maxRodadas: createForm.maxRodadas ? Number(createForm.maxRodadas) : undefined,
-        corteTop: createForm.corteTop ? Number(createForm.corteTop) : undefined,
-        ...(createForm.rodadasDay1 && createForm.vagasDay2
+        ...(createForm.maxJogadores ? { maxJogadores: Number(createForm.maxJogadores) } : {}),
+        ...(createForm.maxRodadas ? { maxRodadas: Number(createForm.maxRodadas) } : {}),
+        ...(createForm.corteTop ? { corteTop: Number(createForm.corteTop) } : {}),
+        ...(day1Completo
           ? {
               rodadasDay1: Number(createForm.rodadasDay1),
               vagasDay2: Number(createForm.vagasDay2),
             }
           : {}),
-        ligaIds: Array.isArray(createForm.ligaIds) && createForm.ligaIds.length > 0 ? createForm.ligaIds : undefined,
+        ...(Array.isArray(createForm.ligaIds) && createForm.ligaIds.length > 0
+          ? { ligaIds: createForm.ligaIds }
+          : {}),
       };
 
       await criarTorneio(payload, token);

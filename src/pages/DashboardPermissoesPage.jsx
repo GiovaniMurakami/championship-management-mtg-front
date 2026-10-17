@@ -7,7 +7,7 @@ import { useToast } from "../context/ToastContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { PAGE_TITLES } from "../constants/pageTitles";
-import { definirEditor, listarUsuarios } from "../services/backendApi";
+import { definirEditor, definirHostTorneios, listarUsuarios } from "../services/backendApi";
 import { BTN_PRIMARY, BTN_SECONDARY, TOURNAMENT_INPUT_CLASS } from "../styles/uiClasses";
 
 const LIMITE = 40;
@@ -40,6 +40,14 @@ function RoleBadge({ role }) {
   );
 }
 
+function HostBadge() {
+  return (
+    <span className="rounded-md border border-[rgba(56,189,248,0.4)] bg-[rgba(56,189,248,0.12)] px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-[0.06em] text-[#7dd3fc]">
+      Host
+    </span>
+  );
+}
+
 export function DashboardPermissoesPage() {
   const { token } = useAuth();
   const { addToast } = useToast();
@@ -47,6 +55,7 @@ export function DashboardPermissoesPage() {
 
   const [search, setSearch] = useState("");
   const [filtroRole, setFiltroRole] = useState("todos");
+  const [filtroHost, setFiltroHost] = useState("todos");
   const [pagina, setPagina] = useState(1);
   const [usuarios, setUsuarios] = useState([]);
   const [total, setTotal] = useState(0);
@@ -57,7 +66,7 @@ export function DashboardPermissoesPage() {
 
   useEffect(() => {
     setPagina(1);
-  }, [debouncedSearch, filtroRole]);
+  }, [debouncedSearch, filtroRole, filtroHost]);
 
   useEffect(() => {
     if (!token) return undefined;
@@ -71,6 +80,7 @@ export function DashboardPermissoesPage() {
         const data = await listarUsuarios(token, {
           nome: debouncedSearch.trim() || undefined,
           role: filtroRole === "todos" ? undefined : filtroRole,
+          hostTorneios: filtroHost === "todos" ? undefined : filtroHost,
           limite: LIMITE,
           offset: (pagina - 1) * LIMITE,
         });
@@ -91,7 +101,7 @@ export function DashboardPermissoesPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, debouncedSearch, filtroRole, pagina]);
+  }, [token, debouncedSearch, filtroRole, filtroHost, pagina]);
 
   const usuariosOrdenados = [...usuarios].sort(
     (a, b) =>
@@ -127,6 +137,36 @@ export function DashboardPermissoesPage() {
     }
   };
 
+  const alterarHost = async (usuario, hostTorneios) => {
+    if (!token || mutatingId || usuario.role === "admin") return;
+    if (Boolean(usuario.hostTorneios) === hostTorneios) return;
+
+    setMutatingId(usuario.id);
+    try {
+      const resultado = await definirHostTorneios(usuario.id, hostTorneios, token);
+      const saiuDoFiltro =
+        (filtroHost === "true" && !resultado.hostTorneios)
+        || (filtroHost === "false" && resultado.hostTorneios);
+      setUsuarios((atual) => {
+        if (saiuDoFiltro) return atual.filter((item) => item.id !== usuario.id);
+        return atual.map((item) =>
+          item.id === usuario.id ? { ...item, hostTorneios: resultado.hostTorneios } : item,
+        );
+      });
+      if (saiuDoFiltro) setTotal((atual) => Math.max(0, atual - 1));
+      addToast(
+        resultado.hostTorneios
+          ? `${usuario.nome} agora é host de torneios.`
+          : `Permissão de host removida de ${usuario.nome}.`,
+        { type: "success" },
+      );
+    } catch (err) {
+      addToast(err.message || "Não foi possível atualizar o host.", { type: "error" });
+    } finally {
+      setMutatingId("");
+    }
+  };
+
   return (
     <PageShell className="mx-auto max-w-4xl px-4 pb-16 pt-28">
       <header className="mb-6">
@@ -150,7 +190,7 @@ export function DashboardPermissoesPage() {
             autoComplete="off"
           />
         </label>
-        <label className="block text-[0.8rem] font-semibold text-[#d9d6ff] sm:w-48">
+        <label className="block text-[0.8rem] font-semibold text-[#d9d6ff] sm:w-40">
           Papel
           <select
             className={`${TOURNAMENT_INPUT_CLASS} mt-1`}
@@ -161,6 +201,18 @@ export function DashboardPermissoesPage() {
             <option value="user">Usuários</option>
             <option value="editor">Editores</option>
             <option value="admin">Admins</option>
+          </select>
+        </label>
+        <label className="block text-[0.8rem] font-semibold text-[#d9d6ff] sm:w-44">
+          Host de torneios
+          <select
+            className={`${TOURNAMENT_INPUT_CLASS} mt-1`}
+            value={filtroHost}
+            onChange={(e) => setFiltroHost(e.target.value)}
+          >
+            <option value="todos">Todos</option>
+            <option value="true">Com host</option>
+            <option value="false">Sem host</option>
           </select>
         </label>
       </div>
@@ -182,6 +234,7 @@ export function DashboardPermissoesPage() {
               const role = usuario.role || "user";
               const busy = mutatingId === usuario.id;
               const ehAdmin = role === "admin";
+              const ehHost = Boolean(usuario.hostTorneios);
               return (
                 <li
                   key={usuario.id}
@@ -193,6 +246,7 @@ export function DashboardPermissoesPage() {
                         {usuario.nome}
                       </p>
                       <RoleBadge role={role} />
+                      {(ehHost || ehAdmin) && <HostBadge />}
                     </div>
                     <p className="m-0 mt-0.5 truncate text-[0.82rem] text-text-soft">{usuario.email}</p>
                     {(usuario.nickMTGO || usuario.nickArena) && (
@@ -207,22 +261,32 @@ export function DashboardPermissoesPage() {
                   {ehAdmin ? (
                     <p className="m-0 text-sm text-text-muted shrink-0">Sem alteração</p>
                   ) : (
-                    <div className="flex flex-wrap gap-2 shrink-0">
+                    <div className="flex flex-col items-stretch gap-2 shrink-0 sm:items-end">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className={role === "user" ? BTN_PRIMARY : BTN_SECONDARY}
+                          disabled={busy || Boolean(mutatingId) || role === "user"}
+                          onClick={() => alterarPermissao(usuario, "user")}
+                        >
+                          {busy && role !== "user" ? "Salvando..." : "Usuário"}
+                        </button>
+                        <button
+                          type="button"
+                          className={role === "editor" ? BTN_PRIMARY : BTN_SECONDARY}
+                          disabled={busy || Boolean(mutatingId) || role === "editor"}
+                          onClick={() => alterarPermissao(usuario, "editor")}
+                        >
+                          {busy && role !== "editor" ? "Salvando..." : "Editor"}
+                        </button>
+                      </div>
                       <button
                         type="button"
-                        className={role === "user" ? BTN_PRIMARY : BTN_SECONDARY}
-                        disabled={busy || Boolean(mutatingId) || role === "user"}
-                        onClick={() => alterarPermissao(usuario, "user")}
+                        className={ehHost ? BTN_PRIMARY : BTN_SECONDARY}
+                        disabled={busy || Boolean(mutatingId)}
+                        onClick={() => alterarHost(usuario, !ehHost)}
                       >
-                        {busy && role !== "user" ? "Salvando..." : "Usuário"}
-                      </button>
-                      <button
-                        type="button"
-                        className={role === "editor" ? BTN_PRIMARY : BTN_SECONDARY}
-                        disabled={busy || Boolean(mutatingId) || role === "editor"}
-                        onClick={() => alterarPermissao(usuario, "editor")}
-                      >
-                        {busy && role !== "editor" ? "Salvando..." : "Editor"}
+                        {busy ? "Salvando..." : ehHost ? "Remover host" : "Host de torneios"}
                       </button>
                     </div>
                   )}

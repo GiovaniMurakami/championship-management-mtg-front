@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { BaseModal } from "./BaseModal";
+import { Tooltip } from "./Tooltip";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
 import { salvarConteudoHome } from "../../services/backendApi";
@@ -11,30 +12,38 @@ import { BTN_PRIMARY, BTN_SECONDARY, FORM_LABEL_CLASS, MODAL_INPUT_CLASS } from 
 
 const WIDE_MODAL = "!w-[min(920px,calc(100vw-1.4rem))] !max-h-[min(88vh,900px)] !overflow-y-auto p-5";
 
+const EDIT_BTN_ICON_CLASS =
+  "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.88)] text-[#c4b5fd] shadow-[0_4px_16px_rgba(3,2,8,0.35)] backdrop-blur-md transition hover:bg-[rgba(167,79,255,0.28)] hover:text-white";
 
-const EDIT_BTN_CLASS =
-  "inline-flex items-center gap-1.5 rounded-lg border border-[rgba(199,149,255,0.45)] bg-[rgba(14,9,28,0.88)] px-2.5 py-1.5 text-xs font-semibold text-[#c4b5fd] shadow-[0_4px_16px_rgba(3,2,8,0.35)] backdrop-blur-md transition hover:bg-[rgba(167,79,255,0.28)] hover:text-white";
-
-/** Botão “Editar” — só para admin. Use `static`/`absolute` via className; default é fluxo normal. */
-export function LandingEditButton({ onClick, label = "Editar", className = "" }) {
+/**
+ * Botão de edição admin — ícone com tooltip (menos ruído que label longo).
+ * `icon`: componente Lucide (default Pencil).
+ */
+export function LandingEditButton({
+  onClick,
+  label = "Editar",
+  className = "",
+  icon: Icon = Pencil,
+}) {
   const { isAdmin } = useAuth();
   if (!isAdmin) return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`${EDIT_BTN_CLASS} ${className}`}
-      aria-label={label}
-    >
-      <Pencil size={14} aria-hidden />
-      {label}
-    </button>
+    <Tooltip content={label} placement="bottom" focusable={false}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${EDIT_BTN_ICON_CLASS} ${className}`}
+        aria-label={label}
+      >
+        <Icon size={15} aria-hidden />
+      </button>
+    </Tooltip>
   );
 }
 
 /**
- * Cabeçalho de seção com título centralizado e ações de edição à direita,
- * sem sobrepor o texto (toolbar acima no mobile; canto no desktop com padding no título).
+ * Cabeçalho de seção: título centralizado; ações admin ícone à direita
+ * (linha compacta no mobile, canto no desktop — sem padding grande no título).
  */
 export function LandingSectionHeading({
   title,
@@ -50,16 +59,17 @@ export function LandingSectionHeading({
   const actions = editActions || (onEdit
     ? <LandingEditButton onClick={onEdit} label={editLabel} />
     : null);
-  const titlePad = actions ? "md:px-36" : "";
 
   return (
     <div className={`relative mb-8 ${className}`}>
       {actions ? (
-        <div className="mb-3 flex justify-end md:absolute md:right-0 md:top-0 md:mb-0 md:z-20">
-          <div className="flex flex-wrap justify-end gap-2">{actions}</div>
+        <div className="mb-2 flex justify-end md:absolute md:right-0 md:top-0 md:mb-0 md:z-20">
+          <div className="flex flex-wrap justify-end gap-1.5">{actions}</div>
         </div>
       ) : null}
-      <TitleTag className={`${titleClassName} ${titlePad}`.trim()}>{title}</TitleTag>
+      <TitleTag className={`${titleClassName} ${actions ? "md:px-12" : ""}`.trim()}>
+        {title}
+      </TitleTag>
       {subtitle ? <div className={subtitleClassName}>{subtitle}</div> : null}
     </div>
   );

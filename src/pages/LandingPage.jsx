@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { Images, Type } from "lucide-react";
 import { Footer, CookieConsentBanner } from "../components";
 import { LandingHeader } from "../components/ui/LandingHeader";
 import { AdSenseUnit } from "../components/ui/AdSenseUnit";
@@ -277,66 +278,65 @@ export function LandingPage() {
                 <AdSenseUnit unit="inArticle" className="w-full min-h-[50px]" />
             </div>
 
-            <section className="relative bg-[#080514] py-12">
-                <div className="max-w-5xl mx-auto px-4">
+            <section className="relative bg-[#080514]">
+                <div className="max-w-5xl mx-auto px-4 pt-12 pb-6">
                     <LandingSectionHeading
                         title={conteudo.twitch?.titulo}
                         subtitle={conteudo.twitch?.texto}
                         onEdit={() => setEditKey("twitch")}
+                        className="mb-0"
                     />
-                    <div className="rounded-xl overflow-hidden aspect-video">
-                        <iframe
-                            src={`https://player.twitch.tv/?channel=tiagofuguete&parent=${encodeURIComponent(twitchParent())}&muted=true`}
-                            title="Twitch - Tiago Fuguete"
-                            className="w-full h-full border-0"
-                            allowFullScreen
-                        />
-                    </div>
+                </div>
+                <div className="w-full aspect-video max-h-[min(70vh,720px)] bg-black">
+                    <iframe
+                        src={`https://player.twitch.tv/?channel=tiagofuguete&parent=${encodeURIComponent(twitchParent())}&muted=true`}
+                        title="Twitch - Tiago Fuguete"
+                        className="h-full w-full border-0"
+                        allowFullScreen
+                    />
                 </div>
             </section>
 
-            <section className="relative max-w-7xl mx-auto px-4 py-12">
+            <section className="relative max-w-3xl mx-auto px-4 py-16">
                 <LandingSectionHeading
                     title={conteudo.artigos?.titulo}
                     subtitle={conteudo.artigos?.texto}
                     onEdit={() => setEditKey("artigos")}
-                    subtitleClassName="text-center text-[#9b8dc0] mb-0 max-w-3xl mx-auto"
+                    subtitleClassName="text-center text-[#9b8dc0] mb-0 max-w-2xl mx-auto"
                 />
                 {artigos.length === 0 ? (
                     <p className="text-center text-[#9b8dc0]">
                         <Link to="/artigos" className="text-brand hover:underline">Ver artigos</Link>
                     </p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="flex flex-col divide-y divide-line-soft/80">
                         {artigos.map((artigo) => (
                             <Link
                                 key={artigo.id}
                                 to={artigoPath(artigo)}
-                                className="group rounded-xl overflow-hidden bg-[rgba(167,79,255,0.08)] hover:bg-[rgba(167,79,255,0.15)] border border-line-soft hover:border-[rgba(199,149,255,0.3)] transition-all"
+                                className="group flex gap-4 sm:gap-5 py-5 first:pt-0 last:pb-0 no-underline transition-colors"
                             >
-                                <div className="overflow-hidden">
+                                <div className="h-20 w-28 sm:h-24 sm:w-36 shrink-0 overflow-hidden rounded-lg bg-[rgba(167,79,255,0.12)]">
                                     {artigo.capaUrl ? (
                                         <img
                                             src={artigo.capaUrl}
-                                            alt={artigo.titulo}
-                                            className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                                            alt=""
+                                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                                             loading="lazy"
                                         />
-                                    ) : (
-                                        <div className="w-full h-44 bg-[rgba(167,79,255,0.12)]" />
-                                    )}
+                                    ) : null}
                                 </div>
-                                <div className="p-4">
-                                    <h3 className="font-semibold text-[#e8dfff] mb-2 line-clamp-2 group-hover:text-brand transition-colors">
+                                <div className="min-w-0 flex flex-col justify-center">
+                                    <h3 className="m-0 text-[1.05rem] font-semibold leading-snug text-[#e8dfff] transition-colors group-hover:text-brand line-clamp-2">
                                         {artigo.titulo}
                                     </h3>
-                                    <span className="text-brand text-sm font-medium">Ler mais &gt;&gt;</span>
+                                    <span className="mt-1.5 text-sm font-medium text-brand">Ler artigo →</span>
                                 </div>
                             </Link>
                         ))}
                     </div>
                 )}
-                <div className="mt-8 flex justify-center">
+                <div className="mt-10 flex justify-center">
                     <Link
                         to="/artigos"
                         className="inline-flex items-center gap-2 px-5 py-[0.6rem] rounded-xl border border-[rgba(199,149,255,0.35)] bg-[rgba(167,79,255,0.1)] text-brand font-semibold text-[0.9rem] transition-all hover:bg-[rgba(167,79,255,0.2)]"
@@ -355,10 +355,12 @@ export function LandingPage() {
                                 <LandingEditButton
                                     onClick={() => setEditKey("parceirosTexto")}
                                     label="Editar texto"
+                                    icon={Type}
                                 />
                                 <LandingEditButton
                                     onClick={() => setEditKey("parceirosLogos")}
                                     label="Editar logos"
+                                    icon={Images}
                                 />
                             </>
                         )}

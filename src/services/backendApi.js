@@ -622,6 +622,8 @@ export const excluirArtigo = (artigoId, token) =>
   httpClient.delete(`/artigo/${encodeURIComponent(artigoId)}`, { headers: { Authorization: `Bearer ${token}` } });
 export const definirEditor = (usuarioId, editor, token) =>
   httpClient.put(`/usuario/${encodeURIComponent(usuarioId)}/editor`, { editor }, { headers: { Authorization: `Bearer ${token}` } });
+export const definirHostTorneios = (usuarioId, hostTorneios, token) =>
+  httpClient.put(`/usuario/${encodeURIComponent(usuarioId)}/host-torneios`, { hostTorneios }, { headers: { Authorization: `Bearer ${token}` } });
 
 export const listarAssinantesNewsletter = (token, params = {}) =>
   httpClient.get("/usuario/newsletter/assinantes", {

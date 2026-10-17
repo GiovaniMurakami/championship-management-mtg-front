@@ -16,7 +16,7 @@ import { Pin } from "lucide-react";
 const LIMITE = 20;
 
 export function LigaPage() {
-  const { token, isAdmin } = useAuth();
+  const { token, usuario, isAdmin, podeCriarTorneioOuLiga } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -105,7 +105,7 @@ export function LigaPage() {
           <h1 className="m-0 text-white text-[2.2rem] font-bold [text-shadow:0_2px_4px_rgba(0,0,0,0.3)] max-[768px]:text-[1.75rem]">Ligas</h1>
           <p className="m-0 mt-1 text-[0.88rem] text-text-soft">Acompanhe rankings, arquétipos e torneios de cada circuito.</p>
         </div>
-        {isAdmin && (
+        {podeCriarTorneioOuLiga && (
           <Button className="w-full shrink-0 sm:w-auto" onClick={() => navigate("/ligas/criar")}>
             + Criar Liga
           </Button>
@@ -118,7 +118,7 @@ export function LigaPage() {
         <EmptyState
           title="Nenhuma liga encontrada"
           description="As ligas criadas ficarão disponíveis nesta tela."
-          action={isAdmin && (
+          action={podeCriarTorneioOuLiga && (
             <Button className="w-full shrink-0 sm:w-auto" onClick={() => navigate("/ligas/criar")}>
               Criar liga
             </Button>
@@ -209,7 +209,7 @@ export function LigaPage() {
                 >
                   Ver detalhes →
                 </button>
-                {isAdmin && (
+                {(isAdmin || (usuario && String(liga.donoId) === String(usuario.id))) && (
                   <>
                     <button
                       type="button"
@@ -218,13 +218,15 @@ export function LigaPage() {
                     >
                       Editar
                     </button>
-                    <button
-                      type="button"
-                      className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-[rgba(239,68,68,0.4)] bg-[rgba(239,68,68,0.07)] px-3 text-[0.82rem] font-medium text-[#fca5a5] transition-all duration-300 hover:bg-[rgba(239,68,68,0.2)] hover:text-white"
-                      onClick={() => setConfirmDeleteId(liga.id)}
-                    >
-                      Excluir
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-[rgba(239,68,68,0.4)] bg-[rgba(239,68,68,0.07)] px-3 text-[0.82rem] font-medium text-[#fca5a5] transition-all duration-300 hover:bg-[rgba(239,68,68,0.2)] hover:text-white"
+                        onClick={() => setConfirmDeleteId(liga.id)}
+                      >
+                        Excluir
+                      </button>
+                    )}
                   </>
                 )}
               </div>

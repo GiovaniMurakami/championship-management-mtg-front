@@ -98,7 +98,7 @@ export function AppRoutes() {
 
         <Route path="/torneios" element={<TournamentPage />} />
         <Route path="/torneios/criar" element={
-          <ProtectedRoute requireAdmin><TournamentCreatePage /></ProtectedRoute>
+          <ProtectedRoute requireHostOuAdmin><TournamentCreatePage /></ProtectedRoute>
         } />
         <Route path="/torneios/:id" element={
           <UuidParamGuard param="id" allowTournamentSlug>
@@ -155,7 +155,7 @@ export function AppRoutes() {
         <Route path="/metagame/breakdown" element={<MetagameBreakdownPage />} />
         <Route path="/metagame/:formato/:slug" element={<MetagameArquetipoPage />} />
         <Route path="/ligas/criar" element={
-          <ProtectedRoute requireAdmin><LigaCreatePage editMode={false} /></ProtectedRoute>
+          <ProtectedRoute requireHostOuAdmin><LigaCreatePage editMode={false} /></ProtectedRoute>
         } />
         <Route path="/ligas/:id" element={
           <UuidParamGuard param="id">
@@ -163,7 +163,7 @@ export function AppRoutes() {
           </UuidParamGuard>
         } />
         <Route path="/ligas/:id/editar" element={
-          <ProtectedRoute requireAdmin>
+          <ProtectedRoute requireHostOuAdmin>
             <UuidParamGuard param="id">
               <LigaCreatePage editMode={true} />
             </UuidParamGuard>
