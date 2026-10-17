@@ -20,6 +20,8 @@ Crawlers (WhatsApp, etc.) do **not** run the SPA. They need HTML meta tags from 
 Landing share: `GET /site/share` or `/site/share/:pagina` (image default `/images/seo/og-default.jpg`), including lista `/torneios`.
 Tournament detail without banner also falls back to the same default OG image.
 
+Sitemap / robots: Amplify rewrite `/sitemap.xml` → `GET /site/sitemap.xml` (páginas + torneios públicos + artigos). `public/robots.txt` aponta para `/sitemap.xml`. SPA fallback must allow `.xml` / `.webmanifest` extensions.
+
 ## Amplify rules (Hosting → Rewrites)
 
 Source of example: `amplify-rewrites.example.json`. **Must exist in the Amplify console**, not only in the repo.

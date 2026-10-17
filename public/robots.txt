@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /torneios/criar
+Disallow: /artigos/novo
+Disallow: /artigos/pendentes
+Disallow: /artigos/*/editar
+Disallow: /esqueci-senha
+Disallow: /reset-senha
+Disallow: /torneio/ingressar
+Disallow: /newsletter/
+
+Sitemap: https://tiagofuguete.com.br/sitemap.xml

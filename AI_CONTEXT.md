@@ -389,6 +389,7 @@ Ao adicionar rotas novas, considerar se precisam de suporte em `resolveExternalN
 - `index.html` já traz OG da home para crawlers no fallback SPA
 - Crawlers em rotas institucionais: Amplify rewrite → API `GET /site/share/:pagina` (ver `amplify-rewrites.example.json` e skill `championship-mtg-share-og`)
 - Analytics (GTM `GTM-K3QJVXGB`, GA4 `G-BN7JN9ET38`, Google Tag `GT-T5JV5Q7T`): `components/ui/Analytics.jsx`, só após consentimento de marketing
+- `public/robots.txt`, `public/site.webmanifest`; sitemap dinâmico via Amplify rewrite `/sitemap.xml` → API `GET /site/sitemap.xml` (fallback estático em `public/sitemap.xml`)
 
 ---
 

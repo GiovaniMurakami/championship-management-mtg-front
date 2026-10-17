@@ -1,5 +1,10 @@
 [
   {
+    "source": "/sitemap.xml",
+    "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/sitemap.xml",
+    "status": "200"
+  },
+  {
     "source": "/torneios",
     "target": "https://ol5gj7iduc.execute-api.us-east-1.amazonaws.com/dev/site/share/torneios?v=1",
     "status": "200"
@@ -40,7 +45,7 @@
     "status": "200"
   },
   {
-    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>",
+    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp|xml|webmanifest)$)([^.]+$)/>",
     "target": "/index.html",
     "status": "200"
   }

@@ -1,0 +1,24 @@
+{
+  "name": "Tiago Fuguete",
+  "short_name": "Fuguete",
+  "description": "Torneios, decks e conteúdos de Magic: The Gathering Pauper no MTG Online.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e091c",
+  "theme_color": "#8e39ed",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "270x270",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/seo/icon-270.png",
+      "sizes": "270x270",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
